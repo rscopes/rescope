@@ -11,9 +11,10 @@ Scalable, reduce-able & 'state' based store for (but not limited to) ReactJS
 
 ``` jsx
 
-import rStore from "caipi-store";
+import Store from "caipi-store";
 
-export default class MyStore extends rStore {
+export default class MyStore extends Store {
+    static use  = [];// list of source stores id
     static follow   = ["someKey"];// keys for the default shouldPropag fn
     
     /**
@@ -35,6 +36,7 @@ export default class MyStore extends rStore {
     reduce(lastPublicState ,privateState) 
 }
 ```
+
 
 ## Prototype
  

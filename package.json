@@ -1,6 +1,6 @@
 {
   "name": "caipi-store",
-  "version": "1.0.0treill",
+  "version": "1.0.0",
   "description": "Scalable, reduce-able & 'state' based store in ES6 for (but not limited to) ReactJS, with node EventEmitter api.",
   "repository": "https://github.com/CaipiLabs/waterfall-store.git",
   "main": "dist/Store.js",

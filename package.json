@@ -1,0 +1,25 @@
+{
+  "name": "caipi-store",
+  "version": "1.0.0treill",
+  "description": "Scalable, reduce-able & 'state' based store in ES6 for (but not limited to) ReactJS, with node EventEmitter api.",
+  "repository": "https://github.com/CaipiLabs/waterfall-store.git",
+  "main": "dist/Store.js",
+  "license": "MIT",
+  "author": "Nathan Braun <caipilabs@gmail.com>",
+  "scripts": {
+    "build": "babel src --out-dir dist"
+  },
+  "dependencies": {
+    "events": "^1.1.1",
+    "isarray": "0.0.1",
+    "isstring": "^1.0.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-preset-stage-1": "^6.5.0"
+  }
+}

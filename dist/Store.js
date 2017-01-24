@@ -19,7 +19,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * Basic scalable state-aware store
+ * Ultra scalable state-aware store
  *
  * Actually using debounce/native sequencer method...
  * @todo : optims? bugs?
@@ -44,7 +44,6 @@ var Store = function (_EventEmitter) {
          * @static
          * @param object {React.Component|Store|...} target state aware object
          * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-         * @param context {Object} stores context ex : {myStore:Store1,...}
          */
         // overridable list of store that will allow push if updated
         value: function map(component, keys, context, origin) {
@@ -63,9 +62,7 @@ var Store = function (_EventEmitter) {
                 } else if (isString(key)) {
                     key = key.split(':');
                     if (targetRevs[key[1] || key[0]]) return false; // no dbl binds
-
                     if (isFunction(context[key[0]])) {
-                        // lazy start (jit instantiation)
                         context[key[0]] = new context[key[0]](context);
                         if (context[key[0]].constructor.use) {
                             context[key[0]].pull(context[key[0]].constructor.use, key[0]);
@@ -106,7 +103,7 @@ var Store = function (_EventEmitter) {
         }
 
         /**
-         * Constructor, will build a reacstore
+         * Constructor, will build a store/refiner/reducer
          *
          * (context, keys, name)
          * (context, name)
@@ -128,17 +125,18 @@ var Store = function (_EventEmitter) {
             _static = _this.constructor,
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.named,
             watchs = isArray(argz[0]) ? argz.shift() : [],
-            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly here
+            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
         name = isString(argz[0]) ? argz[0] : _static.name;
-
+        _this.setMaxListeners(Store.defaultMaxListeners);
+        _this.locks = 0;
         _this._onStabilize = [];
-        //
+
         if (isString(argz[0])) {
             if (context[name]) console.warn("TorrentStore: Overwriting an existing static named store ( %s ) !!", name);
             context[name] = _this;
         }
-        _this._state = {};
 
+        _this._state = {};
         _this._watchs = watchs;
         _this.name = name;
         _this.context = context;
@@ -212,13 +210,25 @@ var Store = function (_EventEmitter) {
         key: 'bind',
         value: function bind(obj, key) {
             this._followers.push([obj, key]);
-            if (this.state) {
+            if (this.state && this._stable) {
                 if (typeof obj != "function") {
                     if (key) obj.setState(_defineProperty({}, key, this.state));else obj.setState(this.state);
                 } else {
                     obj(this.state);
                 }
             }
+        }
+
+        /**
+         * Bind this store changes to the given component-key
+         * @param obj {React.Component|Store|function)
+         * @param key {string} optional key where to map the public state
+         */
+
+    }, {
+        key: 'then',
+        value: function then(cb) {
+            this.once('stable', cb);
         }
 
         /**
@@ -232,18 +242,22 @@ var Store = function (_EventEmitter) {
         value: function shouldPropag(ns) {
             var _static = this.constructor,
                 r,
-                me = this;
+                cState = this.state;
 
-            me.state && _static.follow && _static.follow.forEach(function (key) {
-                r = r || me.state[key] !== ns[key];
+            if (!cState && _static.follow && _static.follow.reduce(function (r, i) {
+                return r || ns[i];
+            }, false)) return true;
+
+            _static.follow && _static.follow.forEach(function (key) {
+                r = r || cState[key] !== ns[key];
             });
 
             return !_static.follow || !!r;
         }
 
         /**
-         * Overridable reducer / remapper
-         * If privateState or lastPublicState are simple hash maps reduce will return {...lastPublicState, ...privateState}
+         * Overridable refiner / remapper
+         * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
          * if not it will return the last private state
          * @param lastPublicState
          * @param privateState
@@ -251,8 +265,8 @@ var Store = function (_EventEmitter) {
          */
 
     }, {
-        key: 'reduce',
-        value: function reduce(lastPublicState, privateState) {
+        key: 'refine',
+        value: function refine(lastPublicState, privateState) {
             privateState = privateState || this._state;
             if (!lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto) return privateState;else return _extends({}, lastPublicState, privateState);
         }
@@ -265,14 +279,19 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'stabilize',
         value: function stabilize(cb) {
+            var _this2 = this;
+
             var me = this;
             cb && me.once('stable', cb);
             me._stable = false;
+
             if (this._stabilizer) clearTimeout(this._stabilizer);
+
             this._stabilizer = setTimeout(this.push.bind(this, null, function () {
                 //@todo
                 me._stable = true;
-                me.emit('stable');
+                _this2._stabilizer = null;
+                // this.release();
             }));
         }
 
@@ -288,38 +307,26 @@ var Store = function (_EventEmitter) {
         }
 
         /**
-         * Apply reduce/remap on the private state & push the resulting "public" state to followers
+         * Apply refine/remap on the private state & push the resulting "public" state to followers
          * @param cb
          */
 
     }, {
         key: 'push',
-        value: function push(state, cb) {
+        value: function push(state, force, cb) {
+            cb = force === true ? cb : force;
             var i = 0,
                 me = this,
-                nState = state || this.reduce(this.state, this._state);
+                nState = state || this.refine(this.state, this._state);
 
-            if (!this.shouldPropag(nState)) {
+            if (!force && !this.shouldPropag(nState)) {
                 cb && cb();
                 return false;
             }
 
             this.state = nState;
-
-            this._rev = 1 + (this._rev + 1) % 1000000; //
-            if (this._followers.length) this._followers.forEach(function (follower) {
-                if (!me.state) return;
-                if (typeof follower[0] == "function") {
-                    follower[0](me.state);
-                } else {
-                    cb && i++;
-                    follower[0].setState(follower[1] ? _defineProperty({}, follower[1], me.state) : me.state, cb && function () {
-                        return ! --i && cb();
-                    });
-                }
-            });
-
-            !i && cb && cb();
+            this.locks++;
+            this.release(cb);
         }
 
         /**
@@ -344,6 +351,7 @@ var Store = function (_EventEmitter) {
             }if (change) {
                 this.stabilize(cb);
             } else cb && cb();
+            return this;
         }
 
         /**
@@ -360,6 +368,62 @@ var Store = function (_EventEmitter) {
             this._state = pState;
 
             this.stabilize(cb);
+        }
+
+        /**
+         * Add a lock so the store will not propag it state untill release() is call
+         * @param previous {Taskflow|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+         * @returns {TaskFlow}
+         */
+
+    }, {
+        key: 'wait',
+        value: function wait(previous) {
+            if (typeof previous == "number") return this.locks += previous;
+            if (isArray(previous)) return previous.map(this.wait.bind(this));
+            // if ( previous && previous.then )
+            //     return previous.then(this.release.bind(this));
+
+            this.locks++;
+            return this;
+        }
+
+        /**
+         * Decrease locks for this store, if it reach 0 & it have a public state,
+         * it will be propagated to the followers,
+         * then, all stuff passed to "then" call back will be exec / released
+         * @param desync
+         * @returns {*}
+         */
+
+    }, {
+        key: 'release',
+        value: function release(cb) {
+            var me = this,
+                i = 0;
+            // if ( desync && this.locks > 0 ) return setTimeout(this.success) && this;
+            var tmp;
+
+            if (! --this.locks && this.state) {
+                this._complete = true;
+
+                this._rev = 1 + (this._rev + 1) % 1000000; //
+                if (this._followers.length) this._followers.forEach(function (follower) {
+                    if (!me.state) return;
+                    if (typeof follower[0] == "function") {
+                        follower[0](me.state);
+                    } else {
+                        cb && i++;
+                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], me.state) : me.state, cb && function () {
+                            return ! --i && cb();
+                        });
+                    }
+                });
+
+                me.emit('stable');
+                !i && cb && cb();
+            } else cb && this.then(cb);
+            return this;
         }
     }, {
         key: 'destroy',
@@ -384,6 +448,6 @@ var Store = function (_EventEmitter) {
 Store.use = [];
 Store.follow = [];
 Store.named = {};
-Store.minFps = 0;
+Store.defaultMaxListeners = 20;
 exports.default = Store;
 module.exports = exports['default'];

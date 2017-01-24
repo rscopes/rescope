@@ -26,7 +26,6 @@ export default class Store extends EventEmitter {
      * @static
      * @param object {React.Component|Store|...} target state aware object
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-     * @param context {Object} stores context ex : {myStore:Store1,...}
      */
     static map( component, keys, context, origin ) {
         var targetRevs    = component._revs || {};
@@ -45,8 +44,7 @@ export default class Store extends EventEmitter {
                 } else if ( isString(key) ) {
                     key = key.split(':');
                     if ( targetRevs[key[1] || key[0]] ) return false;// no dbl binds
-
-                    if ( isFunction(context[key[0]]) ) {// lazy start (jit instantiation)
+                    if ( isFunction(context[key[0]]) ) {
                         context[key[0]] = new context[key[0]](context);
                         if ( context[key[0]].constructor.use ) {
                             context[key[0]].pull(context[key[0]].constructor.use, key[0]);
@@ -93,7 +91,7 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Constructor, will build a reacstore
+     * Constructor, will build a store/refiner/reducer
      *
      * (context, keys, name)
      * (context, name)
@@ -218,14 +216,14 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Overridable reducer / remapper
-     * If privateState or lastPublicState are simple hash maps reduce will return {...lastPublicState, ...privateState}
+     * Overridable refiner / remapper
+     * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
      * if not it will return the last private state
      * @param lastPublicState
      * @param privateState
      * @returns {*}
      */
-    reduce( lastPublicState, privateState ) {
+    refine( lastPublicState, privateState ) {
         privateState = privateState || this._state;
         if ( !lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto )
             return privateState;
@@ -267,19 +265,15 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Apply reduce/remap on the private state & push the resulting "public" state to followers
+     * Apply refine/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
     push( state, force, cb ) {
         cb         = force === true ? cb : force;
         var i      = 0,
             me     = this,
-            nState = state || this.reduce(this.state, this._swState || this._state, this._state);
+            nState = state || this.refine(this.state, this._state);
 
-        if ( this._swState ) {
-            this._state   = this._swState;
-            this._swState = null;
-        }
 
         if ( !force && !this.shouldPropag(nState) ) {
             cb && cb();
@@ -298,13 +292,7 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     setState( pState, cb ) {
-        var i = 0,
-            change;
-
-        this._swState = this._swState || {
-                ...this._state
-            };
-
+        var i = 0, me = this, change;
         for ( var k in pState )
             if ( pState.hasOwnProperty(k)
                 && (
@@ -312,11 +300,9 @@ export default class Store extends EventEmitter {
                     ||
                     (this._state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change        = true;
-                this._revs[k] = pState[k] && pState[k]._rev || true;
-
-                this._swState[k] = pState[k];
-
+                change         = true;
+                this._revs[k]  = pState[k] && pState[k]._rev || true;
+                this._state[k] = pState[k];
             }
         if ( change ) {
             this.stabilize(cb);

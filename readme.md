@@ -26,14 +26,14 @@ export default class MyStore extends Store {
     shouldPropag( newState )
 
     /**
-     * Overridable reducer / remapper (will call the constructor's reducer fn if there)
+     * Overridable reducer / remapper / refiner (will call the constructor's reducer fn if there)
      * If privateState or lastPublicState are simple hash maps super.reduce will return {...lastPublicState, ...privateState}
      * if not it will return the last private state
      * @param privateState 
      * @param lastPublicState
      * @returns {new_public_state}
      */
-    reduce(lastPublicState ,privateState) 
+    refine(lastPublicState ,privateState) 
 }
 ```
 
@@ -100,22 +100,20 @@ export default class Store extends EventEmitter {
     shouldPropag( ns )
 
     /**
-     * Overridable reducer / remapper 
-     * If privateState or lastPublicState are simple hash maps reduce will return {...lastPublicState, ...privateState}
+     * Overridable refiner / reducer / remapper 
+     * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
      * if not it will return the last private state
      * @param privateState
      * @param lastPublicState
      * @returns {*}
      */
-    reduce(lastPublicState, privateState) 
+    refine(lastPublicState, privateState) 
 
     /**
      * Debounce this store propagation ( & reducing )
      * @param cb
      */
     stabilize( cb ) 
-
-
 
     /**
      * Pull stores in the private state
@@ -142,6 +140,24 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     replaceState( pState, cb ) 
+
+
+    /**
+     * Add a lock so the store will not propag it state untill release() is call (this.locks reach 0)
+     * @param previous {Taskflow|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+     * @returns {TaskFlow}
+     */
+    wait( previous )
+
+    /**
+     * Decrease locks for this store, if it reach 0 & it have a public state,
+     * it will be propagated to the followers,
+     * then, all stuff passed to "then" call back will be exec / released
+     * @param desync
+     * @returns {*}
+     */
+    release( cb ) 
+
 
     destroy() 
 }

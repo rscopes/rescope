@@ -1,5 +1,5 @@
 /**
- * Basic scalable state-aware store
+ * Ultra scalable state-aware store
  *
  * Actually using debounce/native sequencer method...
  * @todo : optims? bugs?
@@ -18,7 +18,7 @@ export default class Store extends EventEmitter {
     static use    = [];// overridable list of source stores
     static follow = [];// overridable list of store that will allow push if updated
     static named  = {};
-    static minFps = 0;
+    static defaultMaxListeners = 20;
 
     /**
      * Map all nammed stores in {keys} to the {object}'s state
@@ -35,7 +35,7 @@ export default class Store extends EventEmitter {
 
         context        = context || Store.named;
         keys           = keys.filter(
-            ( key )=> {
+            ( key ) => {
 
                 if ( key.store && key.name ) {
                     if ( targetRevs[key.name] ) return false;// no dbl binds
@@ -78,7 +78,7 @@ export default class Store extends EventEmitter {
             if ( mixedCWUnmount )
                 this[unMountKey] = mixedCWUnmount;
             keys.map(
-                ( key )=> {
+                ( key ) => {
                     if ( key.store && key.name ) {
                         key.store.unBind(component, key.name);
                     } else {
@@ -107,18 +107,19 @@ export default class Store extends EventEmitter {
         var argz    = [...arguments],
             _static = this.constructor,
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.named,
-            watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly here
+            watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             name    = isString(argz[0]) ? argz[0] : _static.name;
-
+        this.setMaxListeners(Store.defaultMaxListeners);
+        this.locks        = 0;
         this._onStabilize = [];
-        //
+
         if ( isString(argz[0]) ) {
             if ( context[name] )
                 console.warn("TorrentStore: Overwriting an existing static named store ( %s ) !!", name);
             context[name] = this;
         }
-        this._state = {};
 
+        this._state = {};
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;
@@ -176,7 +177,7 @@ export default class Store extends EventEmitter {
      */
     bind( obj, key ) {
         this._followers.push([obj, key]);
-        if ( this.state ) {
+        if ( this.state && this._stable ) {
             if ( typeof obj != "function" ) {
                 if ( key ) obj.setState({[key] : this.state});
                 else obj.setState(this.state);
@@ -187,16 +188,29 @@ export default class Store extends EventEmitter {
     }
 
     /**
+     * Bind this store changes to the given component-key
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+    then( cb ) {
+        this.once('stable', cb);
+    }
+
+    /**
      * Overridable method to know if a state change should be propag to the listening stores & components
      * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
      * If not it will always return true
      */
     shouldPropag( ns ) {
-        var _static = this.constructor, r, me = this;
+        var _static = this.constructor, r,
+            cState  = this.state;
 
-        me.state && _static.follow && _static.follow.forEach(
-            ( key )=> {
-                r = r || (me.state[key] !== ns[key])
+        if ( !cState && _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false) )
+            return true;
+
+        _static.follow && _static.follow.forEach(
+            ( key ) => {
+                r = r || (cState[key] !== ns[key])
             }
         );
 
@@ -227,15 +241,18 @@ export default class Store extends EventEmitter {
         var me = this;
         cb && me.once('stable', cb);
         me._stable = false;
+
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
+
         this._stabilizer = setTimeout(
             this.push.bind(
                 this,
                 null,
-                ()=> {//@todo
-                    me._stable = true;
-                    me.emit('stable');
+                () => {//@todo
+                    me._stable       = true;
+                    this._stabilizer = null;
+                    // this.release();
                 }
             ));
     }
@@ -253,39 +270,26 @@ export default class Store extends EventEmitter {
      * Apply reduce/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
-    push( state, cb ) {
+    push( state, force, cb ) {
+        cb         = force === true ? cb : force;
         var i      = 0,
             me     = this,
-            nState = state || this.reduce(this.state, this._state);
+            nState = state || this.reduce(this.state, this._swState || this._state, this._state);
 
-        if ( !this.shouldPropag(nState) ) {
+        if ( this._swState ) {
+            this._state   = this._swState;
+            this._swState = null;
+        }
+
+        if ( !force && !this.shouldPropag(nState) ) {
             cb && cb();
             return false;
         }
 
         this.state = nState;
+        this.locks++;
+        this.release(cb);
 
-        this._rev = 1 + (this._rev + 1) % 1000000;//
-        if ( this._followers.length )
-            this._followers.forEach(( follower )=> {
-                if ( !me.state ) return;
-                if ( typeof follower[0] == "function" ) {
-                    follower[0](me.state);
-                } else {
-                    cb && i++;
-                    follower[0].setState(
-                        (follower[1]) ?
-                        {[follower[1]] : me.state}
-                            :
-                        me.state,
-                        cb && (
-                            ()=>(!(--i) && cb())
-                        )
-                    );
-                }
-            });
-
-        !i && cb && cb()
     }
 
     /**
@@ -294,7 +298,13 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     setState( pState, cb ) {
-        var i = 0, me = this, change;
+        var i = 0,
+            change;
+
+        this._swState = this._swState || {
+                ...this._state
+            };
+
         for ( var k in pState )
             if ( pState.hasOwnProperty(k)
                 && (
@@ -302,13 +312,16 @@ export default class Store extends EventEmitter {
                     ||
                     (this._state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change         = true;
-                this._revs[k]  = pState[k] && pState[k]._rev || true;
-                this._state[k] = pState[k];
+                change        = true;
+                this._revs[k] = pState[k] && pState[k]._rev || true;
+
+                this._swState[k] = pState[k];
+
             }
         if ( change ) {
             this.stabilize(cb);
         } else cb && cb();
+        return this;
     }
 
     /**
@@ -323,13 +336,72 @@ export default class Store extends EventEmitter {
         this.stabilize(cb);
     }
 
+    /**
+     * Add a lock so the store will not propag it state untill release() is call
+     * @param previous {Taskflow|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+     * @returns {TaskFlow}
+     */
+    wait( previous ) {
+        if ( typeof previous == "number" )
+            return this.locks += previous;
+        if ( isArray(previous) )
+            return previous.map(this.wait.bind(this));
+        // if ( previous && previous.then )
+        //     return previous.then(this.release.bind(this));
+
+        this.locks++;
+        return this;
+    }
+
+    /**
+     * Decrease locks for this store, if it reach 0 & it have a public state,
+     * it will be propagated to the followers,
+     * then, all stuff passed to "then" call back will be exec / released
+     * @param desync
+     * @returns {*}
+     */
+    release( cb ) {
+        var me = this, i = 0;
+        // if ( desync && this.locks > 0 ) return setTimeout(this.success) && this;
+        var tmp;
+
+        if ( !--this.locks && this.state ) {
+            this._complete = true;
+
+
+            this._rev = 1 + (this._rev + 1) % 1000000;//
+            if ( this._followers.length )
+                this._followers.forEach(( follower ) => {
+                    if ( !me.state ) return;
+                    if ( typeof follower[0] == "function" ) {
+                        follower[0](me.state);
+                    } else {
+                        cb && i++;
+                        follower[0].setState(
+                            (follower[1]) ?
+                            {[follower[1]] : me.state}
+                                :
+                            me.state,
+                            cb && (
+                                () => (!(--i) && cb())
+                            )
+                        );
+                    }
+                });
+
+            me.emit('stable');
+            !i && cb && cb()
+        } else cb && this.then(cb)
+        return this;
+    }
+
     destroy() {
 
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
         if ( this._followers.length )
             this._followers.forEach(
-                ( follower )=> {
+                ( follower ) => {
                     if ( typeof follower[0] !== "function" ) {
                         if ( follower[0].stores )
                             delete follower[0].stores[follower[1]];

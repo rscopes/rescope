@@ -17,17 +17,19 @@ function NewsListComp( target = document.createElement('div') ) {
                         <b><u><span onclick="MyStoreContext.session.setState({currentUserId:'MrNice'})">MrNice events</span></u></b>
                     </div>` +
                     `<div style="border: solid 1px lightgrey;border-radius: 3px">
-                        ${JSON.stringify(state.status,null,2).replace(/\n/ig,'<br/>')}
+                        ${JSON.stringify(state.status, null, 2).replace(/\n/ig, '<br/>')}
                     </div>`
                     + (
-                        state.userEvents && state.userEvents.events
+                        state.userEvents &&
+                        state.userEvents.events
                             .map(
                                 ( evt ) => `
-                        <div style="border: solid 1px lightgrey;border-radius: 3px">
-                        <b><u><center>Event type : ${evt.type}</center></u></b>
-                        <p>${evt.text}</p>
-                        </div>`
+                                    <div style="border: solid 1px lightgrey;border-radius: 3px">
+                                        <b><u><center>Event type : ${evt.type}</center></u></b>
+                                        <p>${evt.text}</p>
+                                    </div>`
                             ).join()
+                        || "<b><u><center>Loading...</center></u></b>"
                     );
             }
         );

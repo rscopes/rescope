@@ -1,9 +1,10 @@
 # Caipi store
 
-Scalable, reduce-able & 'state' based store for (but not limited to) ReactJS
+Scalable, 'state' based for (but not limited to) ReactJS, with node EventEmitter api.
 
 ## What else ?
 
+- Redux alternative
 - ES6/7 class
 - Inherit node EventEmitter api
 
@@ -122,7 +123,7 @@ export default class Store extends EventEmitter {
     pull( stores ) 
 
     /**
-     * Apply reduce/remap on the private state & push the resulting "public" state to followers
+     * Apply reduce/remap on the private state & push the state to the followers if this.locks == 0
      * @param cb
      */
     push( state, cb ) 
@@ -151,8 +152,8 @@ export default class Store extends EventEmitter {
 
     /**
      * Decrease locks for this store, if it reach 0 & it have a public state,
-     * it will be propagated to the followers,
-     * then, all stuff passed to "then" call back will be exec / released
+     * the state will be propagated to the followers,
+     * then, all stuff passed to "then" will be exec / released
      * @param desync
      * @returns {*}
      */

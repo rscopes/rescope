@@ -220,7 +220,7 @@ var Store = function (_EventEmitter) {
         }
 
         /**
-         * Bind this store changes to the given component-key
+         * once('stable', cb)
          * @param obj {React.Component|Store|function)
          * @param key {string} optional key where to map the public state
          */
@@ -244,15 +244,17 @@ var Store = function (_EventEmitter) {
                 r,
                 cState = this.state;
 
-            if (!cState && _static.follow && _static.follow.reduce(function (r, i) {
+            // if ( !cState )
+            //     return true;
+            if (!cState && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(function (r, i) {
                 return r || ns[i];
-            }, false)) return true;
+            }, false))) return true;
 
             _static.follow && _static.follow.forEach(function (key) {
                 r = r || cState[key] !== ns[key];
             });
 
-            return !_static.follow || !!r;
+            return !_static.follow || !_static.follow.length || !!r;
         }
 
         /**
@@ -420,7 +422,7 @@ var Store = function (_EventEmitter) {
                     }
                 });
 
-                me.emit('stable');
+                me.emit('stable', this.state);
                 !i && cb && cb();
             } else cb && this.then(cb);
             return this;

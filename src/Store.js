@@ -186,7 +186,7 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Bind this store changes to the given component-key
+     * once('stable', cb)
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
@@ -203,7 +203,9 @@ export default class Store extends EventEmitter {
         var _static = this.constructor, r,
             cState  = this.state;
 
-        if ( !cState && _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false) )
+        // if ( !cState )
+        //     return true;
+        if ( !cState && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false)) )
             return true;
 
         _static.follow && _static.follow.forEach(
@@ -212,7 +214,7 @@ export default class Store extends EventEmitter {
             }
         );
 
-        return !_static.follow || !!r;
+        return !_static.follow || !_static.follow.length || !!r;
     }
 
     /**
@@ -375,7 +377,7 @@ export default class Store extends EventEmitter {
                     }
                 });
 
-            me.emit('stable');
+            me.emit('stable', this.state);
             !i && cb && cb()
         } else cb && this.then(cb)
         return this;

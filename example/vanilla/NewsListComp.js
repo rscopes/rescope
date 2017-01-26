@@ -75,8 +75,8 @@
 	
 	    var store = new _Store2.default(_MyStoreContext2.default, ["userEvents", "status"]).on("stable", function (state) {
 	        target.innerHTML = "<div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                        <b><u><span onclick=\"MyStoreContext.session.setState({currentUserId:'MissTick'})\">MissTick events</span></u></b>\n                        <b><u><span onclick=\"MyStoreContext.session.setState({currentUserId:'MrNice'})\">MrNice events</span></u></b>\n                    </div>" + ("<div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                        " + JSON.stringify(state.status, null, 2).replace(/\n/ig, '<br/>') + "\n                    </div>") + (state.userEvents && state.userEvents.events.map(function (evt) {
-	            return "\n                        <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                        <p>" + evt.text + "</p>\n                        </div>";
-	        }).join());
+	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
+	        }).join() || "<b><u><center>Loading...</center></u></b>");
 	    });
 	
 	    target.innerHTML = "<b><u><center>Loading...</center></u></b>";

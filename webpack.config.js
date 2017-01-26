@@ -11,7 +11,7 @@ module.exports = [
         devtool : 'source-map',
         // description de nos sorties
         output  : {
-            path       : path.join(__dirname, "dist"),
+            path       : __dirname,
             filename   : "[name].js",
             publicPath : "/",
         },

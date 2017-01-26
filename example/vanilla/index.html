@@ -8,8 +8,25 @@
 <body>
 <h1>Really basic drafty vanilla JS example</h1>
 
+<div style="border: solid 1px lightgrey;border-radius: 3px">
+    <b><u><span onclick="context.session.setState({currentUserId:'MissTick'})">MissTick events</span></u></b>
+    <b><u><span onclick="context.session.setState({currentUserId:'MrNice'})">MrNice events</span></u></b>
+</div>
+<div id="status"></div>
+<div id="events"></div>
 <script>
-    document.body.appendChild(NewsListComp());
+    var context  = window.context = new StoreContext(),
+        NewsList = new NewsListComp(document.getElementById("events"));
+
+    (new CaipiStore(context, ["status"])).on(
+        "stable",
+        ( state ) => {
+            document.getElementById("status").innerHTML =
+                JSON.stringify(state.status, null, 2).replace(/\n/ig, '<br/>');
+        }
+    );
+
+    (new CaipiStore(context, ["userEvents"])).bind(NewsList);
 </script>
 </body>
 </html>

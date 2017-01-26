@@ -54,13 +54,17 @@
 
 	"use strict";
 	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
 	var _Store = __webpack_require__(2);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _MyStoreContext = __webpack_require__(7);
+	var _StoreContext = __webpack_require__(7);
 	
-	var _MyStoreContext2 = _interopRequireDefault(_MyStoreContext);
+	var _StoreContext2 = _interopRequireDefault(_StoreContext);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -73,19 +77,19 @@
 	function NewsListComp() {
 	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
 	
-	    var store = new _Store2.default(_MyStoreContext2.default, ["userEvents", "status"]).on("stable", function (state) {
-	        target.innerHTML = "<div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                        <b><u><span onclick=\"MyStoreContext.session.setState({currentUserId:'MissTick'})\">MissTick events</span></u></b>\n                        <b><u><span onclick=\"MyStoreContext.session.setState({currentUserId:'MrNice'})\">MrNice events</span></u></b>\n                    </div>" + ("<div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                        " + JSON.stringify(state.status, null, 2).replace(/\n/ig, '<br/>') + "\n                    </div>") + (state.userEvents && state.userEvents.events.map(function (evt) {
+	
+	    this.setState = function (state) {
+	        target.innerHTML = state.userEvents && state.userEvents.events.map(function (evt) {
 	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
-	        }).join() || "<b><u><center>Loading...</center></u></b>");
-	    });
-	
-	    target.innerHTML = "<b><u><center>Loading...</center></u></b>";
-	
-	    return target;
+	        }).join() || "<b><u><center>Loading...</center></u></b>";
+	    };
+	    this.node = target;
 	}
 	
+	window.CaipiStore = _Store2.default;
 	window.NewsListComp = NewsListComp;
-	// export default NewsList;
+	exports.default = NewsListComp;
+	module.exports = exports["default"];
 
 /***/ },
 /* 2 */
@@ -937,6 +941,8 @@
 	    value: true
 	});
 	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _class, _temp, _class3, _temp3, _class4, _temp4; /**
@@ -1021,12 +1027,12 @@
 	                            _id: NewUserId,
 	                            login: NewUserId
 	                        }, function () {
-	                            MyStoreContext.status.setState({ currentUser: JSON.stringify(_this4.state) });
+	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.state) });
 	                        });
 	
 	                        _this4.release();
 	                    }, 500);
-	                    MyStoreContext.status.setState({ currentUser: "user id change ! doing some async..." });
+	                    this.context.status.setState({ currentUser: "user id change ! doing some async..." });
 	                }
 	
 	                return lastState;
@@ -1074,11 +1080,11 @@
 	                                return res;
 	                            }, {})
 	                        }, function () {
-	                            MyStoreContext.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
+	                            _this6.context.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
 	                        });
 	                        _this6.release();
 	                    }, 500);
-	                    MyStoreContext.status.setState({ userEvents: "user datas change ! doing some async..." });
+	                    this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
 	                }
 	
 	                return lastState;
@@ -1089,8 +1095,10 @@
 	    }(_Store6.default), _class4.use = ["currentUser"], _class4.follow = ["currentUser"], _temp4)
 	};
 	
-	window.MyStoreContext = MyStoreContext;
-	exports.default = MyStoreContext;
+	exports.default = window.StoreContext = function () {
+	    return _extends({}, MyStoreContext);
+	};
+	
 	module.exports = exports["default"];
 
 /***/ },

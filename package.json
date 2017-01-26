@@ -7,7 +7,7 @@
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "webpack&&babel src/Store.js --out-file dist/Store.js"
+    "build": "babel src/Store.js --out-file dist/Store.js && webpack"
   },
   "dependencies": {
     "events": "^1.1.1",

@@ -36,7 +36,7 @@ let MyStoreContext = {
                                 login : NewUserId
                             },
                             () => {
-                                MyStoreContext.status.setState({currentUser : JSON.stringify(this.state)});
+                                this.context.status.setState({currentUser : JSON.stringify(this.state)});
                             }
                         );
 
@@ -44,7 +44,7 @@ let MyStoreContext = {
                     },
                     500
                 );
-                MyStoreContext.status.setState({currentUser : "user id change ! doing some async..."});
+                this.context.status.setState({currentUser : "user id change ! doing some async..."});
             }
 
             return lastState;
@@ -83,13 +83,13 @@ let MyStoreContext = {
                                 )
                             },
                             () => {
-                                MyStoreContext.status.setState({userEvents : "" + stubs[nUserId].length + " events"});
+                                this.context.status.setState({userEvents : "" + stubs[nUserId].length + " events"});
                             });
                         this.release();
                     },
                     500
                 );
-                MyStoreContext.status.setState({userEvents : "user datas change ! doing some async..."});
+                this.context.status.setState({userEvents : "user datas change ! doing some async..."});
             }
 
             return lastState;
@@ -97,5 +97,5 @@ let MyStoreContext = {
     }
 };
 
-window.MyStoreContext = MyStoreContext;
-export default MyStoreContext;
+
+export default window.StoreContext = ()=>({...MyStoreContext});

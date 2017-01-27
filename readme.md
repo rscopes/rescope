@@ -1,6 +1,6 @@
-# Caipi store
+# Caipi rescope
 
-Scalable, 'state' based for (but not limited to) ReactJS, with node EventEmitter api.
+Scalable, 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
 
 ## What else ?
 
@@ -12,7 +12,7 @@ Scalable, 'state' based for (but not limited to) ReactJS, with node EventEmitter
 
 ``` jsx
 
-import Store from "caipi-store";
+import Store from "rescope";
 
 export default class MyStore extends Store {
     static use  = [];// list of source stores id

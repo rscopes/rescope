@@ -3,11 +3,9 @@
 import React from "react";
 import {Store} from "../../Rescope";
 
-export default window.NewsListComp = class NewsListComp extends React.Component {
-
-    constructor( props ) {
-        super(...arguments);
-        this.state = {};
+export default class NewsListComp extends React.Component {
+    state = {};
+    componentWillMount( ) {
         Store.map(this, ["userEvents"])
     }
 

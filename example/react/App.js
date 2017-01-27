@@ -22457,20 +22457,29 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	exports.default = window.NewsListComp = function (_React$Component) {
+	var NewsListComp = function (_React$Component) {
 	    _inherits(NewsListComp, _React$Component);
 	
-	    function NewsListComp(props) {
+	    function NewsListComp() {
+	        var _ref;
+	
+	        var _temp, _this, _ret;
+	
 	        _classCallCheck(this, NewsListComp);
 	
-	        var _this = _possibleConstructorReturn(this, (NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).apply(this, arguments));
+	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	            args[_key] = arguments[_key];
+	        }
 	
-	        _this.state = {};
-	        _Rescope.Store.map(_this, ["userEvents"]);
-	        return _this;
+	        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).call.apply(_ref, [this].concat(args))), _this), _this.state = {}, _temp), _possibleConstructorReturn(_this, _ret);
 	    }
 	
 	    _createClass(NewsListComp, [{
+	        key: "componentWillMount",
+	        value: function componentWillMount() {
+	            _Rescope.Store.map(this, ["userEvents"]);
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
 	            return _react2.default.createElement(
@@ -22513,6 +22522,8 @@
 	    return NewsListComp;
 	}(_react2.default.Component);
 	
+	exports.default = NewsListComp;
+	;
 	module.exports = exports["default"];
 
 /***/ },

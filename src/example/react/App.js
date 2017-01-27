@@ -3,7 +3,7 @@ import React from "react";
 let ReactDom      = require('react-dom'),
     Store         = require('../../Rescope').Store,
     NewsListComp  = require('./NewsListComp'),
-    StoresContext = require('./StoresContext');
+    StoresContext = require('../StoresContext');
 
 Store.staticContext = StoresContext();
 

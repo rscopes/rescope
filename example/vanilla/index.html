@@ -18,7 +18,7 @@
     var context  = window.context = new StoreContext(),
         NewsList = new NewsListComp(document.getElementById("events"));
 
-    (new CaipiStore(context, ["status"])).on(
+    (new Store(context, ["status"])).on(
         "stable",
         ( state ) => {
             document.getElementById("status").innerHTML =
@@ -26,7 +26,7 @@
         }
     );
 
-    (new CaipiStore(context, ["userEvents"])).bind(NewsList);
+    (new Store(context, ["userEvents"])).bind(NewsList);
 </script>
 </body>
 </html>

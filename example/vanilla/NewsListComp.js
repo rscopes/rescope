@@ -46,7 +46,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(189);
-	module.exports = __webpack_require__(192);
+	module.exports = __webpack_require__(190);
 
 
 /***/ },
@@ -877,51 +877,7 @@
 
 /***/ },
 
-/***/ 189:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _Store = __webpack_require__(180);
-	
-	var _Store2 = _interopRequireDefault(_Store);
-	
-	var _StoreContext = __webpack_require__(190);
-	
-	var _StoreContext2 = _interopRequireDefault(_StoreContext);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	/**
-	 * @author Nathanael BRAUN
-	 *
-	 * Date: 25/01/2017
-	 * Time: 11:08
-	 */
-	function NewsListComp() {
-	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
-	
-	
-	    this.setState = function (state) {
-	        target.innerHTML = state.userEvents && state.userEvents.events.map(function (evt) {
-	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
-	        }).join() || "<b><u><center>Loading...</center></u></b>";
-	    };
-	    this.node = target;
-	}
-	
-	window.CaipiStore = _Store2.default;
-	window.NewsListComp = NewsListComp;
-	exports.default = NewsListComp;
-	module.exports = exports["default"];
-
-/***/ },
-
-/***/ 190:
+/***/ 186:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -954,7 +910,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(191);
+	var stubs = __webpack_require__(187);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -1084,7 +1040,7 @@
 	    }(_Store6.default), _class4.use = ["currentUser"], _class4.follow = ["currentUser"], _temp4)
 	};
 	
-	exports.default = window.StoreContext = function () {
+	exports.default = function () {
 	    return _extends({}, MyStoreContext);
 	};
 	
@@ -1092,7 +1048,7 @@
 
 /***/ },
 
-/***/ 191:
+/***/ 187:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1141,7 +1097,52 @@
 
 /***/ },
 
-/***/ 192:
+/***/ 189:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Store = __webpack_require__(180);
+	
+	var _Store2 = _interopRequireDefault(_Store);
+	
+	var _StoresContext = __webpack_require__(186);
+	
+	var _StoresContext2 = _interopRequireDefault(_StoresContext);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * @author Nathanael BRAUN
+	 *
+	 * Date: 25/01/2017
+	 * Time: 11:08
+	 */
+	function NewsListComp() {
+	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
+	
+	
+	    this.setState = function (state) {
+	        target.innerHTML = state.userEvents && state.userEvents.events.map(function (evt) {
+	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
+	        }).join() || "<b><u><center>Loading...</center></u></b>";
+	    };
+	    this.node = target;
+	}
+	
+	window.Store = _Store2.default;
+	window.StoreContext = _StoresContext2.default;
+	window.NewsListComp = NewsListComp;
+	exports.default = NewsListComp;
+	module.exports = exports["default"];
+
+/***/ },
+
+/***/ 190:
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/vanilla/index.html";

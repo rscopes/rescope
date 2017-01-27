@@ -4,8 +4,8 @@
  * Date: 03/12/2016
  * Time: 09:28
  */
-import Store from "../../Store";
-let stubs = require("./stubs/datas");
+import Store from "../Store";
+let stubs = require("./_stubs/datas");
 
 let MyStoreContext = {
     status      : class status extends Store {
@@ -98,4 +98,4 @@ let MyStoreContext = {
 };
 
 
-export default window.StoreContext = ()=>({...MyStoreContext});
+export default ()=>({...MyStoreContext});

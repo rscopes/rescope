@@ -45,7 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	module.exports = __webpack_require__(187);
+	module.exports = __webpack_require__(188);
 
 
 /***/ },
@@ -68,12 +68,13 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// import Rescope, {Store} from "../../Rescope";
 	var ReactDom = __webpack_require__(33),
-	    Rescope = __webpack_require__(179),
-	    NewsListComp = __webpack_require__(184),
-	    StoresContext = __webpack_require__(185);
+	    Store = __webpack_require__(179).Store,
+	    NewsListComp = __webpack_require__(185),
+	    StoresContext = __webpack_require__(186);
 	
-	Rescope.staticContext = StoresContext();
+	Store.staticContext = StoresContext();
 	
 	var App = function (_React$Component) {
 	    _inherits(App, _React$Component);
@@ -90,7 +91,7 @@
 	        // Rescope.map(this, ["status", "session"])
 	
 	        // or using a dedicated store instance
-	        _this._store = new Rescope(["status", "session"]);
+	        _this._store = new Store(["status", "session"]);
 	        _this._store.bind(_this);
 	        _this.stores = _this._store.stores;
 	        return _this;
@@ -106,7 +107,7 @@
 	                _react2.default.createElement(
 	                    'h1',
 	                    null,
-	                    'Really basic drafty rescope + react component example'
+	                    'Really basic drafty rescope + react mini app example'
 	                ),
 	                _react2.default.createElement(
 	                    'div',
@@ -21594,6 +21595,25 @@
 /* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Store = undefined;
+	
+	var _Store2 = __webpack_require__(180);
+	
+	var _Store3 = _interopRequireDefault(_Store2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.Store = _Store3.default;
+
+/***/ },
+/* 180 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -21621,10 +21641,10 @@
 	 * @todo : optims? bugs?
 	 */
 	
-	var isString = __webpack_require__(180),
-	    isArray = __webpack_require__(181),
-	    isFunction = __webpack_require__(182),
-	    EventEmitter = __webpack_require__(183),
+	var isString = __webpack_require__(181),
+	    isArray = __webpack_require__(182),
+	    isFunction = __webpack_require__(183),
+	    EventEmitter = __webpack_require__(184),
 	    objProto = Object.getPrototypeOf({});
 	
 	var Store = function (_EventEmitter) {
@@ -22051,7 +22071,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;;(function (factory) {
@@ -22099,7 +22119,7 @@
 
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
@@ -22108,7 +22128,7 @@
 
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports) {
 
 	// if (typeof require !== 'undefined') {}
@@ -22123,7 +22143,7 @@
 	}
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -22431,7 +22451,7 @@
 
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22446,9 +22466,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Store = __webpack_require__(179);
-	
-	var _Store2 = _interopRequireDefault(_Store);
+	var _Rescope = __webpack_require__(179);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -22467,7 +22485,7 @@
 	        var _this = _possibleConstructorReturn(this, (NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).apply(this, arguments));
 	
 	        _this.state = {};
-	        _Store2.default.map(_this, ["userEvents"]);
+	        _Rescope.Store.map(_this, ["userEvents"]);
 	        return _this;
 	    }
 	
@@ -22517,7 +22535,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 185 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -22538,7 +22556,7 @@
 	                                                      */
 	
 	
-	var _Store5 = __webpack_require__(179);
+	var _Store5 = __webpack_require__(180);
 	
 	var _Store6 = _interopRequireDefault(_Store5);
 	
@@ -22550,7 +22568,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(186);
+	var stubs = __webpack_require__(187);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -22687,7 +22705,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -22735,7 +22753,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/react/index.html";

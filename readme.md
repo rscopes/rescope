@@ -12,7 +12,10 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 
 ``` jsx
 
-import Store from "rescope";
+import {Store} from "rescope";
+
+// or
+// let Store = require('rescope').Store
 
 export default class MyStore extends Store {
     static use  = [];// list of source stores id

@@ -1,10 +1,11 @@
 import React from "react";
+// import Rescope, {Store} from "../../Rescope";
 let ReactDom      = require('react-dom'),
-    Rescope       = require('../../Store'),
+    Store         = require('../../Rescope').Store,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('./StoresContext');
 
-Rescope.staticContext = StoresContext();
+Store.staticContext = StoresContext();
 
 class App extends React.Component {
     static renderTo = ( node ) => {
@@ -21,7 +22,7 @@ class App extends React.Component {
         // Rescope.map(this, ["status", "session"])
 
         // or using a dedicated store instance
-        this._store = new Rescope(["status","session"]);
+        this._store = new Store(["status", "session"]);
         this._store.bind(this);
         this.stores = this._store.stores;
     }

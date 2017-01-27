@@ -1,13 +1,13 @@
 {
   "name": "rescope",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Scalable, 'state' based store alternative to Redux for (but not limited to) ReactJS, with node EventEmitter api.",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
-  "main": "dist/Store.js",
+  "main": "dist/Rescope.js",
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "babel src/Store.js --out-file dist/Store.js && webpack"
+    "build": "babel src/Store.js --out-file dist/Store.js && babel src/Rescope.js --out-file dist/Rescope.js && webpack"
   },
   "dependencies": {
     "events": "^1.1.1",

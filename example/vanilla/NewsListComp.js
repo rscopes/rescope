@@ -45,13 +45,13 @@
 /***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(188);
-	module.exports = __webpack_require__(191);
+	__webpack_require__(189);
+	module.exports = __webpack_require__(192);
 
 
 /***/ },
 
-/***/ 179:
+/***/ 180:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -81,10 +81,10 @@
 	 * @todo : optims? bugs?
 	 */
 	
-	var isString = __webpack_require__(180),
-	    isArray = __webpack_require__(181),
-	    isFunction = __webpack_require__(182),
-	    EventEmitter = __webpack_require__(183),
+	var isString = __webpack_require__(181),
+	    isArray = __webpack_require__(182),
+	    isFunction = __webpack_require__(183),
+	    EventEmitter = __webpack_require__(184),
 	    objProto = Object.getPrototypeOf({});
 	
 	var Store = function (_EventEmitter) {
@@ -512,7 +512,7 @@
 
 /***/ },
 
-/***/ 180:
+/***/ 181:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;;(function (factory) {
@@ -561,7 +561,7 @@
 
 /***/ },
 
-/***/ 181:
+/***/ 182:
 /***/ function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
@@ -571,7 +571,7 @@
 
 /***/ },
 
-/***/ 182:
+/***/ 183:
 /***/ function(module, exports) {
 
 	// if (typeof require !== 'undefined') {}
@@ -587,7 +587,7 @@
 
 /***/ },
 
-/***/ 183:
+/***/ 184:
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -896,7 +896,7 @@
 
 /***/ },
 
-/***/ 188:
+/***/ 189:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -905,11 +905,11 @@
 	    value: true
 	});
 	
-	var _Store = __webpack_require__(179);
+	var _Store = __webpack_require__(180);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _StoreContext = __webpack_require__(189);
+	var _StoreContext = __webpack_require__(190);
 	
 	var _StoreContext2 = _interopRequireDefault(_StoreContext);
 	
@@ -940,7 +940,7 @@
 
 /***/ },
 
-/***/ 189:
+/***/ 190:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -961,7 +961,7 @@
 	                                                      */
 	
 	
-	var _Store5 = __webpack_require__(179);
+	var _Store5 = __webpack_require__(180);
 	
 	var _Store6 = _interopRequireDefault(_Store5);
 	
@@ -973,7 +973,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(190);
+	var stubs = __webpack_require__(191);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -1111,7 +1111,7 @@
 
 /***/ },
 
-/***/ 190:
+/***/ 191:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1160,7 +1160,7 @@
 
 /***/ },
 
-/***/ 191:
+/***/ 192:
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/vanilla/index.html";

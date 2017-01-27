@@ -1,14 +1,14 @@
 'use strict';
 
 import React from "react";
-import Rescope from "../../Store";
+import {Store} from "../../Rescope";
 
 export default window.NewsListComp = class NewsListComp extends React.Component {
 
     constructor( props ) {
         super(...arguments);
         this.state = {};
-        Rescope.map(this, ["userEvents"])
+        Store.map(this, ["userEvents"])
     }
 
     render() {

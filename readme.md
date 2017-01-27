@@ -15,6 +15,8 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 
 ## Executable example [here](src/example) 
 
+\*: The Store's context is common to the vanilla & react example
+
 ## Example store
 
 ``` jsx
@@ -25,10 +27,10 @@ import {Store} from "rescope";
 // let Store = require('rescope').Store
 
 export default class MyStore extends Store {
-    static use  = [];// list of source stores id
+    static use      = [];// list of source stores id
     static follow   = ["someKey"];// keys for the default shouldPropag fn
     
-    datas = {} // initial datas
+    datas = {} // initial synchrone datas
     state = {} // initial state
     
     /**
@@ -41,7 +43,7 @@ export default class MyStore extends Store {
 
     /**
      * Overridable reducer / remapper / refiner 
-     * If datas & newState are simple hash maps default refine will return {...lastPublicState, ...privateState}
+     * If datas & newState are simple hash maps default refine will return {...datas, ...newState}
      * if not it will return the last datas
      * @param datas
      * @param newState
@@ -141,9 +143,10 @@ export default class Store extends EventEmitter {
 
     /**
      * Apply reduce/remap on the private state & push the state to the followers if this.locks == 0
+     * @param datas=null
      * @param cb
      */
-    push( state, cb ) 
+    push( datas, cb ) 
     
     /**
      * Update the current private state & push it once the store is stable
@@ -162,8 +165,8 @@ export default class Store extends EventEmitter {
 
     /**
      * Add a lock so the store will not propag it state untill release() is call (this.locks reach 0)
-     * @param previous {Taskflow|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
-     * @returns {TaskFlow}
+     * @param previous {Store|number|Array} Store to wait, releases to wait or array of stuff to wait
+     * @returns {this}
      */
     wait( previous )
 

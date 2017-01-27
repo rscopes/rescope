@@ -321,7 +321,7 @@ export default class Store extends EventEmitter {
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
 
-        if ( isFunction(previous.then) )
+        if ( previous&&isFunction(previous.then) )
             previous.then(this.release.bind(this));
 
         this.locks++;

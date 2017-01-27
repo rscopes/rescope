@@ -49,8 +49,9 @@ export default class Store extends EventEmitter {
 
     static use  = [];// overridable list of source stores
     static follow  = [];// overridable list of store that will allow push if updated
-    static named  = {};
-    static minFps = 0;
+    
+    static staticContext  = {};// default global stores context
+    static defaultMaxListeners = 20;
 
     /**
      * Map all nammed stores in {keys} to the {object}'s state

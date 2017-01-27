@@ -63,7 +63,7 @@ export default class Store extends EventEmitter {
     static map( component, keys, context ) 
     
     /**
-     * Constructor, will build a torrent store/reducer
+     * Constructor, will build a rescope store
      *
      * (context, keys, name)
      * (context, name)

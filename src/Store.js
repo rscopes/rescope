@@ -90,7 +90,7 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Constructor, will build a store/refiner/reducer
+     * Constructor, will build a rescope store
      *
      * (context, keys, name)
      * (context, name)
@@ -312,7 +312,7 @@ export default class Store extends EventEmitter {
 
     /**
      * Add a lock so the store will not propag it state untill release() is call
-     * @param previous {Taskflow|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+     * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
      * @returns {TaskFlow}
      */
     wait( previous ) {
@@ -320,8 +320,9 @@ export default class Store extends EventEmitter {
             return this.locks += previous;
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
-        // if ( previous && previous.then )
-        //     return previous.then(this.release.bind(this));
+
+        if ( isFunction(previous.then) )
+            previous.then(this.release.bind(this));
 
         this.locks++;
         return this;

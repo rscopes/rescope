@@ -21637,7 +21637,6 @@
 	/**
 	 * Ultra scalable state-aware store
 	 *
-	 * Actually using debounce/native sequencer method...
 	 * @todo : optims? bugs?
 	 */
 	
@@ -21780,23 +21779,6 @@
 	        key: 'as',
 	        value: function as(name) {
 	            return { store: this, name: name };
-	        }
-	
-	        /**
-	         * get a comparable value
-	         * @param {string} name
-	         * @returns {{store: Store, name: *}}
-	         */
-	
-	    }, {
-	        key: 'toValue',
-	        value: function toValue() {
-	            return this.toString();
-	        }
-	    }, {
-	        key: 'toString',
-	        value: function toString() {
-	            return this.name + "[" + this._rev + "]";
 	        }
 	
 	        /**
@@ -22019,8 +22001,6 @@
 	        value: function release(cb) {
 	            var me = this,
 	                i = 0;
-	            // if ( desync && this.locks > 0 ) return setTimeout(this.success) && this;
-	            var tmp;
 	
 	            if (! --this.locks && this.state) {
 	                this._complete = true;
@@ -22057,6 +22037,7 @@
 	            this.dead = true;
 	            if (this.name && this.context[this.name] === this) delete this.context[this.name];
 	            this._revs = this.state = this._state = this.context = null;
+	            this.removeAllListeners();
 	        }
 	    }]);
 	

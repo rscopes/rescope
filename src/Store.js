@@ -141,19 +141,6 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * get a comparable value
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    toValue() {
-        return this.toString();
-    }
-
-    toString() {
-        return this.name + "[" + this._rev + "]";
-    }
-
-    /**
      * Un bind this store off the given component-key
      * @param obj
      * @param key
@@ -349,8 +336,6 @@ export default class Store extends EventEmitter {
      */
     release( cb ) {
         var me = this, i = 0;
-        // if ( desync && this.locks > 0 ) return setTimeout(this.success) && this;
-        var tmp;
 
         if ( !--this.locks && this.state ) {
             this._complete = true;
@@ -400,5 +385,6 @@ export default class Store extends EventEmitter {
         if ( this.name && this.context[this.name] === this )
             delete this.context[this.name];
         this._revs = this.state = this._state = this.context = null;
+        this.removeAllListeners();
     }
 }

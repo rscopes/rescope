@@ -116,7 +116,7 @@ export default class Store extends EventEmitter {
             context[name] = this;
         }
 
-        this.state     = {};
+        this.state      = {};
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;
@@ -206,18 +206,18 @@ export default class Store extends EventEmitter {
 
     /**
      * Overridable refiner / remapper
-     * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
+     * If state or lastPublicState are simple hash maps refine will return {...datas, ...state}
      * if not it will return the last private state
-     * @param lastPublicState
-     * @param privateState
+     * @param datas
+     * @param state
      * @returns {*}
      */
-    refine( lastPublicState, privateState ) {
-        privateState = privateState || this.state;
-        if ( !lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto )
-            return privateState;
+    refine( datas, state, changes ) {
+        state = state || this.state;
+        if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
+            return state;
         else
-            return {...lastPublicState, ...privateState}
+            return {...datas, ...state}
     }
 
     /**
@@ -258,18 +258,20 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     push( state, force, cb ) {
-        cb         = force === true ? cb : force;
-        var i      = 0,
-            me     = this,
-            nState = state || this.refine(this.datas, this.state);
+        cb            = force === true ? cb : force;
+        var i         = 0,
+            me        = this,
+            nextState = !state && {...this.state, ...this._changesSW},
+            nextDatas = state || this.refine(this.datas, nextState, this._changesSW);
 
 
-        if ( !force && !this.shouldPropag(nState) ) {
+        if ( !force && !this.shouldPropag(nextDatas) ) {
             cb && cb();
             return false;
         }
 
-        this.datas = nState;
+        this.state = nextState;
+        this.datas = nextDatas;
         this.locks++;
         this.release(cb);
 
@@ -281,7 +283,8 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     setState( pState, cb ) {
-        var i = 0, me = this, change;
+        var i       = 0, change,
+            changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
             if ( pState.hasOwnProperty(k)
                 && (
@@ -289,9 +292,9 @@ export default class Store extends EventEmitter {
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change         = true;
-                this._revs[k]  = pState[k] && pState[k]._rev || true;
-                this.state[k] = pState[k];
+                change        = true;
+                this._revs[k] = pState[k] && pState[k]._rev || true;
+                changes[k]    = pState[k];
             }
         if ( change ) {
             this.stabilize(cb);
@@ -305,7 +308,7 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     replaceState( pState, cb ) {
-        var i       = 0, me = this;
+        var i      = 0, me = this;
         this.state = pState;
 
         this.stabilize(cb);

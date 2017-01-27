@@ -28,6 +28,9 @@ export default class MyStore extends Store {
     static use  = [];// list of source stores id
     static follow   = ["someKey"];// keys for the default shouldPropag fn
     
+    datas = {} // initial datas
+    state = {} // initial state
+    
     /**
      * Overridable method to know if a state change should be propag to the listening stores & components
      * If static follow is defined, super.shouldPropag will return true if any of the "follow" keys was updated 
@@ -37,14 +40,15 @@ export default class MyStore extends Store {
     shouldPropag( newState )
 
     /**
-     * Overridable reducer / remapper / refiner (will call the constructor's reducer fn if there)
-     * If privateState or lastPublicState are simple hash maps super.reduce will return {...lastPublicState, ...privateState}
-     * if not it will return the last private state
-     * @param privateState 
-     * @param lastPublicState
-     * @returns {new_public_state}
+     * Overridable reducer / remapper / refiner 
+     * If datas & newState are simple hash maps default refine will return {...lastPublicState, ...privateState}
+     * if not it will return the last datas
+     * @param datas
+     * @param newState
+     * @param changes
+     * @returns {*} updated store datas
      */
-    refine(lastPublicState ,privateState) 
+    refine(datas, newState, changes) 
 }
 ```
 
@@ -114,13 +118,14 @@ export default class Store extends EventEmitter {
 
     /**
      * Overridable refiner / reducer / remapper 
-     * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
-     * if not it will return the last private state
-     * @param privateState
-     * @param lastPublicState
+     * If datas & newState are simple hash maps default refine will return {...lastPublicState, ...privateState}
+     * if not it will return the last datas
+     * @param datas
+     * @param newState
+     * @param changes
      * @returns {*}
      */
-    refine(lastPublicState, privateState) 
+    refine(datas, newState, changes) 
 
     /**
      * Debounce this store propagation ( & reducing )

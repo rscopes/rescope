@@ -21866,18 +21866,18 @@
 	
 	        /**
 	         * Overridable refiner / remapper
-	         * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
+	         * If state or lastPublicState are simple hash maps refine will return {...datas, ...state}
 	         * if not it will return the last private state
-	         * @param lastPublicState
-	         * @param privateState
+	         * @param datas
+	         * @param state
 	         * @returns {*}
 	         */
 	
 	    }, {
 	        key: 'refine',
-	        value: function refine(lastPublicState, privateState) {
-	            privateState = privateState || this.state;
-	            if (!lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto) return privateState;else return _extends({}, lastPublicState, privateState);
+	        value: function refine(datas, state, changes) {
+	            state = state || this.state;
+	            if (!datas || datas.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, datas, state);
 	        }
 	
 	        /**
@@ -21926,14 +21926,16 @@
 	            cb = force === true ? cb : force;
 	            var i = 0,
 	                me = this,
-	                nState = state || this.refine(this.datas, this.state);
+	                nextState = !state && _extends({}, this.state, this._changesSW),
+	                nextDatas = state || this.refine(this.datas, nextState, this._changesSW);
 	
-	            if (!force && !this.shouldPropag(nState)) {
+	            if (!force && !this.shouldPropag(nextDatas)) {
 	                cb && cb();
 	                return false;
 	            }
 	
-	            this.datas = nState;
+	            this.state = nextState;
+	            this.datas = nextDatas;
 	            this.locks++;
 	            this.release(cb);
 	        }
@@ -21948,14 +21950,14 @@
 	        key: 'setState',
 	        value: function setState(pState, cb) {
 	            var i = 0,
-	                me = this,
-	                change;
+	                change,
+	                changes = this._changesSW = this._changesSW || {};
 	            for (var k in pState) {
 	                if (pState.hasOwnProperty(k) && (pState[k] != this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
 	                )) {
 	                    change = true;
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
-	                    this.state[k] = pState[k];
+	                    changes[k] = pState[k];
 	                }
 	            }if (change) {
 	                this.stabilize(cb);
@@ -22618,11 +22620,13 @@
 	            key: "refine",
 	            // list of source stores id
 	
-	            value: function refine(lastState, privateState) {
+	            value: function refine(datas, state, changes) {
 	                var _this4 = this;
 	
-	                var NewUserId = privateState.session && privateState.session.currentUserId,
-	                    LastUserId = lastState && lastState._id;
+	                var NewUserId = state.session && state.session.currentUserId,
+	                    LastUserId = datas && datas._id;
+	
+	                console.info("currentUser state updated : ", changes);
 	
 	                if (NewUserId != LastUserId) {
 	                    this.wait(); // don't propag until released
@@ -22632,7 +22636,7 @@
 	                            _id: NewUserId,
 	                            login: NewUserId
 	                        }, function () {
-	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.state) });
+	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.datas) });
 	                        });
 	
 	                        _this4.release();
@@ -22640,7 +22644,7 @@
 	                    this.context.status.setState({ currentUser: "user id change ! doing some async..." });
 	                }
 	
-	                return lastState;
+	                return datas;
 	            }
 	        }]);
 	
@@ -22657,19 +22661,18 @@
 	
 	        _createClass(userEvents, [{
 	            key: "shouldPropag",
-	            // keys for the default shouldPropag fn
+	            // list of source stores id
 	
 	            value: function shouldPropag(newState) {
 	                return !!newState.userId;
-	            } // list of source stores id
-	
+	            }
 	        }, {
 	            key: "refine",
-	            value: function refine(lastState, privateState) {
+	            value: function refine(datas, state, changes) {
 	                var _this6 = this;
 	
-	                var nUserId = privateState.currentUser._id;
-	                var cUserId = lastState && lastState.userId;
+	                var nUserId = state.currentUser._id;
+	                var cUserId = datas && datas.userId;
 	
 	                if (nUserId != cUserId) {
 	                    this.wait(); // do some async
@@ -22692,12 +22695,12 @@
 	                    this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
 	                }
 	
-	                return lastState;
+	                return datas;
 	            }
 	        }]);
 	
 	        return userEvents;
-	    }(_Store6.default), _class4.use = ["currentUser"], _class4.follow = ["currentUser"], _temp4)
+	    }(_Store6.default), _class4.use = ["currentUser"], _temp4)
 	};
 	
 	exports.default = function () {

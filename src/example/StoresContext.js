@@ -21,9 +21,11 @@ let MyStoreContext = {
     currentUser : class currentUser extends Store {
         static use = ["session"];// list of source stores id
 
-        refine( lastState, privateState ) {
-            let NewUserId  = privateState.session && privateState.session.currentUserId,
-                LastUserId = lastState && lastState._id;
+        refine( datas, newState, changes ) {
+            let NewUserId  = newState.session && newState.session.currentUserId,
+                LastUserId = datas && datas._id;
+
+            console.info("currentUser state updated : ", changes);
 
             if ( NewUserId != LastUserId ) {
                 this.wait();// don't propag until released
@@ -36,7 +38,7 @@ let MyStoreContext = {
                                 login : NewUserId
                             },
                             () => {
-                                this.context.status.setState({currentUser : JSON.stringify(this.state)});
+                                this.context.status.setState({currentUser : JSON.stringify(this.datas)});
                             }
                         );
 
@@ -47,7 +49,8 @@ let MyStoreContext = {
                 this.context.status.setState({currentUser : "user id change ! doing some async..."});
             }
 
-            return lastState;
+
+            return datas;
         }
     },
     userEvents  : class userEvents extends Store {
@@ -57,9 +60,9 @@ let MyStoreContext = {
             return !!newState.userId;
         }
 
-        refine( lastState, privateState ) {
-            let {_id:nUserId} = privateState.currentUser,
-                cUserId       = lastState && lastState.userId;
+        refine( datas, newState, changes ) {
+            let {_id:nUserId} = newState.currentUser,
+                cUserId       = datas && datas.userId;
 
 
             if ( nUserId != cUserId ) {
@@ -91,7 +94,7 @@ let MyStoreContext = {
                 this.context.status.setState({userEvents : "user datas change ! doing some async..."});
             }
 
-            return lastState;
+            return datas;
         }
     }
 };

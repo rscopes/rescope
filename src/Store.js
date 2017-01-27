@@ -1,7 +1,6 @@
 /**
  * Ultra scalable state-aware store
  *
- * Actually using debounce/native sequencer method...
  * @todo : optims? bugs?
  */
 

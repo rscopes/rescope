@@ -51,7 +51,7 @@ var Store = function (_EventEmitter) {
             var targetContext = component.stores || {};
             keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 
-            context = context || Store.named;
+            context = context || Store.staticContext;
             keys = keys.filter(function (key) {
 
                 if (key.store && key.name) {
@@ -123,7 +123,7 @@ var Store = function (_EventEmitter) {
 
         var argz = [].concat(Array.prototype.slice.call(arguments)),
             _static = _this.constructor,
-            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.named,
+            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
             watchs = isArray(argz[0]) ? argz.shift() : [],
             // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
         name = isString(argz[0]) ? argz[0] : _static.name;
@@ -449,7 +449,7 @@ var Store = function (_EventEmitter) {
 
 Store.use = [];
 Store.follow = [];
-Store.named = {};
+Store.staticContext = {};
 Store.defaultMaxListeners = 20;
 exports.default = Store;
 module.exports = exports['default'];

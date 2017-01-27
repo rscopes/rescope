@@ -7,6 +7,7 @@ module.exports = [
     {
         entry   : {
             "example/vanilla/NewsListComp" : ["./src/example/vanilla/NewsListComp.js", './src/example/vanilla/index.html'],
+            "example/react/App" : ["./src/example/react/App.js", './src/example/react/index.html'],
         },
         devtool : 'source-map',
         // description de nos sorties

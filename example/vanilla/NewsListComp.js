@@ -40,59 +40,18 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1);
-	module.exports = __webpack_require__(9);
+	__webpack_require__(188);
+	module.exports = __webpack_require__(191);
 
 
 /***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _Store = __webpack_require__(2);
-	
-	var _Store2 = _interopRequireDefault(_Store);
-	
-	var _StoreContext = __webpack_require__(7);
-	
-	var _StoreContext2 = _interopRequireDefault(_StoreContext);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	/**
-	 * @author Nathanael BRAUN
-	 *
-	 * Date: 25/01/2017
-	 * Time: 11:08
-	 */
-	function NewsListComp() {
-	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
-	
-	
-	    this.setState = function (state) {
-	        target.innerHTML = state.userEvents && state.userEvents.events.map(function (evt) {
-	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
-	        }).join() || "<b><u><center>Loading...</center></u></b>";
-	    };
-	    this.node = target;
-	}
-	
-	window.CaipiStore = _Store2.default;
-	window.NewsListComp = NewsListComp;
-	exports.default = NewsListComp;
-	module.exports = exports["default"];
-
-/***/ },
-/* 2 */
+/***/ 179:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -122,10 +81,10 @@
 	 * @todo : optims? bugs?
 	 */
 	
-	var isString = __webpack_require__(3),
-	    isArray = __webpack_require__(4),
-	    isFunction = __webpack_require__(5),
-	    EventEmitter = __webpack_require__(6),
+	var isString = __webpack_require__(180),
+	    isArray = __webpack_require__(181),
+	    isFunction = __webpack_require__(182),
+	    EventEmitter = __webpack_require__(183),
 	    objProto = Object.getPrototypeOf({});
 	
 	var Store = function (_EventEmitter) {
@@ -148,7 +107,7 @@
 	            var targetContext = component.stores || {};
 	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
-	            context = context || Store.named;
+	            context = context || Store.staticContext;
 	            keys = keys.filter(function (key) {
 	
 	                if (key.store && key.name) {
@@ -220,7 +179,7 @@
 	
 	        var argz = [].concat(Array.prototype.slice.call(arguments)),
 	            _static = _this.constructor,
-	            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.named,
+	            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
 	            watchs = isArray(argz[0]) ? argz.shift() : [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
 	        name = isString(argz[0]) ? argz[0] : _static.name;
@@ -546,13 +505,14 @@
 	
 	Store.use = [];
 	Store.follow = [];
-	Store.named = {};
+	Store.staticContext = {};
 	Store.defaultMaxListeners = 20;
 	exports.default = Store;
 	module.exports = exports['default'];
 
 /***/ },
-/* 3 */
+
+/***/ 180:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;;(function (factory) {
@@ -600,7 +560,8 @@
 
 
 /***/ },
-/* 4 */
+
+/***/ 181:
 /***/ function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
@@ -609,7 +570,8 @@
 
 
 /***/ },
-/* 5 */
+
+/***/ 182:
 /***/ function(module, exports) {
 
 	// if (typeof require !== 'undefined') {}
@@ -624,7 +586,8 @@
 	}
 
 /***/ },
-/* 6 */
+
+/***/ 183:
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -932,7 +895,52 @@
 
 
 /***/ },
-/* 7 */
+
+/***/ 188:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Store = __webpack_require__(179);
+	
+	var _Store2 = _interopRequireDefault(_Store);
+	
+	var _StoreContext = __webpack_require__(189);
+	
+	var _StoreContext2 = _interopRequireDefault(_StoreContext);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * @author Nathanael BRAUN
+	 *
+	 * Date: 25/01/2017
+	 * Time: 11:08
+	 */
+	function NewsListComp() {
+	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
+	
+	
+	    this.setState = function (state) {
+	        target.innerHTML = state.userEvents && state.userEvents.events.map(function (evt) {
+	            return "\n                                    <div style=\"border: solid 1px lightgrey;border-radius: 3px\">\n                                        <b><u><center>Event type : " + evt.type + "</center></u></b>\n                                        <p>" + evt.text + "</p>\n                                    </div>";
+	        }).join() || "<b><u><center>Loading...</center></u></b>";
+	    };
+	    this.node = target;
+	}
+	
+	window.CaipiStore = _Store2.default;
+	window.NewsListComp = NewsListComp;
+	exports.default = NewsListComp;
+	module.exports = exports["default"];
+
+/***/ },
+
+/***/ 189:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -953,7 +961,7 @@
 	                                                      */
 	
 	
-	var _Store5 = __webpack_require__(2);
+	var _Store5 = __webpack_require__(179);
 	
 	var _Store6 = _interopRequireDefault(_Store5);
 	
@@ -965,7 +973,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(8);
+	var stubs = __webpack_require__(190);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -1102,7 +1110,8 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 8 */
+
+/***/ 190:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1150,11 +1159,13 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 9 */
+
+/***/ 191:
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/vanilla/index.html";
 
 /***/ }
-/******/ ]);
+
+/******/ });
 //# sourceMappingURL=NewsListComp.js.map

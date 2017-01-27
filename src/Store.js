@@ -17,7 +17,7 @@ export default class Store extends EventEmitter {
 
     static use    = [];// overridable list of source stores
     static follow = [];// overridable list of store that will allow push if updated
-    static named  = {};
+    static staticContext  = {};
     static defaultMaxListeners = 20;
 
     /**
@@ -32,7 +32,7 @@ export default class Store extends EventEmitter {
         var targetContext = component.stores || {};
         keys              = isArray(keys) ? [...keys] : [keys];
 
-        context        = context || Store.named;
+        context        = context || Store.staticContext;
         keys           = keys.filter(
             ( key ) => {
 
@@ -104,7 +104,7 @@ export default class Store extends EventEmitter {
         super();
         var argz    = [...arguments],
             _static = this.constructor,
-            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.named,
+            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
             watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             name    = isString(argz[0]) ? argz[0] : _static.name;
         this.setMaxListeners(Store.defaultMaxListeners);

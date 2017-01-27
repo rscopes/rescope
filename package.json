@@ -1,5 +1,5 @@
 {
-  "name": "caipi-store",
+  "name": "rescope",
   "version": "1.0.0",
   "description": "Scalable, 'state' based store alternative to Redux for (but not limited to) ReactJS, with node EventEmitter api.",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
@@ -29,6 +29,8 @@
     "isarray": "0.0.1",
     "isfunction": "0.0.6",
     "isstring": "^1.0.7",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
     "webpack": "^1.13.1",
     "webpack-closure-compiler": "^1.1.2"
   }

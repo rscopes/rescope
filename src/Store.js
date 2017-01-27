@@ -14,9 +14,9 @@ var isString     = require('isstring')
 
 export default class Store extends EventEmitter {
 
-    static use    = [];// overridable list of source stores
-    static follow = [];// overridable list of store that will allow push if updated
-    static staticContext  = {};
+    static use                 = [];// overridable list of source stores
+    static follow              = [];// overridable list of store that will allow push if updated
+    static staticContext       = {};
     static defaultMaxListeners = 20;
 
     /**
@@ -116,7 +116,7 @@ export default class Store extends EventEmitter {
             context[name] = this;
         }
 
-        this._state = {};
+        this.state     = {};
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;
@@ -161,12 +161,12 @@ export default class Store extends EventEmitter {
      */
     bind( obj, key ) {
         this._followers.push([obj, key]);
-        if ( this.state && this._stable ) {
+        if ( this.datas && this._stable ) {
             if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({[key] : this.state});
-                else obj.setState(this.state);
+                if ( key ) obj.setState({[key] : this.datas});
+                else obj.setState(this.datas);
             } else {
-                obj(this.state);
+                obj(this.datas);
             }
         }
     }
@@ -187,11 +187,12 @@ export default class Store extends EventEmitter {
      */
     shouldPropag( ns ) {
         var _static = this.constructor, r,
-            cState  = this.state;
+            cState  = this.datas;
 
         // if ( !cState )
         //     return true;
-        if ( !cState && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false)) )
+        if ( !cState && (!_static.follow || !_static.follow.length ||
+            _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false)) )
             return true;
 
         _static.follow && _static.follow.forEach(
@@ -212,7 +213,7 @@ export default class Store extends EventEmitter {
      * @returns {*}
      */
     refine( lastPublicState, privateState ) {
-        privateState = privateState || this._state;
+        privateState = privateState || this.state;
         if ( !lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto )
             return privateState;
         else
@@ -260,7 +261,7 @@ export default class Store extends EventEmitter {
         cb         = force === true ? cb : force;
         var i      = 0,
             me     = this,
-            nState = state || this.refine(this.state, this._state);
+            nState = state || this.refine(this.datas, this.state);
 
 
         if ( !force && !this.shouldPropag(nState) ) {
@@ -268,7 +269,7 @@ export default class Store extends EventEmitter {
             return false;
         }
 
-        this.state = nState;
+        this.datas = nState;
         this.locks++;
         this.release(cb);
 
@@ -284,13 +285,13 @@ export default class Store extends EventEmitter {
         for ( var k in pState )
             if ( pState.hasOwnProperty(k)
                 && (
-                    pState[k] != this._state[k]
+                    pState[k] != this.state[k]
                     ||
-                    (this._state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+                    (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
                 change         = true;
                 this._revs[k]  = pState[k] && pState[k]._rev || true;
-                this._state[k] = pState[k];
+                this.state[k] = pState[k];
             }
         if ( change ) {
             this.stabilize(cb);
@@ -305,7 +306,7 @@ export default class Store extends EventEmitter {
      */
     replaceState( pState, cb ) {
         var i       = 0, me = this;
-        this._state = pState;
+        this.state = pState;
 
         this.stabilize(cb);
     }
@@ -321,7 +322,7 @@ export default class Store extends EventEmitter {
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
 
-        if ( previous&&isFunction(previous.then) )
+        if ( previous && isFunction(previous.then) )
             previous.then(this.release.bind(this));
 
         this.locks++;
@@ -336,25 +337,25 @@ export default class Store extends EventEmitter {
      * @returns {*}
      */
     release( cb ) {
-        var me = this, i = 0;
+        let i = 0;
 
-        if ( !--this.locks && this.state ) {
+        if ( !--this.locks && this.datas ) {
             this._complete = true;
 
 
             this._rev = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
-                    if ( !me.state ) return;
+                    if ( !this.datas ) return;
                     if ( typeof follower[0] == "function" ) {
-                        follower[0](me.state);
+                        follower[0](this.datas);
                     } else {
                         cb && i++;
                         follower[0].setState(
                             (follower[1]) ?
-                            {[follower[1]] : me.state}
+                            {[follower[1]] : this.datas}
                                 :
-                            me.state,
+                            this.datas,
                             cb && (
                                 () => (!(--i) && cb())
                             )
@@ -362,7 +363,7 @@ export default class Store extends EventEmitter {
                     }
                 });
 
-            me.emit('stable', this.state);
+            this.emit('stable', this.datas);
             !i && cb && cb()
         } else cb && this.then(cb)
         return this;
@@ -385,7 +386,7 @@ export default class Store extends EventEmitter {
         this.dead       = true;
         if ( this.name && this.context[this.name] === this )
             delete this.context[this.name];
-        this._revs = this.state = this._state = this.context = null;
+        this._revs = this.datas = this.state = this.context = null;
         this.removeAllListeners();
     }
 }

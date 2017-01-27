@@ -135,7 +135,7 @@ var Store = function (_EventEmitter) {
             context[name] = _this;
         }
 
-        _this._state = {};
+        _this.state = {};
         _this._watchs = watchs;
         _this.name = name;
         _this.context = context;
@@ -192,11 +192,11 @@ var Store = function (_EventEmitter) {
         key: 'bind',
         value: function bind(obj, key) {
             this._followers.push([obj, key]);
-            if (this.state && this._stable) {
+            if (this.datas && this._stable) {
                 if (typeof obj != "function") {
-                    if (key) obj.setState(_defineProperty({}, key, this.state));else obj.setState(this.state);
+                    if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
                 } else {
-                    obj(this.state);
+                    obj(this.datas);
                 }
             }
         }
@@ -224,7 +224,7 @@ var Store = function (_EventEmitter) {
         value: function shouldPropag(ns) {
             var _static = this.constructor,
                 r,
-                cState = this.state;
+                cState = this.datas;
 
             // if ( !cState )
             //     return true;
@@ -251,7 +251,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'refine',
         value: function refine(lastPublicState, privateState) {
-            privateState = privateState || this._state;
+            privateState = privateState || this.state;
             if (!lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto) return privateState;else return _extends({}, lastPublicState, privateState);
         }
 
@@ -301,14 +301,14 @@ var Store = function (_EventEmitter) {
             cb = force === true ? cb : force;
             var i = 0,
                 me = this,
-                nState = state || this.refine(this.state, this._state);
+                nState = state || this.refine(this.datas, this.state);
 
             if (!force && !this.shouldPropag(nState)) {
                 cb && cb();
                 return false;
             }
 
-            this.state = nState;
+            this.datas = nState;
             this.locks++;
             this.release(cb);
         }
@@ -326,11 +326,11 @@ var Store = function (_EventEmitter) {
                 me = this,
                 change;
             for (var k in pState) {
-                if (pState.hasOwnProperty(k) && (pState[k] != this._state[k] || this._state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
+                if (pState.hasOwnProperty(k) && (pState[k] != this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
                 )) {
                     change = true;
                     this._revs[k] = pState[k] && pState[k]._rev || true;
-                    this._state[k] = pState[k];
+                    this.state[k] = pState[k];
                 }
             }if (change) {
                 this.stabilize(cb);
@@ -349,7 +349,7 @@ var Store = function (_EventEmitter) {
         value: function replaceState(pState, cb) {
             var i = 0,
                 me = this;
-            this._state = pState;
+            this.state = pState;
 
             this.stabilize(cb);
         }
@@ -383,26 +383,27 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'release',
         value: function release(cb) {
-            var me = this,
-                i = 0;
+            var _this3 = this;
 
-            if (! --this.locks && this.state) {
+            var i = 0;
+
+            if (! --this.locks && this.datas) {
                 this._complete = true;
 
                 this._rev = 1 + (this._rev + 1) % 1000000; //
                 if (this._followers.length) this._followers.forEach(function (follower) {
-                    if (!me.state) return;
+                    if (!_this3.datas) return;
                     if (typeof follower[0] == "function") {
-                        follower[0](me.state);
+                        follower[0](_this3.datas);
                     } else {
                         cb && i++;
-                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], me.state) : me.state, cb && function () {
+                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this3.datas) : _this3.datas, cb && function () {
                             return ! --i && cb();
                         });
                     }
                 });
 
-                me.emit('stable', this.state);
+                this.emit('stable', this.datas);
                 !i && cb && cb();
             } else cb && this.then(cb);
             return this;
@@ -420,7 +421,7 @@ var Store = function (_EventEmitter) {
             this._followers = null;
             this.dead = true;
             if (this.name && this.context[this.name] === this) delete this.context[this.name];
-            this._revs = this.state = this._state = this.context = null;
+            this._revs = this.datas = this.state = this.context = null;
             this.removeAllListeners();
         }
     }]);

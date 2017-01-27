@@ -1,4 +1,4 @@
-# Caipi rescope
+# Caipi Rescope
 
 Scalable, 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
 
@@ -7,6 +7,13 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 - Redux alternative
 - ES6/7 class
 - Inherit node EventEmitter api
+- Synchrone Init
+- Flexible Async management
+- Lazy instantiation
+- Compatible webpack & nodejs
+- etc..
+
+## Executable example [here](src/example) 
 
 ## Example store
 
@@ -52,6 +59,7 @@ export default class Store extends EventEmitter {
     
     static staticContext  = {};// default global stores context
     static defaultMaxListeners = 20;
+
 
     /**
      * Map all nammed stores in {keys} to the {object}'s state

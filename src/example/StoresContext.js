@@ -13,7 +13,7 @@ let MyStoreContext = {
     },
     session     : class session extends Store {
 
-        state = {
+        datas = {
             currentUserId : "MrNice"
         };
 
@@ -52,7 +52,6 @@ let MyStoreContext = {
     },
     userEvents  : class userEvents extends Store {
         static use = ["currentUser"];// list of source stores id
-        static follow = ["currentUser"];// keys for the default shouldPropag fn
 
         shouldPropag( newState ) {
             return !!newState.userId;
@@ -98,4 +97,4 @@ let MyStoreContext = {
 };
 
 
-export default ()=>({...MyStoreContext});
+export default () => ({...MyStoreContext});

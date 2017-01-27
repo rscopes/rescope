@@ -12,19 +12,17 @@ class App extends React.Component {
         ReactDom.render(<App/>, node);
     }
 
+    state = {};
 
-    constructor( props ) {
-        super(...arguments);
-        this.state = {};
-
-        // using static Rescope.map fn
-        // this.stores = {};// stores refs are automaticly added in the store hashmap if .stores exist
-        // Rescope.map(this, ["status", "session"])
-
-        // or using a dedicated store instance
+    componentWillMount() {
+        // init using a dedicated store instance
         this._store = new Store(["status", "session"]);
         this._store.bind(this);
         this.stores = this._store.stores;
+
+        // or using static Store.map fn
+        // this.stores = {};// stores refs are automaticly added in the store hashmap if .stores exist
+        // Store.map(this, ["status", "session"])
     }
 
     render() {
@@ -35,12 +33,12 @@ class App extends React.Component {
 
                 <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
                     <b><u><span
-                        onClick={() => session.setState({currentUserId : 'MissTick'})}>MissTick events</span></u></b>
+                        onClick={() => session.setState({currentUserId : 'MissTick'})}>MissTick events</span></u></b>&nbsp;&nbsp;
                     <b><u><span
                         onClick={() => session.setState({currentUserId : 'MrNice'})}>MrNice events</span></u></b>
                 </div>
                 <pre>
-                {this.state.status && JSON.stringify(this.state.status, null, 2)}
+                  {this.state.status && JSON.stringify(this.state.status, null, 2)}
                 </pre>
                 <NewsListComp/>
 

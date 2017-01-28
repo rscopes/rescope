@@ -105,6 +105,8 @@ var Store = function (_EventEmitter) {
          * Constructor, will build a rescope store
          *
          * (context, keys, name)
+         * (keys, name)
+         * (keys)
          * (context, name)
          * (context)
          *
@@ -148,7 +150,10 @@ var Store = function (_EventEmitter) {
             // if there initial watchs anyway
             _this.pull(_this._watchs);
         }
-
+        if (_this.state && _this.datas == undefined) {
+            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+        }
+        _this._stable = _this.datas !== undefined;
         return _this;
     }
 
@@ -210,6 +215,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'then',
         value: function then(cb) {
+            if (this._stable) return cb(this.datas);
             this.once('stable', cb);
         }
 
@@ -273,7 +279,7 @@ var Store = function (_EventEmitter) {
 
             this._stabilizer = setTimeout(this.push.bind(this, null, function () {
                 //@todo
-                me._stable = true;
+                // me._stable       = true;
                 _this2._stabilizer = null;
                 // this.release();
             }));
@@ -291,9 +297,11 @@ var Store = function (_EventEmitter) {
 
             Store.map(this, stores, this.context, origin);
             if (doWait) {
+                this.wait();
                 stores.forEach(function (s) {
                     return _this3.context[s] && _this3.wait(_this3.context[s]);
                 });
+                this.release();
             }
         }
 
@@ -375,9 +383,12 @@ var Store = function (_EventEmitter) {
             if (typeof previous == "number") return this.locks += previous;
             if (isArray(previous)) return previous.map(this.wait.bind(this));
 
-            if (previous && isFunction(previous.then)) previous.then(this.release.bind(this));
-
+            this._stable = false;
             this.locks++;
+            if (previous && isFunction(previous.then)) {
+                previous;
+                previous.then(this.release.bind(this, null));
+            }
             return this;
         }
 
@@ -397,7 +408,7 @@ var Store = function (_EventEmitter) {
             var i = 0;
 
             if (! --this.locks && this.datas) {
-                this._complete = true;
+                this._stable = true;
 
                 this._rev = 1 + (this._rev + 1) % 1000000; //
                 if (this._followers.length) this._followers.forEach(function (follower) {

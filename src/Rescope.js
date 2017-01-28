@@ -2,7 +2,7 @@ import Store from "./Store";
 
 let Rescope_factory = function Rescope_factory( scope ) {
         return function Rescope( ...argz ) {
-            if ( this.constructor === Rescope )// using new
+            if ( this && this.constructor === Rescope )// using new
             {
                 let _Rescope      = Rescope_factory(argz[0]);
                 _Rescope.Store    = class ContextualStore extends Store {

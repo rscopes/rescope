@@ -21631,7 +21631,7 @@
 	            argz[_key] = arguments[_key];
 	        }
 	
-	        if (this.constructor === Rescope) // using new
+	        if (this && this.constructor === Rescope) // using new
 	            {
 	                var _Rescope = Rescope_factory(argz[0]);
 	                _Rescope.Store = function (_Store) {

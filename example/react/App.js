@@ -70,7 +70,8 @@
 	
 	// import Rescope, {Store} from "../../Rescope";
 	var ReactDom = __webpack_require__(33),
-	    Store = __webpack_require__(179).Store,
+	    Rescope = __webpack_require__(179),
+	    Store = Rescope.Store,
 	    NewsListComp = __webpack_require__(185),
 	    StoresContext = __webpack_require__(186);
 	
@@ -168,7 +169,9 @@
 	}(_react2.default.Component);
 	
 	App.renderTo = function (node) {
-	    ReactDom.render(_react2.default.createElement(App, null), node);
+	    Rescope.dispatch(function (err, state, context) {
+	        ReactDom.render(_react2.default.createElement(App, null), node);
+	    });
 	};
 	
 	window.App = App;
@@ -21607,9 +21610,8 @@
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
-	exports.Store = undefined;
 	
 	var _Store2 = __webpack_require__(180);
 	
@@ -21617,7 +21619,66 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	exports.Store = _Store3.default;
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Rescope_factory = function Rescope_factory(scope) {
+	    return function Rescope() {
+	        for (var _len = arguments.length, argz = Array(_len), _key = 0; _key < _len; _key++) {
+	            argz[_key] = arguments[_key];
+	        }
+	
+	        if (this.constructor === Rescope) // using new
+	            {
+	                var _Rescope = Rescope_factory(argz[0]);
+	                _Rescope.Store = function (_Store) {
+	                    _inherits(ContextualStore, _Store);
+	
+	                    function ContextualStore() {
+	                        var _ref;
+	
+	                        _classCallCheck(this, ContextualStore);
+	
+	                        return _possibleConstructorReturn(this, (_ref = ContextualStore.__proto__ || Object.getPrototypeOf(ContextualStore)).call.apply(_ref, [this, argz[0]].concat(Array.prototype.slice.call(arguments))));
+	                    }
+	
+	                    return ContextualStore;
+	                }(_Store3.default);
+	                _Rescope.dispatch = dispatch.bind(_Rescope, argz[0]);
+	                _Rescope.context = argz[0] || _Store3.default.staticContext;
+	                return _Rescope;
+	            } else {
+	            return _Store3.default.map(argz[0], argz[1], scope);
+	        }
+	    };
+	},
+	    dispatch = function dispatch(context, cb) {
+	    context = context || _Store3.default.staticContext;
+	    var stores = Object.keys(context);
+	    if (!stores.length) return cb(null, context);
+	    var mountAllStore = new _Store3.default(context);
+	    mountAllStore.pull(stores, true);
+	    mountAllStore.then(function (state) {
+	        return cb(null, state, context);
+	    });
+	},
+	    Rescope = Rescope_factory(null);
+	
+	Rescope.Store = _Store3.default;
+	Rescope.dispatch = function (cb) {
+	    return dispatch(_Store3.default.staticContext, cb);
+	};
+	Rescope.context = _Store3.default.staticContext;
+	
+	if (typeof window != 'undefined') {
+	    window.Rescope = Rescope;
+	}
+	
+	exports.default = Rescope;
+	module.exports = exports["default"];
 
 /***/ },
 /* 180 */
@@ -21689,7 +21750,7 @@
 	                    if (isFunction(context[key[0]])) {
 	                        context[key[0]] = new context[key[0]](context);
 	                        if (context[key[0]].constructor.use) {
-	                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
+	                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
 	                        }
 	                    }
 	                    if (!context[key[0]]) {
@@ -21733,7 +21794,7 @@
 	         * (context, name)
 	         * (context)
 	         *
-	         * @param context {object} context where to find the other stores
+	         * @param context {object} context where to find the other stores (default : static staticContext )
 	         * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
 	         */
 	        // overridable list of source stores
@@ -21773,6 +21834,10 @@
 	            // if there initial watchs anyway
 	            _this.pull(_this._watchs);
 	        }
+	        if (_this.state && _this.datas == undefined) {
+	            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+	        }
+	        _this._stable = _this.datas !== undefined;
 	
 	        return _this;
 	    }
@@ -21835,6 +21900,7 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
+	            if (this._stable) return cb(this.datas);
 	            this.once('stable', cb);
 	        }
 	
@@ -21898,7 +21964,7 @@
 	
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
-	                me._stable = true;
+	                // me._stable       = true;
 	                _this2._stabilizer = null;
 	                // this.release();
 	            }));
@@ -21911,8 +21977,17 @@
 	
 	    }, {
 	        key: 'pull',
-	        value: function pull(stores, origin) {
-	            return Store.map(this, stores, this.context, origin);
+	        value: function pull(stores, doWait, origin) {
+	            var _this3 = this;
+	
+	            Store.map(this, stores, this.context, origin);
+	            if (doWait) {
+	                this.wait();
+	                stores.forEach(function (s) {
+	                    return _this3.context[s] && _this3.wait(_this3.context[s]);
+	                });
+	                this.release();
+	            }
 	        }
 	
 	        /**
@@ -21993,9 +22068,12 @@
 	            if (typeof previous == "number") return this.locks += previous;
 	            if (isArray(previous)) return previous.map(this.wait.bind(this));
 	
-	            if (previous && isFunction(previous.then)) previous.then(this.release.bind(this));
-	
+	            this._stable = false;
 	            this.locks++;
+	            if (previous && isFunction(previous.then)) {
+	                previous;
+	                previous.then(this.release.bind(this, null));
+	            }
 	            return this;
 	        }
 	
@@ -22010,21 +22088,21 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            var i = 0;
 	
 	            if (! --this.locks && this.datas) {
-	                this._complete = true;
+	                this._stable = true;
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this3.datas) return;
+	                    if (!_this4.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this3.datas);
+	                        follower[0](_this4.datas);
 	                    } else {
 	                        cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this3.datas) : _this3.datas, cb && function () {
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this4.datas) : _this4.datas, cb && function () {
 	                            return ! --i && cb();
 	                        });
 	                    }
@@ -22560,11 +22638,7 @@
 	                                                      */
 	
 	
-	var _Store5 = __webpack_require__(180);
-	
-	var _Store6 = _interopRequireDefault(_Store5);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _Rescope = __webpack_require__(179);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -22585,7 +22659,7 @@
 	        }
 	
 	        return status;
-	    }(_Store6.default), _class.use = ["session"], _temp),
+	    }(_Rescope.Store), _class.use = ["session"], _temp),
 	    session: function (_Store2) {
 	        _inherits(session, _Store2);
 	
@@ -22606,7 +22680,7 @@
 	        }
 	
 	        return session;
-	    }(_Store6.default),
+	    }(_Rescope.Store),
 	    currentUser: (_temp3 = _class3 = function (_Store3) {
 	        _inherits(currentUser, _Store3);
 	
@@ -22620,10 +22694,10 @@
 	            key: "refine",
 	            // list of source stores id
 	
-	            value: function refine(datas, state, changes) {
+	            value: function refine(datas, newState, changes) {
 	                var _this4 = this;
 	
-	                var NewUserId = state.session && state.session.currentUserId,
+	                var NewUserId = newState.session && newState.session.currentUserId,
 	                    LastUserId = datas && datas._id;
 	
 	                console.info("currentUser state updated : ", changes);
@@ -22649,7 +22723,7 @@
 	        }]);
 	
 	        return currentUser;
-	    }(_Store6.default), _class3.use = ["session"], _temp3),
+	    }(_Rescope.Store), _class3.use = ["session"], _temp3),
 	    userEvents: (_temp4 = _class4 = function (_Store4) {
 	        _inherits(userEvents, _Store4);
 	
@@ -22668,11 +22742,11 @@
 	            }
 	        }, {
 	            key: "refine",
-	            value: function refine(datas, state, changes) {
+	            value: function refine(datas, newState, changes) {
 	                var _this6 = this;
 	
-	                var nUserId = state.currentUser._id;
-	                var cUserId = datas && datas.userId;
+	                var nUserId = newState.currentUser && newState.currentUser._id,
+	                    cUserId = datas && datas.userId;
 	
 	                if (nUserId != cUserId) {
 	                    this.wait(); // do some async
@@ -22700,7 +22774,7 @@
 	        }]);
 	
 	        return userEvents;
-	    }(_Store6.default), _class4.use = ["currentUser"], _temp4)
+	    }(_Rescope.Store), _class4.use = ["currentUser"], _temp4)
 	};
 	
 	exports.default = function () {

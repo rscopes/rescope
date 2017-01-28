@@ -4,7 +4,7 @@
  * Date: 25/01/2017
  * Time: 11:08
  */
-import Store from "../../Store";
+import Store from "../../Rescope";
 import StoreContext from "../StoresContext";
 function NewsListComp( target = document.createElement('div') ) {
 
@@ -26,7 +26,6 @@ function NewsListComp( target = document.createElement('div') ) {
     this.node     = target;
 }
 
-window.Store = Store;
 window.StoreContext = StoreContext;
 window.NewsListComp = NewsListComp;
 export default NewsListComp;

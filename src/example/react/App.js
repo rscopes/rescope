@@ -1,7 +1,8 @@
 import React from "react";
 // import Rescope, {Store} from "../../Rescope";
 let ReactDom      = require('react-dom'),
-    Store         = require('../../Rescope').Store,
+    Rescope       = require('../../Rescope'),
+    Store         = Rescope.Store,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
@@ -9,7 +10,12 @@ Store.staticContext = StoresContext();
 
 class App extends React.Component {
     static renderTo = ( node ) => {
-        ReactDom.render(<App/>, node);
+        Rescope.dispatch(
+            (err, state, context)=>{
+                ReactDom.render(<App/>, node);
+            }
+        )
+
     }
 
     state = {};
@@ -33,7 +39,8 @@ class App extends React.Component {
 
                 <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
                     <b><u><span
-                        onClick={() => session.setState({currentUserId : 'MissTick'})}>MissTick events</span></u></b>&nbsp;&nbsp;
+                        onClick={() => session.setState(
+                            {currentUserId : 'MissTick'})}>MissTick events</span></u></b>&nbsp;&nbsp;
                     <b><u><span
                         onClick={() => session.setState({currentUserId : 'MrNice'})}>MrNice events</span></u></b>
                 </div>

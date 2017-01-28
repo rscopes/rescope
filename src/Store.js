@@ -46,7 +46,7 @@ export default class Store extends EventEmitter {
                     if ( isFunction(context[key[0]]) ) {
                         context[key[0]] = new context[key[0]](context);
                         if ( context[key[0]].constructor.use ) {
-                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
+                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
                         }
                     }
                     if ( !context[key[0]] ) {
@@ -93,10 +93,12 @@ export default class Store extends EventEmitter {
      * Constructor, will build a rescope store
      *
      * (context, keys, name)
+     * (keys, name)
+     * (keys)
      * (context, name)
      * (context)
      *
-     * @param context {object} context where to find the other stores
+     * @param context {object} context where to find the other stores (default : static staticContext )
      * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     constructor() {
@@ -128,7 +130,10 @@ export default class Store extends EventEmitter {
         if ( !!this._watchs ) {// if there initial watchs anyway
             this.pull(this._watchs);
         }
-
+        if ( this.state && this.datas == undefined ) {
+            this.datas = this.refine(this.datas, this.state, this.state);
+        }
+        this._stable = this.datas !== undefined;
     }
 
     /**
@@ -177,6 +182,8 @@ export default class Store extends EventEmitter {
      * @param key {string} optional key where to map the public state
      */
     then( cb ) {
+        if ( this._stable )
+            return cb(this.datas);
         this.once('stable', cb);
     }
 
@@ -237,7 +244,7 @@ export default class Store extends EventEmitter {
                 this,
                 null,
                 () => {//@todo
-                    me._stable       = true;
+                    // me._stable       = true;
                     this._stabilizer = null;
                     // this.release();
                 }
@@ -249,8 +256,13 @@ export default class Store extends EventEmitter {
      * Pull stores in the private state
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
-    pull( stores, origin ) {
-        return Store.map(this, stores, this.context, origin);
+    pull( stores, doWait, origin ) {
+        Store.map(this, stores, this.context, origin);
+        if ( doWait ) {
+            this.wait();
+            stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]))
+            this.release();
+        }
     }
 
     /**
@@ -325,10 +337,13 @@ export default class Store extends EventEmitter {
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
 
-        if ( previous && isFunction(previous.then) )
-            previous.then(this.release.bind(this));
 
+        this._stable = false;
         this.locks++;
+        if ( previous && isFunction(previous.then) ) {
+            previous
+            previous.then(this.release.bind(this, null));
+        }
         return this;
     }
 
@@ -343,7 +358,7 @@ export default class Store extends EventEmitter {
         let i = 0;
 
         if ( !--this.locks && this.datas ) {
-            this._complete = true;
+            this._stable = true;
 
 
             this._rev = 1 + (this._rev + 1) % 1000000;//

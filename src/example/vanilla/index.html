@@ -12,21 +12,24 @@
     <b><u><span onclick="context.session.setState({currentUserId:'MissTick'})">MissTick events</span></u></b>
     <b><u><span onclick="context.session.setState({currentUserId:'MrNice'})">MrNice events</span></u></b>
 </div>
-<div id="status"></div>
+<div id="status">dispatching...</div>
 <div id="events"></div>
 <script>
     var context  = window.context = new StoreContext(),
-        NewsList = new NewsListComp(document.getElementById("events"));
+        NewsList = new NewsListComp(document.getElementById("events")),
+        rescope = new Rescope(context);
+    rescope.dispatch(
+        function(err, state, context){
+            context.status.bind(
+                ( datas ) => {
+                    document.getElementById("status").innerHTML =
+                        JSON.stringify(datas, null, 2).replace(/\n/ig, '<br/>');
+                }
+            );
 
-    (new Store(context, ["status"])).on(
-        "stable",
-        ( state ) => {
-            document.getElementById("status").innerHTML =
-                JSON.stringify(state.status, null, 2).replace(/\n/ig, '<br/>');
+            context.userEvents.bind(NewsList, 'userEvents');
         }
     );
-
-    (new Store(context, ["userEvents"])).bind(NewsList);
 </script>
 </body>
 </html>

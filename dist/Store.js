@@ -64,7 +64,7 @@ var Store = function (_EventEmitter) {
                     if (isFunction(context[key[0]])) {
                         context[key[0]] = new context[key[0]](context);
                         if (context[key[0]].constructor.use) {
-                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
+                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
                         }
                     }
                     if (!context[key[0]]) {
@@ -108,7 +108,7 @@ var Store = function (_EventEmitter) {
          * (context, name)
          * (context)
          *
-         * @param context {object} context where to find the other stores
+         * @param context {object} context where to find the other stores (default : static staticContext )
          * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
          */
         // overridable list of source stores
@@ -286,8 +286,15 @@ var Store = function (_EventEmitter) {
 
     }, {
         key: 'pull',
-        value: function pull(stores, origin) {
-            return Store.map(this, stores, this.context, origin);
+        value: function pull(stores, doWait, origin) {
+            var _this3 = this;
+
+            Store.map(this, stores, this.context, origin);
+            if (doWait) {
+                stores.forEach(function (s) {
+                    return _this3.context[s] && _this3.wait(_this3.context[s]);
+                });
+            }
         }
 
         /**
@@ -385,7 +392,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'release',
         value: function release(cb) {
-            var _this3 = this;
+            var _this4 = this;
 
             var i = 0;
 
@@ -394,12 +401,12 @@ var Store = function (_EventEmitter) {
 
                 this._rev = 1 + (this._rev + 1) % 1000000; //
                 if (this._followers.length) this._followers.forEach(function (follower) {
-                    if (!_this3.datas) return;
+                    if (!_this4.datas) return;
                     if (typeof follower[0] == "function") {
-                        follower[0](_this3.datas);
+                        follower[0](_this4.datas);
                     } else {
                         cb && i++;
-                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this3.datas) : _this3.datas, cb && function () {
+                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this4.datas) : _this4.datas, cb && function () {
                             return ! --i && cb();
                         });
                     }

@@ -2,6 +2,33 @@
 
 Scalable, 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
 
+## Caipi What ?
+
+ReScope is a flexible and easy to use stores system.
+
+ReScope Store use a react like "state" property & setState setter.
+
+Mechanic is simple:
+ Each Store receive a state containing some key or raw datas,
+   and it maintain \& propag the corresponding datas.   
+
+ReScope provide easy preloading, datas binding & async management.
+
+## How it work
+
+Say we define some stores :
+ - currentUser job is to receive an userId and propag the corresponding UserRecord
+ - currentTodo job is to receive an UserRecord and propag the corresponding user TodoList
+ - selectedTodo receive TodoList and push a TodoList[0] with some data deps
+ - todoStats receive TodoList & some geoloc info and then push a somme generated stats
+etc...
+
+So updating userId like this :
+```jsx
+currentUser.setState({_id:'theUserId'})
+```
+Will chain update active stores in the context and finally update the corresponding UI components.
+
 ## What else ?
 
 - Redux alternative
@@ -13,45 +40,36 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 - Compatible webpack & nodejs
 - etc..
 
-## Executable example [here](src/example) 
+## Executable examples [here](src/example) 
 
 \*: The Store's context is common to the vanilla & react example
 
-## Example store
+## Theoric example :
 
 ``` jsx
 
-import {Store} from "rescope";
+import Rescope from "rescope";
 
-// or
-// let Store = require('rescope').Store
+let pageContext = {/* ... some store definitions *}
 
-export default class MyStore extends Store {
-    static use      = [];// list of source stores id
-    static follow   = ["someKey"];// keys for the default shouldPropag fn
-    
-    datas = {} // initial synchrone datas
-    state = {} // initial state
-    
-    /**
-     * Overridable method to know if a state change should be propag to the listening stores & components
-     * If static follow is defined, super.shouldPropag will return true if any of the "follow" keys was updated 
-     * If not it will always return true
-     * @param newState
-     */
-    shouldPropag( newState )
+let MyPage = new Rescope({...pageContext}); 
 
-    /**
-     * Overridable reducer / remapper / refiner 
-     * If datas & newState are simple hash maps default refine will return {...datas, ...newState}
-     * if not it will return the last datas
-     * @param datas
-     * @param newState
-     * @param changes
-     * @returns {*} updated store datas
-     */
-    refine(datas, newState, changes) 
-}
+// you can do a full dispatch
+MyPage.dispatch(
+    (err, datas, context)=>{
+        // here all the store are stable
+    }
+);
+
+// or bind only specifics stores (will also instanciate & populate theirs dependecies) 
+(new MyPage.Store(["someStores:asAnyAlias"])
+    .once(
+     'stable',
+     (state)=>{
+       // state.asAnyAlias 
+     }
+    )
+
 ```
 
 

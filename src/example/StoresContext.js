@@ -4,7 +4,7 @@
  * Date: 03/12/2016
  * Time: 09:28
  */
-import Store from "../Store";
+import {Store} from "../Rescope";
 let stubs = require("./_stubs/datas");
 
 let MyStoreContext = {
@@ -61,8 +61,8 @@ let MyStoreContext = {
         }
 
         refine( datas, newState, changes ) {
-            let {_id:nUserId} = newState.currentUser,
-                cUserId       = datas && datas.userId;
+            let nUserId = newState.currentUser && newState.currentUser._id,
+                cUserId = datas && datas.userId;
 
 
             if ( nUserId != cUserId ) {

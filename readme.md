@@ -50,7 +50,7 @@ Will chain update active stores in the context and finally update the correspond
 
 import Rescope from "rescope";
 
-let pageContext = {/* ... some store definitions *}
+let pageContext = {/* ... some store definitions */}
 
 let MyPage = new Rescope({...pageContext}); 
 

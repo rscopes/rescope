@@ -40,7 +40,7 @@ Will chain update active stores in the context and finally update the correspond
 - Compatible webpack & nodejs
 - etc..
 
-## Executable examples [here](src/example) 
+## Real examples [here](src/example) 
 
 \*: The Store's context is common to the vanilla & react example
 

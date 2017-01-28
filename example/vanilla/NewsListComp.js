@@ -239,6 +239,8 @@
 	         * Constructor, will build a rescope store
 	         *
 	         * (context, keys, name)
+	         * (keys, name)
+	         * (keys)
 	         * (context, name)
 	         * (context)
 	         *
@@ -286,7 +288,6 @@
 	            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined;
-	
 	        return _this;
 	    }
 	

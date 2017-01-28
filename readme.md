@@ -4,15 +4,24 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 
 ## Caipi What ?
 
-ReScope is a flexible and easy to use stores system.
-
-ReScope Store use a react like "state" property & setState setter.
+ReScope is a flexible and easy to use Store system inspired by the ReactJS methods.
 
 Mechanic is simple:
- Each Store receive a state containing some key or raw datas,
-   and it maintain \& propag the corresponding datas.   
 
-ReScope provide easy preloading, datas binding & async management.
+Each Store receive a state containing some key or raw datas,
+   and maintain \& propag the corresponding datas.
+
+A Store could maintain :
+- the records matching some ids,
+- Fetched & converted datas ready for render
+- Page state & status
+- session, etc... 
+
+ReScope provide easy preloading, store dependencies, datas binding & async management.
+
+### Any flux actions ?
+
+Using ReScope you just have to set some key state values on the right Store.
 
 ## How it work
 
@@ -40,7 +49,7 @@ Will chain update active stores in the context and finally update the correspond
 - Compatible webpack & nodejs
 - etc..
 
-## Real examples [here](src/example) 
+## Working simple examples [here](src/example) 
 
 \*: The Store's context is common to the vanilla & react example
 
@@ -55,7 +64,7 @@ let pageContext = {/* ... some store definitions */}
 let MyPage = new Rescope({...pageContext}); 
 
 // you can do a full dispatch
-MyPage.dispatch(
+MyPage.fetch(
     (err, datas, context)=>{
         // here all the store are stable
     }

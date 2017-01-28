@@ -10,7 +10,7 @@ let Rescope_factory = function Rescope_factory( scope ) {
                         super(argz[0], ...arguments)
                     }
                 };
-                _Rescope.dispatch = dispatch.bind(_Rescope, argz[0]);
+                _Rescope.fetch = fetch.bind(_Rescope, argz[0]);
                 _Rescope.context  = argz[0] || Store.staticContext;
                 return _Rescope;
             } else {
@@ -18,7 +18,7 @@ let Rescope_factory = function Rescope_factory( scope ) {
             }
         }
     },
-    dispatch        = function dispatch( context, cb ) {
+    fetch        = function fetch( context, cb ) {
         context    = context || Store.staticContext;
         let stores = Object.keys(context);
         if ( !stores.length )
@@ -30,7 +30,7 @@ let Rescope_factory = function Rescope_factory( scope ) {
     Rescope         = Rescope_factory(null);
 
 Rescope.Store    = Store;
-Rescope.dispatch = ( cb ) => dispatch(Store.staticContext, cb);
+Rescope.fetch = ( cb ) => fetch(Store.staticContext, cb);
 Rescope.context  = Store.staticContext;
 
 if ( typeof window != 'undefined' ) {

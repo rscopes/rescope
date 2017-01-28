@@ -38,7 +38,7 @@ var Rescope_factory = function Rescope_factory(scope) {
 
                     return ContextualStore;
                 }(_Store3.default);
-                _Rescope.dispatch = dispatch.bind(_Rescope, argz[0]);
+                _Rescope.fetch = fetch.bind(_Rescope, argz[0]);
                 _Rescope.context = argz[0] || _Store3.default.staticContext;
                 return _Rescope;
             } else {
@@ -46,7 +46,7 @@ var Rescope_factory = function Rescope_factory(scope) {
         }
     };
 },
-    dispatch = function dispatch(context, cb) {
+    fetch = function fetch(context, cb) {
     context = context || _Store3.default.staticContext;
     var stores = Object.keys(context);
     if (!stores.length) return cb(null, context);
@@ -59,8 +59,8 @@ var Rescope_factory = function Rescope_factory(scope) {
     Rescope = Rescope_factory(null);
 
 Rescope.Store = _Store3.default;
-Rescope.dispatch = function (cb) {
-    return dispatch(_Store3.default.staticContext, cb);
+Rescope.fetch = function (cb) {
+    return fetch(_Store3.default.staticContext, cb);
 };
 Rescope.context = _Store3.default.staticContext;
 

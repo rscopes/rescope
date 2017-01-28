@@ -10,7 +10,7 @@ Store.staticContext = StoresContext();
 
 class App extends React.Component {
     static renderTo = ( node ) => {
-        Rescope.dispatch(
+        Rescope.fetch(
             (err, state, context)=>{
                 ReactDom.render(<App/>, node);
             }

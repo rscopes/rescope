@@ -12,18 +12,18 @@
     <b><u><span onclick="context.session.setState({currentUserId:'MissTick'})">MissTick events</span></u></b>
     <b><u><span onclick="context.session.setState({currentUserId:'MrNice'})">MrNice events</span></u></b>
 </div>
-<div id="status">dispatching...</div>
+<pre id="status">Preloading...</pre>
 <div id="events"></div>
 <script>
     var context  = window.context = new StoreContext(),
         NewsList = new NewsListComp(document.getElementById("events")),
         rescope = new Rescope(context);
-    rescope.dispatch(
+    rescope.preload(
         function(err, state, context){
             context.status.bind(
                 ( datas ) => {
                     document.getElementById("status").innerHTML =
-                        JSON.stringify(datas, null, 2).replace(/\n/ig, '<br/>');
+                        JSON.stringify(datas, null, 2);
                 }
             );
 

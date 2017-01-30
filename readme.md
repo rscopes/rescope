@@ -17,11 +17,16 @@ A Store could maintain :
 - Page state & status
 - session, etc... 
 
-ReScope provide easy preloading, store dependencies, datas binding & async management.
+ReScope allow easy contexts preloading, store dependencies, datas binding & async management.
 
 ### Any flux actions ?
 
-Using ReScope you just have to set some key state values on the right Store.
+Using ReScope you just have to set some key state values & helpers on the right Store.
+Ex : 
+(myContext)::session:login(user, pass)
+(myContext)::visibleTasks:setOffsetWindow(from, to)
+(myContext)::tasksStats:setState({mode:"%complete"})
+...
 
 ## How it work
 
@@ -49,7 +54,7 @@ Will chain update active stores in the context and finally update the correspond
 - Compatible webpack & nodejs
 - etc..
 
-## Working simple examples [here](src/example) 
+## Simple \& working examples [here](src/example) 
 
 \*: The Store's context is common to the vanilla & react example
 

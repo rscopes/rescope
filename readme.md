@@ -4,15 +4,15 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 
 ## ReScope What ?
 
-ReScope is a flexible and easy to use Store system inspired by ReactJS methods.
+ReScope is a flexible \& effective Store system inspired by ReactJS methods.
 
 Mechanic is simple:
-Stores take the key values & the others stores as entry states
+Stores take key values & the others stores as entry states
 Then, using a "refine" function they maintain the output data set needed for the templates or the followers stores/listeners
 
-Example they can maintain :
+By examples, stores can maintain :
 - the records matching some ids,
-- Fetched & converted datas ready for render
+- Processed & interpolated datas, ready for render
 - Page state & status
 - session, etc... 
 
@@ -32,10 +32,12 @@ Example they can maintain :
 
 Using ReScope you just have to set some key state values & helpers on the right Store.
 Ex : 
+```
 (myContext)::session:login(user, pass)
 (myContext)::visibleTasks:setOffsetWindow(from, to)
 (myContext)::tasksStats:setState({mode:"%complete"})
 ...
+```
 
 ## How it work
 

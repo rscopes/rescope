@@ -73,14 +73,14 @@ let MyPageContext = new Rescope({...pageContextStores}); // stores are lazy inst
 (new MyPageContext.Store("AnotherStore").setState({status:"yo!!!"})
 
 // you can do a full preload using default / restored key values 
-MyPage.fetch(
+MyPageContext.fetch(
     (err, datas, context)=>{
         // here all the store are stable
     }
 );
 
 // or bind only specifics stores and theirs dependencies 
-(new MyPage.Store(["TopRecipes", "News"])
+(new MyPageContext.Store(["TopRecipes", "News"])
     .once(
      'stable',
      (state)=>{

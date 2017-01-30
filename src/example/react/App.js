@@ -38,11 +38,11 @@ class App extends React.Component {
                 <h1>Really basic drafty rescope + react mini app example</h1>
 
                 <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
-                    <b><u><span
+                    <b><u><button
                         onClick={() => session.setState(
-                            {currentUserId : 'MissTick'})}>MissTick events</span></u></b>&nbsp;&nbsp;
-                    <b><u><span
-                        onClick={() => session.setState({currentUserId : 'MrNice'})}>MrNice events</span></u></b>
+                            {currentUserId : 'MissTick'})}>MissTick events</button></u></b>&nbsp;&nbsp;
+                    <b><u><button
+                        onClick={() => session.setState({currentUserId : 'MrNice'})}>MrNice events</button></u></b>
                 </div>
                 <pre>
                   {this.state.status && JSON.stringify(this.state.status, null, 2)}

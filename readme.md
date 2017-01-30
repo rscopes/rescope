@@ -2,24 +2,33 @@
 
 Scalable, 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
 
-## Caipi What ?
+## ReScope What ?
 
-ReScope is a flexible and easy to use Store system inspired by the ReactJS methods.
+ReScope is a flexible and easy to use Store system inspired by ReactJS methods.
 
 Mechanic is simple:
+Stores take the key values & the others stores as entry states
+Then, using a "refine" function they maintain the output data set needed for the templates or the followers stores/listeners
 
-Each Store receive a state containing some key or raw datas,
-   and maintain \& propag the corresponding datas.
-
-A Store could maintain :
+Example they can maintain :
 - the records matching some ids,
 - Fetched & converted datas ready for render
 - Page state & status
 - session, etc... 
 
-ReScope allow easy contexts preloading, store dependencies, datas binding & async management.
+### What else ?
 
-### Any flux actions ?
+- shouldPropag, wait & release fn allow async control of the propagation
+- Simple methods to contextualize, preload, hook & bind the stores
+- ES7 class
+- Inherit node EventEmitter api
+- Synchrone preload possible 
+- Flexible Async management
+- Lazy store instantiation
+- Compatible webpack & nodejs
+- etc..
+
+### Any actions ?
 
 Using ReScope you just have to set some key state values & helpers on the right Store.
 Ex : 
@@ -43,17 +52,6 @@ currentUser.setState({_id:'theUserId'})
 ```
 Will chain update active stores in the context and finally update the corresponding UI components.
 
-## What else ?
-
-- Redux alternative
-- ES6/7 class
-- Inherit node EventEmitter api
-- Synchrone Init
-- Flexible Async management
-- Lazy instantiation
-- Compatible webpack & nodejs
-- etc..
-
 ## Simple \& working examples [here](src/example) 
 
 \*: The Store's context is common to the vanilla & react example
@@ -64,30 +62,34 @@ Will chain update active stores in the context and finally update the correspond
 
 import Rescope from "rescope";
 
-let pageContext = {/* ... some store definitions */}
+let pageContextStores = {/* ... some initial store definitions */}
 
-let MyPage = new Rescope({...pageContext}); 
+let MyPageContext = new Rescope({...pageContextStores}); // stores are lazy instanciated on the context hashmap
 
-// you can do a full dispatch
+
+// you can add some store to this context 
+(new MyPageContext.Store("AnotherStore").setState({status:"yo!!!"})
+
+// you can do a full preload using default / restored key values 
 MyPage.fetch(
     (err, datas, context)=>{
         // here all the store are stable
     }
 );
 
-// or bind only specifics stores (will also instanciate & populate theirs dependecies) 
-(new MyPage.Store(["someStores:asAnyAlias"])
+// or bind only specifics stores and theirs dependencies 
+(new MyPage.Store(["TopRecipes", "News"])
     .once(
      'stable',
      (state)=>{
-       // state.asAnyAlias 
+       // state should contain TopRecipes & News
      }
     )
 
 ```
 
 
-## Prototype
+## Partial Prototype 
  
 ``` jsx
 export default class Store extends EventEmitter {
@@ -97,22 +99,15 @@ export default class Store extends EventEmitter {
     
     static staticContext  = {};// default global stores context
     static defaultMaxListeners = 20;
-
-
-    /**
-     * Map all nammed stores in {keys} to the {object}'s state
-     * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
-     * @static
-     * @param object {React.Component|Store|...} target state aware object
-     * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-     * @param context {object} context where to find the other stores
-     */
-    static map( component, keys, context ) 
     
     /**
      * Constructor, will build a rescope store
      *
-     * (context, keys, name)
+     * (context, name, keys, refine)
+     * (context, name, keys)
+     * (keys, name)
+     * (keys)
+     * (context, name, refine)
      * (context, name)
      * (context)
      *
@@ -162,12 +157,6 @@ export default class Store extends EventEmitter {
     refine(datas, newState, changes) 
 
     /**
-     * Debounce this store propagation ( & reducing )
-     * @param cb
-     */
-    stabilize( cb ) 
-
-    /**
      * Pull stores in the private state
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
@@ -186,14 +175,6 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     setState( pState, cb ) 
-
-    /**
-     * Replace the current private state & push it once the store is stable
-     * @param pState
-     * @param cb
-     */
-    replaceState( pState, cb ) 
-
 
     /**
      * Add a lock so the store will not propag it state untill release() is call (this.locks reach 0)

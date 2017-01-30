@@ -9,8 +9,8 @@
 <h1>Really basic drafty vanilla JS example</h1>
 
 <div style="border: solid 1px lightgrey;border-radius: 3px">
-    <b><u><span onclick="context.session.setState({currentUserId:'MissTick'})">MissTick events</span></u></b>
-    <b><u><span onclick="context.session.setState({currentUserId:'MrNice'})">MrNice events</span></u></b>
+    <b><u><button onclick="context.session.setState({currentUserId:'MissTick'})">MissTick events</button></u></b>
+    <b><u><button onclick="context.session.setState({currentUserId:'MrNice'})">MrNice events</button></u></b>
 </div>
 <pre id="status">Preloading...</pre>
 <div id="events"></div>
@@ -18,7 +18,12 @@
     var context  = window.context = new StoreContext(),
         NewsList = new NewsListComp(document.getElementById("events")),
         rescope = new Rescope(context);
-    rescope.preload(
+
+    // you can add/override some store to this context
+    (new rescope.Store("status")).setState({hooked:"this store was replaced"})
+
+
+    rescope.fetch(
         function(err, state, context){
             context.status.bind(
                 ( datas ) => {

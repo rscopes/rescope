@@ -92,9 +92,11 @@ export default class Store extends EventEmitter {
     /**
      * Constructor, will build a rescope store
      *
-     * (context, keys, name)
+     * (context, name, keys, refine)
+     * (context, name, keys)
      * (keys, name)
      * (keys)
+     * (context, name, refine)
      * (context, name)
      * (context)
      *
@@ -106,8 +108,10 @@ export default class Store extends EventEmitter {
         var argz    = [...arguments],
             _static = this.constructor,
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
+            name    = isString(argz[0]) ? argz[0] : _static.name,
             watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            name    = isString(argz[0]) ? argz[0] : _static.name;
+            refine  = isFunction(argz[0]) ? argz.shift() : null// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            ;
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];
@@ -127,9 +131,14 @@ export default class Store extends EventEmitter {
         this._revs      = {};
         this.stores     = {};
         this._followers = [];
+
+        if ( refine )
+            this.refine = refine;
+
         if ( !!this._watchs ) {// if there initial watchs anyway
             this.pull(this._watchs);
         }
+
         if ( this.state && this.datas == undefined ) {
             this.datas = this.refine(this.datas, this.state, this.state);
         }
@@ -221,6 +230,7 @@ export default class Store extends EventEmitter {
      */
     refine( datas, state, changes ) {
         state = state || this.state;
+
         if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
             return state;
         else

@@ -238,9 +238,11 @@
 	        /**
 	         * Constructor, will build a rescope store
 	         *
-	         * (context, keys, name)
+	         * (context, name, keys, refine)
+	         * (context, name, keys)
 	         * (keys, name)
 	         * (keys)
+	         * (context, name, refine)
 	         * (context, name)
 	         * (context)
 	         *
@@ -259,9 +261,11 @@
 	        var argz = [].concat(Array.prototype.slice.call(arguments)),
 	            _static = _this.constructor,
 	            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
+	            name = isString(argz[0]) ? argz[0] : _static.name,
 	            watchs = isArray(argz[0]) ? argz.shift() : [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        name = isString(argz[0]) ? argz[0] : _static.name;
+	        refine = isFunction(argz[0]) ? argz.shift() : null // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+	        ;
 	        _this.setMaxListeners(Store.defaultMaxListeners);
 	        _this.locks = 0;
 	        _this._onStabilize = [];
@@ -280,10 +284,14 @@
 	        _this._revs = {};
 	        _this.stores = {};
 	        _this._followers = [];
+	
+	        if (refine) _this.refine = refine;
+	
 	        if (!!_this._watchs) {
 	            // if there initial watchs anyway
 	            _this.pull(_this._watchs);
 	        }
+	
 	        if (_this.state && _this.datas == undefined) {
 	            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
@@ -392,6 +400,7 @@
 	        key: 'refine',
 	        value: function refine(datas, state, changes) {
 	            state = state || this.state;
+	
 	            if (!datas || datas.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, datas, state);
 	        }
 	

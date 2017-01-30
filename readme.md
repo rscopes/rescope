@@ -7,7 +7,7 @@ Scalable, 'state' based store for (but not limited to) ReactJS, with node EventE
 ReScope is a flexible \& effective Store system inspired by ReactJS methods.
 
 Mechanic is simple:
-Stores take key values & the others stores as entry states
+Stores take key values & the others stores as entry states<br>
 Then, using a "refine" function they maintain the output data set needed for the templates or the followers stores/listeners
 
 By examples, stores can maintain :
@@ -141,7 +141,7 @@ export default class Store extends EventEmitter {
     bind( obj, key ) 
 
     /**
-     * Overridable method to know if a state change should be propag to the listening stores & components
+     * Overridable method to know if a datas change should be propag to the listening stores & components
      * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated 
      * If not it will always return true
      */
@@ -159,20 +159,20 @@ export default class Store extends EventEmitter {
     refine(datas, newState, changes) 
 
     /**
-     * Pull stores in the private state
+     * Pull stores in the state
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores ) 
 
     /**
-     * Apply reduce/remap on the private state & push the state to the followers if this.locks == 0
+     * Apply refine on the state & push the resulting datas to the followers if this.locks == 0
      * @param datas=null
      * @param cb
      */
     push( datas, cb ) 
     
     /**
-     * Update the current private state & push it once the store is stable
+     * Update the current state & refine it once the store is stable
      * @param pState
      * @param cb
      */

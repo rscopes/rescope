@@ -26,6 +26,7 @@ By examples, stores can maintain :
 - Flexible Async management
 - Lazy store instantiation
 - Compatible webpack & nodejs
+- Another alternative to Redux & co
 - etc..
 
 ### Any actions ?

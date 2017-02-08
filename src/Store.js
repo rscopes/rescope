@@ -4,12 +4,13 @@
  * @todo : optims? bugs?
  */
 
-var isString     = require('isstring')
-    , isArray    = require('isarray')
-    , isFunction = require('isfunction')
+var isString       = require('isstring')
+    , isArray      = require('isarray')
+    , isFunction   = require('isfunction')
     ,
-    EventEmitter = require('events'),
-    objProto     = Object.getPrototypeOf({});
+    EventEmitter   = require('events'),
+    objProto       = Object.getPrototypeOf({}),
+    isSimpleObject = ( obj ) => (obj && obj.__proto__ !== objProto);
 
 
 export default class Store extends EventEmitter {
@@ -96,22 +97,24 @@ export default class Store extends EventEmitter {
      * (context, name, keys)
      * (keys, name)
      * (keys)
+     * (name)
      * (context, name, refine)
      * (context, name)
      * (context)
      *
-     * @param context {object} context where to find the other stores (default : static staticContext )
-     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+     * @optional context {object} context where to find the other stores (default : static staticContext )
+     * @optional keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     constructor() {
         super();
-        var argz    = [...arguments],
-            _static = this.constructor,
-            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            name    = isString(argz[0]) ? argz[0] : _static.name,
-            watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine  = isFunction(argz[0]) ? argz.shift() : null// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            ;
+        var argz        = [...arguments],
+            _static     = this.constructor,
+            context     = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
+            name        = isString(argz[0]) ? argz[0] : _static.name,
+            watchs      = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            refine      = isFunction(argz[0]) ? argz.shift() : null// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            , dataState = isSimpleObject(argz[0]) ? argz.shift() : null;
+
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];
@@ -139,9 +142,15 @@ export default class Store extends EventEmitter {
             this.pull(this._watchs);
         }
 
+        if ( dataState ) {// do restore
+            this._rev  = dataState._rev;
+            this.state = dataState.state;
+            this.datas = dataState.datas;
+        }
         if ( this.state && this.datas == undefined ) {
             this.datas = this.refine(this.datas, this.state, this.state);
         }
+
         this._stable = this.datas !== undefined;
     }
 
@@ -195,6 +204,23 @@ export default class Store extends EventEmitter {
             return cb(this.datas);
         this.once('stable', cb);
     }
+    //
+    // /**
+    //  *
+    //  * @param ref {string) (key)*((:|\.)key)*)*
+    //  * @param key {string} optional key where to map the public state
+    //  */
+    // get( ref, cb ) {
+    //     let path = ref.split(':').map(p => p.split('.')),
+    //         split0=0,
+    //         split1=0,
+    //         current;
+    //
+    //     do{
+    //         current = path[split0][split1];
+    //         if (path[split0])
+    //     }while(1)
+    // }
 
     /**
      * Overridable method to know if a state change should be propag to the listening stores & components

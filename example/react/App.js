@@ -21756,6 +21756,12 @@
 	                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
 	                        }
 	
+	                        if (context[key[0]].constructor.require) {
+	                            context[key[0]].constructor.require.forEach(function (store) {
+	                                return context[key[0]].wait(), context[store].once('stable', context[key[0]].release.bind(context[key[0]], null));
+	                            });
+	                        }
+	
 	                        if (context[key[0]].state) {
 	                            // do sync push after constructor
 	                            context[key[0]].push();
@@ -21824,14 +21830,13 @@
 	            name = isString(argz[0]) ? argz[0] : _static.name,
 	            watchs = isArray(argz[0]) ? argz.shift() : [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        refine = isFunction(argz[0]) ? argz.shift() : null // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        ;
+	        refine = isFunction(argz[0]) ? argz.shift() : null;
 	        _this.setMaxListeners(Store.defaultMaxListeners);
 	        _this.locks = 0;
 	        _this._onStabilize = [];
 	
 	        if (isString(argz[0])) {
-	            if (context[name]) console.warn("TorrentStore: Overwriting an existing static named store ( %s ) !!", name);
+	            if (context[name]) console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
 	            context[name] = _this;
 	        }
 	
@@ -21852,7 +21857,7 @@
 	            _this.pull(_this._watchs);
 	        }
 	
-	        if (_this.state && _this.datas == undefined) {
+	        if (_this.state && _this.datas === undefined) {
 	            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined;
@@ -21860,74 +21865,13 @@
 	    }
 	
 	    /**
-	     * get a store-key pair for Store::map
-	     * @param {string} name
-	     * @returns {{store: Store, name: *}}
+	     * Overridable method to know if a state change should be propag to the listening stores & components
+	     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
+	     * If not it will always return true
 	     */
 	
 	
 	    _createClass(Store, [{
-	        key: 'as',
-	        value: function as(name) {
-	            return { store: this, name: name };
-	        }
-	
-	        /**
-	         * Un bind this store off the given component-key
-	         * @param obj
-	         * @param key
-	         * @returns {Array.<*>}
-	         */
-	
-	    }, {
-	        key: 'unBind',
-	        value: function unBind(obj, key) {
-	            var followers = this._followers,
-	                i = this._followers.length;
-	            while (i--) {
-	                if (followers[i][0] == obj && followers[i][1] == key) return followers.splice(i, 1);
-	            }
-	        }
-	
-	        /**
-	         * Bind this store changes to the given component-key
-	         * @param obj {React.Component|Store|function)
-	         * @param key {string} optional key where to map the public state
-	         */
-	
-	    }, {
-	        key: 'bind',
-	        value: function bind(obj, key) {
-	            this._followers.push([obj, key]);
-	            if (this.datas && this._stable) {
-	                if (typeof obj != "function") {
-	                    if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
-	                } else {
-	                    obj(this.datas);
-	                }
-	            }
-	        }
-	
-	        /**
-	         * once('stable', cb)
-	         * @param obj {React.Component|Store|function)
-	         * @param key {string} optional key where to map the public state
-	         */
-	
-	    }, {
-	        key: 'then',
-	        value: function then(cb) {
-	            if (this._stable) return cb(this.datas);
-	            this.once('stable', cb);
-	        }
-	
-	        /**
-	         * Overridable method to know if a state change should be propag to the listening stores & components
-	         * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
-	         * If not it will always return true
-	         */
-	
-	    }, {
 	        key: 'shouldPropag',
 	        value: function shouldPropag(ns) {
 	            var _static = this.constructor,
@@ -22046,7 +21990,7 @@
 	                change,
 	                changes = this._changesSW = this._changesSW || {};
 	            for (var k in pState) {
-	                if (pState.hasOwnProperty(k) && (pState[k] != this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
+	                if (!this.state || pState.hasOwnProperty(k) && (pState[k] != this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
 	                )) {
 	                    change = true;
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
@@ -22075,6 +22019,71 @@
 	        }
 	
 	        /**
+	         * get a store-key pair for Store::map
+	         * @param {string} name
+	         * @returns {{store: Store, name: *}}
+	         */
+	
+	    }, {
+	        key: 'as',
+	        value: function as(name) {
+	            return { store: this, name: name };
+	        }
+	
+	        /**
+	         * Un bind this store off the given component-key
+	         * @param obj
+	         * @param key
+	         * @returns {Array.<*>}
+	         */
+	
+	    }, {
+	        key: 'unBind',
+	        value: function unBind(obj, key) {
+	            var followers = this._followers,
+	                i = this._followers.length;
+	            while (i--) {
+	                if (followers[i][0] == obj && followers[i][1] == key) return followers.splice(i, 1);
+	            }
+	        }
+	
+	        /**
+	         * Bind this store changes to the given component-key
+	         * @param obj {React.Component|Store|function)
+	         * @param key {string} optional key where to map the public state
+	         */
+	
+	    }, {
+	        key: 'bind',
+	        value: function bind(obj, key) {
+	            this._followers.push([obj, key]);
+	            if (this.datas && this._stable) {
+	                if (typeof obj != "function") {
+	                    if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
+	                } else {
+	                    obj(this.datas);
+	                }
+	            }
+	        }
+	
+	        /**
+	         * once('stable', cb)
+	         * @param obj {React.Component|Store|function)
+	         * @param key {string} optional key where to map the public state
+	         */
+	
+	    }, {
+	        key: 'then',
+	        value: function then(cb) {
+	            // if ( !isFunction(cb) && isFunction(cb.release) ) {
+	            //     this.once('stable', cb.release.bind(cb));
+	            //     return;
+	            // }
+	            if (this._stable) return cb(this.datas);
+	            this.once('stable', cb);
+	        }
+	
+	        /**
 	         * Add a lock so the store will not propag it state untill release() is call
 	         * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
 	         * @returns {TaskFlow}
@@ -22089,7 +22098,6 @@
 	            this._stable = false;
 	            this.locks++;
 	            if (previous && isFunction(previous.then)) {
-	                previous;
 	                previous.then(this.release.bind(this, null));
 	            }
 	            return this;
@@ -22692,7 +22700,7 @@
 	                args[_key] = arguments[_key];
 	            }
 	
-	            return _ret = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_ref = session.__proto__ || Object.getPrototypeOf(session)).call.apply(_ref, [this].concat(args))), _this2), _this2.datas = {
+	            return _ret = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_ref = session.__proto__ || Object.getPrototypeOf(session)).call.apply(_ref, [this].concat(args))), _this2), _this2.state = {
 	                currentUserId: "MrNice"
 	            }, _temp2), _possibleConstructorReturn(_this2, _ret);
 	        }

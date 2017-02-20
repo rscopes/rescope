@@ -180,6 +180,13 @@ export default class Store extends EventEmitter {
     setState( pState, cb ) 
 
     /**
+     * once('stable', cb)
+     * @param cb {function} then
+     * @returns {this}
+     */
+    then( cb )
+    
+    /**
      * Add a lock so the store will not propag it state untill release() is call (this.locks reach 0)
      * @param previous {Store|number|Array} Store to wait, releases to wait or array of stuff to wait
      * @returns {this}

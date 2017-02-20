@@ -51,7 +51,19 @@ export default class Store extends EventEmitter {
                             context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
                         }
 
-                        if (context[key[0]].state){// do sync push after constructor
+                        if ( context[key[0]].constructor.require ) {
+                            context[key[0]].constructor.require.forEach(
+                                store => (
+                                    context[key[0]].wait(),
+                                        context[store].once(
+                                            'stable',
+                                            context[key[0]].release.bind(context[key[0]], null)
+                                        )
+                                )
+                            );
+                        }
+
+                        if ( context[key[0]].state ) {// do sync push after constructor
                             context[key[0]].push();
                         }
                     }
@@ -116,7 +128,7 @@ export default class Store extends EventEmitter {
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
             name    = isString(argz[0]) ? argz[0] : _static.name,
             watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine  = isFunction(argz[0]) ? argz.shift() : null// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            refine  = isFunction(argz[0]) ? argz.shift() : null
             ;
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
@@ -124,7 +136,7 @@ export default class Store extends EventEmitter {
 
         if ( isString(argz[0]) ) {
             if ( context[name] )
-                console.warn("TorrentStore: Overwriting an existing static named store ( %s ) !!", name);
+                console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
             context[name] = this;
         }
 
@@ -145,61 +157,10 @@ export default class Store extends EventEmitter {
             this.pull(this._watchs);
         }
 
-        if ( this.state && this.datas == undefined ) {
+        if ( this.state && this.datas === undefined ) {
             this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;
-    }
-
-    /**
-     * get a store-key pair for Store::map
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    as( name ) {
-        return {store : this, name};
-    }
-
-    /**
-     * Un bind this store off the given component-key
-     * @param obj
-     * @param key
-     * @returns {Array.<*>}
-     */
-    unBind( obj, key ) {
-        var followers = this._followers,
-            i         = this._followers.length;
-        while (i--)
-            if ( followers[i][0] == obj && followers[i][1] == key )
-                return followers.splice(i, 1);
-    }
-
-    /**
-     * Bind this store changes to the given component-key
-     * @param obj {React.Component|Store|function)
-     * @param key {string} optional key where to map the public state
-     */
-    bind( obj, key ) {
-        this._followers.push([obj, key]);
-        if ( this.datas && this._stable ) {
-            if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({[key] : this.datas});
-                else obj.setState(this.datas);
-            } else {
-                obj(this.datas);
-            }
-        }
-    }
-
-    /**
-     * once('stable', cb)
-     * @param obj {React.Component|Store|function)
-     * @param key {string} optional key where to map the public state
-     */
-    then( cb ) {
-        if ( this._stable )
-            return cb(this.datas);
-        this.once('stable', cb);
     }
 
     /**
@@ -314,7 +275,7 @@ export default class Store extends EventEmitter {
         var i       = 0, change,
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
-            if ( pState.hasOwnProperty(k)
+            if ( !this.state || pState.hasOwnProperty(k)
                 && (
                     pState[k] != this.state[k]
                     ||
@@ -343,6 +304,57 @@ export default class Store extends EventEmitter {
     }
 
     /**
+     * get a store-key pair for Store::map
+     * @param {string} name
+     * @returns {{store: Store, name: *}}
+     */
+    as( name ) {
+        return {store : this, name};
+    }
+
+    /**
+     * Un bind this store off the given component-key
+     * @param obj
+     * @param key
+     * @returns {Array.<*>}
+     */
+    unBind( obj, key ) {
+        var followers = this._followers,
+            i         = this._followers.length;
+        while (i--)
+            if ( followers[i][0] == obj && followers[i][1] == key )
+                return followers.splice(i, 1);
+    }
+
+    /**
+     * Bind this store changes to the given component-key
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+    bind( obj, key ) {
+        this._followers.push([obj, key]);
+        if ( this.datas && this._stable ) {
+            if ( typeof obj != "function" ) {
+                if ( key ) obj.setState({[key] : this.datas});
+                else obj.setState(this.datas);
+            } else {
+                obj(this.datas);
+            }
+        }
+    }
+
+    /**
+     * once('stable', cb)
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+    then( cb ) {
+        if ( this._stable )
+            return cb(this.datas);
+        this.once('stable', cb);
+    }
+
+    /**
      * Add a lock so the store will not propag it state untill release() is call
      * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
      * @returns {TaskFlow}
@@ -357,7 +369,6 @@ export default class Store extends EventEmitter {
         this._stable = false;
         this.locks++;
         if ( previous && isFunction(previous.then) ) {
-            previous
             previous.then(this.release.bind(this, null));
         }
         return this;

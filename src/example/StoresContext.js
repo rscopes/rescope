@@ -13,7 +13,7 @@ let MyStoreContext = {
     },
     session     : class session extends Store {
 
-        datas = {
+        state = {
             currentUserId : "MrNice"
         };
 

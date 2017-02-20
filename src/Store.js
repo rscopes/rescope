@@ -122,7 +122,7 @@ export default class Store extends EventEmitter {
             context[name] = this;
         }
 
-        this.state      = {};
+        this.state      = this.state || {};
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;

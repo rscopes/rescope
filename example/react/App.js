@@ -21827,7 +21827,7 @@
 	            context[name] = _this;
 	        }
 	
-	        _this.state = {};
+	        _this.state = _this.state || {};
 	        _this._watchs = watchs;
 	        _this.name = name;
 	        _this.context = context;

@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "Scalable, 'state' based store alternative to Redux for (but not limited to) ReactJS",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/Rescope.js",
@@ -12,6 +12,7 @@
   "dependencies": {
     "events": "^1.1.1",
     "isarray": "0.0.1",
+    "isfunction": "0.0.6",
     "isstring": "^1.0.6"
   },
   "devDependencies": {
@@ -27,7 +28,6 @@
     "events": "^1.1.1",
     "file-loader": "^0.9.0",
     "isarray": "0.0.1",
-    "isfunction": "0.0.6",
     "isstring": "^1.0.7",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",

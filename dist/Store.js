@@ -61,10 +61,18 @@ var Store = function (_EventEmitter) {
                 } else if (isString(key)) {
                     key = key.split(':');
                     if (targetRevs[key[1] || key[0]]) return false; // no dbl binds
+
                     if (isFunction(context[key[0]])) {
+                        // instanciate store
                         context[key[0]] = new context[key[0]](context);
+
                         if (context[key[0]].constructor.use) {
                             context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
+                        }
+
+                        if (context[key[0]].state) {
+                            // do sync push after constructor
+                            context[key[0]].push();
                         }
                     }
                     if (!context[key[0]]) {
@@ -141,7 +149,7 @@ var Store = function (_EventEmitter) {
             context[name] = _this;
         }
 
-        _this.state = _this.state || {};
+        // this.state      = this.state || {};
         _this._watchs = watchs;
         _this.name = name;
         _this.context = context;

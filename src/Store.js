@@ -43,10 +43,16 @@ export default class Store extends EventEmitter {
                 } else if ( isString(key) ) {
                     key = key.split(':');
                     if ( targetRevs[key[1] || key[0]] ) return false;// no dbl binds
-                    if ( isFunction(context[key[0]]) ) {
+
+                    if ( isFunction(context[key[0]]) ) {// instanciate store
                         context[key[0]] = new context[key[0]](context);
+
                         if ( context[key[0]].constructor.use ) {
                             context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
+                        }
+
+                        if (context[key[0]].state){// do sync push after constructor
+                            context[key[0]].push();
                         }
                     }
                     if ( !context[key[0]] ) {
@@ -122,7 +128,7 @@ export default class Store extends EventEmitter {
             context[name] = this;
         }
 
-        this.state      = this.state || {};
+        // this.state      = this.state || {};
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;

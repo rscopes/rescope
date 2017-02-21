@@ -55,9 +55,8 @@ export default class Store extends EventEmitter {
                             context[key[0]].constructor.require.forEach(
                                 store => (
                                     context[key[0]].wait(),
-                                        context[store].once(
-                                            'stable',
-                                            context[key[0]].release.bind(context[key[0]], null)
+                                        context[store].then(
+                                            () => context[key[0]].release()
                                         )
                                 )
                             );
@@ -246,12 +245,12 @@ export default class Store extends EventEmitter {
      * Apply refine/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
-    push( state, force, cb ) {
+    push( datas, force, cb ) {
         cb            = force === true ? cb : force;
         var i         = 0,
             me        = this,
-            nextState = !state && {...this.state, ...this._changesSW},
-            nextDatas = state || this.refine(this.datas, nextState, this._changesSW);
+            nextState = !datas && {...this.state, ...this._changesSW},
+            nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
 
 
         if ( !force && !this.shouldPropag(nextDatas) ) {

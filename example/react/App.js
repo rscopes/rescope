@@ -21758,7 +21758,9 @@
 	
 	                        if (context[key[0]].constructor.require) {
 	                            context[key[0]].constructor.require.forEach(function (store) {
-	                                return context[key[0]].wait(), context[store].once('stable', context[key[0]].release.bind(context[key[0]], null));
+	                                return context[key[0]].wait(), context[store].then(function () {
+	                                    return context[key[0]].release();
+	                                });
 	                            });
 	                        }
 	
@@ -21959,12 +21961,12 @@
 	
 	    }, {
 	        key: 'push',
-	        value: function push(state, force, cb) {
+	        value: function push(datas, force, cb) {
 	            cb = force === true ? cb : force;
 	            var i = 0,
 	                me = this,
-	                nextState = !state && _extends({}, this.state, this._changesSW),
-	                nextDatas = state || this.refine(this.datas, nextState, this._changesSW);
+	                nextState = !datas && _extends({}, this.state, this._changesSW),
+	                nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
 	
 	            if (!force && !this.shouldPropag(nextDatas)) {
 	                cb && cb();
@@ -22075,10 +22077,6 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            // if ( !isFunction(cb) && isFunction(cb.release) ) {
-	            //     this.once('stable', cb.release.bind(cb));
-	            //     return;
-	            // }
 	            if (this._stable) return cb(this.datas);
 	            this.once('stable', cb);
 	        }

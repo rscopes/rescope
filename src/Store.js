@@ -17,7 +17,18 @@ export default class Store extends EventEmitter {
     static use                 = [];// overridable list of source stores
     static follow              = [];// overridable list of store that will allow push if updated
     static staticContext       = {};
+    static initialState        = undefined;// default state
     static defaultMaxListeners = 20;
+    static autokill            = false;// false or tm without followers
+
+    /**
+     * get a Builder-key pair for Store::map
+     * @param {string} name
+     * @returns {{store: Store, name: *}}
+     */
+    static as( name ) {
+        return {store : this, name};
+    }
 
     /**
      * Map all nammed stores in {keys} to the {object}'s state
@@ -37,33 +48,28 @@ export default class Store extends EventEmitter {
 
                 if ( key.store && key.name ) {
                     if ( targetRevs[key.name] ) return false;// no dbl binds
-                    key.store.bind(component, key.name);
-                    targetRevs[key.name]    = targetRevs[key.name] || true;
-                    targetContext[key.name] = targetContext[key.name] || key.store;
+                    if ( isFunction(key.store) ) {
+
+                        context[key.name] = new key.store(context);
+                        if ( context[key.name].constructor.use ) {
+                            context[key.name].pull(context[key.name].constructor.use, key.name);
+                        }
+
+                        context[key.name].bind(component, key.name);
+                        targetRevs[key.name]    = targetRevs[key.name] || true;
+                        targetContext[key.name] = targetContext[key.name] || context[key.name];
+                    } else {
+                        key.store.bind(component, key.name);
+                        targetRevs[key.name]    = targetRevs[key.name] || true;
+                        targetContext[key.name] = targetContext[key.name] || key.store;
+                    }
                 } else if ( isString(key) ) {
                     key = key.split(':');
                     if ( targetRevs[key[1] || key[0]] ) return false;// no dbl binds
-
-                    if ( isFunction(context[key[0]]) ) {// instanciate store
+                    if ( isFunction(context[key[0]]) ) {
                         context[key[0]] = new context[key[0]](context);
-
                         if ( context[key[0]].constructor.use ) {
-                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
-                        }
-
-                        if ( context[key[0]].constructor.require ) {
-                            context[key[0]].constructor.require.forEach(
-                                store => (
-                                    context[key[0]].wait(),
-                                        context[store].then(
-                                            () => context[key[0]].release()
-                                        )
-                                )
-                            );
-                        }
-
-                        if ( context[key[0]].state ) {// do sync push after constructor
-                            context[key[0]].push();
+                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
                         }
                     }
                     if ( !context[key[0]] ) {
@@ -74,6 +80,19 @@ export default class Store extends EventEmitter {
                     && context[key[0]].bind(component, key[1] || key[0]);
                     targetRevs[key[1] || key[0]]    = targetRevs[key[1] || key[0]] || true;
                     targetContext[key[1] || key[0]] = targetContext[key[1] || key[0]] || context[key[0]];
+                } else if ( isFunction(key) ) {
+                    let name = key.name || key.defaultName;
+                    if ( !name )
+                        return console.error("Not a named store item '" + key + "' in " + origin + ' !!');
+
+                    context[name] = new key(context);
+                    if ( context[name].constructor.use ) {
+                        context[name].pull(context[name].constructor.use, name);
+                    }
+
+                    context[name].bind(component, name);
+                    targetRevs[name]    = targetRevs[name] || true;
+                    targetContext[name] = targetContext[name] || context[name];
                 } else {
                     console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
                 }
@@ -128,7 +147,7 @@ export default class Store extends EventEmitter {
             name    = isString(argz[0]) ? argz[0] : _static.name,
             watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine  = isFunction(argz[0]) ? argz.shift() : null
-            ;
+        ;
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];
@@ -156,10 +175,11 @@ export default class Store extends EventEmitter {
             this.pull(this._watchs);
         }
 
-        if ( this.state && this.datas === undefined ) {
+        if ( _static.initialState && this.datas === undefined ) {// sync refine
+            this.state = {..._static.initialState};
             this.datas = this.refine(this.datas, this.state, this.state);
         }
-        this._stable = this.datas !== undefined;
+        this._stable = this.datas !== undefined;// stable if it have initial result datas
     }
 
     /**

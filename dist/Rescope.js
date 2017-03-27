@@ -46,6 +46,7 @@ var Rescope_factory = function Rescope_factory(scope) {
         }
     };
 },
+    setContext = function setContext(context) {},
     fetch = function fetch(context, cb) {
     context = context || _Store3.default.staticContext;
     var stores = Object.keys(context);

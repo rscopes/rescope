@@ -34,8 +34,19 @@ var Store = function (_EventEmitter) {
     _inherits(Store, _EventEmitter);
 
     _createClass(Store, null, [{
-        key: 'map',
+        key: 'as',
+        // false or tm without followers
 
+        /**
+         * get a Builder-key pair for Store::map
+         * @param {string} name
+         * @returns {{store: Store, name: *}}
+         */
+        // default state
+        // overridable list of store that will allow push if updated
+        value: function as(name) {
+            return { store: this, name: name };
+        }
 
         /**
          * Map all nammed stores in {keys} to the {object}'s state
@@ -44,7 +55,10 @@ var Store = function (_EventEmitter) {
          * @param object {React.Component|Store|...} target state aware object
          * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
          */
-        // overridable list of store that will allow push if updated
+        // overridable list of source stores
+
+    }, {
+        key: 'map',
         value: function map(component, keys, context, origin) {
             var targetRevs = component._revs || {};
             var targetContext = component.stores || {};
@@ -55,32 +69,28 @@ var Store = function (_EventEmitter) {
 
                 if (key.store && key.name) {
                     if (targetRevs[key.name]) return false; // no dbl binds
-                    key.store.bind(component, key.name);
-                    targetRevs[key.name] = targetRevs[key.name] || true;
-                    targetContext[key.name] = targetContext[key.name] || key.store;
+                    if (isFunction(key.store)) {
+
+                        context[key.name] = new key.store(context);
+                        if (context[key.name].constructor.use) {
+                            context[key.name].pull(context[key.name].constructor.use, key.name);
+                        }
+
+                        context[key.name].bind(component, key.name);
+                        targetRevs[key.name] = targetRevs[key.name] || true;
+                        targetContext[key.name] = targetContext[key.name] || context[key.name];
+                    } else {
+                        key.store.bind(component, key.name);
+                        targetRevs[key.name] = targetRevs[key.name] || true;
+                        targetContext[key.name] = targetContext[key.name] || key.store;
+                    }
                 } else if (isString(key)) {
                     key = key.split(':');
                     if (targetRevs[key[1] || key[0]]) return false; // no dbl binds
-
                     if (isFunction(context[key[0]])) {
-                        // instanciate store
                         context[key[0]] = new context[key[0]](context);
-
                         if (context[key[0]].constructor.use) {
-                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
-                        }
-
-                        if (context[key[0]].constructor.require) {
-                            context[key[0]].constructor.require.forEach(function (store) {
-                                return context[key[0]].wait(), context[store].then(function () {
-                                    return context[key[0]].release();
-                                });
-                            });
-                        }
-
-                        if (context[key[0]].state) {
-                            // do sync push after constructor
-                            context[key[0]].push();
+                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
                         }
                     }
                     if (!context[key[0]]) {
@@ -89,6 +99,18 @@ var Store = function (_EventEmitter) {
                     context[key[0]] && context[key[0]].bind && context[key[0]].bind(component, key[1] || key[0]);
                     targetRevs[key[1] || key[0]] = targetRevs[key[1] || key[0]] || true;
                     targetContext[key[1] || key[0]] = targetContext[key[1] || key[0]] || context[key[0]];
+                } else if (isFunction(key)) {
+                    var name = key.name || key.defaultName;
+                    if (!name) return console.error("Not a named store item '" + key + "' in " + origin + ' !!');
+
+                    context[name] = new key(context);
+                    if (context[name].constructor.use) {
+                        context[name].pull(context[name].constructor.use, name);
+                    }
+
+                    context[name].bind(component, name);
+                    targetRevs[name] = targetRevs[name] || true;
+                    targetContext[name] = targetContext[name] || context[name];
                 } else {
                     console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
                 }
@@ -131,7 +153,6 @@ var Store = function (_EventEmitter) {
          * @param context {object} context where to find the other stores (default : static staticContext )
          * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
          */
-        // overridable list of source stores
 
     }]);
 
@@ -173,10 +194,12 @@ var Store = function (_EventEmitter) {
             _this.pull(_this._watchs);
         }
 
-        if (_this.state && _this.datas === undefined) {
+        if (_static.initialState && _this.datas === undefined) {
+            // sync refine
+            _this.state = _extends({}, _static.initialState);
             _this.datas = _this.refine(_this.datas, _this.state, _this.state);
         }
-        _this._stable = _this.datas !== undefined;
+        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
         return _this;
     }
 
@@ -475,6 +498,8 @@ var Store = function (_EventEmitter) {
 Store.use = [];
 Store.follow = [];
 Store.staticContext = {};
+Store.initialState = undefined;
 Store.defaultMaxListeners = 20;
+Store.autokill = false;
 exports.default = Store;
 module.exports = exports['default'];

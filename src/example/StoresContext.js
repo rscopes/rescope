@@ -12,8 +12,7 @@ let MyStoreContext = {
         static use = ["session"];
     },
     session     : class session extends Store {
-
-        state = {
+        static initialState = {
             currentUserId : "MrNice"
         };
 

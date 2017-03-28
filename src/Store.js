@@ -31,7 +31,7 @@ export default class Store extends EventEmitter {
     }
 
     /**
-     * Map all nammed stores in {keys} to the {object}'s state
+     * Map all named stores in {keys} to the {object}'s state
      * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
      * @static
      * @param object {React.Component|Store|...} target state aware object

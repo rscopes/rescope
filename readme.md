@@ -1,6 +1,6 @@
 # Caipi Rescope
 
-Scalable, 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
+Flexible & scalable 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
 
 ## ReScope What ?
 
@@ -10,7 +10,7 @@ Mechanic is simple:
 Stores take key values & the others stores as entry state<br>
 Then, using a "refine" function they maintain the output data set needed for the templates or the followers stores/listeners
 
-By examples, stores can maintain :
+Rescope Stores can maintain server & client side :
 - the records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status
@@ -20,7 +20,8 @@ By examples, stores can maintain :
 
 - shouldPropag, wait & release fn allow async control of the propagation
 - Simple methods to contextualize, preload, hook & bind the stores
-- ES7 class
+- ES6/7 class
+- Easy serialize
 - Inherit node EventEmitter api
 - Synchrone preload possible 
 - Flexible Async management
@@ -39,6 +40,9 @@ Ex :
 (myContext)::tasksStats:setState({mode:"%complete"})
 ...
 ```
+
+So we keep full control to deal with the App specificities. 
+From there we can trigger complex mutations, retrieve some serialized state/datas, or whatever.  
 
 ## How it work
 
@@ -77,8 +81,11 @@ let MyPageContext = new Rescope({...pageContextStores}); // stores are lazy inst
 MyPageContext.fetch(
     (err, datas, context)=>{
         // here all the store are stable
+        
+   
     }
 );
+
 
 // or bind only specifics stores and theirs dependencies 
 (new MyPageContext.Store(["TopRecipes", "News"])

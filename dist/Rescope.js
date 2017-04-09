@@ -64,10 +64,11 @@ Rescope.fetch = function (cb) {
     return fetch(_Store3.default.staticContext, cb);
 };
 Rescope.context = _Store3.default.staticContext;
-
-if (typeof window != 'undefined') {
-    window.Rescope = Rescope;
-}
+try {
+    if (typeof window != 'undefined') {
+        window.Rescope = Rescope;
+    }
+} catch (e) {}
 
 exports.default = Rescope;
 module.exports = exports["default"];

@@ -52,7 +52,7 @@ export default class Store extends EventEmitter {
 
                         context[key.name] = new key.store(context);
                         if ( context[key.name].constructor.use ) {
-                            context[key.name].pull(context[key.name].constructor.use, key.name);
+                            context[key.name].pull(context[key.name].constructor.use, false, key.name);
                         }
 
                         context[key.name].bind(component, key.name);
@@ -69,7 +69,7 @@ export default class Store extends EventEmitter {
                     if ( isFunction(context[key[0]]) ) {
                         context[key[0]] = new context[key[0]](context);
                         if ( context[key[0]].constructor.use ) {
-                            context[key[0]].pull(context[key[0]].constructor.use, key[0]);
+                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
                         }
                     }
                     if ( !context[key[0]] ) {
@@ -87,7 +87,7 @@ export default class Store extends EventEmitter {
 
                     context[name] = new key(context);
                     if ( context[name].constructor.use ) {
-                        context[name].pull(context[name].constructor.use, name);
+                        context[name].pull(context[name].constructor.use, false, name);
                     }
 
                     context[name].bind(component, name);
@@ -256,7 +256,7 @@ export default class Store extends EventEmitter {
         Store.map(this, stores, this.context, origin);
         if ( doWait ) {
             this.wait();
-            stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]))
+            stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));
             this.release();
         }
     }
@@ -269,7 +269,7 @@ export default class Store extends EventEmitter {
         cb            = force === true ? cb : force;
         var i         = 0,
             me        = this,
-            nextState = !datas && {...this.state, ...this._changesSW},
+            nextState = !datas && {...this.state, ...this._changesSW} || this.state,
             nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
 
 

@@ -35,9 +35,12 @@ let Rescope_factory = function Rescope_factory( scope ) {
 Rescope.Store   = Store;
 Rescope.fetch   = ( cb ) => fetch(Store.staticContext, cb);
 Rescope.context = Store.staticContext;
+try {
+    if ( typeof window != 'undefined' ) {
+        window.Rescope = Rescope;
+    }
+}catch (e){
 
-if ( typeof window != 'undefined' ) {
-    window.Rescope = Rescope;
 }
 
 export default Rescope;

@@ -194,12 +194,12 @@ export default class Store extends EventEmitter {
         // if ( !cState )
         //     return true;
         if ( !cState && (!_static.follow || !_static.follow.length ||
-            _static.follow && _static.follow.reduce(( r, i ) => (r || ns[i]), false)) )
+            _static.follow && _static.follow.reduce(( r, i ) => (r || ns && ns[i]), false)) )
             return true;
 
         _static.follow && _static.follow.forEach(
             ( key ) => {
-                r = r || (cState[key] !== ns[key])
+                r = r || (ns ? cState[key] !== ns[key] : cState && cState[key])
             }
         );
 
@@ -267,6 +267,7 @@ export default class Store extends EventEmitter {
      */
     push( datas, force, cb ) {
         cb            = force === true ? cb : force;
+        force         = force === true;
         var i         = 0,
             me        = this,
             nextState = !datas && {...this.state, ...this._changesSW} || this.state,

@@ -16,6 +16,7 @@ export default class Store extends EventEmitter {
 
     static use                 = [];// overridable list of source stores
     static follow              = [];// overridable list of store that will allow push if updated
+    static require;
     static staticContext       = {};
     static initialState        = undefined;// default state
     static defaultMaxListeners = 20;
@@ -51,11 +52,9 @@ export default class Store extends EventEmitter {
                     if ( isFunction(key.store) ) {
 
                         context[key.name] = new key.store(context);
-                        if ( context[key.name].constructor.use ) {
-                            context[key.name].pull(context[key.name].constructor.use, false, key.name);
-                        }
 
                         context[key.name].bind(component, key.name);
+                        context[key.name].relink(key.name)
                         targetRevs[key.name]    = targetRevs[key.name] || true;
                         targetContext[key.name] = targetContext[key.name] || context[key.name];
                     } else {
@@ -68,8 +67,11 @@ export default class Store extends EventEmitter {
                     if ( targetRevs[key[1] || key[0]] ) return false;// no dbl binds
                     if ( isFunction(context[key[0]]) ) {
                         context[key[0]] = new context[key[0]](context);
-                        if ( context[key[0]].constructor.use ) {
-                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
+
+                        context[key[0]].relink(key[0])
+
+                        if ( context[key[0]].state ) {// do sync push after constructor
+                            context[key[0]].push();
                         }
                     }
                     if ( !context[key[0]] ) {
@@ -86,9 +88,8 @@ export default class Store extends EventEmitter {
                         return console.error("Not a named store item '" + key + "' in " + origin + ' !!');
 
                     context[name] = new key(context);
-                    if ( context[name].constructor.use ) {
-                        context[name].pull(context[name].constructor.use, false, name);
-                    }
+
+                    context[name].relink(name);
 
                     context[name].bind(component, name);
                     targetRevs[name]    = targetRevs[name] || true;
@@ -177,7 +178,14 @@ export default class Store extends EventEmitter {
 
         if ( _static.initialState && this.datas === undefined ) {// sync refine
             this.state = {..._static.initialState};
-            this.datas = this.refine(this.datas, this.state, this.state);
+            if (
+                _static.require
+                && _static.require.reduce(
+                    ( r, key ) => (r && this.state[key]),
+                    true
+                )
+            )
+                this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
     }
@@ -330,6 +338,28 @@ export default class Store extends EventEmitter {
      */
     as( name ) {
         return {store : this, name};
+    }
+
+    /**
+     * relink bindings & requires
+     * @param {string} name
+     * @returns {{store: Store, name: *}}
+     */
+    relink( from ) {
+        let context = this.context,
+            _static = this.constructor;
+        if ( _static.use ) {
+            //todo unlink
+            this.pull(_static.use, false, from);
+        }
+
+        if ( _static.require ) {
+            _static.require.forEach(
+                store => (
+                    this.wait(context[store])
+                )
+            );
+        }
     }
 
     /**

@@ -179,7 +179,7 @@
 	         * @returns {{store: Store, name: *}}
 	         */
 	        // default state
-	        // overridable list of store that will allow push if updated
+	        // overridable list of source stores
 	        value: function as(name) {
 	            return { store: this, name: name };
 	        }
@@ -191,7 +191,7 @@
 	         * @param object {React.Component|Store|...} target state aware object
 	         * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
 	         */
-	        // overridable list of source stores
+	        // overridable list of store that will allow push if updated
 	
 	    }, {
 	        key: 'map',
@@ -208,11 +208,9 @@
 	                    if (isFunction(key.store)) {
 	
 	                        context[key.name] = new key.store(context);
-	                        if (context[key.name].constructor.use) {
-	                            context[key.name].pull(context[key.name].constructor.use, false, key.name);
-	                        }
 	
 	                        context[key.name].bind(component, key.name);
+	                        context[key.name].relink(key.name);
 	                        targetRevs[key.name] = targetRevs[key.name] || true;
 	                        targetContext[key.name] = targetContext[key.name] || context[key.name];
 	                    } else {
@@ -225,8 +223,12 @@
 	                    if (targetRevs[key[1] || key[0]]) return false; // no dbl binds
 	                    if (isFunction(context[key[0]])) {
 	                        context[key[0]] = new context[key[0]](context);
-	                        if (context[key[0]].constructor.use) {
-	                            context[key[0]].pull(context[key[0]].constructor.use, false, key[0]);
+	
+	                        context[key[0]].relink(key[0]);
+	
+	                        if (context[key[0]].state) {
+	                            // do sync push after constructor
+	                            context[key[0]].push();
 	                        }
 	                    }
 	                    if (!context[key[0]]) {
@@ -240,9 +242,8 @@
 	                    if (!name) return console.error("Not a named store item '" + key + "' in " + origin + ' !!');
 	
 	                    context[name] = new key(context);
-	                    if (context[name].constructor.use) {
-	                        context[name].pull(context[name].constructor.use, false, name);
-	                    }
+	
+	                    context[name].relink(name);
 	
 	                    context[name].bind(component, name);
 	                    targetRevs[name] = targetRevs[name] || true;
@@ -333,7 +334,9 @@
 	        if (_static.initialState && _this.datas === undefined) {
 	            // sync refine
 	            _this.state = _extends({}, _static.initialState);
-	            _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+	            if (_static.require && _static.require.reduce(function (r, key) {
+	                return r && _this.state[key];
+	            }, true)) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
 	        return _this;
@@ -507,6 +510,31 @@
 	        }
 	
 	        /**
+	         * relink bindings & requires
+	         * @param {string} name
+	         * @returns {{store: Store, name: *}}
+	         */
+	
+	    }, {
+	        key: 'relink',
+	        value: function relink(from) {
+	            var _this4 = this;
+	
+	            var context = this.context,
+	                _static = this.constructor;
+	            if (_static.use) {
+	                //todo unlink
+	                this.pull(_static.use, false, from);
+	            }
+	
+	            if (_static.require) {
+	                _static.require.forEach(function (store) {
+	                    return _this4.wait(context[store]);
+	                });
+	            }
+	        }
+	
+	        /**
 	         * Un bind this store off the given component-key
 	         * @param obj
 	         * @param key
@@ -586,7 +614,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this4 = this;
+	            var _this5 = this;
 	
 	            var i = 0;
 	
@@ -595,12 +623,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this4.datas) return;
+	                    if (!_this5.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this4.datas);
+	                        follower[0](_this5.datas);
 	                    } else {
 	                        cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this4.datas) : _this4.datas, cb && function () {
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this5.datas) : _this5.datas, cb && function () {
 	                            return ! --i && cb();
 	                        });
 	                    }

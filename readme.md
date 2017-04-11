@@ -16,6 +16,7 @@ Rescope Stores can maintain server & client side :
 - Page state & status
 - session, etc... 
 
+
 ### What else ?
 
 - shouldPropag, wait & release fn allow async control of the propagation

@@ -220,11 +220,11 @@ var Store = function (_EventEmitter) {
             // if ( !cState )
             //     return true;
             if (!cState && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(function (r, i) {
-                return r || ns[i];
+                return r || ns && ns[i];
             }, false))) return true;
 
             _static.follow && _static.follow.forEach(function (key) {
-                r = r || cState[key] !== ns[key];
+                r = r || (ns ? cState[key] !== ns[key] : cState && cState[key]);
             });
 
             return !_static.follow || !_static.follow.length || !!r;
@@ -300,6 +300,7 @@ var Store = function (_EventEmitter) {
         key: 'push',
         value: function push(datas, force, cb) {
             cb = force === true ? cb : force;
+            force = force === true;
             var i = 0,
                 me = this,
                 nextState = !datas && _extends({}, this.state, this._changesSW) || this.state,

@@ -192,23 +192,39 @@ export default class Store extends EventEmitter {
      * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
      * If not it will always return true
      */
-    shouldPropag( ns ) {
+    shouldPropag( nDatas ) {
         var _static = this.constructor, r,
-            cState  = this.datas;
+            cDatas  = this.datas;
 
         // if ( !cState )
         //     return true;
-        if ( !cState && (!_static.follow || !_static.follow.length ||
-            _static.follow && _static.follow.reduce(( r, i ) => (r || ns && ns[i]), false)) )
+        if ( !cDatas && (!_static.follow || !_static.follow.length ||
+            _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
             return true;
 
-        _static.follow && _static.follow.forEach(
-            ( key ) => {
-                r = r || (ns ? cState[key] !== ns[key] : cState && cState[key])
-            }
-        );
+        if ( isArray(_static.follow) )
+            _static.follow.forEach(
+                ( key ) => {
+                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+                }
+            );
+        else if ( _static.follow === 'strict' )
+            r=nDatas===cDatas;
+        else
+        {
+            Object.keys(cDatas).forEach(
+                ( key ) => {
+                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+                }
+            );
+            Object.keys(nDatas).forEach(
+                ( key ) => {
+                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+                }
+            );
+        }
 
-        return !_static.follow || !_static.follow.length || !!r;
+        return !!r;
     }
 
     /**

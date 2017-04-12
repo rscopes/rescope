@@ -115,7 +115,7 @@ export default class Store extends EventEmitter {
                         alias = key[1] || key[0];
                     }
 
-                    store.unbind(component, alias)
+                    store.unBind(component, alias)
                 }
             );
             return this[unMountKey] && this[unMountKey].apply(this, arguments);

@@ -205,12 +205,12 @@ export default class Store extends EventEmitter {
         else if ( _static.follow === 'strict' )
             r = nDatas === cDatas;
         else {
-            Object.keys(cDatas).forEach(
+            cDatas && Object.keys(cDatas).forEach(
                 ( key ) => {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
                 }
             );
-            Object.keys(nDatas).forEach(
+            nDatas && Object.keys(nDatas).forEach(
                 ( key ) => {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
                 }

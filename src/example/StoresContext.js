@@ -62,10 +62,10 @@ let MyStoreContext = {
     userEvents  : class userEvents extends Store {
         static use = ["currentUser"];// list of source stores id
         static require = ["currentUser"];// list of source stores id
-
-        shouldPropag( newDatas ) {
-            return !!newDatas.userId;
-        }
+        //
+        // shouldPropag( newDatas ) {
+        //     return !!newDatas.userId;
+        // }
 
         refine( datas, newState, changes ) {
             let nUserId = newState.currentUser && newState.currentUser._id,

@@ -1,7 +1,7 @@
 /**
  * Ultra scalable state-aware store
  *
- * @todo : optims? bugs?
+ * @todo : lot of optims...
  */
 
 var isString     = require('isstring')
@@ -15,7 +15,7 @@ var isString     = require('isstring')
 export default class Store extends EventEmitter {
 
     static use                 = [];// overridable list of source stores
-    static follow              = [];// overridable list of store that will allow push if updated
+    static follow;// overridable list of store that will allow push if updated
     static require;
     static staticContext       = {};
     static initialState        = undefined;// default state
@@ -156,6 +156,7 @@ export default class Store extends EventEmitter {
         }
 
         // this.state      = this.state || {};
+
         this._watchs    = watchs;
         this.name       = name;
         this.context    = context;
@@ -174,14 +175,7 @@ export default class Store extends EventEmitter {
 
         if ( _static.initialState && this.datas === undefined ) {// sync refine
             this.state = {..._static.initialState};
-            if (
-                !_static.require
-                || !_static.require.length
-                || _static.require.reduce(
-                    ( r, key ) => (r && this.state[key]),
-                    true
-                )
-            )
+            if ( this.isComplete() )
                 this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
@@ -209,9 +203,8 @@ export default class Store extends EventEmitter {
                 }
             );
         else if ( _static.follow === 'strict' )
-            r=nDatas===cDatas;
-        else
-        {
+            r = nDatas === cDatas;
+        else {
             Object.keys(cDatas).forEach(
                 ( key ) => {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
@@ -292,9 +285,11 @@ export default class Store extends EventEmitter {
         var i         = 0,
             me        = this,
             nextState = !datas && {...this.state, ...this._changesSW} || this.state,
-            nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
+            nextDatas = datas ||
+                (this.isComplete(nextState) ? this.refine(this.datas, nextState, this._changesSW) : this.datas);
 
 
+        this.state = nextState;
         if ( !force &&
             (
                 (!this.datas && this.datas === nextDatas) || !this.shouldPropag(nextDatas)
@@ -304,7 +299,6 @@ export default class Store extends EventEmitter {
             return false;
         }
 
-        this.state = nextState;
         this.datas = nextDatas;
         this.locks++;
         this.release(cb);
@@ -330,6 +324,7 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
+
         if ( change ) {
             this.stabilize(cb);
         } else cb && cb();
@@ -377,6 +372,22 @@ export default class Store extends EventEmitter {
                 )
             );
         }
+    }
+
+    /**
+     * is complete (all requiered keys are here)
+     * @returns bool
+     */
+    isComplete( state = this.state ) {
+        var _static = this.constructor;
+        return (
+            !_static.require
+            || !_static.require.length
+            || state && _static.require.reduce(
+                ( r, key ) => (r && state[key]),
+                true
+            )
+        );
     }
 
     /**
@@ -449,9 +460,10 @@ export default class Store extends EventEmitter {
      * @returns {*}
      */
     release( cb ) {
-        let i = 0;
+        var _static = this.constructor;
+        let i       = 0;
 
-        if ( !--this.locks && this.datas ) {
+        if ( !--this.locks && this.datas && this.isComplete() ) {
             this._stable = true;
 
 

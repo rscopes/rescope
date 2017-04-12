@@ -157,7 +157,7 @@
 	/**
 	 * Ultra scalable state-aware store
 	 *
-	 * @todo : optims? bugs?
+	 * @todo : lot of optims...
 	 */
 	
 	var isString = __webpack_require__(181),
@@ -269,7 +269,7 @@
 	                        alias = key[1] || key[0];
 	                    }
 	
-	                    store.unbind(component, alias);
+	                    store.unBind(component, alias);
 	                });
 	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
 	            };
@@ -314,6 +314,7 @@
 	        }
 	
 	        // this.state      = this.state || {};
+	
 	        _this._watchs = watchs;
 	        _this.name = name;
 	        _this.context = context;
@@ -333,9 +334,7 @@
 	        if (_static.initialState && _this.datas === undefined) {
 	            // sync refine
 	            _this.state = _extends({}, _static.initialState);
-	            if (!_static.require || !_static.require.length || _static.require.reduce(function (r, key) {
-	                return r && _this.state[key];
-	            }, true)) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+	            if (_this.isComplete()) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
 	        return _this;
@@ -350,22 +349,29 @@
 	
 	    _createClass(Store, [{
 	        key: 'shouldPropag',
-	        value: function shouldPropag(ns) {
+	        value: function shouldPropag(nDatas) {
 	            var _static = this.constructor,
 	                r,
-	                cState = this.datas;
+	                cDatas = this.datas;
 	
 	            // if ( !cState )
 	            //     return true;
-	            if (!cState && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(function (r, i) {
-	                return r || ns && ns[i];
+	            if (!cDatas && (!_static.follow || !_static.follow.length || _static.follow && _static.follow.reduce(function (r, i) {
+	                return r || nDatas && nDatas[i];
 	            }, false))) return true;
 	
-	            _static.follow && _static.follow.forEach(function (key) {
-	                r = r || (ns ? cState[key] !== ns[key] : cState && cState[key]);
-	            });
+	            if (isArray(_static.follow)) _static.follow.forEach(function (key) {
+	                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
+	            });else if (_static.follow === 'strict') r = nDatas === cDatas;else {
+	                Object.keys(cDatas).forEach(function (key) {
+	                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
+	                });
+	                Object.keys(nDatas).forEach(function (key) {
+	                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
+	                });
+	            }
 	
-	            return !_static.follow || !_static.follow.length || !!r;
+	            return !!r;
 	        }
 	
 	        /**
@@ -442,14 +448,14 @@
 	            var i = 0,
 	                me = this,
 	                nextState = !datas && _extends({}, this.state, this._changesSW) || this.state,
-	                nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
+	                nextDatas = datas || (this.isComplete(nextState) ? this.refine(this.datas, nextState, this._changesSW) : this.datas);
 	
+	            this.state = nextState;
 	            if (!force && (!this.datas && this.datas === nextDatas || !this.shouldPropag(nextDatas))) {
 	                cb && cb();
 	                return false;
 	            }
 	
-	            this.state = nextState;
 	            this.datas = nextDatas;
 	            this.locks++;
 	            this.release(cb);
@@ -534,6 +540,22 @@
 	        }
 	
 	        /**
+	         * is complete (all requiered keys are here)
+	         * @returns bool
+	         */
+	
+	    }, {
+	        key: 'isComplete',
+	        value: function isComplete() {
+	            var state = arguments.length <= 0 || arguments[0] === undefined ? this.state : arguments[0];
+	
+	            var _static = this.constructor;
+	            return !_static.require || !_static.require.length || state && _static.require.reduce(function (r, key) {
+	                return r && state[key];
+	            }, true);
+	        }
+	
+	        /**
 	         * Un bind this store off the given component-key
 	         * @param obj
 	         * @param key
@@ -615,9 +637,10 @@
 	        value: function release(cb) {
 	            var _this5 = this;
 	
+	            var _static = this.constructor;
 	            var i = 0;
 	
-	            if (! --this.locks && this.datas) {
+	            if (! --this.locks && this.datas && this.isComplete()) {
 	                this._stable = true;
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
@@ -660,7 +683,6 @@
 	}(EventEmitter);
 	
 	Store.use = [];
-	Store.follow = [];
 	Store.staticContext = {};
 	Store.initialState = undefined;
 	Store.defaultMaxListeners = 20;
@@ -1163,15 +1185,13 @@
 	        }
 	
 	        _createClass(userEvents, [{
-	            key: "shouldPropag",
-	            // list of source stores id
-	
-	            value: function shouldPropag(newDatas) {
-	                return !!newDatas.userId;
-	            } // list of source stores id
-	
-	        }, {
 	            key: "refine",
+	            // list of source stores id
+	            //
+	            // shouldPropag( newDatas ) {
+	            //     return !!newDatas.userId;
+	            // }
+	
 	            value: function refine(datas, newState, changes) {
 	                var _this6 = this;
 	
@@ -1200,7 +1220,8 @@
 	                }
 	
 	                return datas;
-	            }
+	            } // list of source stores id
+	
 	        }]);
 	
 	        return userEvents;

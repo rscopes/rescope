@@ -202,55 +202,42 @@
 	
 	            context = context || Store.staticContext;
 	            keys = keys.filter(function (key) {
-	
+	                if (!key) {
+	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+	                    return false;
+	                }
+	                var name = void 0,
+	                    alias = void 0,
+	                    store = void 0;
 	                if (key.store && key.name) {
-	                    if (targetRevs[key.name]) return false; // no dbl binds
-	                    if (isFunction(key.store)) {
-	
-	                        context[key.name] = new key.store(context);
-	
-	                        context[key.name].bind(component, key.name);
-	                        context[key.name].relink(key.name);
-	                        targetRevs[key.name] = targetRevs[key.name] || true;
-	                        targetContext[key.name] = targetContext[key.name] || context[key.name];
-	                    } else {
-	                        key.store.bind(component, key.name);
-	                        targetRevs[key.name] = targetRevs[key.name] || true;
-	                        targetContext[key.name] = targetContext[key.name] || key.store;
-	                    }
-	                } else if (isString(key)) {
-	                    key = key.split(':');
-	                    if (targetRevs[key[1] || key[0]]) return false; // no dbl binds
-	                    if (isFunction(context[key[0]])) {
-	                        context[key[0]] = new context[key[0]](context);
-	
-	                        context[key[0]].relink(key[0]);
-	
-	                        if (context[key[0]].state) {
-	                            // do sync push after constructor
-	                            context[key[0]].push();
-	                        }
-	                    }
-	                    if (!context[key[0]]) {
-	                        console.error("Not a mappable store item '" + key[0] + "' in " + origin + ' !!');
-	                    }
-	                    context[key[0]] && context[key[0]].bind && context[key[0]].bind(component, key[1] || key[0]);
-	                    targetRevs[key[1] || key[0]] = targetRevs[key[1] || key[0]] || true;
-	                    targetContext[key[1] || key[0]] = targetContext[key[1] || key[0]] || context[key[0]];
+	                    alias = name = key.name;
+	                    store = key.store;
 	                } else if (isFunction(key)) {
-	                    var name = key.name || key.defaultName;
-	                    if (!name) return console.error("Not a named store item '" + key + "' in " + origin + ' !!');
-	
-	                    context[name] = new key(context);
+	                    name = alias = key.name || key.defaultName;
+	                    store = key;
+	                } else {
+	                    key = key.split(':');
+	                    name = key[0];
+	                    store = context[key[0]];
+	                    alias = key[1] || key[0];
+	                }
+	                if (targetRevs[name]) return false; // ignore dbl uses for now
+	                if (!store) {
+	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
+	                    return false;
+	                } else if (isFunction(store)) {
+	                    context[name] = new store(context);
 	
 	                    context[name].relink(name);
-	
-	                    context[name].bind(component, name);
-	                    targetRevs[name] = targetRevs[name] || true;
-	                    targetContext[name] = targetContext[name] || context[name];
+	                    context[name].bind(component, alias);
+	                    // if ( context[key[0]].state ) {// do sync push after constructor
+	                    //     context[key[0]].push();
+	                    // }
 	                } else {
-	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+	                    store.bind(component, alias);
 	                }
+	                targetRevs[alias] = targetRevs[alias] || true;
+	                targetContext[alias] = targetContext[alias] || context[name];
 	
 	                return true;
 	            });
@@ -260,17 +247,29 @@
 	            if (component.hasOwnProperty(unMountKey)) {
 	                mixedCWUnmount = component[unMountKey];
 	            }
+	
 	            component[unMountKey] = function () {
 	                // todo hop
 	                delete this[unMountKey];
 	                if (mixedCWUnmount) this[unMountKey] = mixedCWUnmount;
 	                keys.map(function (key) {
+	                    var name = void 0,
+	                        alias = void 0,
+	                        store = void 0;
 	                    if (key.store && key.name) {
-	                        key.store.unBind(component, key.name);
+	                        alias = name = key.name;
+	                        store = key.store;
+	                    } else if (isFunction(key)) {
+	                        name = alias = key.name || key.defaultName;
+	                        store = context[name];
 	                    } else {
 	                        key = key.split(':');
-	                        context[key[0]] && context[key[0]].unBind(component, key[1] || key[0]);
+	                        name = key[0];
+	                        store = context[key[0]];
+	                        alias = key[1] || key[0];
 	                    }
+	
+	                    store.unbind(component, alias);
 	                });
 	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
 	            };
@@ -334,7 +333,7 @@
 	        if (_static.initialState && _this.datas === undefined) {
 	            // sync refine
 	            _this.state = _extends({}, _static.initialState);
-	            if (_static.require && _static.require.reduce(function (r, key) {
+	            if (!_static.require || !_static.require.length || _static.require.reduce(function (r, key) {
 	                return r && _this.state[key];
 	            }, true)) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
@@ -445,7 +444,7 @@
 	                nextState = !datas && _extends({}, this.state, this._changesSW) || this.state,
 	                nextDatas = datas || this.refine(this.datas, nextState, this._changesSW);
 	
-	            if (!force && !this.shouldPropag(nextDatas)) {
+	            if (!force && (!this.datas && this.datas === nextDatas || !this.shouldPropag(nextDatas))) {
 	                cb && cb();
 	                return false;
 	            }
@@ -1167,9 +1166,10 @@
 	            key: "shouldPropag",
 	            // list of source stores id
 	
-	            value: function shouldPropag(newState) {
-	                return !!newState.userId;
-	            }
+	            value: function shouldPropag(newDatas) {
+	                return !!newDatas.userId;
+	            } // list of source stores id
+	
 	        }, {
 	            key: "refine",
 	            value: function refine(datas, newState, changes) {
@@ -1204,7 +1204,7 @@
 	        }]);
 	
 	        return userEvents;
-	    }(_Rescope.Store), _class4.use = ["currentUser"], _temp4)
+	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _temp4)
 	};
 	
 	exports.default = function () {

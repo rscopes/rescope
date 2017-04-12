@@ -15,7 +15,14 @@ let MyStoreContext = {
         static initialState = {
             currentUserId : "MrNice"
         };
-
+        // constructor(){
+        //     debugger;
+        //     super(...arguments)
+        // }
+        // refine( datas, newState, changes ) {
+        //     debugger
+        //     return newState;
+        // }
     },
     currentUser : class currentUser extends Store {
         static use = ["session"];// list of source stores id
@@ -54,9 +61,10 @@ let MyStoreContext = {
     },
     userEvents  : class userEvents extends Store {
         static use = ["currentUser"];// list of source stores id
+        static require = ["currentUser"];// list of source stores id
 
-        shouldPropag( newState ) {
-            return !!newState.userId;
+        shouldPropag( newDatas ) {
+            return !!newDatas.userId;
         }
 
         refine( datas, newState, changes ) {

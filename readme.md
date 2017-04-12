@@ -107,7 +107,7 @@ export default class Store extends EventEmitter {
 
     static use  = [];// overridable list of source stores
     static follow  = [];// overridable list of store that will allow push if updated
-    static require  = [];// overridable list of required store/keys needed for trigger refine
+    static require  = [];// overridable list of  store/keys required to trigger refine & propag
     
     static staticContext  = {};// default global stores context
     static defaultMaxListeners = 20;

@@ -227,10 +227,10 @@ var Store = function (_EventEmitter) {
             if (isArray(_static.follow)) _static.follow.forEach(function (key) {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
             });else if (_static.follow === 'strict') r = nDatas === cDatas;else {
-                Object.keys(cDatas).forEach(function (key) {
+                cDatas && Object.keys(cDatas).forEach(function (key) {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
                 });
-                Object.keys(nDatas).forEach(function (key) {
+                nDatas && Object.keys(nDatas).forEach(function (key) {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
                 });
             }

@@ -21750,6 +21750,7 @@
 	        value: function map(component, keys, context, origin) {
 	            var targetRevs = component._revs || {};
 	            var targetContext = component.stores || {};
+	            var initialOutputs = {};
 	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
 	            context = context || Store.staticContext;
@@ -21790,7 +21791,7 @@
 	                }
 	                targetRevs[alias] = targetRevs[alias] || true;
 	                targetContext[alias] = targetContext[alias] || context[name];
-	
+	                if (context[name].hasOwnProperty('datas')) initialOutputs[alias] = context[name].datas;
 	                return true;
 	            });
 	            var mixedCWUnmount,
@@ -21825,6 +21826,8 @@
 	                });
 	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
 	            };
+	
+	            return initialOutputs;
 	        }
 	
 	        /**

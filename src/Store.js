@@ -39,9 +39,10 @@ export default class Store extends EventEmitter {
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
     static map( component, keys, context, origin ) {
-        var targetRevs    = component._revs || {};
-        var targetContext = component.stores || {};
-        keys              = isArray(keys) ? [...keys] : [keys];
+        var targetRevs     = component._revs || {};
+        var targetContext  = component.stores || {};
+        var initialOutputs = {};
+        keys               = isArray(keys) ? [...keys] : [keys];
 
         context        = context || Store.staticContext;
         keys           = keys.filter(
@@ -82,7 +83,8 @@ export default class Store extends EventEmitter {
                 }
                 targetRevs[alias]    = targetRevs[alias] || true;
                 targetContext[alias] = targetContext[alias] || context[name];
-
+                if ( context[name].hasOwnProperty('datas') )
+                    initialOutputs[alias] = context[name].datas;
                 return true;
             }
         );
@@ -120,6 +122,8 @@ export default class Store extends EventEmitter {
             );
             return this[unMountKey] && this[unMountKey].apply(this, arguments);
         }
+
+        return initialOutputs;
     }
 
     /**

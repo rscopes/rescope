@@ -38,9 +38,9 @@ export default class Store extends EventEmitter {
      * @param object {React.Component|Store|...} target state aware object
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
-    static map( component, keys, context, origin ) {
+    static map( component, keys, context, origin, setInitial=false ) {
         var targetRevs     = component._revs || {};
-        var targetContext  = component.stores || {};
+        var targetContext  = component.stores || (component.stores={});
         var initialOutputs = {};
         keys               = isArray(keys) ? [...keys] : [keys];
 
@@ -74,12 +74,12 @@ export default class Store extends EventEmitter {
                     context[name] = new store(context);
 
                     context[name].relink(name);
-                    context[name].bind(component, alias);
+                    context[name].bind(component, alias, setInitial);
                     // if ( context[key[0]].state ) {// do sync push after constructor
                     //     context[key[0]].push();
                     // }
                 } else {
-                    store.bind(component, alias);
+                    store.bind(component, alias, setInitial);
                 }
                 targetRevs[alias]    = targetRevs[alias] || true;
                 targetContext[alias] = targetContext[alias] || context[name];
@@ -271,7 +271,7 @@ export default class Store extends EventEmitter {
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
-        Store.map(this, stores, this.context, origin);
+        Store.map(this, stores, this.context, origin, true);
         if ( doWait ) {
             this.wait();
             stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));
@@ -413,9 +413,9 @@ export default class Store extends EventEmitter {
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    bind( obj, key ) {
+    bind( obj, key, setInitial=true ) {
         this._followers.push([obj, key]);
-        if ( this.datas && this._stable ) {
+        if ( setInitial && this.datas && this._stable ) {
             if ( typeof obj != "function" ) {
                 if ( key ) obj.setState({[key] : this.datas});
                 else obj.setState(this.datas);

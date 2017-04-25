@@ -14,7 +14,7 @@ let Rescope_factory = function Rescope_factory( scope ) {
                 _Rescope.context = argz[0] || Store.staticContext;
                 return _Rescope;
             } else {
-                return Store.map(argz[0], argz[1], scope)
+                return Store.map(argz[0], argz[1], scope, null, argz[2])
             }
         }
     },

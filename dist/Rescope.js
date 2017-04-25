@@ -42,7 +42,7 @@ var Rescope_factory = function Rescope_factory(scope) {
                 _Rescope.context = argz[0] || _Store3.default.staticContext;
                 return _Rescope;
             } else {
-            return _Store3.default.map(argz[0], argz[1], scope);
+            return _Store3.default.map(argz[0], argz[1], scope, null, argz[2]);
         }
     };
 },

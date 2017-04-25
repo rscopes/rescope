@@ -4,9 +4,13 @@ import React from "react";
 import {Store} from "../../Rescope";
 
 export default class NewsListComp extends React.Component {
-    state = {};
-    componentWillMount( ) {
-        Store.map(this, ["userEvents"])
+
+    constructor( ) {
+        super(...arguments);
+        this.state = {
+            ...Store.map(this, ["userEvents"])
+        };
+
     }
 
     render() {

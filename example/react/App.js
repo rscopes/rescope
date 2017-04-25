@@ -54,6 +54,8 @@
 
 	'use strict';
 	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _react = __webpack_require__(2);
@@ -81,32 +83,15 @@
 	    _inherits(App, _React$Component);
 	
 	    function App() {
-	        var _ref;
-	
-	        var _temp, _this, _ret;
-	
 	        _classCallCheck(this, App);
 	
-	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	            args[_key] = arguments[_key];
-	        }
+	        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).apply(this, arguments));
 	
-	        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = App.__proto__ || Object.getPrototypeOf(App)).call.apply(_ref, [this].concat(args))), _this), _this.state = {}, _temp), _possibleConstructorReturn(_this, _ret);
+	        _this.state = _extends({}, Store.map(_this, ["status", "session"]));
+	        return _this;
 	    }
 	
 	    _createClass(App, [{
-	        key: 'componentWillMount',
-	        value: function componentWillMount() {
-	            // init using a dedicated store instance
-	            this._store = new Store(["status", "session"]);
-	            this._store.bind(this);
-	            this.stores = this._store.stores;
-	
-	            // or using static Store.map fn
-	            // this.stores = {};// stores refs are automaticly added in the store hashmap if .stores exist
-	            // Store.map(this, ["status", "session"])
-	        }
-	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var session = this.stores.session;
@@ -21651,7 +21636,7 @@
 	                _Rescope.context = argz[0] || _Store3.default.staticContext;
 	                return _Rescope;
 	            } else {
-	            return _Store3.default.map(argz[0], argz[1], scope);
+	            return _Store3.default.map(argz[0], argz[1], scope, null, argz[2]);
 	        }
 	    };
 	},
@@ -21748,8 +21733,10 @@
 	    }, {
 	        key: 'map',
 	        value: function map(component, keys, context, origin) {
+	            var setInitial = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+	
 	            var targetRevs = component._revs || {};
-	            var targetContext = component.stores || {};
+	            var targetContext = component.stores || (component.stores = {});
 	            var initialOutputs = {};
 	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
@@ -21782,12 +21769,12 @@
 	                    context[name] = new store(context);
 	
 	                    context[name].relink(name);
-	                    context[name].bind(component, alias);
+	                    context[name].bind(component, alias, setInitial);
 	                    // if ( context[key[0]].state ) {// do sync push after constructor
 	                    //     context[key[0]].push();
 	                    // }
 	                } else {
-	                    store.bind(component, alias);
+	                    store.bind(component, alias, setInitial);
 	                }
 	                targetRevs[alias] = targetRevs[alias] || true;
 	                targetContext[alias] = targetContext[alias] || context[name];
@@ -21980,7 +21967,7 @@
 	        value: function pull(stores, doWait, origin) {
 	            var _this3 = this;
 	
-	            Store.map(this, stores, this.context, origin);
+	            Store.map(this, stores, this.context, origin, true);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
@@ -22136,8 +22123,10 @@
 	    }, {
 	        key: 'bind',
 	        value: function bind(obj, key) {
+	            var setInitial = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+	
 	            this._followers.push([obj, key]);
-	            if (this.datas && this._stable) {
+	            if (setInitial && this.datas && this._stable) {
 	                if (typeof obj != "function") {
 	                    if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
 	                } else {
@@ -22635,6 +22624,8 @@
 	    value: true
 	});
 	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _react = __webpack_require__(2);
@@ -22655,25 +22646,16 @@
 	    _inherits(NewsListComp, _React$Component);
 	
 	    function NewsListComp() {
-	        var _ref;
-	
-	        var _temp, _this, _ret;
-	
 	        _classCallCheck(this, NewsListComp);
 	
-	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	            args[_key] = arguments[_key];
-	        }
+	        var _this = _possibleConstructorReturn(this, (NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).apply(this, arguments));
 	
-	        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).call.apply(_ref, [this].concat(args))), _this), _this.state = {}, _temp), _possibleConstructorReturn(_this, _ret);
+	        _this.state = _extends({}, _Rescope.Store.map(_this, ["userEvents"]));
+	
+	        return _this;
 	    }
 	
 	    _createClass(NewsListComp, [{
-	        key: "componentWillMount",
-	        value: function componentWillMount() {
-	            _Rescope.Store.map(this, ["userEvents"]);
-	        }
-	    }, {
 	        key: "render",
 	        value: function render() {
 	            return _react2.default.createElement(

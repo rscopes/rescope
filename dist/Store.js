@@ -60,8 +60,10 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'map',
         value: function map(component, keys, context, origin) {
+            var setInitial = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+
             var targetRevs = component._revs || {};
-            var targetContext = component.stores || {};
+            var targetContext = component.stores || (component.stores = {});
             var initialOutputs = {};
             keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 
@@ -94,12 +96,12 @@ var Store = function (_EventEmitter) {
                     context[name] = new store(context);
 
                     context[name].relink(name);
-                    context[name].bind(component, alias);
+                    context[name].bind(component, alias, setInitial);
                     // if ( context[key[0]].state ) {// do sync push after constructor
                     //     context[key[0]].push();
                     // }
                 } else {
-                    store.bind(component, alias);
+                    store.bind(component, alias, setInitial);
                 }
                 targetRevs[alias] = targetRevs[alias] || true;
                 targetContext[alias] = targetContext[alias] || context[name];
@@ -292,7 +294,7 @@ var Store = function (_EventEmitter) {
         value: function pull(stores, doWait, origin) {
             var _this3 = this;
 
-            Store.map(this, stores, this.context, origin);
+            Store.map(this, stores, this.context, origin, true);
             if (doWait) {
                 this.wait();
                 stores.forEach(function (s) {
@@ -448,8 +450,10 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'bind',
         value: function bind(obj, key) {
+            var setInitial = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
             this._followers.push([obj, key]);
-            if (this.datas && this._stable) {
+            if (setInitial && this.datas && this._stable) {
                 if (typeof obj != "function") {
                     if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
                 } else {

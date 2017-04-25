@@ -18,17 +18,13 @@ class App extends React.Component {
 
     }
 
-    state = {};
 
-    componentWillMount() {
-        // init using a dedicated store instance
-        this._store = new Store(["status", "session"]);
-        this._store.bind(this);
-        this.stores = this._store.stores;
 
-        // or using static Store.map fn
-        // this.stores = {};// stores refs are automaticly added in the store hashmap if .stores exist
-        // Store.map(this, ["status", "session"])
+    constructor() {
+        super(...arguments);
+        this.state = {
+            ...Store.map(this, ["status", "session"])
+        };
     }
 
     render() {

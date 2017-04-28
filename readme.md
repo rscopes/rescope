@@ -1,10 +1,8 @@
 # Caipi Rescope
 
-Flexible & scalable 'state' based store for (but not limited to) ReactJS, with node EventEmitter api.
-
 ## ReScope What ?
 
-ReScope is a flexible \& effective Store system inspired by ReactJS methods.
+ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
 
 Mechanic is simple:
 Stores take key values & the others stores as entry state<br>

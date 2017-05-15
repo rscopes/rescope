@@ -520,15 +520,18 @@ var Store = function (_EventEmitter) {
                     if (typeof follower[0] == "function") {
                         follower[0](_this5.datas);
                     } else {
-                        cb && i++;
-                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this5.datas) : _this5.datas, cb && function () {
-                            return ! --i && cb();
-                        });
+                        // cb && i++;
+                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this5.datas) : _this5.datas
+                        // ,
+                        // cb && (
+                        //     () => (!(--i) && cb())
+                        // )
+                        );
                     }
                 });
 
                 this.emit('stable', this.datas);
-                !i && cb && cb();
+                cb && cb();
             } else cb && this.then(cb);
             return this;
         }

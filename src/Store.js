@@ -38,9 +38,9 @@ export default class Store extends EventEmitter {
      * @param object {React.Component|Store|...} target state aware object
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
-    static map( component, keys, context, origin, setInitial=false ) {
+    static map( component, keys, context, origin, setInitial = false ) {
         var targetRevs     = component._revs || {};
-        var targetContext  = component.stores || (component.stores={});
+        var targetContext  = component.stores || (component.stores = {});
         var initialOutputs = {};
         keys               = isArray(keys) ? [...keys] : [keys];
 
@@ -413,7 +413,7 @@ export default class Store extends EventEmitter {
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    bind( obj, key, setInitial=true ) {
+    bind( obj, key, setInitial = true ) {
         this._followers.push([obj, key]);
         if ( setInitial && this.datas && this._stable ) {
             if ( typeof obj != "function" ) {
@@ -478,21 +478,22 @@ export default class Store extends EventEmitter {
                     if ( typeof follower[0] == "function" ) {
                         follower[0](this.datas);
                     } else {
-                        cb && i++;
+                        // cb && i++;
                         follower[0].setState(
                             (follower[1]) ?
                             {[follower[1]] : this.datas}
                                 :
-                            this.datas,
-                            cb && (
-                                () => (!(--i) && cb())
-                            )
+                            this.datas
+                            // ,
+                            // cb && (
+                            //     () => (!(--i) && cb())
+                            // )
                         );
                     }
                 });
 
             this.emit('stable', this.datas);
-            !i && cb && cb()
+            cb && cb()
         } else cb && this.then(cb)
         return this;
     }

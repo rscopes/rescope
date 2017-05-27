@@ -294,7 +294,7 @@ var Store = function (_EventEmitter) {
         value: function pull(stores, doWait, origin) {
             var _this3 = this;
 
-            Store.map(this, stores, this.context, origin, true);
+            var initialOutputs = Store.map(this, stores, this.context, origin, true);
             if (doWait) {
                 this.wait();
                 stores.forEach(function (s) {
@@ -302,6 +302,7 @@ var Store = function (_EventEmitter) {
                 });
                 this.release();
             }
+            return initialOutputs;
         }
 
         /**

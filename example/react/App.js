@@ -21967,7 +21967,7 @@
 	        value: function pull(stores, doWait, origin) {
 	            var _this3 = this;
 	
-	            Store.map(this, stores, this.context, origin, true);
+	            var initialOutputs = Store.map(this, stores, this.context, origin, true);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
@@ -21975,6 +21975,7 @@
 	                });
 	                this.release();
 	            }
+	            return initialOutputs;
 	        }
 	
 	        /**

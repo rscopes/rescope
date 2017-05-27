@@ -271,12 +271,13 @@ export default class Store extends EventEmitter {
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
-        Store.map(this, stores, this.context, origin, true);
+        let initialOutputs = Store.map(this, stores, this.context, origin, true);
         if ( doWait ) {
             this.wait();
             stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));
             this.release();
         }
+        return initialOutputs;
     }
 
     /**

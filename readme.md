@@ -2,7 +2,7 @@
 
 ## ReScope What ?
 
-ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods & .
+ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
 
 ## How ?
 
@@ -23,7 +23,6 @@ Because :
 
 - This is simple & effective, 
 - This allow to remove 99.9% of the tpls code and put them in clean, reusable & specialized stores, 
-- Redux drive us too easly in complex bag of bones,
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
 - 1 super class to rule all the js process including complex async mechanics
 - Do all the jobs and really don't care witch kind of templates/whatever receive the datas

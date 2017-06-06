@@ -138,7 +138,7 @@ export default class Store extends EventEmitter {
     
     static initialState = null;// overridable initial state values
     
-    datas = null;// synchrone initial state
+    datas = null;// synchrone initial output
     
     /**
      * Constructor, will build a rescope store

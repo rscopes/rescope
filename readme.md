@@ -138,7 +138,8 @@ export default class Store extends EventEmitter {
     
     static initialState = null;// overridable initial state values
     
-    datas = null;// synchrone initial output
+    
+    datas = null; // synchrone initial output
     
     /**
      * Constructor, will build a rescope store
@@ -194,17 +195,17 @@ export default class Store extends EventEmitter {
 
     /**
      * Overridable refiner / reducer / remapper 
-     * If datas & newState are simple hash maps default refine will return {...lastPublicState, ...privateState}
+     * If datas & newState are simple hash maps default refine will return {...lastDatas, ...newState}
      * if not it will return the last datas
      * @param datas
      * @param newState
      * @param changes
      * @returns {*}
      */
-    refine(datas, newState, changes) 
+    refine(lastDatas, newState, changes) 
 
     /**
-     * Pull stores in the state
+     * Pull & maintain some stores in the state
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores ) 

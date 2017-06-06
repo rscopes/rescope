@@ -131,7 +131,7 @@ this.state = {
 export default class Store extends EventEmitter {
 
     static use  = [];// overridable list of source stores
-    static follow  = [];// overridable list of store that will allow push if updated
+    static follow  = [];// overridable list of store that will trigger refine if updated
     static require  = [];// overridable list of  store/keys required to trigger refine & propagation
     
     static staticContext  = {};// default global stores context

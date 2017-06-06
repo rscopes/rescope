@@ -26,6 +26,7 @@ Because :
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
 - 1 super class to rule all the js process including complex async mechanics
 - Do all the jobs and really don't care witch kind of templates/whatever receive the datas
+- Redux drive us too easly in complex bag of bones,
  
  
 ### What else ?
@@ -135,6 +136,10 @@ export default class Store extends EventEmitter {
     
     static staticContext  = {};// default global stores context
     static defaultMaxListeners = 20;// for EventEmiter super class
+    
+    static initialState = null;// overridable initial state values
+    
+    datas = null;// synchrone initial state
     
     /**
      * Constructor, will build a rescope store

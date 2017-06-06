@@ -22,12 +22,11 @@ Rescope Stores can maintain server & client side :
 Because :
 
 - This is simple & effective, 
-- This allow to remove 99.9% of the tpls code and put them in clean, reusable & specialized stores, 
+- This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores, 
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
-- 1 super class to rule all the js process including complex async mechanics
+- 1 stem super class to rule all the async process
 - Do all the jobs and really don't care witch kind of templates/whatever receive the datas
-- Redux drive us too easly in complex bag of bones,
- 
+
  
 ### What else ?
 

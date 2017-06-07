@@ -44,20 +44,6 @@ Because :
 - Another alternative to Redux & co
 - etc..
 
-### Any actions ?
-
-Using ReScope you just have to change some key values on the right Store (or make/call helpers for that).
-Ex : 
-```
-(myContext)::session:login(user, pass)
-(myContext)::visibleTasks:setOffsetWindow(from, to)
-(myContext)::tasksStats:setState({mode:"%complete"})
-...
-```
-
-So we keep full control to deal with the App specificities. 
-From there we can trigger complex mutations, retrieve some serialized state/datas, or whatever.  
-
 ## How it work
 
 Say we define some stores :

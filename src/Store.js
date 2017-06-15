@@ -315,7 +315,7 @@ export default class Store extends EventEmitter {
      * @param pState
      * @param cb
      */
-    setState( pState, cb ) {
+    setState( pState, cb, sync ) {
         var i       = 0, change,
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
@@ -329,10 +329,15 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
+        if ( sync ) {
+            this.push();
+            cb && cb();
 
-        if ( change ) {
-            this.stabilize(cb);
-        } else cb && cb();
+        } else {
+            if ( change ) {
+                this.stabilize(cb);
+            } else cb && cb();
+        }
         return this;
     }
 

@@ -1,5 +1,21 @@
 import Store from "./Store";
 
+class Context extends Store {
+    // constructor() {
+    // super(argz[0], ...arguments)
+    // }
+    fetch( context, cb ) {
+        context    = context || Store.staticContext;
+        let stores = Object.keys(context);
+        if ( !stores.length )
+            return cb(null, context);
+        let mountAllStore = new Store(context);
+        mountAllStore.pull(stores, true);
+        mountAllStore.then(( state ) => cb(null, state, context));
+    }
+}
+
+
 let Rescope_factory = function Rescope_factory( scope ) {
         return function Rescope( ...argz ) {
             if ( this && this.constructor === Rescope )// using new
@@ -18,9 +34,9 @@ let Rescope_factory = function Rescope_factory( scope ) {
             }
         }
     },
-    setContext      = function setContext( context ) {
-
-    },
+    // setContext      = function setContext( context ) {
+    //
+    // },
     fetch           = function fetch( context, cb ) {
         context    = context || Store.staticContext;
         let stores = Object.keys(context);
@@ -39,7 +55,7 @@ try {
     if ( typeof window != 'undefined' ) {
         window.Rescope = Rescope;
     }
-}catch (e){
+} catch (e) {
 
 }
 

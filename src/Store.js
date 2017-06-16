@@ -342,6 +342,29 @@ export default class Store extends EventEmitter {
     }
 
     /**
+     * Update the current private state & push it once the store is stable
+     * @param pState
+     * @param cb
+     */
+    setStateSync( pState ) {
+        var i       = 0, change,
+            changes = this._changesSW = this._changesSW || {};
+        for ( var k in pState )
+            if ( !this.state || pState.hasOwnProperty(k)
+                && (
+                    pState[k] != this.state[k]
+                    ||
+                    (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+                ) ) {
+                change        = true;
+                this._revs[k] = pState[k] && pState[k]._rev || true;
+                changes[k]    = pState[k];
+            }
+        this.push();
+        return this.datas;
+    }
+
+    /**
      * Replace the current private state & push it once the store is stable
      * @param pState
      * @param cb

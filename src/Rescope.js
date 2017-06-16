@@ -4,6 +4,9 @@ class Context extends Store {
     // constructor() {
     // super(argz[0], ...arguments)
     // }
+    fork( context, cb ) {
+
+    }
     fetch( context, cb ) {
         context    = context || Store.staticContext;
         let stores = Object.keys(context);

@@ -4,9 +4,11 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _Store2 = require("./Store");
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Store3 = _interopRequireDefault(_Store2);
+var _Store3 = require("./Store");
+
+var _Store4 = _interopRequireDefault(_Store3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -15,6 +17,39 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Context = function (_Store) {
+    _inherits(Context, _Store);
+
+    function Context() {
+        _classCallCheck(this, Context);
+
+        return _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).apply(this, arguments));
+    }
+
+    _createClass(Context, [{
+        key: "fork",
+
+        // constructor() {
+        // super(argz[0], ...arguments)
+        // }
+        value: function fork(context, cb) {}
+    }, {
+        key: "fetch",
+        value: function fetch(context, cb) {
+            context = context || _Store4.default.staticContext;
+            var stores = Object.keys(context);
+            if (!stores.length) return cb(null, context);
+            var mountAllStore = new _Store4.default(context);
+            mountAllStore.pull(stores, true);
+            mountAllStore.then(function (state) {
+                return cb(null, state, context);
+            });
+        }
+    }]);
+
+    return Context;
+}(_Store4.default);
 
 var Rescope_factory = function Rescope_factory(scope) {
     return function Rescope() {
@@ -25,8 +60,8 @@ var Rescope_factory = function Rescope_factory(scope) {
         if (this && this.constructor === Rescope) // using new
             {
                 var _Rescope = Rescope_factory(argz[0]);
-                _Rescope.Store = function (_Store) {
-                    _inherits(ContextualStore, _Store);
+                _Rescope.Store = function (_Store2) {
+                    _inherits(ContextualStore, _Store2);
 
                     function ContextualStore() {
                         var _ref;
@@ -37,21 +72,24 @@ var Rescope_factory = function Rescope_factory(scope) {
                     }
 
                     return ContextualStore;
-                }(_Store3.default);
+                }(_Store4.default);
                 _Rescope.fetch = fetch.bind(_Rescope, argz[0]);
-                _Rescope.context = argz[0] || _Store3.default.staticContext;
+                _Rescope.context = argz[0] || _Store4.default.staticContext;
                 return _Rescope;
             } else {
-            return _Store3.default.map(argz[0], argz[1], scope, null, argz[2]);
+            return _Store4.default.map(argz[0], argz[1], scope, null, argz[2]);
         }
     };
 },
-    setContext = function setContext(context) {},
-    fetch = function fetch(context, cb) {
-    context = context || _Store3.default.staticContext;
+
+// setContext      = function setContext( context ) {
+//
+// },
+fetch = function fetch(context, cb) {
+    context = context || _Store4.default.staticContext;
     var stores = Object.keys(context);
     if (!stores.length) return cb(null, context);
-    var mountAllStore = new _Store3.default(context);
+    var mountAllStore = new _Store4.default(context);
     mountAllStore.pull(stores, true);
     mountAllStore.then(function (state) {
         return cb(null, state, context);
@@ -59,11 +97,11 @@ var Rescope_factory = function Rescope_factory(scope) {
 },
     Rescope = Rescope_factory(null);
 
-Rescope.Store = _Store3.default;
+Rescope.Store = _Store4.default;
 Rescope.fetch = function (cb) {
-    return fetch(_Store3.default.staticContext, cb);
+    return fetch(_Store4.default.staticContext, cb);
 };
-Rescope.context = _Store3.default.staticContext;
+Rescope.context = _Store4.default.staticContext;
 try {
     if (typeof window != 'undefined') {
         window.Rescope = Rescope;

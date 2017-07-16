@@ -242,7 +242,10 @@
 	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
 	            context = context || Store.staticContext;
-	            keys = keys.filter(function (key) {
+	            keys = keys.filter(
+	            // @todo : use query refs
+	            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
+	            function (key) {
 	                if (!key) {
 	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
 	                    return false;
@@ -257,10 +260,10 @@
 	                    name = alias = key.name || key.defaultName;
 	                    store = key;
 	                } else {
-	                    key = key.split(':');
+	                    key = key.match(/([\w_]+)(?:\[(\*)\])?(?:\:(\*))?/);
 	                    name = key[0];
 	                    store = context[key[0]];
-	                    alias = key[1] || key[0];
+	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
 	                }
 	                if (targetRevs[name]) return false; // ignore dbl uses for now
 	                if (!store) {

@@ -46,6 +46,8 @@ export default class Store extends EventEmitter {
 
         context        = context || Store.staticContext;
         keys           = keys.filter(
+            // @todo : use query refs
+            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
             ( key ) => {
                 if ( !key ) {
                     console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
@@ -61,10 +63,10 @@ export default class Store extends EventEmitter {
                     name = alias = key.name || key.defaultName;
                     store = key;
                 } else {
-                    key   = key.split(':');
+                    key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
                     name  = key[0];
                     store = context[key[0]];
-                    alias = key[1] || key[0];
+                    alias = key[1]=='*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
                 if ( !store ) {

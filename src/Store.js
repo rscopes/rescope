@@ -66,7 +66,7 @@ export default class Store extends EventEmitter {
                     key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
                     name  = key[0];
                     store = context[key[0]];
-                    alias = key[1]=='*' ? null : key[2] || key[0];// allow binding props  ([*])
+                    alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
                 if ( !store ) {
@@ -131,12 +131,7 @@ export default class Store extends EventEmitter {
     /**
      * Constructor, will build a rescope store
      *
-     * (context, name, keys, refine)
-     * (context, name, keys)
-     * (keys, name)
-     * (keys)
-     * (context, name, refine)
-     * (context, name)
+     * (context, {require,use,refine,state, datas})
      * (context)
      *
      * @param context {object} context where to find the other stores (default : static staticContext )
@@ -147,9 +142,10 @@ export default class Store extends EventEmitter {
         var argz    = [...arguments],
             _static = this.constructor,
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            name    = isString(argz[0]) ? argz[0] : _static.name,
-            watchs  = isArray(argz[0]) ? argz.shift() : [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine  = isFunction(argz[0]) ? argz.shift() : null
+            cfg     = argz[0]&& !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
+            name    = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
+            watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null
         ;
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
@@ -163,14 +159,26 @@ export default class Store extends EventEmitter {
 
         // this.state      = this.state || {};
 
-        this._watchs    = watchs;
-        this.name       = name;
-        this.context    = context;
-        this._stable    = true;
-        this._rev       = 1;
-        this._revs      = {};
-        this.stores     = {};
+        this._watchs  = watchs;
+        this.name     = name;
+        this.context  = context;
+        this._stable  = true;
+        this._rev     = 1;
+        this._revs    = {};
+        this.stores   = {};
+        this._require = [];
+
+        if ( _static.require )
+            this._require.push(..._static.require);
+        if ( cfg.require )
+            this._require.push(...cfg.require);
+
         this._followers = [];
+
+        if ( cfg.hasOwnProperty("datas") )
+            this.datas = cfg.datas;
+        if ( cfg.hasOwnProperty("state") )
+            this.state = cfg.state;
 
         if ( refine )
             this.refine = refine;
@@ -199,7 +207,7 @@ export default class Store extends EventEmitter {
         // if ( !cState )
         //     return true;
         if ( !cDatas && (!_static.follow || !_static.follow.length ||
-            _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
+                _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
             return true;
 
         if ( isArray(_static.follow) )
@@ -400,8 +408,8 @@ export default class Store extends EventEmitter {
             this.pull(_static.use, false, from);
         }
 
-        if ( _static.require ) {
-            _static.require.forEach(
+        if ( this._require ) {
+            this._require.forEach(
                 store => (
                     this.wait(context[store])
                 )
@@ -416,9 +424,9 @@ export default class Store extends EventEmitter {
     isComplete( state = this.state ) {
         var _static = this.constructor;
         return (
-            !_static.require
-            || !_static.require.length
-            || state && _static.require.reduce(
+            !this._require
+            || !this._require.length
+            || state && this._require.reduce(
                 ( r, key ) => (r && state[key]),
                 true
             )

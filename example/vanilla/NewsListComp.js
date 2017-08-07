@@ -260,7 +260,7 @@
 	                    name = alias = key.name || key.defaultName;
 	                    store = key;
 	                } else {
-	                    key = key.match(/([\w_]+)(?:\[(\*)\])?(?:\:(\*))?/);
+	                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
 	                    name = key[0];
 	                    store = context[key[0]];
 	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
@@ -324,12 +324,7 @@
 	        /**
 	         * Constructor, will build a rescope store
 	         *
-	         * (context, name, keys, refine)
-	         * (context, name, keys)
-	         * (keys, name)
-	         * (keys)
-	         * (context, name, refine)
-	         * (context, name)
+	         * (context, {require,use,refine,state, datas})
 	         * (context)
 	         *
 	         * @param context {object} context where to find the other stores (default : static staticContext )
@@ -339,6 +334,8 @@
 	    }]);
 	
 	    function Store() {
+	        var _this$_require, _this$_require2;
+	
 	        _classCallCheck(this, Store);
 	
 	        var _this = _possibleConstructorReturn(this, (Store.__proto__ || Object.getPrototypeOf(Store)).call(this));
@@ -346,10 +343,11 @@
 	        var argz = [].concat(Array.prototype.slice.call(arguments)),
 	            _static = _this.constructor,
 	            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-	            name = isString(argz[0]) ? argz[0] : _static.name,
-	            watchs = isArray(argz[0]) ? argz.shift() : [],
+	            cfg = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
+	            name = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
+	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        refine = isFunction(argz[0]) ? argz.shift() : null;
+	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null;
 	        _this.setMaxListeners(Store.defaultMaxListeners);
 	        _this.locks = 0;
 	        _this._onStabilize = [];
@@ -368,7 +366,15 @@
 	        _this._rev = 1;
 	        _this._revs = {};
 	        _this.stores = {};
+	        _this._require = [];
+	
+	        if (_static.require) (_this$_require = _this._require).push.apply(_this$_require, _toConsumableArray(_static.require));
+	        if (cfg.require) (_this$_require2 = _this._require).push.apply(_this$_require2, _toConsumableArray(cfg.require));
+	
 	        _this._followers = [];
+	
+	        if (cfg.hasOwnProperty("datas")) _this.datas = cfg.datas;
+	        if (cfg.hasOwnProperty("state")) _this.state = cfg.state;
 	
 	        if (refine) _this.refine = refine;
 	
@@ -607,8 +613,8 @@
 	                this.pull(_static.use, false, from);
 	            }
 	
-	            if (_static.require) {
-	                _static.require.forEach(function (store) {
+	            if (this._require) {
+	                this._require.forEach(function (store) {
 	                    return _this4.wait(context[store]);
 	                });
 	            }
@@ -625,7 +631,7 @@
 	            var state = arguments.length <= 0 || arguments[0] === undefined ? this.state : arguments[0];
 	
 	            var _static = this.constructor;
-	            return !_static.require || !_static.require.length || state && _static.require.reduce(function (r, key) {
+	            return !this._require || !this._require.length || state && this._require.reduce(function (r, key) {
 	                return r && state[key];
 	            }, true);
 	        }

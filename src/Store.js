@@ -142,7 +142,7 @@ export default class Store extends EventEmitter {
         var argz    = [...arguments],
             _static = this.constructor,
             context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            cfg     = argz[0]&& !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
+            cfg     = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
             name    = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null

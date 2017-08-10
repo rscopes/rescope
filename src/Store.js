@@ -136,26 +136,26 @@ export default class Store extends EventEmitter {
             console.error("Not a mappable store item '" + name + ' !!', store);
             return false;
         } else if ( isFunction(store) ) {
-
-            if ( store && store.scope ) {
-                skey = "!"+store.scope.map(id => {
-                    // console.log("try", id, context[id]);
-                    this.mountStore(id, context);
-                    // console.log("try", id, context[id]);
-                    return context[id] && context[id]._uid || id;
-                }).join('-');
-
-
-                if (scoped[skey]){
-                    console.log("keep scoped", skey);
-                    store = context[name] = scoped[skey];
-                }else{
-                    console.log("create scoped", skey);
-                    store = context[name] = scoped[skey] = new store(context);
-                    context[name].relink(name);
-                    return store;
-                }
-            }
+            //
+            // if ( store && store.scope ) {
+            //     skey = "!"+store.scope.map(id => {
+            //         // console.log("try", id, context[id]);
+            //         this.mountStore(id, context);
+            //         // console.log("try", id, context[id]);
+            //         return context[id] && context[id]._uid || id;
+            //     }).join('-');
+            //
+            //
+            //     if (scoped[skey]){
+            //         console.log("keep scoped", skey);
+            //         store = context[name] = scoped[skey];
+            //     }else{
+            //         console.log("create scoped", skey);
+            //         store = context[name] = scoped[skey] = new store(context);
+            //         context[name].relink(name);
+            //         return store;
+            //     }
+            // }
             store = context[name] = new store(context);
             context[name].relink(name);
         }
@@ -181,7 +181,7 @@ export default class Store extends EventEmitter {
             watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null
         ;
-        this._uid   = cfg._uid||shortid.generate();
+        this._uid   = cfg._uid || shortid.generate();
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];
@@ -476,8 +476,8 @@ export default class Store extends EventEmitter {
      */
     unBind( obj, key ) {
         var followers = this._followers,
-            i         = this._followers.length;
-        while (i--)
+            i         = followers && followers.length;
+        while (followers && i--)
             if ( followers[i][0] == obj && followers[i][1] == key )
                 return followers.splice(i, 1);
     }
@@ -574,6 +574,7 @@ export default class Store extends EventEmitter {
 
     destroy() {
 
+        this.emit('destroy', this);
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
         if ( this._followers.length )
@@ -585,7 +586,7 @@ export default class Store extends EventEmitter {
                     }
                 }
             );
-        this._followers = null;
+        this._followers.length = 0;
         this.dead       = true;
         if ( this.name && this.context[this.name] === this )
             delete this.context[this.name];

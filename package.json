@@ -7,13 +7,15 @@
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "babel src/Store.js --out-file dist/Store.js && babel src/Rescope.js --out-file dist/Rescope.js && webpack"
+    "build": "babel src/Store.js --out-file dist/Store.js && babel src/Rescope.js --out-file dist/Rescope.js && webpack",
+    "dev": "babel src/*.js --out-dir dist/ --watch"
   },
   "dependencies": {
     "events": "^1.1.1",
     "isarray": "0.0.1",
     "isfunction": "0.0.6",
-    "isstring": "^1.0.6"
+    "isstring": "^1.0.6",
+    "shortid": "^2.2.8"
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",

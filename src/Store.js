@@ -9,7 +9,9 @@ var isString     = require('isstring')
     , isFunction = require('isfunction')
     ,
     EventEmitter = require('events'),
-    objProto     = Object.getPrototypeOf({});
+    shortid      = require('shortid'),
+    objProto     = Object.getPrototypeOf({}),
+    scoped       = {};
 
 
 export default class Store extends EventEmitter {
@@ -68,14 +70,14 @@ export default class Store extends EventEmitter {
                     store = context[key[0]];
                     alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
+
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
                 if ( !store ) {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
                 } else if ( isFunction(store) ) {
-                    context[name] = new store(context);
+                    this.mountStore(name, context)
 
-                    context[name].relink(name);
                     context[name].bind(component, alias, setInitial);
                     // if ( context[key[0]].state ) {// do sync push after constructor
                     //     context[key[0]].push();
@@ -128,6 +130,38 @@ export default class Store extends EventEmitter {
         return initialOutputs;
     }
 
+    static mountStore( name, context ) {
+        let store = context[name], skey;
+        if ( !store ) {
+            console.error("Not a mappable store item '" + name + ' !!', store);
+            return false;
+        } else if ( isFunction(store) ) {
+
+            if ( store && store.scope ) {
+                skey = "!"+store.scope.map(id => {
+                    // console.log("try", id, context[id]);
+                    this.mountStore(id, context);
+                    // console.log("try", id, context[id]);
+                    return context[id] && context[id]._uid || id;
+                }).join('-');
+
+
+                if (scoped[skey]){
+                    console.log("keep scoped", skey);
+                    store = context[name] = scoped[skey];
+                }else{
+                    console.log("create scoped", skey);
+                    store = context[name] = scoped[skey] = new store(context);
+                    context[name].relink(name);
+                    return store;
+                }
+            }
+            store = context[name] = new store(context);
+            context[name].relink(name);
+        }
+        return store;
+    }
+
     /**
      * Constructor, will build a rescope store
      *
@@ -147,6 +181,7 @@ export default class Store extends EventEmitter {
             watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null
         ;
+        this._uid   = cfg._uid||shortid.generate();
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];

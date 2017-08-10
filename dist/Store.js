@@ -28,7 +28,9 @@ var isString = require('isstring'),
     isArray = require('isarray'),
     isFunction = require('isfunction'),
     EventEmitter = require('events'),
-    objProto = Object.getPrototypeOf({});
+    shortid = require('shortid'),
+    objProto = Object.getPrototypeOf({}),
+    scoped = {};
 
 var Store = function (_EventEmitter) {
     _inherits(Store, _EventEmitter);
@@ -60,7 +62,9 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'map',
         value: function map(component, keys, context, origin) {
-            var setInitial = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+            var _this2 = this;
+
+            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 
             var targetRevs = component._revs || {};
             var targetContext = component.stores || (component.stores = {});
@@ -91,14 +95,14 @@ var Store = function (_EventEmitter) {
                     store = context[key[0]];
                     alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
                 }
+
                 if (targetRevs[name]) return false; // ignore dbl uses for now
                 if (!store) {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
                 } else if (isFunction(store)) {
-                    context[name] = new store(context);
+                    _this2.mountStore(name, context);
 
-                    context[name].relink(name);
                     context[name].bind(component, alias, setInitial);
                     // if ( context[key[0]].state ) {// do sync push after constructor
                     //     context[key[0]].push();
@@ -146,6 +150,41 @@ var Store = function (_EventEmitter) {
 
             return initialOutputs;
         }
+    }, {
+        key: 'mountStore',
+        value: function mountStore(name, context) {
+            var _this3 = this;
+
+            var store = context[name],
+                skey = void 0;
+            if (!store) {
+                console.error("Not a mappable store item '" + name + ' !!', store);
+                return false;
+            } else if (isFunction(store)) {
+
+                if (store && store.scope) {
+                    skey = "!" + store.scope.map(function (id) {
+                        // console.log("try", id, context[id]);
+                        _this3.mountStore(id, context);
+                        // console.log("try", id, context[id]);
+                        return context[id] && context[id]._uid || id;
+                    }).join('-');
+
+                    if (scoped[skey]) {
+                        console.log("keep scoped", skey);
+                        store = context[name] = scoped[skey];
+                    } else {
+                        console.log("create scoped", skey);
+                        store = context[name] = scoped[skey] = new store(context);
+                        context[name].relink(name);
+                        return store;
+                    }
+                }
+                store = context[name] = new store(context);
+                context[name].relink(name);
+            }
+            return store;
+        }
 
         /**
          * Constructor, will build a rescope store
@@ -174,6 +213,7 @@ var Store = function (_EventEmitter) {
             watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
             // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
         refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null;
+        _this._uid = cfg._uid || shortid.generate();
         _this.setMaxListeners(Store.defaultMaxListeners);
         _this.locks = 0;
         _this._onStabilize = [];
@@ -277,7 +317,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'stabilize',
         value: function stabilize(cb) {
-            var _this2 = this;
+            var _this4 = this;
 
             var me = this;
             cb && me.once('stable', cb);
@@ -288,7 +328,7 @@ var Store = function (_EventEmitter) {
             this._stabilizer = setTimeout(this.push.bind(this, null, function () {
                 //@todo
                 // me._stable       = true;
-                _this2._stabilizer = null;
+                _this4._stabilizer = null;
                 // this.release();
             }));
         }
@@ -301,13 +341,13 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'pull',
         value: function pull(stores, doWait, origin) {
-            var _this3 = this;
+            var _this5 = this;
 
             var initialOutputs = Store.map(this, stores, this.context, origin, true);
             if (doWait) {
                 this.wait();
                 stores.forEach(function (s) {
-                    return _this3.context[s] && _this3.wait(_this3.context[s]);
+                    return _this5.context[s] && _this5.wait(_this5.context[s]);
                 });
                 this.release();
             }
@@ -430,7 +470,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'relink',
         value: function relink(from) {
-            var _this4 = this;
+            var _this6 = this;
 
             var context = this.context,
                 _static = this.constructor;
@@ -441,7 +481,7 @@ var Store = function (_EventEmitter) {
 
             if (this._require) {
                 this._require.forEach(function (store) {
-                    return _this4.wait(context[store]);
+                    return _this6.wait(context[store]);
                 });
             }
         }
@@ -454,7 +494,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'isComplete',
         value: function isComplete() {
-            var state = arguments.length <= 0 || arguments[0] === undefined ? this.state : arguments[0];
+            var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
 
             var _static = this.constructor;
             return !this._require || !this._require.length || state && this._require.reduce(function (r, key) {
@@ -488,7 +528,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'bind',
         value: function bind(obj, key) {
-            var setInitial = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+            var setInitial = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
             this._followers.push([obj, key]);
             if (setInitial && this.datas && this._stable) {
@@ -544,7 +584,7 @@ var Store = function (_EventEmitter) {
     }, {
         key: 'release',
         value: function release(cb) {
-            var _this5 = this;
+            var _this7 = this;
 
             var _static = this.constructor;
             var i = 0;
@@ -554,12 +594,12 @@ var Store = function (_EventEmitter) {
 
                 this._rev = 1 + (this._rev + 1) % 1000000; //
                 if (this._followers.length) this._followers.forEach(function (follower) {
-                    if (!_this5.datas) return;
+                    if (!_this7.datas) return;
                     if (typeof follower[0] == "function") {
-                        follower[0](_this5.datas);
+                        follower[0](_this7.datas);
                     } else {
                         // cb && i++;
-                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this5.datas) : _this5.datas
+                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this7.datas) : _this7.datas
                         // ,
                         // cb && (
                         //     () => (!(--i) && cb())

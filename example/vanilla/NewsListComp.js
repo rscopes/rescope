@@ -43,16 +43,16 @@
 /******/ ({
 
 /***/ 0:
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(189);
-	module.exports = __webpack_require__(190);
+	__webpack_require__(205);
+	module.exports = __webpack_require__(206);
 
 
-/***/ },
+/***/ }),
 
-/***/ 179:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 185:
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
@@ -62,7 +62,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _Store3 = __webpack_require__(180);
+	var _Store3 = __webpack_require__(186);
 	
 	var _Store4 = _interopRequireDefault(_Store3);
 	
@@ -167,10 +167,10 @@
 	exports.default = Rescope;
 	module.exports = exports["default"];
 
-/***/ },
+/***/ }),
 
-/***/ 180:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 186:
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -198,11 +198,13 @@
 	 * @todo : lot of optims...
 	 */
 	
-	var isString = __webpack_require__(181),
-	    isArray = __webpack_require__(182),
-	    isFunction = __webpack_require__(183),
-	    EventEmitter = __webpack_require__(184),
-	    objProto = Object.getPrototypeOf({});
+	var isString = __webpack_require__(187),
+	    isArray = __webpack_require__(188),
+	    isFunction = __webpack_require__(189),
+	    EventEmitter = __webpack_require__(190),
+	    shortid = __webpack_require__(191),
+	    objProto = Object.getPrototypeOf({}),
+	    scoped = {};
 	
 	var Store = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
@@ -234,7 +236,9 @@
 	    }, {
 	        key: 'map',
 	        value: function map(component, keys, context, origin) {
-	            var setInitial = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+	            var _this2 = this;
+	
+	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 	
 	            var targetRevs = component._revs || {};
 	            var targetContext = component.stores || (component.stores = {});
@@ -265,14 +269,14 @@
 	                    store = context[key[0]];
 	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
 	                }
+	
 	                if (targetRevs[name]) return false; // ignore dbl uses for now
 	                if (!store) {
 	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
 	                    return false;
 	                } else if (isFunction(store)) {
-	                    context[name] = new store(context);
+	                    _this2.mountStore(name, context);
 	
-	                    context[name].relink(name);
 	                    context[name].bind(component, alias, setInitial);
 	                    // if ( context[key[0]].state ) {// do sync push after constructor
 	                    //     context[key[0]].push();
@@ -320,6 +324,41 @@
 	
 	            return initialOutputs;
 	        }
+	    }, {
+	        key: 'mountStore',
+	        value: function mountStore(name, context) {
+	            var _this3 = this;
+	
+	            var store = context[name],
+	                skey = void 0;
+	            if (!store) {
+	                console.error("Not a mappable store item '" + name + ' !!', store);
+	                return false;
+	            } else if (isFunction(store)) {
+	
+	                if (store && store.scope) {
+	                    skey = "!" + store.scope.map(function (id) {
+	                        // console.log("try", id, context[id]);
+	                        _this3.mountStore(id, context);
+	                        // console.log("try", id, context[id]);
+	                        return context[id] && context[id]._uid || id;
+	                    }).join('-');
+	
+	                    if (scoped[skey]) {
+	                        console.log("keep scoped", skey);
+	                        store = context[name] = scoped[skey];
+	                    } else {
+	                        console.log("create scoped", skey);
+	                        store = context[name] = scoped[skey] = new store(context);
+	                        context[name].relink(name);
+	                        return store;
+	                    }
+	                }
+	                store = context[name] = new store(context);
+	                context[name].relink(name);
+	            }
+	            return store;
+	        }
 	
 	        /**
 	         * Constructor, will build a rescope store
@@ -348,6 +387,7 @@
 	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
 	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null;
+	        _this._uid = cfg._uid || shortid.generate();
 	        _this.setMaxListeners(Store.defaultMaxListeners);
 	        _this.locks = 0;
 	        _this._onStabilize = [];
@@ -451,7 +491,7 @@
 	    }, {
 	        key: 'stabilize',
 	        value: function stabilize(cb) {
-	            var _this2 = this;
+	            var _this4 = this;
 	
 	            var me = this;
 	            cb && me.once('stable', cb);
@@ -462,7 +502,7 @@
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
 	                // me._stable       = true;
-	                _this2._stabilizer = null;
+	                _this4._stabilizer = null;
 	                // this.release();
 	            }));
 	        }
@@ -475,13 +515,13 @@
 	    }, {
 	        key: 'pull',
 	        value: function pull(stores, doWait, origin) {
-	            var _this3 = this;
+	            var _this5 = this;
 	
 	            var initialOutputs = Store.map(this, stores, this.context, origin, true);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
-	                    return _this3.context[s] && _this3.wait(_this3.context[s]);
+	                    return _this5.context[s] && _this5.wait(_this5.context[s]);
 	                });
 	                this.release();
 	            }
@@ -604,7 +644,7 @@
 	    }, {
 	        key: 'relink',
 	        value: function relink(from) {
-	            var _this4 = this;
+	            var _this6 = this;
 	
 	            var context = this.context,
 	                _static = this.constructor;
@@ -615,7 +655,7 @@
 	
 	            if (this._require) {
 	                this._require.forEach(function (store) {
-	                    return _this4.wait(context[store]);
+	                    return _this6.wait(context[store]);
 	                });
 	            }
 	        }
@@ -628,7 +668,7 @@
 	    }, {
 	        key: 'isComplete',
 	        value: function isComplete() {
-	            var state = arguments.length <= 0 || arguments[0] === undefined ? this.state : arguments[0];
+	            var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
 	
 	            var _static = this.constructor;
 	            return !this._require || !this._require.length || state && this._require.reduce(function (r, key) {
@@ -662,7 +702,7 @@
 	    }, {
 	        key: 'bind',
 	        value: function bind(obj, key) {
-	            var setInitial = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+	            var setInitial = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 	
 	            this._followers.push([obj, key]);
 	            if (setInitial && this.datas && this._stable) {
@@ -718,7 +758,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this5 = this;
+	            var _this7 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
@@ -728,12 +768,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this5.datas) return;
+	                    if (!_this7.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this5.datas);
+	                        follower[0](_this7.datas);
 	                    } else {
 	                        // cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this5.datas) : _this5.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this7.datas) : _this7.datas
 	                        // ,
 	                        // cb && (
 	                        //     () => (!(--i) && cb())
@@ -776,10 +816,10 @@
 	exports.default = Store;
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 
-/***/ 181:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 187:
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;;(function (factory) {
 	  if (true)
@@ -825,20 +865,20 @@
 	});
 
 
-/***/ },
+/***/ }),
 
-/***/ 182:
-/***/ function(module, exports) {
+/***/ 188:
+/***/ (function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
 	  return Object.prototype.toString.call(arr) == '[object Array]';
 	};
 
 
-/***/ },
+/***/ }),
 
-/***/ 183:
-/***/ function(module, exports) {
+/***/ 189:
+/***/ (function(module, exports) {
 
 	// if (typeof require !== 'undefined') {}
 	
@@ -851,10 +891,10 @@
 		module.exports = isFunction;
 	}
 
-/***/ },
+/***/ }),
 
-/***/ 184:
-/***/ function(module, exports) {
+/***/ 190:
+/***/ (function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
 	//
@@ -1160,10 +1200,390 @@
 	}
 
 
-/***/ },
+/***/ }),
 
-/***/ 186:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 191:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = __webpack_require__(192);
+
+
+/***/ }),
+
+/***/ 192:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var alphabet = __webpack_require__(193);
+	var encode = __webpack_require__(195);
+	var decode = __webpack_require__(197);
+	var build = __webpack_require__(198);
+	var isValid = __webpack_require__(199);
+	
+	// if you are using cluster or multiple servers use this to make each instance
+	// has a unique value for worker
+	// Note: I don't know if this is automatically set when using third
+	// party cluster solutions such as pm2.
+	var clusterWorkerId = __webpack_require__(200) || 0;
+	
+	/**
+	 * Set the seed.
+	 * Highly recommended if you don't want people to try to figure out your id schema.
+	 * exposed as shortid.seed(int)
+	 * @param seed Integer value to seed the random alphabet.  ALWAYS USE THE SAME SEED or you might get overlaps.
+	 */
+	function seed(seedValue) {
+	    alphabet.seed(seedValue);
+	    return module.exports;
+	}
+	
+	/**
+	 * Set the cluster worker or machine id
+	 * exposed as shortid.worker(int)
+	 * @param workerId worker must be positive integer.  Number less than 16 is recommended.
+	 * returns shortid module so it can be chained.
+	 */
+	function worker(workerId) {
+	    clusterWorkerId = workerId;
+	    return module.exports;
+	}
+	
+	/**
+	 *
+	 * sets new characters to use in the alphabet
+	 * returns the shuffled alphabet
+	 */
+	function characters(newCharacters) {
+	    if (newCharacters !== undefined) {
+	        alphabet.characters(newCharacters);
+	    }
+	
+	    return alphabet.shuffled();
+	}
+	
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function generate() {
+	  return build(clusterWorkerId);
+	}
+	
+	// Export all other functions as properties of the generate function
+	module.exports = generate;
+	module.exports.generate = generate;
+	module.exports.seed = seed;
+	module.exports.worker = worker;
+	module.exports.characters = characters;
+	module.exports.decode = decode;
+	module.exports.isValid = isValid;
+
+
+/***/ }),
+
+/***/ 193:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var randomFromSeed = __webpack_require__(194);
+	
+	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
+	var alphabet;
+	var previousSeed;
+	
+	var shuffled;
+	
+	function reset() {
+	    shuffled = false;
+	}
+	
+	function setCharacters(_alphabet_) {
+	    if (!_alphabet_) {
+	        if (alphabet !== ORIGINAL) {
+	            alphabet = ORIGINAL;
+	            reset();
+	        }
+	        return;
+	    }
+	
+	    if (_alphabet_ === alphabet) {
+	        return;
+	    }
+	
+	    if (_alphabet_.length !== ORIGINAL.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. You submitted ' + _alphabet_.length + ' characters: ' + _alphabet_);
+	    }
+	
+	    var unique = _alphabet_.split('').filter(function(item, ind, arr){
+	       return ind !== arr.lastIndexOf(item);
+	    });
+	
+	    if (unique.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. These characters were not unique: ' + unique.join(', '));
+	    }
+	
+	    alphabet = _alphabet_;
+	    reset();
+	}
+	
+	function characters(_alphabet_) {
+	    setCharacters(_alphabet_);
+	    return alphabet;
+	}
+	
+	function setSeed(seed) {
+	    randomFromSeed.seed(seed);
+	    if (previousSeed !== seed) {
+	        reset();
+	        previousSeed = seed;
+	    }
+	}
+	
+	function shuffle() {
+	    if (!alphabet) {
+	        setCharacters(ORIGINAL);
+	    }
+	
+	    var sourceArray = alphabet.split('');
+	    var targetArray = [];
+	    var r = randomFromSeed.nextValue();
+	    var characterIndex;
+	
+	    while (sourceArray.length > 0) {
+	        r = randomFromSeed.nextValue();
+	        characterIndex = Math.floor(r * sourceArray.length);
+	        targetArray.push(sourceArray.splice(characterIndex, 1)[0]);
+	    }
+	    return targetArray.join('');
+	}
+	
+	function getShuffled() {
+	    if (shuffled) {
+	        return shuffled;
+	    }
+	    shuffled = shuffle();
+	    return shuffled;
+	}
+	
+	/**
+	 * lookup shuffled letter
+	 * @param index
+	 * @returns {string}
+	 */
+	function lookup(index) {
+	    var alphabetShuffled = getShuffled();
+	    return alphabetShuffled[index];
+	}
+	
+	module.exports = {
+	    characters: characters,
+	    seed: setSeed,
+	    lookup: lookup,
+	    shuffled: getShuffled
+	};
+
+
+/***/ }),
+
+/***/ 194:
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	// Found this seed-based random generator somewhere
+	// Based on The Central Randomizer 1.3 (C) 1997 by Paul Houle (houle@msc.cornell.edu)
+	
+	var seed = 1;
+	
+	/**
+	 * return a random number based on a seed
+	 * @param seed
+	 * @returns {number}
+	 */
+	function getNextValue() {
+	    seed = (seed * 9301 + 49297) % 233280;
+	    return seed/(233280.0);
+	}
+	
+	function setSeed(_seed_) {
+	    seed = _seed_;
+	}
+	
+	module.exports = {
+	    nextValue: getNextValue,
+	    seed: setSeed
+	};
+
+
+/***/ }),
+
+/***/ 195:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var randomByte = __webpack_require__(196);
+	
+	function encode(lookup, number) {
+	    var loopCounter = 0;
+	    var done;
+	
+	    var str = '';
+	
+	    while (!done) {
+	        str = str + lookup( ( (number >> (4 * loopCounter)) & 0x0f ) | randomByte() );
+	        done = number < (Math.pow(16, loopCounter + 1 ) );
+	        loopCounter++;
+	    }
+	    return str;
+	}
+	
+	module.exports = encode;
+
+
+/***/ }),
+
+/***/ 196:
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
+	
+	function randomByte() {
+	    if (!crypto || !crypto.getRandomValues) {
+	        return Math.floor(Math.random() * 256) & 0x30;
+	    }
+	    var dest = new Uint8Array(1);
+	    crypto.getRandomValues(dest);
+	    return dest[0] & 0x30;
+	}
+	
+	module.exports = randomByte;
+
+
+/***/ }),
+
+/***/ 197:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(193);
+	
+	/**
+	 * Decode the id to get the version and worker
+	 * Mainly for debugging and testing.
+	 * @param id - the shortid-generated id.
+	 */
+	function decode(id) {
+	    var characters = alphabet.shuffled();
+	    return {
+	        version: characters.indexOf(id.substr(0, 1)) & 0x0f,
+	        worker: characters.indexOf(id.substr(1, 1)) & 0x0f
+	    };
+	}
+	
+	module.exports = decode;
+
+
+/***/ }),
+
+/***/ 198:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var encode = __webpack_require__(195);
+	var alphabet = __webpack_require__(193);
+	
+	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
+	// This number should be updated every year or so to keep the generated id short.
+	// To regenerate `new Date() - 0` and bump the version. Always bump the version!
+	var REDUCE_TIME = 1459707606518;
+	
+	// don't change unless we change the algos or REDUCE_TIME
+	// must be an integer and less than 16
+	var version = 6;
+	
+	// Counter is used when shortid is called multiple times in one second.
+	var counter;
+	
+	// Remember the last time shortid was called in case counter is needed.
+	var previousSeconds;
+	
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function build(clusterWorkerId) {
+	
+	    var str = '';
+	
+	    var seconds = Math.floor((Date.now() - REDUCE_TIME) * 0.001);
+	
+	    if (seconds === previousSeconds) {
+	        counter++;
+	    } else {
+	        counter = 0;
+	        previousSeconds = seconds;
+	    }
+	
+	    str = str + encode(alphabet.lookup, version);
+	    str = str + encode(alphabet.lookup, clusterWorkerId);
+	    if (counter > 0) {
+	        str = str + encode(alphabet.lookup, counter);
+	    }
+	    str = str + encode(alphabet.lookup, seconds);
+	
+	    return str;
+	}
+	
+	module.exports = build;
+
+
+/***/ }),
+
+/***/ 199:
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(193);
+	
+	function isShortId(id) {
+	    if (!id || typeof id !== 'string' || id.length < 6 ) {
+	        return false;
+	    }
+	
+	    var characters = alphabet.characters();
+	    var len = id.length;
+	    for(var i = 0; i < len;i++) {
+	        if (characters.indexOf(id[i]) === -1) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
+	
+	module.exports = isShortId;
+
+
+/***/ }),
+
+/***/ 200:
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	module.exports = 0;
+
+
+/***/ }),
+
+/***/ 202:
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
@@ -1183,7 +1603,7 @@
 	                                                                       */
 	
 	
-	var _Rescope = __webpack_require__(179);
+	var _Rescope = __webpack_require__(185);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1191,7 +1611,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(187);
+	var stubs = __webpack_require__(203);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -1320,10 +1740,10 @@
 	
 	module.exports = exports["default"];
 
-/***/ },
+/***/ }),
 
-/***/ 187:
-/***/ function(module, exports) {
+/***/ 203:
+/***/ (function(module, exports) {
 
 	"use strict";
 	
@@ -1369,10 +1789,10 @@
 	};
 	module.exports = exports["default"];
 
-/***/ },
+/***/ }),
 
-/***/ 189:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 205:
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
@@ -1380,11 +1800,11 @@
 	    value: true
 	});
 	
-	var _Rescope = __webpack_require__(179);
+	var _Rescope = __webpack_require__(185);
 	
 	var _Rescope2 = _interopRequireDefault(_Rescope);
 	
-	var _StoresContext = __webpack_require__(186);
+	var _StoresContext = __webpack_require__(202);
 	
 	var _StoresContext2 = _interopRequireDefault(_StoresContext);
 	
@@ -1397,7 +1817,7 @@
 	 * Time: 11:08
 	 */
 	function NewsListComp() {
-	    var target = arguments.length <= 0 || arguments[0] === undefined ? document.createElement('div') : arguments[0];
+	    var target = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.createElement('div');
 	
 	
 	    this.setState = function (state) {
@@ -1413,14 +1833,14 @@
 	exports.default = NewsListComp;
 	module.exports = exports["default"];
 
-/***/ },
+/***/ }),
 
-/***/ 190:
-/***/ function(module, exports, __webpack_require__) {
+/***/ 206:
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/vanilla/index.html";
 
-/***/ }
+/***/ })
 
 /******/ });
 //# sourceMappingURL=NewsListComp.js.map

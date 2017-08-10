@@ -327,33 +327,32 @@
 	    }, {
 	        key: 'mountStore',
 	        value: function mountStore(name, context) {
-	            var _this3 = this;
-	
 	            var store = context[name],
 	                skey = void 0;
 	            if (!store) {
 	                console.error("Not a mappable store item '" + name + ' !!', store);
 	                return false;
 	            } else if (isFunction(store)) {
-	
-	                if (store && store.scope) {
-	                    skey = "!" + store.scope.map(function (id) {
-	                        // console.log("try", id, context[id]);
-	                        _this3.mountStore(id, context);
-	                        // console.log("try", id, context[id]);
-	                        return context[id] && context[id]._uid || id;
-	                    }).join('-');
-	
-	                    if (scoped[skey]) {
-	                        console.log("keep scoped", skey);
-	                        store = context[name] = scoped[skey];
-	                    } else {
-	                        console.log("create scoped", skey);
-	                        store = context[name] = scoped[skey] = new store(context);
-	                        context[name].relink(name);
-	                        return store;
-	                    }
-	                }
+	                //
+	                // if ( store && store.scope ) {
+	                //     skey = "!"+store.scope.map(id => {
+	                //         // console.log("try", id, context[id]);
+	                //         this.mountStore(id, context);
+	                //         // console.log("try", id, context[id]);
+	                //         return context[id] && context[id]._uid || id;
+	                //     }).join('-');
+	                //
+	                //
+	                //     if (scoped[skey]){
+	                //         console.log("keep scoped", skey);
+	                //         store = context[name] = scoped[skey];
+	                //     }else{
+	                //         console.log("create scoped", skey);
+	                //         store = context[name] = scoped[skey] = new store(context);
+	                //         context[name].relink(name);
+	                //         return store;
+	                //     }
+	                // }
 	                store = context[name] = new store(context);
 	                context[name].relink(name);
 	            }
@@ -491,7 +490,7 @@
 	    }, {
 	        key: 'stabilize',
 	        value: function stabilize(cb) {
-	            var _this4 = this;
+	            var _this3 = this;
 	
 	            var me = this;
 	            cb && me.once('stable', cb);
@@ -502,7 +501,7 @@
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
 	                // me._stable       = true;
-	                _this4._stabilizer = null;
+	                _this3._stabilizer = null;
 	                // this.release();
 	            }));
 	        }
@@ -515,13 +514,13 @@
 	    }, {
 	        key: 'pull',
 	        value: function pull(stores, doWait, origin) {
-	            var _this5 = this;
+	            var _this4 = this;
 	
 	            var initialOutputs = Store.map(this, stores, this.context, origin, true);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
-	                    return _this5.context[s] && _this5.wait(_this5.context[s]);
+	                    return _this4.context[s] && _this4.wait(_this4.context[s]);
 	                });
 	                this.release();
 	            }
@@ -644,7 +643,7 @@
 	    }, {
 	        key: 'relink',
 	        value: function relink(from) {
-	            var _this6 = this;
+	            var _this5 = this;
 	
 	            var context = this.context,
 	                _static = this.constructor;
@@ -655,7 +654,7 @@
 	
 	            if (this._require) {
 	                this._require.forEach(function (store) {
-	                    return _this6.wait(context[store]);
+	                    return _this5.wait(context[store]);
 	                });
 	            }
 	        }
@@ -687,8 +686,8 @@
 	        key: 'unBind',
 	        value: function unBind(obj, key) {
 	            var followers = this._followers,
-	                i = this._followers.length;
-	            while (i--) {
+	                i = followers && followers.length;
+	            while (followers && i--) {
 	                if (followers[i][0] == obj && followers[i][1] == key) return followers.splice(i, 1);
 	            }
 	        }
@@ -758,7 +757,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this7 = this;
+	            var _this6 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
@@ -768,12 +767,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this7.datas) return;
+	                    if (!_this6.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this7.datas);
+	                        follower[0](_this6.datas);
 	                    } else {
 	                        // cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this7.datas) : _this7.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this6.datas) : _this6.datas
 	                        // ,
 	                        // cb && (
 	                        //     () => (!(--i) && cb())
@@ -791,13 +790,14 @@
 	        key: 'destroy',
 	        value: function destroy() {
 	
+	            this.emit('destroy', this);
 	            if (this._stabilizer) clearTimeout(this._stabilizer);
 	            if (this._followers.length) this._followers.forEach(function (follower) {
 	                if (typeof follower[0] !== "function") {
 	                    if (follower[0].stores) delete follower[0].stores[follower[1]];
 	                }
 	            });
-	            this._followers = null;
+	            this._followers.length = 0;
 	            this.dead = true;
 	            if (this.name && this.context[this.name] === this) delete this.context[this.name];
 	            this._revs = this.datas = this.state = this.context = null;

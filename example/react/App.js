@@ -87,14 +87,14 @@
 	
 	        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).apply(this, arguments));
 	
-	        _this.state = _extends({}, Store.map(_this, ["status", "session"]));
+	        _this.state = _extends({}, Store.map(_this, ["status", "appState"]));
 	        return _this;
 	    }
 	
 	    _createClass(App, [{
 	        key: 'render',
 	        value: function render() {
-	            var session = this.stores.session;
+	            var appState = this.stores.appState;
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -116,7 +116,7 @@
 	                                'button',
 	                                {
 	                                    onClick: function onClick() {
-	                                        return session.setState({ currentUserId: 'MissTick' });
+	                                        return appState.setState({ currentUserId: 'MissTick' });
 	                                    } },
 	                                'MissTick events'
 	                            )
@@ -133,7 +133,7 @@
 	                                'button',
 	                                {
 	                                    onClick: function onClick() {
-	                                        return session.setState({ currentUserId: 'MrNice' });
+	                                        return appState.setState({ currentUserId: 'MrNice' });
 	                                    } },
 	                                'MrNice events'
 	                            )
@@ -23902,7 +23902,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _class, _temp, _class2, _temp2, _class3, _temp3, _class4, _temp4; /**
+	var _class, _temp, _class2, _temp2, _class3, _temp3, _class4, _temp5; /**
 	                                                                       * @author Nathanael BRAUN
 	                                                                       *
 	                                                                       * Date: 03/12/2016
@@ -23931,17 +23931,17 @@
 	        }
 	
 	        return status;
-	    }(_Rescope.Store), _class.use = ["session"], _temp),
-	    session: (_temp2 = _class2 = function (_Store2) {
-	        _inherits(session, _Store2);
+	    }(_Rescope.Store), _class.use = ["appState"], _temp),
+	    appState: (_temp2 = _class2 = function (_Store2) {
+	        _inherits(appState, _Store2);
 	
-	        function session() {
-	            _classCallCheck(this, session);
+	        function appState() {
+	            _classCallCheck(this, appState);
 	
-	            return _possibleConstructorReturn(this, (session.__proto__ || Object.getPrototypeOf(session)).apply(this, arguments));
+	            return _possibleConstructorReturn(this, (appState.__proto__ || Object.getPrototypeOf(appState)).apply(this, arguments));
 	        }
 	
-	        return session;
+	        return appState;
 	    }(_Rescope.Store), _class2.initialState = {
 	        currentUserId: "MrNice"
 	    }, _temp2),
@@ -23958,11 +23958,12 @@
 	            key: "refine",
 	            // list of source stores id
 	
-	            value: function refine(datas, newState, changes) {
+	            value: function refine(datas, _ref, changes) {
 	                var _this4 = this;
 	
-	                var NewUserId = newState.session && newState.session.currentUserId,
-	                    LastUserId = datas && datas._id;
+	                var NewUserId = _ref.appState.currentUserId;
+	
+	                var LastUserId = datas && datas._id;
 	
 	                console.info("currentUser state updated : ", changes);
 	
@@ -23987,32 +23988,36 @@
 	        }]);
 	
 	        return currentUser;
-	    }(_Rescope.Store), _class3.use = ["session"], _temp3),
-	    userEvents: (_temp4 = _class4 = function (_Store4) {
+	    }(_Rescope.Store), _class3.use = ["appState"], _temp3),
+	    userEvents: (_temp5 = _class4 = function (_Store4) {
 	        _inherits(userEvents, _Store4);
 	
 	        function userEvents() {
+	            var _ref2;
+	
+	            var _temp4, _this5, _ret;
+	
 	            _classCallCheck(this, userEvents);
 	
-	            return _possibleConstructorReturn(this, (userEvents.__proto__ || Object.getPrototypeOf(userEvents)).apply(this, arguments));
+	            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	                args[_key] = arguments[_key];
+	            }
+	
+	            return _ret = (_temp4 = (_this5 = _possibleConstructorReturn(this, (_ref2 = userEvents.__proto__ || Object.getPrototypeOf(userEvents)).call.apply(_ref2, [this].concat(args))), _this5), _this5.datas = {}, _temp4), _possibleConstructorReturn(_this5, _ret);
 	        }
 	
 	        _createClass(userEvents, [{
 	            key: "refine",
-	            // list of source stores id
-	            //
-	            // shouldPropag( newDatas ) {
-	            //     return !!newDatas.userId;
-	            // }
-	
-	            value: function refine(datas, newState, changes) {
+	            value: function refine(datas, _ref3, changes) {
 	                var _this6 = this;
 	
-	                var nUserId = newState.currentUser && newState.currentUser._id,
-	                    cUserId = datas && datas.userId;
+	                var nUserId = _ref3.currentUser._id;
+	                var _datas$cUserId = datas.cUserId,
+	                    cUserId = _datas$cUserId === undefined ? void 0 : _datas$cUserId;
+	
 	
 	                if (nUserId != cUserId) {
-	                    this.wait(); // do some async
+	                    this.wait(); // do some async whithout pushing
 	                    setTimeout(function () {
 	                        // get somme user events or whatever...
 	                        _this6.push({
@@ -24033,12 +24038,11 @@
 	                }
 	
 	                return datas;
-	            } // list of source stores id
-	
+	            }
 	        }]);
 	
 	        return userEvents;
-	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _temp4)
+	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _temp5)
 	};
 	
 	exports.default = function () {

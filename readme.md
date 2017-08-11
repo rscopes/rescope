@@ -8,29 +8,32 @@ ReScope is a simple, flexible, predictable \& effective Store system inspired by
 
 Well mechanic is simple:
 
-We build stores reading an entry state (kind of "key"), maintaining output datas.<br>
-These outputs could be used as partial "key", or "predictible" datas for dumb components, or other stores.
+We build stores reading an entry state (kind of "key") that maintain output datas in a deterministic way.<br>
+These outputs are then, used as partial "key" in other stores states, or "predictible" datas in dumb components.<br>
+
+No more complex stuff in React components; 
+
 
 Rescope Stores can maintain server & client side :
 - the records matching some ids,
 - Processed & interpolated datas, ready for render
-- Page state & status
+- Page state & status (act as router)
 - session, etc... 
 
 ## Why ?
 
 Because :
 
-- This is simple & effective, 
-- This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores, 
+- This is simple, flexible & effective, 
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
+- This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores, 
 - 1 stem super class to rule all the async process
 - Do all the jobs and really don't care witch kind of templates/whatever receive the datas
 
  
 ### What else ?
 
-- Built-in source stores injections & sync
+- Easy stores injections
 - Semaphores API (wait, release, etc... fns )
 - Promise like APIs
 - Simple methods to contextualize, preload, hook & bind the stores
@@ -44,20 +47,9 @@ Because :
 - Another alternative to Redux & co
 - etc..
 
-## How it work
+## Actions ?
 
-Say we define some stores :
- - currentUser job is to receive an userId and propag the corresponding UserRecord
- - currentTodo job is to receive an UserRecord and propag the corresponding user TodoList
- - selectedTodo receive TodoList and push a TodoList[0] with some data deps
- - todoStats receive TodoList & some geoloc info and then push a somme generated stats
-etc...
-
-So updating userId like this :
-```jsx
-currentUser.setState({_id:'theUserId'})
-```
-Will chain update active stores in the context and finally update the corresponding UI components.
+DIY or push mutations (setState) on the right store
 
 ## (Dumb) Simple \& working examples [here](src/example) 
 

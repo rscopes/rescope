@@ -23,22 +23,22 @@ class App extends React.Component {
     constructor() {
         super(...arguments);
         this.state = {
-            ...Store.map(this, ["status", "session"])
+            ...Store.map(this, ["status", "appState"])
         };
     }
 
     render() {
-        let session = this.stores.session;
+        let appState = this.stores.appState;
         return (
             <div>
                 <h1>Really basic drafty rescope + react mini app example</h1>
 
                 <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
                     <b><u><button
-                        onClick={() => session.setState(
+                        onClick={() => appState.setState(
                             {currentUserId : 'MissTick'})}>MissTick events</button></u></b>&nbsp;&nbsp;
                     <b><u><button
-                        onClick={() => session.setState({currentUserId : 'MrNice'})}>MrNice events</button></u></b>
+                        onClick={() => appState.setState({currentUserId : 'MrNice'})}>MrNice events</button></u></b>
                 </div>
                 <pre>
                   {this.state.status && JSON.stringify(this.state.status, null, 2)}

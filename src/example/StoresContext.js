@@ -5,31 +5,35 @@
  * Time: 09:28
  */
 import {Store} from "../Rescope";
+
 let stubs = require("./_stubs/datas");
 
 let MyStoreContext = {
     status      : class status extends Store {
-        static use = ["session"];
+        static use = ["appState"];
     },
-    session     : class session extends Store {
+    appState    : class appState extends Store {
         static initialState = {
             currentUserId : "MrNice"
         };
-        // constructor(){
-        //     debugger;
-        //     super(...arguments)
+
+        // constructor() {
+        //     super(...arguments);
+        //     browserHistory.listen(( location, action ) => {
+        //
+        //     });
         // }
+
         // refine( datas, newState, changes ) {
-        //     debugger
+        //     // do some routing (map on url)
         //     return newState;
         // }
     },
     currentUser : class currentUser extends Store {
-        static use = ["session"];// list of source stores id
+        static use = ["appState"];// list of source stores id
 
-        refine( datas, newState, changes ) {
-            let NewUserId  = newState.session && newState.session.currentUserId,
-                LastUserId = datas && datas._id;
+        refine( datas, {appState : {currentUserId : NewUserId}}, changes ) {
+            let LastUserId = datas && datas._id;
 
             console.info("currentUser state updated : ", changes);
 
@@ -60,20 +64,16 @@ let MyStoreContext = {
         }
     },
     userEvents  : class userEvents extends Store {
-        static use = ["currentUser"];// list of source stores id
-        static require = ["currentUser"];// list of source stores id
-        //
-        // shouldPropag( newDatas ) {
-        //     return !!newDatas.userId;
-        // }
+        static use = ["currentUser"];
+        static require = ["currentUser"];
+        datas = {};
 
-        refine( datas, newState, changes ) {
-            let nUserId = newState.currentUser && newState.currentUser._id,
-                cUserId = datas && datas.userId;
+        refine( datas, {currentUser : {_id : nUserId}}, changes ) {
+            let {cUserId = void 0} = datas;
 
 
             if ( nUserId != cUserId ) {
-                this.wait()// do some async
+                this.wait();// do some async whithout pushing
                 setTimeout(
                     () => {
                         // get somme user events or whatever...

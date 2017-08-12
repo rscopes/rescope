@@ -320,6 +320,9 @@ export default class Store extends EventEmitter {
             ));
     }
 
+    dispatch(event){
+        return;
+    }
 
     /**
      * Pull stores in the private state

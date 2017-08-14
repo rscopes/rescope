@@ -7,8 +7,8 @@
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "babel src/Store.js --out-file dist/Store.js && babel src/Rescope.js --out-file dist/Rescope.js && webpack",
-    "dev": "babel src/*.js --out-dir dist/ --watch"
+    "build": "webpack",
+    "dev": "webpack -w"
   },
   "dependencies": {
     "events": "^1.1.1",

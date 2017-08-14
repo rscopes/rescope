@@ -156,16 +156,17 @@ export default class Store extends EventEmitter {
             return false;
         } else if ( isFunction(store) ) {
             //
-            if ( store && store.contexts ) {
-                ctx = this.getContext(store.contexts);
+            if ( store && (store.contexts || store.context) ) {
+                ctx = this.getContext(store.contexts || [store.context]);
 
                 ctx[name] = ctx[name] || store;
 
                 if ( isFunction(ctx[name]) ) {
+
                     ctx[name] = new ctx[name](ctx);
                 }
                 return context[name] = ctx[name];
-            }else
+            } else
                 store = context[name] = new store(context);
             context[name].relink(name);
         }
@@ -583,6 +584,13 @@ export default class Store extends EventEmitter {
             cb && cb()
         } else cb && this.then(cb)
         return this;
+    }
+
+    dispose() {
+        let _static = this.constructor;
+        if ( _static.contexts || _static.context ) {
+
+        } else this.destroy();
     }
 
     destroy() {

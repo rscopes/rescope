@@ -21,7 +21,7 @@ var isString     = require('isstring')
     EventEmitter = require('events'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({}),
-    scoped       = {};
+    openContexts = {};
 
 
 export default class Store extends EventEmitter {
@@ -140,33 +140,33 @@ export default class Store extends EventEmitter {
         return initialOutputs;
     }
 
+    static getContext( contexts ) {
+        let skey = isArray(contexts) ? contexts.sort(( a, b ) => {
+            if ( a.firstname < b.firstname ) return -1;
+            if ( a.firstname > b.firstname ) return 1;
+            return 0;
+        }).join('::') : contexts;
+        return openContexts[skey] = openContexts[skey] || openContexts[skey];
+    }
+
     static mountStore( name, context ) {
-        let store = context[name], skey;
+        let store = context[name], ctx;
         if ( !store ) {
             console.error("Not a mappable store item '" + name + ' !!', store);
             return false;
         } else if ( isFunction(store) ) {
             //
-            // if ( store && store.scope ) {
-            //     skey = "!"+store.scope.map(id => {
-            //         // console.log("try", id, context[id]);
-            //         this.mountStore(id, context);
-            //         // console.log("try", id, context[id]);
-            //         return context[id] && context[id]._uid || id;
-            //     }).join('-');
-            //
-            //
-            //     if (scoped[skey]){
-            //         console.log("keep scoped", skey);
-            //         store = context[name] = scoped[skey];
-            //     }else{
-            //         console.log("create scoped", skey);
-            //         store = context[name] = scoped[skey] = new store(context);
-            //         context[name].relink(name);
-            //         return store;
-            //     }
-            // }
-            store = context[name] = new store(context);
+            if ( store && store.contexts ) {
+                ctx = this.getContext(store.contexts);
+
+                ctx[name] = ctx[name] || store;
+
+                if ( isFunction(ctx[name]) ) {
+                    ctx[name] = new ctx[name](ctx);
+                }
+                return context[name] = ctx[name];
+            }else
+                store = context[name] = new store(context);
             context[name].relink(name);
         }
         return store;
@@ -320,7 +320,7 @@ export default class Store extends EventEmitter {
             ));
     }
 
-    dispatch(event){
+    dispatch( event ) {
         return;
     }
 
@@ -600,7 +600,7 @@ export default class Store extends EventEmitter {
                 }
             );
         this._followers.length = 0;
-        this.dead       = true;
+        this.dead              = true;
         if ( this.name && this.context[this.name] === this )
             delete this.context[this.name];
         this._revs = this.datas = this.state = this.context = null;

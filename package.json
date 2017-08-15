@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "1.7.6",
+  "version": "2.0.0",
   "description": "Magic 'state' based store system for (but not limited to) ReactJS. Nicely replace Redux & co",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/Rescope.js",

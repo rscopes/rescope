@@ -22938,8 +22938,12 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            if (this._stable) return cb(this.datas);
-	            this.once('stable', cb);
+	            var _this8 = this;
+	
+	            if (this._stable) return cb(null, this.datas);
+	            this.once('stable', function (e) {
+	                return cb(null, _this8.datas);
+	            });
 	        }
 	
 	        /**
@@ -22974,7 +22978,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this8 = this;
+	            var _this9 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
@@ -22984,12 +22988,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this8.datas) return;
+	                    if (!_this9.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this8.datas);
+	                        follower[0](_this9.datas);
 	                    } else {
 	                        // cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.datas) : _this8.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this9.datas) : _this9.datas
 	                        // ,
 	                        // cb && (
 	                        //     () => (!(--i) && cb())
@@ -23797,6 +23801,8 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -23852,10 +23858,9 @@
 	
 	        var _this = _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).call(this));
 	
-	        _this.context = {};
-	        _this._$ = function stores() {};
-	        _this._$.prototype = parent ? new parent._$() : {};
-	        _this.$ = new _this._$();
+	        _this._stores = function stores() {};
+	        _this._stores.prototype = parent ? new parent._stores() : {};
+	        _this.stores = new _this._stores();
 	        _this._state = function state() {};
 	        _this._state.prototype = parent ? new parent._state() : {};
 	        _this.state = new _this._state();
@@ -23863,11 +23868,12 @@
 	        _this._datas.prototype = parent ? new parent._datas() : {};
 	        _this.datas = new _this._datas();
 	        _this.parent = parent;
-	        _this._stable = true;
+	
 	        _this.__retainLocks = { all: 0 };
-	        _this.__w8Locks = { all: 0 };
+	        _this.__w8Locks = { all: 1 };
 	        _this.__listening = {};
 	        _this.__context = {};
+	        _this._followers = [];
 	        if (parent) {
 	            parent.retain("isMyParent");
 	            parent.on('stable', _this.__parentStableList = function (s) {
@@ -23880,6 +23886,9 @@
 	        }
 	
 	        _this.map(ctx, state, datas);
+	        _this.__w8Locks.all--;
+	        _this._stable = !!_this.__w8Locks.all;
+	
 	        return _this;
 	    }
 	
@@ -23888,6 +23897,20 @@
 	        value: function mount(id, state, datas) {
 	            var _this2 = this;
 	
+	            if (isArray(id)) {
+	                id.forEach(function (k) {
+	                    return _this2._mount(k, state && state[k], datas && datas[k]);
+	                });
+	            } else {
+	                this._mount.apply(this, arguments);
+	            }
+	            return this;
+	        }
+	    }, {
+	        key: '_mount',
+	        value: function _mount(id, state, datas) {
+	            var _this3 = this;
+	
 	            if (!this.__context[id]) {
 	                var _parent;
 	
@@ -23895,25 +23918,17 @@
 	                if (!this.parent) return;
 	                return (_parent = this.parent).mount.apply(_parent, arguments);
 	            }
-	            if (isFunction(this.__context[id])) {
-	                Store.mountStore(id, this.__context, null, state, datas);
-	                this.__context[id].on('stable', function (s) {
-	                    return _this2.release(id);
-	                });
-	                this.__context[id].on('unstable', function (s) {
-	                    return _this2.wait(id);
-	                });
-	            } else Store.mountStore(id, this.__context, null, state, datas);
+	            Store.mountStore(id, this.__context, null, state, datas);
 	
 	            if (!this.__listening[id]) {
 	                !this.__context[id].isStable() && this.wait(id);
 	
 	                this.__context[id].on(this.__listening[id] = {
 	                    'stable': function stable(s) {
-	                        return _this2.release(id);
+	                        return _this3.release(id);
 	                    },
 	                    'unstable': function unstable(s) {
-	                        return _this2.wait(id);
+	                        return _this3.wait(id);
 	                    }
 	                });
 	            }
@@ -23922,66 +23937,143 @@
 	    }, {
 	        key: 'map',
 	        value: function map(ctx) {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
-	            var lctx = this._$.prototype;
+	            var lctx = this._stores.prototype;
 	            Object.keys(ctx).forEach(function (id) {
-	                if (_this3.__context[id]) {
+	                if (_this4.__context[id]) {
 	                    console.warn("Rescope Context : ", id, " already exist in this context !");
 	                    return;
 	                }
 	
-	                _this3.__context[id] = ctx[id];
+	                _this4.__context[id] = ctx[id];
 	
 	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
-	                            return _this3.mount(id, state[id], datas[id]);
+	                            return _this4._mount(id, state[id], datas[id]);
 	                        }
 	                    };
-	                }(_this3.__context, id));
-	                Object.defineProperty(_this3.state, id, function (ctx, id) {
+	                }(_this4.__context, id));
+	                Object.defineProperty(_this4.state, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
 	                            return ctx[id] && ctx[id].state;
 	                        },
 	                        set: function set(v) {
-	                            return _this3.mount(id, v);
+	                            return _this4._mount(id, v);
 	                        }
 	                    };
 	                }(lctx, id));
-	                Object.defineProperty(_this3.datas, id, function (ctx, id) {
+	                Object.defineProperty(_this4.datas, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
 	                            return ctx[id] && ctx[id].datas;
 	                        },
 	                        set: function set(v) {
-	                            return _this3.mount(id, undefined, v);
+	                            return _this4._mount(id, undefined, v);
 	                        }
 	                    };
 	                }(lctx, id));
 	            });
 	            Object.keys(ctx).forEach(function (id) {
-	                return isFunction(ctx[id]) && ctx[id].singleton && _this3.mount(id, state[id], datas[id]);
+	                return isFunction(ctx[id]) && ctx[id].singleton && _this4._mount(id, state[id], datas[id]);
 	            });
 	        }
+	
+	        /**
+	         * @param obj {React.Component|Store|function)
+	         * @param key {string} optional key where to map the public state
+	         */
+	
 	    }, {
 	        key: 'bind',
-	        value: function bind(comp, querys) {}
+	        value: function bind(obj, key, as) {
+	            var setInitial = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+	
+	            var lastRevs = void 0,
+	                datas = void 0;
+	            if (!isArray(key)) key = [key];
+	
+	            if (as === true) {
+	                setInitial = true;
+	                as = null;
+	            }
+	
+	            this._followers.push([obj, key, as, lastRevs = key.reduce(function (revs, id) {
+	                return revs[id] = 0, revs;
+	            }, {})]);
+	
+	            this.mount(key);
+	
+	            if (setInitial && this._stable) {
+	                datas = this.getUpdates(lastRevs);
+	                if (!datas) return;
+	                if (typeof obj != "function") {
+	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
+	                } else {
+	                    obj(datas);
+	                }
+	            }
+	        }
+	
+	        /**
+	         * Un bind this context off the given component-keys
+	         * @param obj
+	         * @param key
+	         * @returns {Array.<*>}
+	         */
+	
+	    }, {
+	        key: 'unBind',
+	        value: function unBind(obj, key, as) {
+	            var followers = this._followers,
+	                i = followers && followers.length;
+	            while (followers && i--) {
+	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && '' + followers[i][2] == '' + as) return followers.splice(i, 1);
+	            }
+	        }
+	    }, {
+	        key: 'getUpdates',
+	        value: function getUpdates(revs) {
+	            var _this5 = this;
+	
+	            var updated = false,
+	                output = {},
+	                ctx = this.__context;
+	
+	            Object.keys(revs).forEach(function (id) {
+	                if (isFunction(ctx[id]) || ctx[id]._rev <= revs[id]) return;
+	                updated = true;
+	                output[id] = _this5.datas[id];
+	                revs[id] = ctx[id]._rev;
+	            });
+	            return updated && output;
+	        }
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var _this4 = this;
+	            var _this6 = this;
 	
 	            var flags_states = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : /.*/;
 	            var flags_datas = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /.*/;
 	
 	            var ctx = this.__context,
-	                output = { state: {}, datas: {} };
-	            Object.keys(ctx).forEach(function (id) {
+	                output = { state: {}, datas: {} },
+	                _flags_states = void 0,
+	                _flags_datas = void 0;
+	            if (isArray(flags_states)) flags_states.forEach(function (id) {
+	                return output.state[id] = _this6.state[id];
+	            });
+	
+	            if (isArray(flags_datas)) flags_datas.forEach(function (id) {
+	                return output.datas[id] = _this6.datas[id];
+	            });
+	
+	            if (!isArray(flags_datas) && !isArray(flags_states)) Object.keys(ctx).forEach(function (id) {
 	                if (isFunction(ctx[id])) return;
 	
 	                var flags = ctx[id].constructor.flags;
@@ -23989,32 +24081,49 @@
 	                flags = isArray(flags) ? flags : [flags || ""];
 	
 	                if (flags.reduce(function (r, flag) {
-	                    return r || flags_states.test(flag);
-	                }, false)) output.state[id] = _this4.state[id];
+	                    return r || _flags_states.test(flag);
+	                }, false)) output.state[id] = _this6.state[id];
 	
 	                if (flags.reduce(function (r, flag) {
-	                    return r || flags_datas.test(flag);
-	                }, false)) output.datas[id] = _this4.datas[id];
+	                    return r || _flags_datas.test(flag);
+	                }, false)) output.datas[id] = _this6.datas[id];
 	            });
 	            return output;
 	        }
 	    }, {
 	        key: 'on',
 	        value: function on(lists) {
-	            var _this5 = this;
+	            var _this7 = this;
 	
 	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', _this5).call(_this5, k, lists[k]);
+	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', _this7).call(_this7, k, lists[k]);
 	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', this).apply(this, arguments);
 	        }
 	    }, {
 	        key: 'un',
 	        value: function un(lists) {
-	            var _this6 = this;
+	            var _this8 = this;
 	
 	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'un', _this6).call(_this6, k, lists[k]);
+	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'un', _this8).call(_this8, k, lists[k]);
 	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'un', this).apply(this, arguments);
+	        }
+	
+	        /**
+	         * once('stable', cb)
+	         * @param obj {React.Component|Store|function)
+	         * @param key {string} optional key where to map the public state
+	         */
+	
+	    }, {
+	        key: 'then',
+	        value: function then(cb) {
+	            var _this9 = this;
+	
+	            if (this._stable) return cb(null, this.datas);
+	            this.once('stable', function (e) {
+	                return cb(null, _this9.datas);
+	            });
 	        }
 	    }, {
 	        key: 'restore',
@@ -24052,6 +24161,8 @@
 	    }, {
 	        key: 'wait',
 	        value: function wait(reason) {
+	            console.log("wait", reason);
+	            this._stable = false;
 	            !this.__w8Locks.all && this.emit("unstable", this);
 	            this.__w8Locks.all++;
 	            if (reason) {
@@ -24062,12 +24173,41 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
+	            var _this10 = this;
+	
+	            console.log("release", reason);
 	            this.__w8Locks.all--;
 	            if (reason) {
 	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
 	                this.__w8Locks[reason]--;
 	            }
-	            if (!this.__w8Locks.all) this.emit("stable", this);
+	            this._stable = true;
+	            if (!this.__w8Locks.all) {
+	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
+	                this._stabilizerTM = setTimeout(function (e) {
+	                    if (!_this10._stable) return _this10._stabilizerTM = null;
+	
+	                    _this10.emit("stable", _this10);
+	
+	                    if (_this10._followers.length) _this10._followers.forEach(function (_ref2) {
+	                        var obj = _ref2[0],
+	                            key = _ref2[1],
+	                            as = _ref2[2],
+	                            lastRevs = _ref2[3];
+	
+	                        var datas = _this10.getUpdates(lastRevs);
+	                        if (!datas) return;
+	                        if (typeof obj != "function") {
+	                            if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
+	                        } else {
+	                            obj(datas);
+	                        }
+	                        key.forEach(function (id) {
+	                            return lastRevs[id] = _this10.__context[id] && _this10.__context[id]._rev;
+	                        });
+	                    });
+	                });
+	            }
 	        }
 	
 	        /**
@@ -24077,17 +24217,12 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this7 = this;
+	            var _this11 = this;
 	
 	            var ctx = this.__context;
-	            if (this.parent) {
-	                this.parent.dispose("isMyParent");
-	                this.parent.un('stable', this.__parentStableList);
-	                this.parent.un('unstable', this.__parentUnStableList);
-	            }
 	
 	            Object.keys(this.__listening).forEach(function (id) {
-	                return _this7.__context[id].un(_this7.__listening[id]);
+	                return _this11.__context[id].un(_this11.__listening[id]);
 	            });
 	            this.__listening = {};
 	
@@ -24097,6 +24232,10 @@
 	
 	                    ctx[key] = ctx[key].constructor;
 	                }
+	            }if (this.parent) {
+	                this.parent.dispose("isMyParent");
+	                this.parent.un('stable', this.__parentStableList);
+	                this.parent.un('unstable', this.__parentUnStableList);
 	            }
 	        }
 	    }]);

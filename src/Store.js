@@ -557,8 +557,8 @@ export default class Store extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(this.datas);
-        this.once('stable', cb);
+            return cb(null, this.datas);
+        this.once('stable', e=>cb(null, this.datas));
     }
 
     /**

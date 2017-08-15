@@ -42,25 +42,25 @@ export default class Context extends EventEmitter {
 
     constructor( ctx, parent, state, datas, name ) {
         super();
-        this.context          = {};
-        this._$               = function stores() {
+        this._stores           = function stores() {
         };
-        this._$.prototype     = parent ? new parent._$() : {};
-        this.$                = new this._$();
-        this._state           = function state() {
+        this._stores.prototype = parent ? new parent._stores() : {};
+        this.stores            = new this._stores();
+        this._state            = function state() {
         };
-        this._state.prototype = parent ? new parent._state() : {};
-        this.state            = new this._state();
-        this._datas           = function datas() {
+        this._state.prototype  = parent ? new parent._state() : {};
+        this.state             = new this._state();
+        this._datas            = function datas() {
         };
-        this._datas.prototype = parent ? new parent._datas() : {};
-        this.datas            = new this._datas();
-        this.parent           = parent;
-        this._stable          = true;
-        this.__retainLocks    = {all : 0};
-        this.__w8Locks        = {all : 0};
-        this.__listening      = {};
-        this.__context        = {};
+        this._datas.prototype  = parent ? new parent._datas() : {};
+        this.datas             = new this._datas();
+        this.parent            = parent;
+
+        this.__retainLocks = {all : 0};
+        this.__w8Locks     = {all : 1};
+        this.__listening   = {};
+        this.__context     = {};
+        this._followers    = [];
         if ( parent ) {
             parent.retain("isMyParent");
             parent.on('stable', this.__parentStableList = s => this.release("isMyParent"));
@@ -70,20 +70,27 @@ export default class Context extends EventEmitter {
 
 
         this.map(ctx, state, datas);
+        this.__w8Locks.all--;
+        this._stable = !!this.__w8Locks.all;
+
     }
 
     mount( id, state, datas ) {
+        if ( isArray(id) ) {
+            id.forEach(k => this._mount(k, state && state[k], datas && datas[k]));
+        } else {
+            this._mount(...arguments);
+        }
+        return this;
+    }
+
+    _mount( id, state, datas ) {
         if ( !this.__context[id] ) {//ask parent
             if ( !this.parent )
                 return;
             return this.parent.mount(...arguments);
         }
-        if ( isFunction(this.__context[id]) ) {
-            Store.mountStore(id, this.__context, null, state, datas);
-            this.__context[id].on('stable', s => this.release(id));
-            this.__context[id].on('unstable', s => this.wait(id));
-        } else
-            Store.mountStore(id, this.__context, null, state, datas);
+        Store.mountStore(id, this.__context, null, state, datas);
 
         if ( !this.__listening[id] ) {
             !this.__context[id].isStable() && this.wait(id);
@@ -98,7 +105,7 @@ export default class Context extends EventEmitter {
     }
 
     map( ctx, state = {}, datas = {} ) {
-        let lctx = this._$.prototype;
+        let lctx = this._stores.prototype;
         Object.keys(ctx).forEach(
             id => {
                 if ( this.__context[id] ) {
@@ -113,7 +120,7 @@ export default class Context extends EventEmitter {
                     id,
                     (( ctx, id ) => (
                         {
-                            get : () => this.mount(id, state[id], datas[id])
+                            get : () => this._mount(id, state[id], datas[id])
                         }
                     ))
                     (this.__context, id)
@@ -124,7 +131,7 @@ export default class Context extends EventEmitter {
                     (( ctx, id ) => (
                         {
                             get : () => (ctx[id] && ctx[id].state),
-                            set : ( v ) => (this.mount(id, v))
+                            set : ( v ) => (this._mount(id, v))
                         }
                     ))
                     (lctx, id)
@@ -135,7 +142,7 @@ export default class Context extends EventEmitter {
                     (( ctx, id ) => (
                         {
                             get : () => (ctx[id] && ctx[id].datas),
-                            set : ( v ) => (this.mount(id, undefined, v))
+                            set : ( v ) => (this._mount(id, undefined, v))
                         }
                     ))
                     (lctx, id)
@@ -143,32 +150,104 @@ export default class Context extends EventEmitter {
             }
         )
         Object.keys(ctx).forEach(
-            id => (isFunction(ctx[id]) && ctx[id].singleton && this.mount(id, state[id], datas[id])))
+            id => (isFunction(ctx[id]) && ctx[id].singleton && this._mount(id, state[id], datas[id])))
 
     }
 
-    bind( comp, querys ) {
+    /**
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+    bind( obj, key, as, setInitial = true ) {
+        let lastRevs, datas;
+        if ( !isArray(key) )
+            key = [key];
 
+        if ( as === true ) {
+            setInitial = true;
+            as         = null;
+        }
+
+        this._followers.push(
+            [
+                obj,
+                key,
+                as,
+                lastRevs = key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
+            ]);
+
+        this.mount(key);
+
+        if ( setInitial && this._stable ) {
+            datas = this.getUpdates(lastRevs);
+            if ( !datas ) return;
+            if ( typeof obj != "function" ) {
+                if ( as ) obj.setState({[as] : datas});
+                else obj.setState(datas);
+            } else {
+                obj(datas);
+            }
+        }
+    }
+
+    /**
+     * Un bind this context off the given component-keys
+     * @param obj
+     * @param key
+     * @returns {Array.<*>}
+     */
+    unBind( obj, key, as ) {
+        var followers = this._followers,
+            i         = followers && followers.length;
+        while (followers && i--)
+            if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) && ('' + followers[i][2]) == ('' + as) )
+                return followers.splice(i, 1);
+    }
+
+    getUpdates( revs ) {
+        let updated = false,
+            output  = {},
+            ctx     = this.__context;
+
+        Object.keys(revs).forEach(
+            id => {
+                if ( isFunction(ctx[id]) || ctx[id]._rev <= revs[id] )
+                    return;
+                updated    = true;
+                output[id] = this.datas[id];
+                revs[id]   = ctx[id]._rev;
+            }
+        )
+        return updated && output;
     }
 
     serialize( flags_states = /.*/, flags_datas = /.*/ ) {
-        let ctx = this.__context, output = {state : {}, datas : {}};
-        Object.keys(ctx).forEach(
-            id => {
-                if ( isFunction(ctx[id]) )
-                    return;
+        let ctx = this.__context, output = {state : {}, datas : {}},
+            _flags_states,
+            _flags_datas;
+        if ( isArray(flags_states) )
+            flags_states.forEach(id => (output.state[id] = this.state[id]))
 
-                let flags = ctx[id].constructor.flags;
+        if ( isArray(flags_datas) )
+            flags_datas.forEach(id => (output.datas[id] = this.datas[id]))
 
-                flags = isArray(flags) ? flags : [flags || ""];
+        if ( !isArray(flags_datas) && !isArray(flags_states) )
+            Object.keys(ctx).forEach(
+                id => {
+                    if ( isFunction(ctx[id]) )
+                        return;
 
-                if ( flags.reduce(( r, flag ) => (r || flags_states.test(flag)), false) )
-                    output.state[id] = this.state[id];
+                    let flags = ctx[id].constructor.flags;
 
-                if ( flags.reduce(( r, flag ) => (r || flags_datas.test(flag)), false) )
-                    output.datas[id] = this.datas[id];
-            }
-        )
+                    flags = isArray(flags) ? flags : [flags || ""];
+
+                    if ( flags.reduce(( r, flag ) => (r || _flags_states.test(flag)), false) )
+                        output.state[id] = this.state[id];
+
+                    if ( flags.reduce(( r, flag ) => (r || _flags_datas.test(flag)), false) )
+                        output.datas[id] = this.datas[id];
+                }
+            )
         return output;
     }
 
@@ -182,6 +261,17 @@ export default class Context extends EventEmitter {
         if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.un(k, lists[k]));
         else super.un(...arguments);
+    }
+
+    /**
+     * once('stable', cb)
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+    then( cb ) {
+        if ( this._stable )
+            return cb(null, this.datas);
+        this.once('stable', e => cb(null, this.datas));
     }
 
     restore( {state, datas}, quiet ) {
@@ -224,6 +314,8 @@ export default class Context extends EventEmitter {
     }
 
     wait( reason ) {
+        console.log("wait", reason);
+        this._stable = false;
         !this.__w8Locks.all && this.emit("unstable", this);
         this.__w8Locks.all++;
         if ( reason ) {
@@ -233,13 +325,38 @@ export default class Context extends EventEmitter {
     }
 
     release( reason ) {
+        console.log("release", reason);
         this.__w8Locks.all--;
         if ( reason ) {
             this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
             this.__w8Locks[reason]--;
         }
-        if ( !this.__w8Locks.all )
-            this.emit("stable", this);
+        this._stable = true;
+        if ( !this.__w8Locks.all ) {
+            this._stabilizerTM && clearTimeout(this._stabilizerTM);
+            this._stabilizerTM = setTimeout(
+                e => {
+                    if ( !this._stable )
+                        return this._stabilizerTM = null;
+
+                    this.emit("stable", this);
+
+                    if ( this._followers.length )
+                        this._followers.forEach(( {0 : obj, 1 : key, 2 : as, 3 : lastRevs} ) => {
+                            let datas = this.getUpdates(lastRevs);
+                            if ( !datas ) return;
+                            if ( typeof obj != "function" ) {
+                                if ( as ) obj.setState({[as] : datas});
+                                else obj.setState(datas);
+                            } else {
+                                obj(datas);
+                            }
+                            key.forEach(id => (lastRevs[id] = this.__context[id] && this.__context[id]._rev));
+                        });
+                }
+            );
+        }
+
     }
 
     /**
@@ -247,11 +364,6 @@ export default class Context extends EventEmitter {
      */
     destroy() {
         let ctx = this.__context;
-        if ( this.parent ) {
-            this.parent.dispose("isMyParent");
-            this.parent.un('stable', this.__parentStableList);
-            this.parent.un('unstable', this.__parentUnStableList);
-        }
 
         Object.keys(
             this.__listening
@@ -267,5 +379,10 @@ export default class Context extends EventEmitter {
 
                 ctx[key] = ctx[key].constructor;
             }
+        if ( this.parent ) {
+            this.parent.dispose("isMyParent");
+            this.parent.un('stable', this.__parentStableList);
+            this.parent.un('unstable', this.__parentUnStableList);
+        }
     }
 }

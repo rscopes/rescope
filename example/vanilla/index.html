@@ -37,10 +37,26 @@
         rerescope = new Rescope.Context(ctxFront, rescope);
 
 
+
+    rescope.state.status = {init:true};
+    rescope.on('unstable', function ( s ) {
+        console.log('master unstable')
+    })
+    rescope.on('stable', function ( s ) {
+        console.log('master stable')
+    })
+
+    rerescope.on('unstable', function ( s ) {
+        console.log('child unstable')
+    })
+    rerescope.on('stable', function ( context ) {
+        console.log('child stable', context.datas)
+    })
     debugger
-    rerescope.state.status = {ok:'computer'};
-    console.log(rerescope.state.status)
-    console.log(rescope.state.status)
+
+    rescope.state.appState = {currentUserId:"MissTick"};
+
+    console.log(rerescope.datas.userEvents)
     debugger
 
 

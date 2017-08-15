@@ -20,6 +20,7 @@ let stubs = require("./_stubs/datas");
 
 let MyStoreContext = {
     status      : class status extends Store {
+        static singleton = true;
         static use = ["appState"];
     },
     appState    : class appState extends Store {

@@ -28,8 +28,7 @@
 var isString     = require('isstring'),
     isArray      = require('isarray'),
     EventEmitter = require('events'),
-    isNumber     = require('isnumber')
-    , isFunction = require('isfunction')
+    isFunction   = require('isfunction')
     , Store      = require('./Store');
 
 let openContexts = {};

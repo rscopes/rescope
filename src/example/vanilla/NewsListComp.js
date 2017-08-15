@@ -20,6 +20,7 @@ import StoreContext from "../StoresContext";
 function NewsListComp( target = document.createElement('div') ) {
 
     this.setState = ( state ) => {
+        console.log("redraw")
         target.innerHTML =
             (
                 state.userEvents &&

@@ -20,46 +20,31 @@
 
 <div style="border: solid 1px lightgrey;border-radius: 3px">
     <b><u>
-        <button onclick="context.appState.setState({currentUserId:'MissTick'})">MissTick events</button>
+        <button onclick="App.state.appState = {currentUserId:'MissTick'}">MissTick events</button>
     </u></b>
     <b><u>
-        <button onclick="context.appState.setState({currentUserId:'MrNice'})">MrNice events</button>
+        <button onclick="App.state.appState = {currentUserId:'MrNice'}">MrNice events</button>
     </u></b>
 </div>
 <pre id="status">Preloading...</pre>
 <div id="events"></div>
 <script>
     var context = window.context = new StoreContext(),
-        NewsList = new NewsListComp(document.getElementById("events")),
-        rescope  = new Rescope.Context(context);
-
-    var ctxFront  = {status : new Rescope.Store()},
-        rerescope = new Rescope.Context(ctxFront, rescope);
+        NewsList   = new NewsListComp(document.getElementById("events"));
+    window.App = new Rescope.Context(context);
 
 
+    App.state.appState = {currentUserId : "MissTick"}
 
-    rescope.state.status = {init:true};
-    rescope.on('unstable', function ( s ) {
-        console.log('master unstable')
-    })
-    rescope.on('stable', function ( s ) {
-        console.log('master stable')
-    })
+    App.mount("userEvents").then(
+        function ( err, datas ) {
 
-    rerescope.on('unstable', function ( s ) {
-        console.log('child unstable')
-    })
-    rerescope.on('stable', function ( context ) {
-        console.log('child stable', context.datas)
-    })
-    debugger
-
-    rescope.state.appState = {currentUserId:"MissTick"};
-
-    console.log(rerescope.datas.userEvents)
-    debugger
-
-
+            App.bind(NewsList, 'userEvents', true);
+            App.bind(function ( datas ) {
+                document.getElementById("status").innerHTML=JSON.stringify(datas, true, 2)
+            }, 'status', true);
+        }
+    );
 </script>
 </body>
 </html>

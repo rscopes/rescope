@@ -200,7 +200,8 @@ export default class Context extends EventEmitter {
         var followers = this._followers,
             i         = followers && followers.length;
         while (followers && i--)
-            if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) && ('' + followers[i][2]) == ('' + as) )
+            if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
+                ('' + followers[i][2]) == ('' + as) )
                 return followers.splice(i, 1);
     }
 

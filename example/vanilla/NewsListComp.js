@@ -96,6 +96,8 @@
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -316,7 +318,8 @@
 	            name = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
 	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null;
+	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+	            initialState = _static.initialState;
 	        _this._uid = cfg._uid || shortid.generate();
 	        _this.setMaxListeners(Store.defaultMaxListeners);
 	        _this.locks = 0;
@@ -328,9 +331,7 @@
 	        }
 	
 	        if (cfg && cfg.on) {
-	            Object.keys(cfg.on).forEach(function (k) {
-	                return _this.on(k, cfg.on[k]);
-	            });
+	            _this.on(cfg.on);
 	        }
 	        // this.state      = this.state || {};
 	
@@ -349,7 +350,7 @@
 	        _this._followers = [];
 	
 	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
-	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) _this.state = cfg.state;
+	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = cfg.state;
 	
 	        if (refine) _this.refine = refine;
 	
@@ -358,10 +359,10 @@
 	            _this.pull(_this._watchs);
 	        }
 	
-	        if (_static.initialState && _this.datas === undefined) {
+	        if (initialState) {
 	            // sync refine
-	            _this.state = _extends({}, _static.initialState);
-	            if (_this.isComplete()) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+	            _this.state = _extends({}, initialState);
+	            if (_this.isComplete() && _this.datas === undefined) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
 	        !_this._stable && _this.emit('unstable', _this.state);
@@ -577,6 +578,24 @@
 	        value: function as(name) {
 	            return { store: this, name: name };
 	        }
+	    }, {
+	        key: 'on',
+	        value: function on(lists) {
+	            var _this5 = this;
+	
+	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', _this5).call(_this5, k, lists[k]);
+	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', this).apply(this, arguments);
+	        }
+	    }, {
+	        key: 'un',
+	        value: function un(lists) {
+	            var _this6 = this;
+	
+	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'un', _this6).call(_this6, k, lists[k]);
+	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'un', this).apply(this, arguments);
+	        }
 	
 	        /**
 	         * relink bindings & requires
@@ -587,7 +606,7 @@
 	    }, {
 	        key: 'relink',
 	        value: function relink(from) {
-	            var _this5 = this;
+	            var _this7 = this;
 	
 	            var context = this.context,
 	                _static = this.constructor;
@@ -598,7 +617,7 @@
 	
 	            if (this._require) {
 	                this._require.forEach(function (store) {
-	                    return _this5.wait(context[store]);
+	                    return _this7.wait(context[store]);
 	                });
 	            }
 	        }
@@ -617,6 +636,17 @@
 	            return !this._require || !this._require.length || state && this._require.reduce(function (r, key) {
 	                return r && state[key];
 	            }, true);
+	        }
+	
+	        /**
+	         * is stable
+	         * @returns bool
+	         */
+	
+	    }, {
+	        key: 'isStable',
+	        value: function isStable() {
+	            return this._stable;
 	        }
 	
 	        /**
@@ -702,7 +732,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this6 = this;
+	            var _this8 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
@@ -712,12 +742,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this6.datas) return;
+	                    if (!_this8.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this6.datas);
+	                        follower[0](_this8.datas);
 	                    } else {
 	                        // cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this6.datas) : _this6.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.datas) : _this8.datas
 	                        // ,
 	                        // cb && (
 	                        //     () => (!(--i) && cb())
@@ -1536,6 +1566,8 @@
 	    value: true
 	});
 	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1594,16 +1626,32 @@
 	        var _this = _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).call(this));
 	
 	        _this.context = {};
-	        _this._$ = function () {};
+	        _this._$ = function stores() {};
 	        _this._$.prototype = parent ? new parent._$() : {};
 	        _this.$ = new _this._$();
+	        _this._state = function state() {};
+	        _this._state.prototype = parent ? new parent._state() : {};
+	        _this.state = new _this._state();
+	        _this._datas = function datas() {};
+	        _this._datas.prototype = parent ? new parent._datas() : {};
+	        _this.datas = new _this._datas();
 	        _this.parent = parent;
-	        parent && parent.lock("isMyParent");
-	
-	        _this.state = {};
-	        _this.datas = {};
-	        _this.__locks = { all: 0 };
+	        _this._stable = true;
+	        _this.__retainLocks = { all: 0 };
+	        _this.__w8Locks = { all: 0 };
+	        _this.__listening = {};
 	        _this.__context = {};
+	        if (parent) {
+	            parent.retain("isMyParent");
+	            parent.on('stable', _this.__parentStableList = function (s) {
+	                return _this.release("isMyParent");
+	            });
+	            parent.on('unstable', _this.__parentUnStableList = function (s) {
+	                return _this.wait("isMyParent");
+	            });
+	            _this.map(parent.__context, state, datas);
+	        }
+	
 	        _this.map(ctx, state, datas);
 	        return _this;
 	    }
@@ -1611,6 +1659,8 @@
 	    _createClass(Context, [{
 	        key: 'mount',
 	        value: function mount(id, state, datas) {
+	            var _this2 = this;
+	
 	            if (!this.__context[id]) {
 	                var _parent;
 	
@@ -1620,53 +1670,75 @@
 	            }
 	            if (isFunction(this.__context[id])) {
 	                Store.mountStore(id, this.__context, null, state, datas);
-	                this.__context[id]._stable;
+	                this.__context[id].on('stable', function (s) {
+	                    return _this2.release(id);
+	                });
+	                this.__context[id].on('unstable', function (s) {
+	                    return _this2.wait(id);
+	                });
+	            } else Store.mountStore(id, this.__context, null, state, datas);
+	
+	            if (!this.__listening[id]) {
+	                !this.__context[id].isStable() && this.wait(id);
+	
+	                this.__context[id].on(this.__listening[id] = {
+	                    'stable': function stable(s) {
+	                        return _this2.release(id);
+	                    },
+	                    'unstable': function unstable(s) {
+	                        return _this2.wait(id);
+	                    }
+	                });
 	            }
+	            return this.__context[id];
 	        }
 	    }, {
 	        key: 'map',
 	        value: function map(ctx) {
-	            var _this2 = this;
+	            var _this3 = this;
 	
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
 	            var lctx = this._$.prototype;
 	            Object.keys(ctx).forEach(function (id) {
-	                if (_this2.__context[id]) {
+	                if (_this3.__context[id]) {
 	                    console.warn("Rescope Context : ", id, " already exist in this context !");
 	                    return;
 	                }
 	
-	                if (!isFunction(ctx[id])) _this2.__context[id] = ctx[id];
+	                _this3.__context[id] = ctx[id];
 	
 	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
-	                            return Store.mountStore(id, ctx, state[id]);
+	                            return _this3.mount(id, state[id], datas[id]);
 	                        }
 	                    };
-	                }(_this2.__context, id));
-	                Object.defineProperty(_this2.state, id, function (ctx, id) {
+	                }(_this3.__context, id));
+	                Object.defineProperty(_this3.state, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
-	                            return !isFunction(ctx[id]) ? ctx[id].state : undefined;
+	                            return ctx[id] && ctx[id].state;
 	                        },
 	                        set: function set(v) {
-	                            return Store.mountStore(id, ctx, null, v);
+	                            return _this3.mount(id, v);
 	                        }
 	                    };
-	                }(_this2.__context, id));
-	                Object.defineProperty(_this2.datas, id, function (ctx, id) {
+	                }(lctx, id));
+	                Object.defineProperty(_this3.datas, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
-	                            return !isFunction(ctx[id]) ? ctx[id].datas : undefined;
+	                            return ctx[id] && ctx[id].datas;
 	                        },
 	                        set: function set(v) {
-	                            return Store.mountStore(id, ctx, null, undefined, v);
+	                            return _this3.mount(id, undefined, v);
 	                        }
 	                    };
-	                }(_this2.__context, id));
+	                }(lctx, id));
+	            });
+	            Object.keys(ctx).forEach(function (id) {
+	                return isFunction(ctx[id]) && ctx[id].singleton && _this3.mount(id, state[id], datas[id]);
 	            });
 	        }
 	    }, {
@@ -1675,7 +1747,7 @@
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            var flags_states = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : /.*/;
 	            var flags_datas = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /.*/;
@@ -1691,13 +1763,31 @@
 	
 	                if (flags.reduce(function (r, flag) {
 	                    return r || flags_states.test(flag);
-	                }, false)) output.state[id] = _this3.state[id];
+	                }, false)) output.state[id] = _this4.state[id];
 	
 	                if (flags.reduce(function (r, flag) {
 	                    return r || flags_datas.test(flag);
-	                }, false)) output.datas[id] = _this3.datas[id];
+	                }, false)) output.datas[id] = _this4.datas[id];
 	            });
 	            return output;
+	        }
+	    }, {
+	        key: 'on',
+	        value: function on(lists) {
+	            var _this5 = this;
+	
+	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', _this5).call(_this5, k, lists[k]);
+	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', this).apply(this, arguments);
+	        }
+	    }, {
+	        key: 'un',
+	        value: function un(lists) {
+	            var _this6 = this;
+	
+	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'un', _this6).call(_this6, k, lists[k]);
+	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'un', this).apply(this, arguments);
 	        }
 	    }, {
 	        key: 'restore',
@@ -1714,23 +1804,23 @@
 	            });
 	        }
 	    }, {
-	        key: 'lock',
-	        value: function lock(reason) {
-	            this.__locks.all++;
+	        key: 'retain',
+	        value: function retain(reason) {
+	            this.__retainLocks.all++;
 	            if (reason) {
-	                this.__locks[reason] = this.__locks[reason] || 0;
-	                this.__locks[reason]++;
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]++;
 	            }
 	        }
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            this.__locks.all--;
+	            this.__retainLocks.all--;
 	            if (reason) {
-	                this.__locks[reason] = this.__locks[reason] || 0;
-	                this.__locks[reason]--;
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]--;
 	            }
-	            if (!this.__locks.all) this.destroy();
+	            if (!this.__retainLocks.all) this.destroy();
 	        }
 	    }, {
 	        key: 'wait',
@@ -1760,8 +1850,20 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
+	            var _this7 = this;
+	
 	            var ctx = this.__context;
-	            this.parent && this.parent.dispose("isMyParent");
+	            if (this.parent) {
+	                this.parent.dispose("isMyParent");
+	                this.parent.un('stable', this.__parentStableList);
+	                this.parent.un('unstable', this.__parentUnStableList);
+	            }
+	
+	            Object.keys(this.__listening).forEach(function (id) {
+	                return _this7.__context[id].un(_this7.__listening[id]);
+	            });
+	            this.__listening = {};
+	
 	            for (var key in ctx) {
 	                if (!isFunction(ctx[key])) {
 	                    if (ctx[key].context === ctx) ctx[key].destroy();
@@ -1833,7 +1935,7 @@
 	        }
 	
 	        return status;
-	    }(_Rescope.Store), _class.use = ["appState"], _temp),
+	    }(_Rescope.Store), _class.singleton = true, _class.use = ["appState"], _temp),
 	    appState: (_temp2 = _class2 = function (_Store2) {
 	        _inherits(appState, _Store2);
 	

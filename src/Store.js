@@ -199,7 +199,8 @@ export default class Store extends EventEmitter {
             cfg     = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
             name    = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null
+            refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+            initialState=_static.initialState
         ;
         this._uid   = cfg._uid || shortid.generate();
         this.setMaxListeners(Store.defaultMaxListeners);
@@ -213,7 +214,7 @@ export default class Store extends EventEmitter {
         }
 
         if ( cfg && cfg.on ) {
-            Object.keys(cfg.on).forEach(k => this.on(k, cfg.on[k]));
+            this.on(cfg.on);
         }
         // this.state      = this.state || {};
 
@@ -236,7 +237,7 @@ export default class Store extends EventEmitter {
         if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
             this.datas = cfg.datas;
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-            this.state = cfg.state;
+            initialState = cfg.state;
 
         if ( refine )
             this.refine = refine;
@@ -245,9 +246,9 @@ export default class Store extends EventEmitter {
             this.pull(this._watchs);
         }
 
-        if ( _static.initialState && this.datas === undefined ) {// sync refine
-            this.state = {..._static.initialState};
-            if ( this.isComplete() )
+        if ( initialState) {// sync refine
+            this.state = {...initialState};
+            if ( this.isComplete() && this.datas === undefined )
                 this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
@@ -460,6 +461,18 @@ export default class Store extends EventEmitter {
         return {store : this, name};
     }
 
+    on( lists ) {
+        if ( !isString(lists) && lists )
+            Object.keys(lists).forEach(k => super.on(k, lists[k]));
+        else super.on(...arguments);
+    }
+
+    un( lists ) {
+        if ( !isString(lists) && lists )
+            Object.keys(lists).forEach(k => super.un(k, lists[k]));
+        else super.un(...arguments);
+    }
+
     /**
      * relink bindings & requires
      * @param {string} name
@@ -496,6 +509,14 @@ export default class Store extends EventEmitter {
                 true
             )
         );
+    }
+
+    /**
+     * is stable
+     * @returns bool
+     */
+    isStable() {
+        return this._stable;
     }
 
     /**

@@ -42,18 +42,33 @@ export default class Context extends EventEmitter {
 
     constructor( ctx, parent, state, datas, name ) {
         super();
-        this.context      = {};
-        this._$           = function () {
+        this.context          = {};
+        this._$               = function stores() {
         };
-        this._$.prototype = parent ? new parent._$() : {};
-        this.$            = new this._$();
-        this.parent       = parent;
-        parent && parent.lock("isMyParent");
+        this._$.prototype     = parent ? new parent._$() : {};
+        this.$                = new this._$();
+        this._state           = function state() {
+        };
+        this._state.prototype = parent ? new parent._state() : {};
+        this.state            = new this._state();
+        this._datas           = function datas() {
+        };
+        this._datas.prototype = parent ? new parent._datas() : {};
+        this.datas            = new this._datas();
+        this.parent           = parent;
+        this._stable          = true;
+        this.__retainLocks    = {all : 0};
+        this.__w8Locks        = {all : 0};
+        this.__listening      = {};
+        this.__context        = {};
+        if ( parent ) {
+            parent.retain("isMyParent");
+            parent.on('stable', this.__parentStableList = s => this.release("isMyParent"));
+            parent.on('unstable', this.__parentUnStableList = s => this.wait("isMyParent"));
+            this.map(parent.__context, state, datas);
+        }
 
-        this.state     = {};
-        this.datas     = {};
-        this.__locks   = {all : 0};
-        this.__context = {};
+
         this.map(ctx, state, datas);
     }
 
@@ -65,8 +80,21 @@ export default class Context extends EventEmitter {
         }
         if ( isFunction(this.__context[id]) ) {
             Store.mountStore(id, this.__context, null, state, datas);
-            this.__context[id]._stable
+            this.__context[id].on('stable', s => this.release(id));
+            this.__context[id].on('unstable', s => this.wait(id));
+        } else
+            Store.mountStore(id, this.__context, null, state, datas);
+
+        if ( !this.__listening[id] ) {
+            !this.__context[id].isStable() && this.wait(id);
+
+            this.__context[id].on(
+                this.__listening[id] = {
+                    'stable'   : s => this.release(id),
+                    'unstable' : s => this.wait(id)
+                });
         }
+        return this.__context[id];
     }
 
     map( ctx, state = {}, datas = {} ) {
@@ -78,15 +106,14 @@ export default class Context extends EventEmitter {
                     return;
                 }
 
-                if ( !isFunction(ctx[id]) )
-                    this.__context[id] = ctx[id];
+                this.__context[id] = ctx[id];
 
                 Object.defineProperty(
                     lctx,
                     id,
                     (( ctx, id ) => (
                         {
-                            get : () => Store.mountStore(id, ctx, state[id])
+                            get : () => this.mount(id, state[id], datas[id])
                         }
                     ))
                     (this.__context, id)
@@ -96,25 +123,28 @@ export default class Context extends EventEmitter {
                     id,
                     (( ctx, id ) => (
                         {
-                            get : () => (!isFunction(ctx[id]) ? ctx[id].state : undefined),
-                            set : ( v ) => (Store.mountStore(id, ctx, null, v))
+                            get : () => (ctx[id] && ctx[id].state),
+                            set : ( v ) => (this.mount(id, v))
                         }
                     ))
-                    (this.__context, id)
+                    (lctx, id)
                 );
                 Object.defineProperty(
                     this.datas,
                     id,
                     (( ctx, id ) => (
                         {
-                            get : () => (!isFunction(ctx[id]) ? ctx[id].datas : undefined),
-                            set : ( v ) => (Store.mountStore(id, ctx, null, undefined, v))
+                            get : () => (ctx[id] && ctx[id].datas),
+                            set : ( v ) => (this.mount(id, undefined, v))
                         }
                     ))
-                    (this.__context, id)
+                    (lctx, id)
                 );
             }
         )
+        Object.keys(ctx).forEach(
+            id => (isFunction(ctx[id]) && ctx[id].singleton && this.mount(id, state[id], datas[id])))
+
     }
 
     bind( comp, querys ) {
@@ -142,6 +172,18 @@ export default class Context extends EventEmitter {
         return output;
     }
 
+    on( lists ) {
+        if ( !isString(lists) && lists )
+            Object.keys(lists).forEach(k => super.on(k, lists[k]));
+        else super.on(...arguments);
+    }
+
+    un( lists ) {
+        if ( !isString(lists) && lists )
+            Object.keys(lists).forEach(k => super.un(k, lists[k]));
+        else super.un(...arguments);
+    }
+
     restore( {state, datas}, quiet ) {
         let ctx = this.__context;
         Object.keys(datas).forEach(
@@ -162,21 +204,22 @@ export default class Context extends EventEmitter {
         );
     }
 
-    lock( reason ) {
-        this.__locks.all++;
+
+    retain( reason ) {
+        this.__retainLocks.all++;
         if ( reason ) {
-            this.__locks[reason] = this.__locks[reason] || 0;
-            this.__locks[reason]++;
+            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+            this.__retainLocks[reason]++;
         }
     }
 
     dispose( reason ) {
-        this.__locks.all--;
+        this.__retainLocks.all--;
         if ( reason ) {
-            this.__locks[reason] = this.__locks[reason] || 0;
-            this.__locks[reason]--;
+            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+            this.__retainLocks[reason]--;
         }
-        if ( !this.__locks.all )
+        if ( !this.__retainLocks.all )
             this.destroy();
     }
 
@@ -204,7 +247,19 @@ export default class Context extends EventEmitter {
      */
     destroy() {
         let ctx = this.__context;
-        this.parent && this.parent.dispose("isMyParent");
+        if ( this.parent ) {
+            this.parent.dispose("isMyParent");
+            this.parent.un('stable', this.__parentStableList);
+            this.parent.un('unstable', this.__parentUnStableList);
+        }
+
+        Object.keys(
+            this.__listening
+        ).forEach(
+            id => this.__context[id].un(this.__listening[id])
+        );
+        this.__listening = {};
+
         for ( let key in ctx )
             if ( !isFunction(ctx[key]) ) {
                 if ( ctx[key].context === ctx )

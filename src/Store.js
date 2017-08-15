@@ -149,8 +149,9 @@ export default class Store extends EventEmitter {
         return openContexts[skey] = openContexts[skey] || openContexts[skey];
     }
 
-    static mountStore( name, context ) {
-        let store = context[name], ctx;
+    static mountStore( name, context, store, state, datas ) {
+        let ctx;
+        context[name] = store = store || context[name];
         if ( !store ) {
             console.error("Not a mappable store item '" + name + ' !!', store);
             return false;
@@ -163,12 +164,20 @@ export default class Store extends EventEmitter {
 
                 if ( isFunction(ctx[name]) ) {
 
-                    ctx[name] = new ctx[name](ctx);
+                    ctx[name] = new ctx[name](ctx, {state, datas});
                 }
                 return context[name] = ctx[name];
             } else
-                store = context[name] = new store(context);
+                store = context[name] = new store(context, {state, datas});
             context[name].relink(name);
+        } else {
+            if ( state !== undefined && datas === undefined )
+                store.setState(state);
+            else if ( state !== undefined )
+                store.state = state;
+
+            if ( datas !== undefined )
+                store.push(datas);
         }
         return store;
     }
@@ -203,6 +212,9 @@ export default class Store extends EventEmitter {
             context[name] = this;
         }
 
+        if ( cfg && cfg.on ) {
+            Object.keys(cfg.on).forEach(k => this.on(k, cfg.on[k]));
+        }
         // this.state      = this.state || {};
 
         this._watchs  = watchs;
@@ -221,9 +233,9 @@ export default class Store extends EventEmitter {
 
         this._followers = [];
 
-        if ( cfg.hasOwnProperty("datas") )
+        if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
             this.datas = cfg.datas;
-        if ( cfg.hasOwnProperty("state") )
+        if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
             this.state = cfg.state;
 
         if ( refine )
@@ -239,6 +251,7 @@ export default class Store extends EventEmitter {
                 this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
+        !this._stable && this.emit('unstable', this.state);
     }
 
     /**
@@ -304,6 +317,8 @@ export default class Store extends EventEmitter {
     stabilize( cb ) {
         var me = this;
         cb && me.once('stable', cb);
+        this._stable && this.emit('unstable', this.state, this.datas);
+
         me._stable = false;
 
         if ( this._stabilizer )
@@ -388,6 +403,7 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
+
         if ( sync ) {
             this.push();
             cb && cb();
@@ -535,7 +551,7 @@ export default class Store extends EventEmitter {
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
 
-
+        this._stable && this.emit('unstable', this.state, this.datas);
         this._stable = false;
         this.locks++;
         if ( previous && isFunction(previous.then) ) {
@@ -582,15 +598,8 @@ export default class Store extends EventEmitter {
 
             this.emit('stable', this.datas);
             cb && cb()
-        } else cb && this.then(cb)
+        } else cb && this.then(cb);
         return this;
-    }
-
-    dispose() {
-        let _static = this.constructor;
-        if ( _static.contexts || _static.context ) {
-
-        } else this.destroy();
     }
 
     destroy() {

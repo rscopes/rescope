@@ -31,24 +31,19 @@
 <script>
     var context = window.context = new StoreContext(),
         NewsList = new NewsListComp(document.getElementById("events")),
-        rescope  = new Rescope(context);
+        rescope  = new Rescope.Context(context);
 
-    // you can add/override some store to this context
-    (new rescope.Store("status")).setState({hooked : "this store was replaced"})
+    var ctxFront  = {status : new Rescope.Store()},
+        rerescope = new Rescope.Context(ctxFront, rescope);
 
 
-    rescope.fetch(
-        function ( err, state, context ) {
-            context.status.bind(
-                ( datas ) => {
-                    document.getElementById("status").innerHTML =
-                        JSON.stringify(datas, null, 2);
-                }
-            );
+    debugger
+    rerescope.state.status = {ok:'computer'};
+    console.log(rerescope.state.status)
+    console.log(rescope.state.status)
+    debugger
 
-            rescope(NewsList, 'userEvents', true);
-        }
-    );
+
 </script>
 </body>
 </html>

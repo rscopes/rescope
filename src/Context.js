@@ -33,16 +33,23 @@ var isString     = require('isstring'),
 
 let openContexts = {};
 
-class Context extends EventEmitter {
+export default class Context extends EventEmitter {
     static openContexts = openContexts;
 
     static getContext( key ) {
         return openContexts[key] = openContexts[key] || new Context({});
     };
 
-    constructor( ctx, state, datas ) {
+    constructor( ctx, parent, state, datas, name ) {
         super();
-        this.context   = {};
+        this.context      = {};
+        this._$           = function () {
+        };
+        this._$.prototype = parent ? new parent._$() : {};
+        this.$            = new this._$();
+        this.parent       = parent;
+        parent && parent.lock("isMyParent");
+
         this.state     = {};
         this.datas     = {};
         this.__locks   = {all : 0};
@@ -50,23 +57,39 @@ class Context extends EventEmitter {
         this.map(ctx, state, datas);
     }
 
+    mount( id, state, datas ) {
+        if ( !this.__context[id] ) {//ask parent
+            if ( !this.parent )
+                return;
+            return this.parent.mount(...arguments);
+        }
+        if ( isFunction(this.__context[id]) ) {
+            Store.mountStore(id, this.__context, null, state, datas);
+            this.__context[id]._stable
+        }
+    }
+
     map( ctx, state = {}, datas = {} ) {
+        let lctx = this._$.prototype;
         Object.keys(ctx).forEach(
             id => {
                 if ( this.__context[id] ) {
                     console.warn("Rescope Context : ", id, " already exist in this context !");
                     return;
                 }
-                this.__context[id] = ctx[id];
+
+                if ( !isFunction(ctx[id]) )
+                    this.__context[id] = ctx[id];
+
                 Object.defineProperty(
-                    this.context,
+                    lctx,
                     id,
                     (( ctx, id ) => (
                         {
                             get : () => Store.mountStore(id, ctx, state[id])
                         }
                     ))
-                    (ctx, id)
+                    (this.__context, id)
                 );
                 Object.defineProperty(
                     this.state,
@@ -74,20 +97,21 @@ class Context extends EventEmitter {
                     (( ctx, id ) => (
                         {
                             get : () => (!isFunction(ctx[id]) ? ctx[id].state : undefined),
-                            set : ( v ) => (Store.mountStore(id, ctx, v))
+                            set : ( v ) => (Store.mountStore(id, ctx, null, v))
                         }
                     ))
-                    (ctx, id)
+                    (this.__context, id)
                 );
                 Object.defineProperty(
                     this.datas,
                     id,
                     (( ctx, id ) => (
                         {
-                            get : () => (!isFunction(ctx[id]) ? ctx[id].datas : undefined)
+                            get : () => (!isFunction(ctx[id]) ? ctx[id].datas : undefined),
+                            set : ( v ) => (Store.mountStore(id, ctx, null, undefined, v))
                         }
                     ))
-                    (ctx, id)
+                    (this.__context, id)
                 );
             }
         )
@@ -156,14 +180,37 @@ class Context extends EventEmitter {
             this.destroy();
     }
 
+    wait( reason ) {
+        !this.__w8Locks.all && this.emit("unstable", this);
+        this.__w8Locks.all++;
+        if ( reason ) {
+            this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
+            this.__w8Locks[reason]++;
+        }
+    }
+
+    release( reason ) {
+        this.__w8Locks.all--;
+        if ( reason ) {
+            this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
+            this.__w8Locks[reason]--;
+        }
+        if ( !this.__w8Locks.all )
+            this.emit("stable", this);
+    }
+
+    /**
+     * order destroy of local stores
+     */
     destroy() {
         let ctx = this.__context;
-        Object.keys(ctx).forEach(
-            id => {
-                if ( isFunction(ctx[id]) || this.context !== ctx[id].context )
-                    return;
-                ctx[id].destroy()
+        this.parent && this.parent.dispose("isMyParent");
+        for ( let key in ctx )
+            if ( !isFunction(ctx[key]) ) {
+                if ( ctx[key].context === ctx )
+                    ctx[key].destroy();
+
+                ctx[key] = ctx[key].constructor;
             }
-        )
     }
 }

@@ -252,9 +252,9 @@ module.exports =
 	        }
 	    }, {
 	        key: 'mountStore',
-	        value: function mountStore(name, context) {
-	            var store = context[name],
-	                ctx = void 0;
+	        value: function mountStore(name, context, store, state, datas) {
+	            var ctx = void 0;
+	            context[name] = store = store || context[name];
 	            if (!store) {
 	                console.error("Not a mappable store item '" + name + ' !!', store);
 	                return false;
@@ -267,11 +267,15 @@ module.exports =
 	
 	                    if (isFunction(ctx[name])) {
 	
-	                        ctx[name] = new ctx[name](ctx);
+	                        ctx[name] = new ctx[name](ctx, { state: state, datas: datas });
 	                    }
 	                    return context[name] = ctx[name];
-	                } else store = context[name] = new store(context);
+	                } else store = context[name] = new store(context, { state: state, datas: datas });
 	                context[name].relink(name);
+	            } else {
+	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+	
+	                if (datas !== undefined) store.push(datas);
 	            }
 	            return store;
 	        }
@@ -313,6 +317,11 @@ module.exports =
 	            context[name] = _this;
 	        }
 	
+	        if (cfg && cfg.on) {
+	            Object.keys(cfg.on).forEach(function (k) {
+	                return _this.on(k, cfg.on[k]);
+	            });
+	        }
 	        // this.state      = this.state || {};
 	
 	        _this._watchs = watchs;
@@ -329,8 +338,8 @@ module.exports =
 	
 	        _this._followers = [];
 	
-	        if (cfg.hasOwnProperty("datas")) _this.datas = cfg.datas;
-	        if (cfg.hasOwnProperty("state")) _this.state = cfg.state;
+	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
+	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) _this.state = cfg.state;
 	
 	        if (refine) _this.refine = refine;
 	
@@ -345,6 +354,7 @@ module.exports =
 	            if (_this.isComplete()) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
+	        !_this._stable && _this.emit('unstable', _this.state);
 	        return _this;
 	    }
 	
@@ -411,6 +421,8 @@ module.exports =
 	
 	            var me = this;
 	            cb && me.once('stable', cb);
+	            this._stable && this.emit('unstable', this.state, this.datas);
+	
 	            me._stable = false;
 	
 	            if (this._stabilizer) clearTimeout(this._stabilizer);
@@ -660,6 +672,7 @@ module.exports =
 	            if (typeof previous == "number") return this.locks += previous;
 	            if (isArray(previous)) return previous.map(this.wait.bind(this));
 	
+	            this._stable && this.emit('unstable', this.state, this.datas);
 	            this._stable = false;
 	            this.locks++;
 	            if (previous && isFunction(previous.then)) {
@@ -707,12 +720,6 @@ module.exports =
 	                cb && cb();
 	            } else cb && this.then(cb);
 	            return this;
-	        }
-	    }, {
-	        key: 'dispose',
-	        value: function dispose() {
-	            var _static = this.constructor;
-	            if (_static.contexts || _static.context) {} else this.destroy();
 	        }
 	    }, {
 	        key: 'destroy',
@@ -1500,6 +1507,10 @@ module.exports =
 
 	'use strict';
 	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1552,12 +1563,18 @@ module.exports =
 	        }
 	    }]);
 	
-	    function Context(ctx, state, datas) {
+	    function Context(ctx, parent, state, datas, name) {
 	        _classCallCheck(this, Context);
 	
 	        var _this = _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).call(this));
 	
 	        _this.context = {};
+	        _this._$ = function () {};
+	        _this._$.prototype = parent ? new parent._$() : {};
+	        _this.$ = new _this._$();
+	        _this.parent = parent;
+	        parent && parent.lock("isMyParent");
+	
 	        _this.state = {};
 	        _this.datas = {};
 	        _this.__locks = { all: 0 };
@@ -1567,6 +1584,21 @@ module.exports =
 	    }
 	
 	    _createClass(Context, [{
+	        key: 'mount',
+	        value: function mount(id, state, datas) {
+	            if (!this.__context[id]) {
+	                var _parent;
+	
+	                //ask parent
+	                if (!this.parent) return;
+	                return (_parent = this.parent).mount.apply(_parent, arguments);
+	            }
+	            if (isFunction(this.__context[id])) {
+	                Store.mountStore(id, this.__context, null, state, datas);
+	                this.__context[id]._stable;
+	            }
+	        }
+	    }, {
 	        key: 'map',
 	        value: function map(ctx) {
 	            var _this2 = this;
@@ -1574,36 +1606,42 @@ module.exports =
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
+	            var lctx = this._$.prototype;
 	            Object.keys(ctx).forEach(function (id) {
 	                if (_this2.__context[id]) {
 	                    console.warn("Rescope Context : ", id, " already exist in this context !");
 	                    return;
 	                }
-	                _this2.__context[id] = ctx[id];
-	                Object.defineProperty(_this2.context, id, function (ctx, id) {
+	
+	                if (!isFunction(ctx[id])) _this2.__context[id] = ctx[id];
+	
+	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
 	                            return Store.mountStore(id, ctx, state[id]);
 	                        }
 	                    };
-	                }(ctx, id));
+	                }(_this2.__context, id));
 	                Object.defineProperty(_this2.state, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
 	                            return !isFunction(ctx[id]) ? ctx[id].state : undefined;
 	                        },
 	                        set: function set(v) {
-	                            return Store.mountStore(id, ctx, v);
+	                            return Store.mountStore(id, ctx, null, v);
 	                        }
 	                    };
-	                }(ctx, id));
+	                }(_this2.__context, id));
 	                Object.defineProperty(_this2.datas, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
 	                            return !isFunction(ctx[id]) ? ctx[id].datas : undefined;
+	                        },
+	                        set: function set(v) {
+	                            return Store.mountStore(id, ctx, null, undefined, v);
 	                        }
 	                    };
-	                }(ctx, id));
+	                }(_this2.__context, id));
 	            });
 	        }
 	    }, {
@@ -1670,15 +1708,42 @@ module.exports =
 	            if (!this.__locks.all) this.destroy();
 	        }
 	    }, {
+	        key: 'wait',
+	        value: function wait(reason) {
+	            !this.__w8Locks.all && this.emit("unstable", this);
+	            this.__w8Locks.all++;
+	            if (reason) {
+	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
+	                this.__w8Locks[reason]++;
+	            }
+	        }
+	    }, {
+	        key: 'release',
+	        value: function release(reason) {
+	            this.__w8Locks.all--;
+	            if (reason) {
+	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
+	                this.__w8Locks[reason]--;
+	            }
+	            if (!this.__w8Locks.all) this.emit("stable", this);
+	        }
+	
+	        /**
+	         * order destroy of local stores
+	         */
+	
+	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this4 = this;
-	
 	            var ctx = this.__context;
-	            Object.keys(ctx).forEach(function (id) {
-	                if (isFunction(ctx[id]) || _this4.context !== ctx[id].context) return;
-	                ctx[id].destroy();
-	            });
+	            this.parent && this.parent.dispose("isMyParent");
+	            for (var key in ctx) {
+	                if (!isFunction(ctx[key])) {
+	                    if (ctx[key].context === ctx) ctx[key].destroy();
+	
+	                    ctx[key] = ctx[key].constructor;
+	                }
+	            }
 	        }
 	    }]);
 	
@@ -1686,6 +1751,8 @@ module.exports =
 	}(EventEmitter);
 	
 	Context.openContexts = openContexts;
+	exports.default = Context;
+	module.exports = exports['default'];
 
 /***/ })
 /******/ ]);

@@ -45,14 +45,16 @@ let openContexts = {};
 export default class Context extends EventEmitter {
     static contexts = openContexts;
     static Store    = null;
+    static defaultMaxListeners = 20;
 
     static getContext( key ) {
         return openContexts[key] = openContexts[key] || new Context({});
     };
 
-    constructor( ctx, {id, parent, state, datas, name} = {} ) {
+    constructor( ctx, {id, parent, state, datas, name, defaultMaxListeners} = {} ) {
         super();
 
+        this._maxListeners = defaultMaxListeners || Context.defaultMaxListeners;
         this._id = id = id || ("_____" + shortid.generate());
 
         if ( openContexts[id] ) {
@@ -392,8 +394,17 @@ export default class Context extends EventEmitter {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]--;
         }
-        if ( !this.__retainLocks.all )
-            this.destroy();
+        if ( !this.__retainLocks.all ) {
+
+            this._destroyTM && clearTimeout(this._destroyTM);
+            this._destroyTM = setTimeout(
+                e => {
+                    console.log("destroy", this._id)
+                    this.destroy()
+                },
+                200
+            );
+        }
     }
 
     wait( reason ) {
@@ -483,12 +494,11 @@ export default class Context extends EventEmitter {
                 ctx[key] = ctx[key].constructor;
             }
         while (this.__mixedList.length) {
-            this.__mixed[0].dispose();
-
-            this.__mixed.shift().removeListener(this.__mixedList.shift())
+            this.__mixed[0].removeListener(this.__mixedList.shift());
+            this.__mixed.shift().dispose()
         }
-        this.parent.dispose("isMyParent");
         this.parent.removeListener(this.__parentList);
+        this.parent.dispose("isMyParent");
 
     }
 }

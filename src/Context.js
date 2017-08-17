@@ -25,51 +25,74 @@
  */
 
 
-var isString     = require('isstring'),
-    isArray      = require('isarray'),
-    EventEmitter = require('events'),
-    isFunction   = require('isfunction')
-    , Store      = require('./Store');
+var isString        = require('isstring'),
+    isArray         = require('isarray'),
+    EventEmitter    = require('events'),
+    isFunction      = require('isfunction')
+    , shortid       = require('shortid')
+    , __proto__push = ( target, id, parent ) => {
+    let here           = {
+        [id] : function () {
+        }
+    };
+    here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
+    target[id]         = new here[id]();
+    target['_' + id]   = here[id];
+};
 
 let openContexts = {};
 
 export default class Context extends EventEmitter {
-    static openContexts = openContexts;
+    static contexts = openContexts;
+    static Store    = null;
 
     static getContext( key ) {
         return openContexts[key] = openContexts[key] || new Context({});
     };
 
-    constructor( ctx, parent, state, datas, name ) {
+    constructor( ctx, {id, parent, state, datas, name} = {} ) {
         super();
-        this._stores           = function stores() {
-        };
-        this._stores.prototype = parent ? new parent._stores() : {};
-        this.stores            = new this._stores();
-        this._state            = function state() {
-        };
-        this._state.prototype  = parent ? new parent._state() : {};
-        this.state             = new this._state();
-        this._datas            = function datas() {
-        };
-        this._datas.prototype  = parent ? new parent._datas() : {};
-        this.datas             = new this._datas();
-        this.parent            = parent;
+
+        this._id = id = id || ("_____" + shortid.generate());
+
+        if ( openContexts[id] ) {
+            openContexts[id].register(ctx);
+            return openContexts[id]
+        }
+
+        openContexts[id] = this;
+        this._isLocalId  = true;
+
+
+        this.stores = {};
+        this.state  = {};
+        this.datas  = {};
+        __proto__push(this, 'stores', parent);
+        __proto__push(this, 'state', parent);
+        __proto__push(this, 'datas', parent);
+        this.parent = parent;
+
+        this.sources = [];
 
         this.__retainLocks = {all : 0};
         this.__w8Locks     = {all : 1};
         this.__listening   = {};
         this.__context     = {};
+        this.__mixed       = [];
+        this.__mixedList   = [];
         this._followers    = [];
         if ( parent ) {
             parent.retain("isMyParent");
-            parent.on('stable', this.__parentStableList = s => this.release("isMyParent"));
-            parent.on('unstable', this.__parentUnStableList = s => this.wait("isMyParent"));
-            this.map(parent.__context, state, datas);
+            parent.on(this.__parentList = {
+                'stable'   : s => this.release("isMyParent"),
+                'unstable' : s => this.wait("isMyParent"),
+                'update'   : s => this._propag()
+            });
+            // this.register(parent.__context, state, datas);
         }
 
 
-        this.map(ctx, state, datas);
+        this.register(ctx, state, datas);
         this.__w8Locks.all--;
         this._stable = !!this.__w8Locks.all;
 
@@ -85,18 +108,20 @@ export default class Context extends EventEmitter {
     }
 
     _mount( id, state, datas ) {
-        if ( !this.__context[id] ) {//ask parent
-            if ( !this.parent )
+        if ( !this.__context[id] ) {//ask mixed || parent
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, datas)), false) ||
+                !this.parent )
                 return;
-            return this.parent.mount(...arguments);
+            return this.parent._mount(...arguments);
         }
-        Store.mountStore(id, this.__context, null, state, datas);
+        this.constructor.Store.mountStore(id, this, null, state, datas);
 
         if ( !this.__listening[id] ) {
             !this.__context[id].isStable() && this.wait(id);
 
             this.__context[id].on(
                 this.__listening[id] = {
+                    'update'   : s => this.propag(),
                     'stable'   : s => this.release(id),
                     'unstable' : s => this.wait(id)
                 });
@@ -104,54 +129,93 @@ export default class Context extends EventEmitter {
         return this.__context[id];
     }
 
-    map( ctx, state = {}, datas = {} ) {
-        let lctx = this._stores.prototype;
-        Object.keys(ctx).forEach(
-            id => {
-                if ( this.__context[id] ) {
-                    console.warn("Rescope Context : ", id, " already exist in this context !");
-                    return;
+
+    mixin( targetCtx ) {
+        let parent = this.parent, lists;
+        this.__mixed.push(targetCtx)
+        targetCtx.retain();
+
+        this.__mixedList.push(lists = {
+            'stable'   : s => this.release(targetCtx._id),
+            'unstable' : s => this.wait(targetCtx._id),
+            'update'   : s => this._propag()
+        })
+        targetCtx.on(lists);
+        __proto__push(this, 'stores', parent);
+        __proto__push(this, 'state', parent);
+        __proto__push(this, 'datas', parent);
+        targetCtx.relink(targetCtx.__context, this, true);
+
+        __proto__push(this, 'stores', this);
+        __proto__push(this, 'state', this);
+        __proto__push(this, 'datas', this);
+        this.relink(this.__context, this);
+    }
+
+    register( rawCtx, state = {}, datas = {} ) {
+        this.relink(rawCtx, this, false, state, datas);
+        Object.keys(rawCtx).forEach(
+            id => (isFunction(rawCtx[id]) && rawCtx[id].singleton && this._mount(id, state[id], datas[id])))
+
+    }
+
+    /**
+     * Map srcCtx store's on targetCtx headers proto's
+     * @param srcCtx
+     * @param targetCtx
+     * @param state
+     * @param datas
+     */
+    relink( srcCtx, targetCtx = this, external, state = {}, datas = {} ) {
+        let lctx = targetCtx._stores.prototype;
+        Object.keys(srcCtx)
+            .forEach(
+                id => {
+                    if ( targetCtx.__context[id] === srcCtx[id] ||
+                        targetCtx.__context[id] && (targetCtx.__context[id].constructor === srcCtx[id] ) )
+                        return;
+
+                    if ( targetCtx.__context[id] ) {
+                        console.warn("Rescope Context : ", id, " already exist in this context !");
+                        return;
+                    }
+                    if ( !external )
+                        this.__context[id] = srcCtx[id];
+
+                    Object.defineProperty(
+                        lctx,
+                        id,
+                        (( ctx, id ) => (
+                            {
+                                get : () => this._mount(id, state[id], datas[id])
+                            }
+                        ))
+                        (this.__context, id)
+                    );
+                    Object.defineProperty(
+                        targetCtx._state.prototype,
+                        id,
+                        (( ctx, id ) => (
+                            {
+                                get : () => (ctx[id] && ctx[id].state),
+                                set : ( v ) => (this._mount(id, v))
+                            }
+                        ))
+                        (this.__context, id)
+                    );
+                    Object.defineProperty(
+                        targetCtx._datas.prototype,
+                        id,
+                        (( ctx, id ) => (
+                            {
+                                get : () => (ctx[id] && ctx[id].datas),
+                                set : ( v ) => (this._mount(id, undefined, v))
+                            }
+                        ))
+                        (this.__context, id)
+                    );
                 }
-
-                this.__context[id] = ctx[id];
-
-                Object.defineProperty(
-                    lctx,
-                    id,
-                    (( ctx, id ) => (
-                        {
-                            get : () => this._mount(id, state[id], datas[id])
-                        }
-                    ))
-                    (this.__context, id)
-                );
-                Object.defineProperty(
-                    this.state,
-                    id,
-                    (( ctx, id ) => (
-                        {
-                            get : () => (ctx[id] && ctx[id].state),
-                            set : ( v ) => (this._mount(id, v))
-                        }
-                    ))
-                    (lctx, id)
-                );
-                Object.defineProperty(
-                    this.datas,
-                    id,
-                    (( ctx, id ) => (
-                        {
-                            get : () => (ctx[id] && ctx[id].datas),
-                            set : ( v ) => (this._mount(id, undefined, v))
-                        }
-                    ))
-                    (lctx, id)
-                );
-            }
-        )
-        Object.keys(ctx).forEach(
-            id => (isFunction(ctx[id]) && ctx[id].singleton && this._mount(id, state[id], datas[id])))
-
+            )
     }
 
     /**
@@ -160,8 +224,10 @@ export default class Context extends EventEmitter {
      */
     bind( obj, key, as, setInitial = true ) {
         let lastRevs, datas;
-        if ( !isArray(key) )
+        if ( key && !isArray(key) )
             key = [key];
+
+        // key = key||
 
         if ( as === true ) {
             setInitial = true;
@@ -173,7 +239,7 @@ export default class Context extends EventEmitter {
                 obj,
                 key,
                 as,
-                lastRevs = key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
+                lastRevs = key && key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
             ]);
 
         this.mount(key);
@@ -205,20 +271,35 @@ export default class Context extends EventEmitter {
                 return followers.splice(i, 1);
     }
 
-    getUpdates( revs ) {
-        let updated = false,
-            output  = {},
-            ctx     = this.__context;
+    /**
+     * Pull stores in the private state
+     * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+     */
+    pull( stores, doWait, origin ) {
+        this.mount(stores);
+        this.bind(origin, stores, null, false);
 
-        Object.keys(revs).forEach(
+        return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
+    }
+
+    getUpdates( revs, output, updated ) {
+        let ctx = this.__context;
+
+        output = output || {};
+        Object.keys(ctx).forEach(
             id => {
-                if ( isFunction(ctx[id]) || ctx[id]._rev <= revs[id] )
-                    return;
-                updated    = true;
-                output[id] = this.datas[id];
-                revs[id]   = ctx[id]._rev;
+                if ( !revs || !( !revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id] ) ) {
+
+                    updated    = true;
+                    output[id] = this.datas[id];
+                    if ( revs )
+                        revs[id] = ctx[id]._rev;
+
+                }
             }
-        )
+        );
+        updated = this.__mixed.reduce(( updated, ctx ) => (ctx.getUpdates(revs, output, updated) || updated), updated);
+        updated = this.parent && this.parent.getUpdates(revs, output, updated) || updated;
         return updated && output;
     }
 
@@ -253,15 +334,16 @@ export default class Context extends EventEmitter {
     }
 
     on( lists ) {
+
         if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
     }
 
-    un( lists ) {
+    removeListener( lists ) {
         if ( !isString(lists) && lists )
-            Object.keys(lists).forEach(k => super.un(k, lists[k]));
-        else super.un(...arguments);
+            Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
+        else super.removeListener(...arguments);
     }
 
     /**
@@ -325,6 +407,32 @@ export default class Context extends EventEmitter {
         }
     }
 
+    propag() {
+        this._propagTM && clearTimeout(this._propagTM);
+        this._propagTM = setTimeout(
+            e => {
+                this._propag()
+            }
+        );
+    }
+
+    _propag() {
+        if ( this._followers.length )
+            this._followers.forEach(( {0 : obj, 1 : key, 2 : as, 3 : lastRevs} ) => {
+                let datas = this.getUpdates(lastRevs);
+                if ( !datas ) return;
+                if ( typeof obj != "function" ) {
+                    if ( as ) obj.setState({[as] : datas});
+                    else obj.setState(datas);
+                } else {
+                    obj(datas);
+                }
+                lastRevs &&
+                key.forEach(id => (lastRevs[id] = this.__context[id] && this.__context[id]._rev || 0));
+            });
+        this.emit("update", this.getUpdates());
+    }
+
     release( reason ) {
         console.log("release", reason);
         this.__w8Locks.all--;
@@ -335,6 +443,8 @@ export default class Context extends EventEmitter {
         this._stable = true;
         if ( !this.__w8Locks.all ) {
             this._stabilizerTM && clearTimeout(this._stabilizerTM);
+            this._propagTM && clearTimeout(this._propagTM);
+
             this._stabilizerTM = setTimeout(
                 e => {
                     if ( !this._stable )
@@ -342,18 +452,7 @@ export default class Context extends EventEmitter {
 
                     this.emit("stable", this);
 
-                    if ( this._followers.length )
-                        this._followers.forEach(( {0 : obj, 1 : key, 2 : as, 3 : lastRevs} ) => {
-                            let datas = this.getUpdates(lastRevs);
-                            if ( !datas ) return;
-                            if ( typeof obj != "function" ) {
-                                if ( as ) obj.setState({[as] : datas});
-                                else obj.setState(datas);
-                            } else {
-                                obj(datas);
-                            }
-                            key.forEach(id => (lastRevs[id] = this.__context[id] && this.__context[id]._rev));
-                        });
+                    this._propag()
                 }
             );
         }
@@ -369,9 +468,12 @@ export default class Context extends EventEmitter {
         Object.keys(
             this.__listening
         ).forEach(
-            id => this.__context[id].un(this.__listening[id])
+            id => this.__context[id].removeListener(this.__listening[id])
         );
         this.__listening = {};
+
+        if ( this._isLocalId )
+            delete openContexts[this._id];
 
         for ( let key in ctx )
             if ( !isFunction(ctx[key]) ) {
@@ -380,10 +482,13 @@ export default class Context extends EventEmitter {
 
                 ctx[key] = ctx[key].constructor;
             }
-        if ( this.parent ) {
-            this.parent.dispose("isMyParent");
-            this.parent.un('stable', this.__parentStableList);
-            this.parent.un('unstable', this.__parentUnStableList);
+        while (this.__mixedList.length) {
+            this.__mixed[0].dispose();
+
+            this.__mixed.shift().removeListener(this.__mixedList.shift())
         }
+        this.parent.dispose("isMyParent");
+        this.parent.removeListener(this.__parentList);
+
     }
 }

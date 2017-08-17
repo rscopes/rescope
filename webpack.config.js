@@ -12,16 +12,16 @@ var path    = require("path")
 var webpack = require("webpack")
 
 
-var production = process.argv.indexOf("--production") > -1
+var production    = process.argv.indexOf("--production") > -1
     || process.argv.indexOf("-p") > -1;
 var nodeExternals = require('webpack-node-externals');
-module.exports = [
+module.exports    = [
     {
         entry     : {
             "Rescope" : "./src/Rescope.js",
 
         },
-        devtool   : 'source-map',
+        devtool   : !production ? 'inline-source-map' : 'source-map',
         output    : {
             path          : __dirname,
             filename      : production ? "dist/[name].nodeps.min.js" : "dist/[name].nodeps.js",
@@ -99,7 +99,7 @@ module.exports = [
         entry   : {
             "Rescope" : "./src/Rescope.js",
         },
-        devtool : 'source-map',
+        devtool   : !production ? 'inline-source-map' : 'source-map',
         output  : {
             path          : __dirname,
             filename      : production ? "dist/[name].min.js" : "dist/[name].js",
@@ -175,7 +175,7 @@ module.exports = [
         entry   : {
             "Rescope" : "./src/Rescope.js",
         },
-        devtool : 'source-map',
+        devtool   : !production ? 'inline-source-map' : 'source-map',
         output  : {
             path          : __dirname,
             filename      : production ? "dist/[name].browser.min.js" : "dist/[name].browser.js",

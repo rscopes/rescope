@@ -30,8 +30,8 @@
 <div id="events"></div>
 <script>
     var context = window.context = new StoreContext(),
-        NewsList   = new NewsListComp(document.getElementById("events"));
-    window.App = new Rescope.Context(context);
+        NewsList = new NewsListComp(document.getElementById("events"));
+    window.App   = new Rescope.Context(context);
 
 
     App.state.appState = {currentUserId : "MissTick"}
@@ -41,7 +41,7 @@
 
             App.bind(NewsList, 'userEvents', true);
             App.bind(function ( datas ) {
-                document.getElementById("status").innerHTML=JSON.stringify(datas, true, 2)
+                document.getElementById("status").innerHTML = JSON.stringify(datas, true, 2)
             }, 'status', true);
         }
     );

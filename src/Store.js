@@ -137,7 +137,7 @@ export default class Store extends EventEmitter {
                         alias = key[1] || key[0];
                     }
 
-                    store&&store.unBind(component, alias)
+                    store && !isFunction(store) && store.unBind(component, alias)
                 }
             );
             return this[unMountKey] && this[unMountKey].apply(this, arguments);
@@ -167,8 +167,10 @@ export default class Store extends EventEmitter {
                 ctx = this.getContext(store.contexts || [store.context]);
 
                 ctx.register({[name] : ctx.__context[name] || store});
-                ctx._mount(name);
-                return contextMap[name] = ctx[name];
+
+                contextMap[name] = ctx[name] = new store(context, {state, datas});
+                ctx._watchStore(name);
+                return ctx[name];
             } else
                 store = contextMap[name] = new store(context, {state, datas});
             contextMap[name].relink(name);

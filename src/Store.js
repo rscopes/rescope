@@ -202,12 +202,12 @@ export default class Store extends EventEmitter {
             name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
-            initialState = _static.initialState
-        ;
-        this._uid        = cfg._uid || shortid.generate();
-        this.setMaxListeners(Store.defaultMaxListeners);
-        this.locks        = 0;
-        this._onStabilize = [];
+            initialState = _static.initialState;
+
+        this._uid          = cfg._uid || shortid.generate();
+        this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
+        this.locks         = 0;
+        this._onStabilize  = [];
 
         if ( isString(argz[0]) ) {
             if ( context.__context[name] )

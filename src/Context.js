@@ -43,28 +43,29 @@ var isString        = require('isstring'),
 let openContexts = {};
 
 export default class Context extends EventEmitter {
-    static contexts = openContexts;
-    static Store    = null;
+    static contexts            = openContexts;
+    static Store               = null;
     static defaultMaxListeners = 20;
+    static persistenceTm       = 0;
 
     static getContext( key ) {
         return openContexts[key] = openContexts[key] || new Context({});
     };
 
-    constructor( ctx, {id, parent, state, datas, name, defaultMaxListeners} = {} ) {
+    constructor( ctx, {id, parent, state, datas, name, defaultMaxListeners, persistenceTm} = {} ) {
         super();
 
-        this._maxListeners = defaultMaxListeners || Context.defaultMaxListeners;
-        this._id = id = id || ("_____" + shortid.generate());
+        this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
+        this._id           = id = id || ("_____" + shortid.generate());
 
         if ( openContexts[id] ) {
             openContexts[id].register(ctx);
             return openContexts[id]
         }
 
-        openContexts[id] = this;
-        this._isLocalId  = true;
-
+        openContexts[id]    = this;
+        this._isLocalId     = true;
+        this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
 
         this.stores = {};
         this.state  = {};
@@ -395,15 +396,17 @@ export default class Context extends EventEmitter {
             this.__retainLocks[reason]--;
         }
         if ( !this.__retainLocks.all ) {
-
-            this._destroyTM && clearTimeout(this._destroyTM);
-            this._destroyTM = setTimeout(
-                e => {
-                    console.log("destroy", this._id)
-                    this.__retainLocks.all&&this.destroy()
-                },
-                200
-            );
+            if ( this._persistenceTm ) {
+                this._destroyTM && clearTimeout(this._destroyTM);
+                this._destroyTM = setTimeout(
+                    e => {
+                        !this.__retainLocks.all && this.destroy();
+                    },
+                    this._persistenceTm
+                );
+            } else {
+                this.destroy();
+            }
         }
     }
 
@@ -423,7 +426,7 @@ export default class Context extends EventEmitter {
         this._propagTM = setTimeout(
             e => {
                 this._propag()
-            }
+            }, 50
         );
     }
 
@@ -476,6 +479,8 @@ export default class Context extends EventEmitter {
     destroy() {
         let ctx = this.__context;
 
+
+        this.emit("destroy");
         Object.keys(
             this.__listening
         ).forEach(

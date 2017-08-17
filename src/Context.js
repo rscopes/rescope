@@ -400,7 +400,7 @@ export default class Context extends EventEmitter {
             this._destroyTM = setTimeout(
                 e => {
                     console.log("destroy", this._id)
-                    this.destroy()
+                    this.__retainLocks.all&&this.destroy()
                 },
                 200
             );

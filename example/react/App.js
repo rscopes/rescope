@@ -22406,12 +22406,14 @@
 	            parent = _ref.parent,
 	            state = _ref.state,
 	            datas = _ref.datas,
-	            name = _ref.name;
+	            name = _ref.name,
+	            defaultMaxListeners = _ref.defaultMaxListeners;
 	
 	        _classCallCheck(this, Context);
 	
 	        var _this = _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).call(this));
 	
+	        _this._maxListeners = defaultMaxListeners || Context.defaultMaxListeners;
 	        _this._id = id = id || "_____" + shortid.generate();
 	
 	        if (openContexts[id]) {
@@ -22808,12 +22810,21 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
+	            var _this13 = this;
+	
 	            this.__retainLocks.all--;
 	            if (reason) {
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
 	                this.__retainLocks[reason]--;
 	            }
-	            if (!this.__retainLocks.all) this.destroy();
+	            if (!this.__retainLocks.all) {
+	
+	                this._destroyTM && clearTimeout(this._destroyTM);
+	                this._destroyTM = setTimeout(function (e) {
+	                    console.log("destroy", _this13._id);
+	                    _this13.__retainLocks.all && _this13.destroy();
+	                }, 200);
+	            }
 	        }
 	    }, {
 	        key: 'wait',
@@ -22830,17 +22841,17 @@
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this13 = this;
+	            var _this14 = this;
 	
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
-	                _this13._propag();
+	                _this14._propag();
 	            });
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this14 = this;
+	            var _this15 = this;
 	
 	            if (this._followers.length) this._followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -22848,7 +22859,7 @@
 	                    as = _ref3[2],
 	                    lastRevs = _ref3[3];
 	
-	                var datas = _this14.getUpdates(lastRevs);
+	                var datas = _this15.getUpdates(lastRevs);
 	                if (!datas) return;
 	                if (typeof obj != "function") {
 	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
@@ -22856,7 +22867,7 @@
 	                    obj(datas);
 	                }
 	                lastRevs && key.forEach(function (id) {
-	                    return lastRevs[id] = _this14.__context[id] && _this14.__context[id]._rev || 0;
+	                    return lastRevs[id] = _this15.__context[id] && _this15.__context[id]._rev || 0;
 	                });
 	            });
 	            this.emit("update", this.getUpdates());
@@ -22864,7 +22875,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this15 = this;
+	            var _this16 = this;
 	
 	            console.log("release", reason);
 	            this.__w8Locks.all--;
@@ -22878,11 +22889,11 @@
 	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (!_this15._stable) return _this15._stabilizerTM = null;
+	                    if (!_this16._stable) return _this16._stabilizerTM = null;
 	
-	                    _this15.emit("stable", _this15);
+	                    _this16.emit("stable", _this16);
 	
-	                    _this15._propag();
+	                    _this16._propag();
 	                });
 	            }
 	        }
@@ -22894,12 +22905,12 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this16 = this;
+	            var _this17 = this;
 	
 	            var ctx = this.__context;
 	
 	            Object.keys(this.__listening).forEach(function (id) {
-	                return _this16.__context[id].removeListener(_this16.__listening[id]);
+	                return _this17.__context[id].removeListener(_this17.__listening[id]);
 	            });
 	            this.__listening = {};
 	
@@ -22912,12 +22923,11 @@
 	                    ctx[key] = ctx[key].constructor;
 	                }
 	            }while (this.__mixedList.length) {
-	                this.__mixed[0].dispose();
-	
-	                this.__mixed.shift().removeListener(this.__mixedList.shift());
+	                this.__mixed[0].removeListener(this.__mixedList.shift());
+	                this.__mixed.shift().dispose();
 	            }
-	            this.parent.dispose("isMyParent");
 	            this.parent.removeListener(this.__parentList);
+	            this.parent.dispose("isMyParent");
 	        }
 	    }]);
 	
@@ -22926,6 +22936,7 @@
 	
 	Context.contexts = openContexts;
 	Context.Store = null;
+	Context.defaultMaxListeners = 20;
 	exports.default = Context;
 	module.exports = exports['default'];
 
@@ -23917,8 +23928,9 @@
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
 	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
 	            initialState = _static.initialState;
+	
 	        _this._uid = cfg._uid || shortid.generate();
-	        _this.setMaxListeners(Store.defaultMaxListeners);
+	        _this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
 	        _this.locks = 0;
 	        _this._onStabilize = [];
 	

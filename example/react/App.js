@@ -22407,13 +22407,15 @@
 	            state = _ref.state,
 	            datas = _ref.datas,
 	            name = _ref.name,
-	            defaultMaxListeners = _ref.defaultMaxListeners;
+	            defaultMaxListeners = _ref.defaultMaxListeners,
+	            persistenceTm = _ref.persistenceTm,
+	            autoDestroy = _ref.autoDestroy;
 	
 	        _classCallCheck(this, Context);
 	
 	        var _this = _possibleConstructorReturn(this, (Context.__proto__ || Object.getPrototypeOf(Context)).call(this));
 	
-	        _this._maxListeners = defaultMaxListeners || Context.defaultMaxListeners;
+	        _this._maxListeners = defaultMaxListeners || _this.constructor.defaultMaxListeners;
 	        _this._id = id = id || "_____" + shortid.generate();
 	
 	        if (openContexts[id]) {
@@ -22425,6 +22427,7 @@
 	
 	        openContexts[id] = _this;
 	        _this._isLocalId = true;
+	        _this._persistenceTm = persistenceTm || _this.constructor.persistenceTm;
 	
 	        _this.stores = {};
 	        _this.state = {};
@@ -22463,6 +22466,10 @@
 	        _this.__w8Locks.all--;
 	        _this._stable = !!_this.__w8Locks.all;
 	
+	        if (autoDestroy) setTimeout(function (tm) {
+	            _this.retain();
+	            _this.dispose();
+	        });
 	        return _this;
 	    }
 	
@@ -22818,12 +22825,14 @@
 	                this.__retainLocks[reason]--;
 	            }
 	            if (!this.__retainLocks.all) {
-	
-	                this._destroyTM && clearTimeout(this._destroyTM);
-	                this._destroyTM = setTimeout(function (e) {
-	                    console.log("destroy", _this13._id);
-	                    _this13.__retainLocks.all && _this13.destroy();
-	                }, 200);
+	                if (this._persistenceTm) {
+	                    this._destroyTM && clearTimeout(this._destroyTM);
+	                    this._destroyTM = setTimeout(function (e) {
+	                        !_this13.__retainLocks.all && _this13.destroy();
+	                    }, this._persistenceTm);
+	                } else {
+	                    this.destroy();
+	                }
 	            }
 	        }
 	    }, {
@@ -22846,7 +22855,7 @@
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
 	                _this14._propag();
-	            });
+	            }, 50);
 	        }
 	    }, {
 	        key: '_propag',
@@ -22909,6 +22918,7 @@
 	
 	            var ctx = this.__context;
 	
+	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this17.__context[id].removeListener(_this17.__listening[id]);
 	            });
@@ -22918,7 +22928,7 @@
 	
 	            for (var key in ctx) {
 	                if (!isFunction(ctx[key])) {
-	                    if (ctx[key].context === ctx) ctx[key].destroy();
+	                    if (ctx[key].contextObj === this) ctx[key].destroy();
 	
 	                    ctx[key] = ctx[key].constructor;
 	                }
@@ -22926,8 +22936,10 @@
 	                this.__mixed[0].removeListener(this.__mixedList.shift());
 	                this.__mixed.shift().dispose();
 	            }
-	            this.parent.removeListener(this.__parentList);
-	            this.parent.dispose("isMyParent");
+	            if (this.parent) {
+	                this.parent.removeListener(this.__parentList);
+	                this.parent.dispose("isMyParent");
+	            }
 	        }
 	    }]);
 	
@@ -22937,6 +22949,7 @@
 	Context.contexts = openContexts;
 	Context.Store = null;
 	Context.defaultMaxListeners = 20;
+	Context.persistenceTm = 0;
 	exports.default = Context;
 	module.exports = exports['default'];
 
@@ -23856,7 +23869,7 @@
 	                        alias = key[1] || key[0];
 	                    }
 	
-	                    store.unBind(component, alias);
+	                    store && store.unBind(component, alias);
 	                });
 	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
 	            };
@@ -24391,7 +24404,6 @@
 	            if (this._stabilizer) clearTimeout(this._stabilizer);
 	            this._followers.length = 0;
 	            this.dead = true;
-	            if (this.name && this.context[this.name] === this) this.context[this.name] = this.constructor;
 	            this._revs = this.datas = this.state = this.context = null;
 	            this.removeAllListeners();
 	        }

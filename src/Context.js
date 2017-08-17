@@ -42,6 +42,7 @@ var isString        = require('isstring'),
 
 let openContexts = {};
 
+
 export default class Context extends EventEmitter {
     static contexts            = openContexts;
     static Store               = null;
@@ -52,7 +53,7 @@ export default class Context extends EventEmitter {
         return openContexts[key] = openContexts[key] || new Context({});
     };
 
-    constructor( ctx, {id, parent, state, datas, name, defaultMaxListeners, persistenceTm} = {} ) {
+    constructor( ctx, {id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy} = {} ) {
         super();
 
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
@@ -99,6 +100,13 @@ export default class Context extends EventEmitter {
         this.__w8Locks.all--;
         this._stable = !!this.__w8Locks.all;
 
+        if ( autoDestroy )
+            setTimeout(
+                tm => {
+                    this.retain();
+                    this.dispose();
+                }
+            )
     }
 
     mount( id, state, datas ) {
@@ -479,7 +487,6 @@ export default class Context extends EventEmitter {
     destroy() {
         let ctx = this.__context;
 
-
         this.emit("destroy");
         Object.keys(
             this.__listening
@@ -493,7 +500,7 @@ export default class Context extends EventEmitter {
 
         for ( let key in ctx )
             if ( !isFunction(ctx[key]) ) {
-                if ( ctx[key].context === ctx )
+                if ( ctx[key].contextObj === this )
                     ctx[key].destroy();
 
                 ctx[key] = ctx[key].constructor;
@@ -502,8 +509,11 @@ export default class Context extends EventEmitter {
             this.__mixed[0].removeListener(this.__mixedList.shift());
             this.__mixed.shift().dispose()
         }
-        this.parent.removeListener(this.__parentList);
-        this.parent.dispose("isMyParent");
+        if ( this.parent ) {
+            this.parent.removeListener(this.__parentList);
+            this.parent.dispose("isMyParent");
+
+        }
 
     }
 }

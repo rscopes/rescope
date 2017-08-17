@@ -137,7 +137,7 @@ export default class Store extends EventEmitter {
                         alias = key[1] || key[0];
                     }
 
-                    store.unBind(component, alias)
+                    store&&store.unBind(component, alias)
                 }
             );
             return this[unMountKey] && this[unMountKey].apply(this, arguments);
@@ -642,9 +642,7 @@ export default class Store extends EventEmitter {
             clearTimeout(this._stabilizer);
         this._followers.length = 0;
         this.dead              = true;
-        if ( this.name && this.context[this.name] === this )
-            this.context[this.name] = this.constructor;
-        this._revs = this.datas = this.state = this.context = null;
+        this._revs             = this.datas = this.state = this.context = null;
         this.removeAllListeners();
     }
 }

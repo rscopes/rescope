@@ -179,7 +179,7 @@
 	        if (openContexts[id]) {
 	            var _ret;
 	
-	            openContexts[id].register(ctx);
+	            // openContexts[id].register(ctx);
 	            return _ret = openContexts[id], _possibleConstructorReturn(_this, _ret);
 	        }
 	
@@ -248,8 +248,6 @@
 	    }, {
 	        key: '_mount',
 	        value: function _mount(id, state, datas) {
-	            var _this3 = this;
-	
 	            if (!this.__context[id]) {
 	                var _parent;
 	
@@ -260,8 +258,24 @@
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            }
 	            this.constructor.Store.mountStore(id, this, null, state, datas);
+	            this._watchStore(id);
+	            return this.__context[id];
+	        }
+	    }, {
+	        key: '_watchStore',
+	        value: function _watchStore(id, state, datas) {
+	            var _this3 = this;
 	
-	            if (!this.__listening[id]) {
+	            if (!this.__context[id]) {
+	                var _parent2;
+	
+	                //ask mixed || parent
+	                if (this.__mixed.reduce(function (mounted, ctx) {
+	                    return mounted || ctx._watchStore(id, state, datas);
+	                }, false) || !this.parent) return;
+	                return (_parent2 = this.parent)._watchStore.apply(_parent2, arguments);
+	            }
+	            if (!this.__listening[id] && !isFunction(this.__context[id])) {
 	                !this.__context[id].isStable() && this.wait(id);
 	
 	                this.__context[id].on(this.__listening[id] = {
@@ -276,7 +290,7 @@
 	                    }
 	                });
 	            }
-	            return this.__context[id];
+	            return true;
 	        }
 	    }, {
 	        key: 'mixin',
@@ -1642,7 +1656,7 @@
 	                        alias = key[1] || key[0];
 	                    }
 	
-	                    store && store.unBind(component, alias);
+	                    store && !isFunction(store) && store.unBind(component, alias);
 	                });
 	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
 	            };
@@ -1674,8 +1688,10 @@
 	                    ctx = this.getContext(store.contexts || [store.context]);
 	
 	                    ctx.register(_defineProperty({}, name, ctx.__context[name] || store));
-	                    ctx._mount(name);
-	                    return contextMap[name] = ctx[name];
+	
+	                    contextMap[name] = ctx[name] = new store(context, { state: state, datas: datas });
+	                    ctx._watchStore(name);
+	                    return ctx[name];
 	                } else store = contextMap[name] = new store(context, { state: state, datas: datas });
 	                contextMap[name].relink(name);
 	            } else {

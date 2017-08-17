@@ -60,7 +60,7 @@ export default class Context extends EventEmitter {
         this._id           = id = id || ("_____" + shortid.generate());
 
         if ( openContexts[id] ) {
-            openContexts[id].register(ctx);
+            // openContexts[id].register(ctx);
             return openContexts[id]
         }
 
@@ -126,8 +126,18 @@ export default class Context extends EventEmitter {
             return this.parent._mount(...arguments);
         }
         this.constructor.Store.mountStore(id, this, null, state, datas);
+        this._watchStore(id);
+        return this.__context[id];
+    }
 
-        if ( !this.__listening[id] ) {
+    _watchStore( id, state, datas ) {
+        if ( !this.__context[id] ) {//ask mixed || parent
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, datas)), false) ||
+                !this.parent )
+                return;
+            return this.parent._watchStore(...arguments);
+        }
+        if ( !this.__listening[id] && !isFunction(this.__context[id]) ) {
             !this.__context[id].isStable() && this.wait(id);
 
             this.__context[id].on(
@@ -137,9 +147,8 @@ export default class Context extends EventEmitter {
                     'unstable' : s => this.wait(id)
                 });
         }
-        return this.__context[id];
+        return true;
     }
-
 
     mixin( targetCtx ) {
         let parent = this.parent, lists;

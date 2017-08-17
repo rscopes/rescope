@@ -18,6 +18,7 @@ var isString     = require('isstring')
     , isArray    = require('isarray')
     , isFunction = require('isfunction')
     ,
+    Context      = require('./Context'),
     EventEmitter = require('events'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({}),
@@ -29,7 +30,7 @@ export default class Store extends EventEmitter {
     static use                 = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext       = {};
+    static staticContext       = new Context({}, {id : "static"});
     static initialState        = undefined;// default state
     static defaultMaxListeners = 20;
     static autokill            = false;// false or tm without followers
@@ -52,11 +53,16 @@ export default class Store extends EventEmitter {
      */
     static map( component, keys, context, origin, setInitial = false ) {
         var targetRevs     = component._revs || {};
-        var targetContext  = component.stores || (component.stores = {});
+        // var targetContext  = component.stores || (component.stores = new Context({}));
         var initialOutputs = {};
         keys               = isArray(keys) ? [...keys] : [keys];
 
-        context        = context || Store.staticContext;
+
+        context = context || Store.staticContext;
+
+        // if (!targetContext.__context)
+        //     debugger;
+
         keys           = keys.filter(
             // @todo : use query refs
             // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
@@ -77,7 +83,7 @@ export default class Store extends EventEmitter {
                 } else {
                     key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
                     name  = key[0];
-                    store = context[key[0]];
+                    store = context.__context[key[0]];
                     alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
 
@@ -88,17 +94,17 @@ export default class Store extends EventEmitter {
                 } else if ( isFunction(store) ) {
                     this.mountStore(name, context)
 
-                    context[name].bind(component, alias, setInitial);
-                    // if ( context[key[0]].state ) {// do sync push after constructor
-                    //     context[key[0]].push();
+                    context.__context[name].bind(component, alias, setInitial);
+                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
+                    //     context.__context[key[0]].push();
                     // }
                 } else {
                     store.bind(component, alias, setInitial);
                 }
-                targetRevs[alias]    = targetRevs[alias] || true;
-                targetContext[alias] = targetContext[alias] || context[name];
-                if ( context[name].hasOwnProperty('datas') )
-                    initialOutputs[alias] = context[name].datas;
+                targetRevs[alias] = targetRevs[alias] || true;
+                // !targetContext.__context[alias] && targetContext.register({[alias] : context.__context[name]});
+                if ( context.__context[name].hasOwnProperty('datas') )
+                    initialOutputs[alias] = context.datas[name];
                 return true;
             }
         );
@@ -123,11 +129,11 @@ export default class Store extends EventEmitter {
                         store = key.store;
                     } else if ( isFunction(key) ) {
                         name = alias = key.name || key.defaultName;
-                        store = context[name];
+                        store = context.__context[name];
                     } else {
                         key   = key.split(':');
                         name  = key[0];
-                        store = context[key[0]];
+                        store = context.__context[key[0]];
                         alias = key[1] || key[0];
                     }
 
@@ -146,12 +152,12 @@ export default class Store extends EventEmitter {
             if ( a.firstname > b.firstname ) return 1;
             return 0;
         }).join('::') : contexts;
-        return openContexts[skey] = openContexts[skey] || openContexts[skey];
+        return Context.contexts[skey] = Context.contexts[skey] || new Context({}, {id : skey});
     }
 
     static mountStore( name, context, store, state, datas ) {
-        let ctx;
-        context[name] = store = store || context[name];
+        let ctx, contextMap = context.__context;
+        contextMap[name]    = store = store || contextMap[name];
         if ( !store ) {
             console.error("Not a mappable store item '" + name + ' !!', store);
             return false;
@@ -160,16 +166,12 @@ export default class Store extends EventEmitter {
             if ( store && (store.contexts || store.context) ) {
                 ctx = this.getContext(store.contexts || [store.context]);
 
-                ctx[name] = ctx[name] || store;
-
-                if ( isFunction(ctx[name]) ) {
-
-                    ctx[name] = new ctx[name](ctx, {state, datas});
-                }
-                return context[name] = ctx[name];
+                ctx.register({[name] : ctx.__context[name] || store});
+                ctx._mount(name);
+                return contextMap[name] = ctx[name];
             } else
-                store = context[name] = new store(context, {state, datas});
-            context[name].relink(name);
+                store = contextMap[name] = new store(context, {state, datas});
+            contextMap[name].relink(name);
         } else {
             if ( state !== undefined && datas === undefined )
                 store.setState(state);
@@ -193,24 +195,24 @@ export default class Store extends EventEmitter {
      */
     constructor() {
         super();
-        var argz    = [...arguments],
-            _static = this.constructor,
-            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            cfg     = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
-            name    = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
-            watchs  = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine  = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
-            initialState=_static.initialState
+        var argz         = [...arguments],
+            _static      = this.constructor,
+            context      = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
+            cfg          = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
+            name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
+            watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+            initialState = _static.initialState
         ;
-        this._uid   = cfg._uid || shortid.generate();
+        this._uid        = cfg._uid || shortid.generate();
         this.setMaxListeners(Store.defaultMaxListeners);
         this.locks        = 0;
         this._onStabilize = [];
 
         if ( isString(argz[0]) ) {
-            if ( context[name] )
+            if ( context.__context[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-            context[name] = this;
+            context.__context[name] = this;
         }
 
         if ( cfg && cfg.on ) {
@@ -218,9 +220,18 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
 
-        this._watchs  = watchs;
-        this.name     = name;
-        this.context  = context;
+        this._use = watchs;
+        this.name = name;
+
+        if ( context.stores ) {
+            this.contextObj = context;
+            this.context    = context.stores;
+        } else {
+            this.contextObj = new Context(context);
+            this.context    = context.stores;
+        }
+
+
         this._stable  = true;
         this._rev     = 1;
         this._revs    = {};
@@ -242,11 +253,11 @@ export default class Store extends EventEmitter {
         if ( refine )
             this.refine = refine;
 
-        if ( !!this._watchs ) {// if there initial watchs anyway
-            this.pull(this._watchs);
+        if ( !!this._use && this._use.length ) {// if there initial watchs anyway
+            this.pull(this._use);
         }
 
-        if ( initialState) {// sync refine
+        if ( initialState ) {// sync refine
             this.state = {...initialState};
             if ( this.isComplete() && this.datas === undefined )
                 this.datas = this.refine(this.datas, this.state, this.state);
@@ -346,7 +357,7 @@ export default class Store extends EventEmitter {
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
-        let initialOutputs = Store.map(this, stores, this.context, origin, true);
+        let initialOutputs = Store.map(this, stores, this.contextObj, origin, true);
         if ( doWait ) {
             this.wait();
             stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));
@@ -467,10 +478,10 @@ export default class Store extends EventEmitter {
         else super.on(...arguments);
     }
 
-    un( lists ) {
+    removeListener( lists ) {
         if ( !isString(lists) && lists )
-            Object.keys(lists).forEach(k => super.un(k, lists[k]));
-        else super.un(...arguments);
+            Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
+        else super.removeListener(...arguments);
     }
 
     /**
@@ -479,7 +490,7 @@ export default class Store extends EventEmitter {
      * @returns {{store: Store, name: *}}
      */
     relink( from ) {
-        let context = this.context,
+        let context = this.contextObj,
             _static = this.constructor;
         if ( _static.use ) {
             //todo unlink
@@ -489,7 +500,7 @@ export default class Store extends EventEmitter {
         if ( this._require ) {
             this._require.forEach(
                 store => (
-                    this.wait(context[store])
+                    this.wait(context.__context[store])
                 )
             );
         }
@@ -558,7 +569,7 @@ export default class Store extends EventEmitter {
     then( cb ) {
         if ( this._stable )
             return cb(null, this.datas);
-        this.once('stable', e=>cb(null, this.datas));
+        this.once('stable', e => cb(null, this.datas));
     }
 
     /**
@@ -618,6 +629,7 @@ export default class Store extends EventEmitter {
                 });
 
             this.emit('stable', this.datas);
+            this.emit('update', this.datas);
             cb && cb()
         } else cb && this.then(cb);
         return this;
@@ -628,19 +640,10 @@ export default class Store extends EventEmitter {
         this.emit('destroy', this);
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
-        if ( this._followers.length )
-            this._followers.forEach(
-                ( follower ) => {
-                    if ( typeof follower[0] !== "function" ) {
-                        if ( follower[0].stores )
-                            delete follower[0].stores[follower[1]];
-                    }
-                }
-            );
         this._followers.length = 0;
         this.dead              = true;
         if ( this.name && this.context[this.name] === this )
-            delete this.context[this.name];
+            this.context[this.name] = this.constructor;
         this._revs = this.datas = this.state = this.context = null;
         this.removeAllListeners();
     }

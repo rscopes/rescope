@@ -4,18 +4,18 @@
 
 ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
 
-## How ?
+## What ?
 
-Well mechanic is simple:
-
-We build stores reading an entry state (kind of "key") that maintain output datas in a deterministic way.<br>
+Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output datas in a deterministic way.<br>
 These outputs are then, used as partial "key" in other stores states, or "predictible" datas in dumb components.<br>
 
-No more complex stuff in React components; 
+Rescope Contexts manages a pool of stores and allow easy serialisation, export & restore of you're Application State.
+Rescope Contexts provide : 
+- Contexts inheriting & mixing,
+- Chain destroy of contexts
 
-
-Rescope Stores can maintain server & client side :
-- the records matching some ids,
+Rescope can maintain, serialize and restore server & client side :
+- enhanced records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status (act as router)
 - session, etc... 

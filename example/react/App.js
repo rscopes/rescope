@@ -81,11 +81,13 @@
 	// import Rescope, {Store} from "../../Rescope";
 	var ReactDom = __webpack_require__(38),
 	    Rescope = __webpack_require__(185),
-	    Store = Rescope.Store,
+	    Context = Rescope.Context,
 	    NewsListComp = __webpack_require__(202),
 	    StoresContext = __webpack_require__(203);
 	
-	Store.staticContext = StoresContext();
+	var GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
+	
+	new Context(new StoresContext(), { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 	
 	var App = function (_React$Component) {
 	    _inherits(App, _React$Component);
@@ -95,7 +97,7 @@
 	
 	        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).apply(this, arguments));
 	
-	        _this.state = _extends({}, Store.map(_this, ["status", "appState"]));
+	        _this.state = _extends({}, Context.contexts.appContext.map(_this, ["status", "appState"]));
 	        return _this;
 	    }
 	
@@ -162,7 +164,7 @@
 	}(_react2.default.Component);
 	
 	App.renderTo = function (node) {
-	    Rescope.fetch(function (err, state, context) {
+	    Context.contexts.appContext.mount(["status", "appState"]).pull(function (err, state, context) {
 	        ReactDom.render(_react2.default.createElement(App, null), node);
 	    });
 	};
@@ -22693,19 +22695,13 @@
 	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && '' + followers[i][2] == '' + as) return followers.splice(i, 1);
 	            }
 	        }
-	
-	        /**
-	         * Pull stores in the private state
-	         * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-	         */
-	
 	    }, {
-	        key: 'pull',
-	        value: function pull(stores, doWait, origin) {
+	        key: 'map',
+	        value: function map(to, stores) {
 	            var _this7 = this;
 	
 	            this.mount(stores);
-	            this.bind(origin, stores, null, false);
+	            this.bind(to, stores, null, false);
 	
 	            return stores.reduce(function (datas, id) {
 	                return datas[id] = _this7.stores[id] && _this7.stores[id].datas, datas;
@@ -22720,11 +22716,12 @@
 	
 	            output = output || {};
 	            Object.keys(ctx).forEach(function (id) {
-	                if (!revs || !(!revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id])) {
+	                if (!output[id] && (!revs || revs.hasOwnProperty(id) && revs[id] === undefined || !(!revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id]))) {
 	
 	                    updated = true;
+	
 	                    output[id] = _this8.datas[id];
-	                    if (revs) revs[id] = ctx[id]._rev;
+	                    if (revs && revs[id] !== undefined) revs[id] = ctx[id]._rev;
 	                }
 	            });
 	            updated = this.__mixed.reduce(function (updated, ctx) {
@@ -24482,7 +24479,7 @@
 	
 	        var _this = _possibleConstructorReturn(this, (NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).apply(this, arguments));
 	
-	        _this.state = _extends({}, _Rescope.Store.map(_this, ["userEvents"]));
+	        _this.state = _extends({}, _Rescope.Context.contexts.appContext.pull(_this, ["userEvents"]));
 	
 	        return _this;
 	    }
@@ -24631,12 +24628,12 @@
 	                            _id: NewUserId,
 	                            login: NewUserId
 	                        }, function () {
-	                            _this4.context.stores.status.setState({ currentUser: JSON.stringify(_this4.datas) });
+	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.datas) });
 	                        });
 	
 	                        _this4.release();
 	                    }, 500);
-	                    this.context.stores.status.setState({ currentUser: "user id change ! doing some async..." });
+	                    this.context.status.setState({ currentUser: "user id change ! doing some async..." });
 	                }
 	
 	                return datas;
@@ -24686,11 +24683,11 @@
 	                                return res;
 	                            }, {})
 	                        }, function () {
-	                            _this6.context.stores.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
+	                            _this6.context.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
 	                        });
 	                        _this6.release();
 	                    }, 500);
-	                    this.context.stores.status.setState({ userEvents: "user datas change ! doing some async..." });
+	                    this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
 	                }
 	
 	                return datas;

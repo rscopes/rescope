@@ -291,13 +291,10 @@ export default class Context extends EventEmitter {
                 return followers.splice(i, 1);
     }
 
-    /**
-     * Pull stores in the private state
-     * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-     */
-    pull( stores, doWait, origin ) {
+
+    map( to, stores ) {
         this.mount(stores);
-        this.bind(origin, stores, null, false);
+        this.bind(to, stores, null, false);
 
         return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
@@ -308,11 +305,16 @@ export default class Context extends EventEmitter {
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
-                if ( !revs || !( !revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id] ) ) {
+                if ( !output[id]
+                    && ( !revs
+                        || (revs.hasOwnProperty(id) && revs[id] === undefined)
+                        || !( !revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id] ))
+                ) {
 
-                    updated    = true;
+                    updated = true;
+
                     output[id] = this.datas[id];
-                    if ( revs )
+                    if ( revs && revs[id] !== undefined )
                         revs[id] = ctx[id]._rev;
 
                 }

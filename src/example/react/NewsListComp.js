@@ -11,14 +11,14 @@
 'use strict';
 
 import React from "react";
-import {Store} from "../../Rescope";
+import {Context} from "../../Rescope";
 
 export default class NewsListComp extends React.Component {
 
     constructor( ) {
         super(...arguments);
         this.state = {
-            ...Store.map(this, ["userEvents"])
+            ...Context.contexts.appContext.pull(this, ["userEvents"])
         };
 
     }

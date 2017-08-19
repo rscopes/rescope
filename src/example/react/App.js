@@ -12,16 +12,22 @@ import React from "react";
 // import Rescope, {Store} from "../../Rescope";
 let ReactDom      = require('react-dom'),
     Rescope       = require('../../Rescope'),
-    Store         = Rescope.Store,
+    Context       = Rescope.Context,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
-Store.staticContext = StoresContext();
+
+let
+    GlobalStaticContext = new Context({}, {id : "static", defaultMaxListeners : 500});
+
+new Context(new StoresContext(), {id : "appContext", parent : GlobalStaticContext, defaultMaxListeners : 500});
 
 class App extends React.Component {
     static renderTo = ( node ) => {
-        Rescope.fetch(
-            (err, state, context)=>{
+        Context.contexts.appContext.mount(
+            ["status", "appState"]
+        ).pull(
+            ( err, state, context ) => {
                 ReactDom.render(<App/>, node);
             }
         )
@@ -29,11 +35,11 @@ class App extends React.Component {
     }
 
 
-
     constructor() {
         super(...arguments);
+
         this.state = {
-            ...Store.map(this, ["status", "appState"])
+            ...Context.contexts.appContext.map(this, ["status", "appState"])
         };
     }
 
@@ -44,11 +50,17 @@ class App extends React.Component {
                 <h1>Really basic drafty rescope + react mini app example</h1>
 
                 <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
-                    <b><u><button
-                        onClick={() => appState.setState(
-                            {currentUserId : 'MissTick'})}>MissTick events</button></u></b>&nbsp;&nbsp;
-                    <b><u><button
-                        onClick={() => appState.setState({currentUserId : 'MrNice'})}>MrNice events</button></u></b>
+                    <b><u>
+                        <button
+                            onClick={() => appState.setState(
+                                {currentUserId : 'MissTick'})}>MissTick events
+                        </button>
+                    </u></b>&nbsp;&nbsp;
+                    <b><u>
+                        <button
+                            onClick={() => appState.setState({currentUserId : 'MrNice'})}>MrNice events
+                        </button>
+                    </u></b>
                 </div>
                 <pre>
                   {this.state.status && JSON.stringify(this.state.status, null, 2)}

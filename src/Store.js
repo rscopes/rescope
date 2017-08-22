@@ -32,8 +32,19 @@ export default class Store extends EventEmitter {
     static require;
     static staticContext       = new Context({}, {id : "static"});
     static initialState        = undefined;// default state
-    static defaultMaxListeners = 20;
-    static autokill            = false;// false or tm without followers
+    /**
+     *
+     * @type {number}
+     */
+    static defaultMaxListeners = 100;
+    /**
+     * if retain goes to 0 :
+     * false to not destroy,
+     * 0 to sync auto destroy
+     * Ms to autodestroy after tm ms if no retain has been called
+     * @type {boolean|Int}
+     */
+    static persistenceTm       = false;
 
     /**
      * get a Builder-key pair for Store::map
@@ -211,6 +222,7 @@ export default class Store extends EventEmitter {
         this.locks         = 0;
         this._onStabilize  = [];
 
+        this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
         if ( isString(argz[0]) ) {
             if ( context.__context[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
@@ -234,11 +246,12 @@ export default class Store extends EventEmitter {
         }
 
 
-        this._stable  = true;
-        this._rev     = 1;
-        this._revs    = {};
-        this.stores   = {};
-        this._require = [];
+        this._stable       = true;
+        this._rev          = 1;
+        this._revs         = {};
+        this.stores        = {};
+        this.__retainLocks = {all : 0};
+        this._require      = [];
 
         if ( _static.require )
             this._require.push(..._static.require);
@@ -635,6 +648,35 @@ export default class Store extends EventEmitter {
             cb && cb()
         } else cb && this.then(cb);
         return this;
+    }
+
+    retain( reason ) {
+        this.__retainLocks.all++;
+        if ( reason ) {
+            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+            this.__retainLocks[reason]++;
+        }
+    }
+
+    dispose( reason ) {
+        this.__retainLocks.all--;
+        if ( reason ) {
+            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+            this.__retainLocks[reason]--;
+        }
+        if ( !this.__retainLocks.all ) {
+            if ( this._persistenceTm ) {
+                this._destroyTM && clearTimeout(this._destroyTM);
+                this._destroyTM = setTimeout(
+                    e => {
+                        this.then(s=>(!this.__retainLocks.all && this.destroy()));
+                    },
+                    this._persistenceTm
+                );
+            } else {
+                this.then(s=>(!this.__retainLocks.all && this.destroy()));
+            }
+        }
     }
 
     destroy() {

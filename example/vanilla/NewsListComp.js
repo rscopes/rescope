@@ -100,6 +100,8 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -370,7 +372,7 @@
 	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {
 	                        get: function get() {
-	                            return _this6._mount(id, state[id], datas[id]);
+	                            return _this6.__context[id];
 	                        }
 	                    };
 	                }(_this6.__context, id));
@@ -432,6 +434,8 @@
 	                } else {
 	                    obj(datas);
 	                }
+	                // lastRevs &&
+	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
 	            }
 	        }
 	
@@ -456,8 +460,10 @@
 	        value: function map(to, stores) {
 	            var _this7 = this;
 	
+	            var bind = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+	
 	            this.mount(stores);
-	            this.bind(to, stores, null, false);
+	            bind && this.bind(to, stores, null, false);
 	
 	            return stores.reduce(function (datas, id) {
 	                return datas[id] = _this7.stores[id] && _this7.stores[id].datas, datas;
@@ -595,12 +601,40 @@
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        !_this13.__retainLocks.all && _this13.destroy();
+	                        _this13.then(function (s) {
+	                            return !_this13.__retainLocks.all && _this13.destroy();
+	                        });
 	                    }, this._persistenceTm);
 	                } else {
-	                    this.destroy();
+	                    this.then(function (s) {
+	                        return !_this13.__retainLocks.all && _this13.destroy();
+	                    });
 	                }
 	            }
+	        }
+	    }, {
+	        key: 'retainStores',
+	        value: function retainStores() {
+	            var _this14 = this;
+	
+	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	            var reason = arguments[1];
+	
+	            stores.forEach(function (id) {
+	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
+	            });
+	        }
+	    }, {
+	        key: 'disposeStores',
+	        value: function disposeStores() {
+	            var _this15 = this;
+	
+	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	            var reason = arguments[1];
+	
+	            stores.forEach(function (id) {
+	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
+	            });
 	        }
 	    }, {
 	        key: 'wait',
@@ -613,40 +647,6 @@
 	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
 	                this.__w8Locks[reason]++;
 	            }
-	        }
-	    }, {
-	        key: 'propag',
-	        value: function propag() {
-	            var _this14 = this;
-	
-	            this._propagTM && clearTimeout(this._propagTM);
-	            this._propagTM = setTimeout(function (e) {
-	                _this14._propag();
-	            }, 50);
-	        }
-	    }, {
-	        key: '_propag',
-	        value: function _propag() {
-	            var _this15 = this;
-	
-	            if (this._followers.length) this._followers.forEach(function (_ref3) {
-	                var obj = _ref3[0],
-	                    key = _ref3[1],
-	                    as = _ref3[2],
-	                    lastRevs = _ref3[3];
-	
-	                var datas = _this15.getUpdates(lastRevs);
-	                if (!datas) return;
-	                if (typeof obj != "function") {
-	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
-	                } else {
-	                    obj(datas);
-	                }
-	                lastRevs && key.forEach(function (id) {
-	                    return lastRevs[id] = _this15.__context[id] && _this15.__context[id]._rev || 0;
-	                });
-	            });
-	            this.emit("update", this.getUpdates());
 	        }
 	    }, {
 	        key: 'release',
@@ -673,6 +673,39 @@
 	                });
 	            }
 	        }
+	    }, {
+	        key: 'propag',
+	        value: function propag() {
+	            var _this17 = this;
+	
+	            this._propagTM && clearTimeout(this._propagTM);
+	            this._propagTM = setTimeout(function (e) {
+	                _this17._propag();
+	            }, 50);
+	        }
+	    }, {
+	        key: '_propag',
+	        value: function _propag() {
+	            var _this18 = this;
+	
+	            if (this._followers.length) this._followers.forEach(function (_ref3) {
+	                var obj = _ref3[0],
+	                    key = _ref3[1],
+	                    as = _ref3[2],
+	                    lastRevs = _ref3[3];
+	
+	                var datas = _this18.getUpdates(lastRevs);
+	                if (!datas) return;
+	                if (typeof obj != "function") {
+	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
+	                } else {
+	                    obj(datas, lastRevs && [].concat(_toConsumableArray(lastRevs)) || "no revs");
+	                }
+	                // lastRevs &&
+	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
+	            });
+	            this.emit("update", this.getUpdates());
+	        }
 	
 	        /**
 	         * order destroy of local stores
@@ -681,17 +714,18 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this17 = this;
+	            var _this19 = this;
 	
 	            var ctx = this.__context;
 	
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
-	                return _this17.__context[id].removeListener(_this17.__listening[id]);
+	                return _this19.__context[id].removeListener(_this19.__listening[id]);
 	            });
 	            this.__listening = {};
 	
 	            if (this._isLocalId) delete openContexts[this._id];
+	            this._followers.length = 0;
 	
 	            for (var key in ctx) {
 	                if (!isFunction(ctx[key])) {
@@ -707,6 +741,9 @@
 	                this.parent.removeListener(this.__parentList);
 	                this.parent.dispose("isMyParent");
 	            }
+	            // this.datas = this.state = this.context = this.stores = null;
+	            // this._datas = this._state = this._stores = null;
+	
 	        }
 	    }]);
 	
@@ -715,7 +752,7 @@
 	
 	Context.contexts = openContexts;
 	Context.Store = null;
-	Context.defaultMaxListeners = 20;
+	Context.defaultMaxListeners = 100;
 	Context.persistenceTm = 0;
 	exports.default = Context;
 	module.exports = exports['default'];
@@ -1541,7 +1578,7 @@
 	
 	    _createClass(Store, null, [{
 	        key: 'as',
-	        // false or tm without followers
+	
 	
 	        /**
 	         * get a Builder-key pair for Store::map
@@ -1549,6 +1586,10 @@
 	         * @returns {{store: Store, name: *}}
 	         */
 	        // default state
+	        /**
+	         *
+	         * @type {number}
+	         */
 	        // overridable list of source stores
 	        value: function as(name) {
 	            return { store: this, name: name };
@@ -1560,6 +1601,14 @@
 	         * @static
 	         * @param object {React.Component|Store|...} target state aware object
 	         * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
+	         */
+	
+	        /**
+	         * if retain goes to 0 :
+	         * false to not destroy,
+	         * 0 to sync auto destroy
+	         * Ms to autodestroy after tm ms if no retain has been called
+	         * @type {boolean|Int}
 	         */
 	        // overridable list of store that will allow push if updated
 	
@@ -1731,6 +1780,7 @@
 	        _this.locks = 0;
 	        _this._onStabilize = [];
 	
+	        _this._persistenceTm = cfg.persistenceTm || _this.constructor.persistenceTm;
 	        if (isString(argz[0])) {
 	            if (context.__context[name]) console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
 	            context.__context[name] = _this;
@@ -1756,6 +1806,7 @@
 	        _this._rev = 1;
 	        _this._revs = {};
 	        _this.stores = {};
+	        _this.__retainLocks = { all: 0 };
 	        _this._require = [];
 	
 	        if (_static.require) (_this$_require = _this._require).push.apply(_this$_require, _toConsumableArray(_static.require));
@@ -2181,6 +2232,40 @@
 	            return this;
 	        }
 	    }, {
+	        key: 'retain',
+	        value: function retain(reason) {
+	            this.__retainLocks.all++;
+	            if (reason) {
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]++;
+	            }
+	        }
+	    }, {
+	        key: 'dispose',
+	        value: function dispose(reason) {
+	            var _this10 = this;
+	
+	            this.__retainLocks.all--;
+	            if (reason) {
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]--;
+	            }
+	            if (!this.__retainLocks.all) {
+	                if (this._persistenceTm) {
+	                    this._destroyTM && clearTimeout(this._destroyTM);
+	                    this._destroyTM = setTimeout(function (e) {
+	                        _this10.then(function (s) {
+	                            return !_this10.__retainLocks.all && _this10.destroy();
+	                        });
+	                    }, this._persistenceTm);
+	                } else {
+	                    this.then(function (s) {
+	                        return !_this10.__retainLocks.all && _this10.destroy();
+	                    });
+	                }
+	            }
+	        }
+	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
 	
@@ -2199,8 +2284,8 @@
 	Store.use = [];
 	Store.staticContext = new Context({}, { id: "static" });
 	Store.initialState = undefined;
-	Store.defaultMaxListeners = 20;
-	Store.autokill = false;
+	Store.defaultMaxListeners = 100;
+	Store.persistenceTm = false;
 	exports.default = Store;
 	module.exports = exports['default'];
 

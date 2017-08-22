@@ -46,7 +46,7 @@ let openContexts = {};
 export default class Context extends EventEmitter {
     static contexts            = openContexts;
     static Store               = null;
-    static defaultMaxListeners = 20;
+    static defaultMaxListeners = 100;
     static persistenceTm       = 0;
 
     static getContext( key ) {
@@ -207,7 +207,7 @@ export default class Context extends EventEmitter {
                         id,
                         (( ctx, id ) => (
                             {
-                                get : () => this._mount(id, state[id], datas[id])
+                                get : () => this.__context[id]
                             }
                         ))
                         (this.__context, id)
@@ -273,6 +273,8 @@ export default class Context extends EventEmitter {
             } else {
                 obj(datas);
             }
+            // lastRevs &&
+            // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
         }
     }
 
@@ -292,9 +294,9 @@ export default class Context extends EventEmitter {
     }
 
 
-    map( to, stores ) {
+    map( to, stores, bind=true ) {
         this.mount(stores);
-        this.bind(to, stores, null, false);
+        bind&&this.bind(to, stores, null, false);
 
         return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
@@ -419,14 +421,26 @@ export default class Context extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        !this.__retainLocks.all && this.destroy();
+                        this.then(s=>(!this.__retainLocks.all && this.destroy()));
                     },
                     this._persistenceTm
                 );
             } else {
-                this.destroy();
+                this.then(s=>(!this.__retainLocks.all && this.destroy()));
             }
         }
+    }
+
+    retainStores( stores=[], reason ) {
+        stores.forEach(
+            id => (this.stores[id] && this.stores[id].retain && this.stores[id].retain(reason))
+        )
+    }
+
+    disposeStores( stores=[], reason ) {
+        stores.forEach(
+            id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
+        )
     }
 
     wait( reason ) {
@@ -438,32 +452,6 @@ export default class Context extends EventEmitter {
             this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
             this.__w8Locks[reason]++;
         }
-    }
-
-    propag() {
-        this._propagTM && clearTimeout(this._propagTM);
-        this._propagTM = setTimeout(
-            e => {
-                this._propag()
-            }, 50
-        );
-    }
-
-    _propag() {
-        if ( this._followers.length )
-            this._followers.forEach(( {0 : obj, 1 : key, 2 : as, 3 : lastRevs} ) => {
-                let datas = this.getUpdates(lastRevs);
-                if ( !datas ) return;
-                if ( typeof obj != "function" ) {
-                    if ( as ) obj.setState({[as] : datas});
-                    else obj.setState(datas);
-                } else {
-                    obj(datas);
-                }
-                lastRevs &&
-                key.forEach(id => (lastRevs[id] = this.__context[id] && this.__context[id]._rev || 0));
-            });
-        this.emit("update", this.getUpdates());
     }
 
     release( reason ) {
@@ -492,6 +480,33 @@ export default class Context extends EventEmitter {
 
     }
 
+    propag() {
+        this._propagTM && clearTimeout(this._propagTM);
+        this._propagTM = setTimeout(
+            e => {
+                this._propag()
+            }, 50
+        );
+    }
+
+    _propag() {
+        if ( this._followers.length )
+            this._followers.forEach(( {0 : obj, 1 : key, 2 : as, 3 : lastRevs} ) => {
+                let datas = this.getUpdates(lastRevs);
+                if ( !datas ) return;
+                if ( typeof obj != "function" ) {
+                    if ( as ) obj.setState({[as] : datas});
+                    else obj.setState(datas);
+                } else {
+                    obj(datas, lastRevs&&[...lastRevs]||"no revs");
+                }
+                // lastRevs &&
+                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
+            });
+        this.emit("update", this.getUpdates());
+    }
+
+
     /**
      * order destroy of local stores
      */
@@ -508,6 +523,7 @@ export default class Context extends EventEmitter {
 
         if ( this._isLocalId )
             delete openContexts[this._id];
+        this._followers.length = 0;
 
         for ( let key in ctx )
             if ( !isFunction(ctx[key]) ) {
@@ -518,13 +534,15 @@ export default class Context extends EventEmitter {
             }
         while (this.__mixedList.length) {
             this.__mixed[0].removeListener(this.__mixedList.shift());
-            this.__mixed.shift().dispose()
+            this.__mixed.shift().dispose();
         }
         if ( this.parent ) {
             this.parent.removeListener(this.__parentList);
             this.parent.dispose("isMyParent");
-
         }
+        // this.datas = this.state = this.context = this.stores = null;
+        // this._datas = this._state = this._stores = null;
+
 
     }
 }

@@ -27,16 +27,16 @@ var isString     = require('isstring')
 
 export default class Store extends EventEmitter {
 
-    static use                 = [];// overridable list of source stores
+    static use                        = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext       = new Context({}, {id : "static"});
-    static initialState        = undefined;// default state
+    static staticContext              = new Context({}, {id : "static"});
+    static initialState               = undefined;// default state
     /**
      *
      * @type {number}
      */
-    static defaultMaxListeners = 100;
+           static defaultMaxListeners = 100;
     /**
      * if retain goes to 0 :
      * false to not destroy,
@@ -44,7 +44,7 @@ export default class Store extends EventEmitter {
      * Ms to autodestroy after tm ms if no retain has been called
      * @type {boolean|Int}
      */
-    static persistenceTm       = false;
+           static persistenceTm       = false;
 
     /**
      * get a Builder-key pair for Store::map
@@ -669,12 +669,12 @@ export default class Store extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        this.then(s=>(!this.__retainLocks.all && this.destroy()));
+                        this.then(s => (!this.__retainLocks.all && this.destroy()));
                     },
                     this._persistenceTm
                 );
             } else {
-                this.then(s=>(!this.__retainLocks.all && this.destroy()));
+                this.then(s => (!this.__retainLocks.all && this.destroy()));
             }
         }
     }

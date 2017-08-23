@@ -438,8 +438,8 @@ export default class Context extends EventEmitter {
     release(reason) {
         //console.log("release", reason);
 
-        if (this.__w8Locks.all == 0)
-            throw new Error("Release more than locking ! : "+reason);
+      //  if (this.__w8Locks.all == 0)
+        //    throw new Error("Release more than locking ! : "+reason);
 
         this.__w8Locks.all--;
         if (reason) {
@@ -524,8 +524,8 @@ export default class Context extends EventEmitter {
 
     dispose(reason) {
       //  console.log("dispose", this._id, reason);
-        if (this.__retainLocks.all == 0)
-            throw new Error("Dispose more than retaining ! : "+reason);
+       // if (this.__retainLocks.all == 0)
+         //   throw new Error("Dispose more than retaining ! : "+reason);
 
         this.__retainLocks.all--;
         if (reason) {

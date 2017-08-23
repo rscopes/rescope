@@ -618,8 +618,8 @@ export default class Store extends EventEmitter {
         var _static = this.constructor;
         let i       = 0;
 
-        if (this.locks == 0)
-            throw new Error("Release more than locking !");
+     //   if (this.locks == 0)
+       //     throw new Error("Release more than locking !");
 
 
 
@@ -666,8 +666,8 @@ export default class Store extends EventEmitter {
 
     dispose( reason ) {
         //console.log("dispose", this._uid, reason);
-        if (this.__retainLocks.all == 0)
-            throw new Error("Dispose more than retaining ! : "+reason);
+       // if (this.__retainLocks.all == 0)
+         //   throw new Error("Dispose more than retaining ! : "+reason);
         this.__retainLocks.all--;
         if ( reason ) {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;

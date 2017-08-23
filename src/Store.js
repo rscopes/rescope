@@ -47,6 +47,90 @@ export default class Store extends EventEmitter {
            static persistenceTm       = false;
 
     /**
+     * Constructor, will build a rescope store
+     *
+     * (context, {require,use,refine,state, datas})
+     * (context)
+     *
+     * @param context {object} context where to find the other stores (default : static staticContext )
+     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+     */
+    constructor() {
+        super();
+        var argz         = [...arguments],
+            _static      = this.constructor,
+            context      = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
+            cfg          = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
+            name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
+            watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
+            refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+            initialState = _static.initialState;
+
+        this._uid          = cfg._uid || shortid.generate();
+        this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
+        this.locks         = 0;
+        this._onStabilize  = [];
+
+        this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
+        if ( isString(argz[0]) ) {
+            if ( context.__context[name] )
+                console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
+            context.__context[name] = this;
+        }
+
+        if ( cfg && cfg.on ) {
+            this.on(cfg.on);
+        }
+        // this.state      = this.state || {};
+
+        this._use = watchs;
+        this.name = name;
+
+        if ( context.stores ) {
+            this.contextObj = context;
+            this.context    = context.stores;
+        } else {
+            this.contextObj = new Context(context);
+            this.context    = context.stores;
+        }
+
+
+        this._stable       = true;
+        this._rev          = 1;
+        this._revs         = {};
+        this.stores        = {};
+        this.__retainLocks = {all : 0};
+        this._require      = [];
+
+        if ( _static.require )
+            this._require.push(..._static.require);
+        if ( cfg.require )
+            this._require.push(...cfg.require);
+
+        this._followers = [];
+
+        if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
+            this.datas = cfg.datas;
+        if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
+            initialState = cfg.state;
+
+        if ( refine )
+            this.refine = refine;
+
+        if ( !!this._use && this._use.length ) {// if there initial watchs anyway
+            this.pull(this._use);
+        }
+
+        if ( initialState ) {// sync refine
+            this.state = {...initialState};
+            if ( this.isComplete() && this.datas === undefined )
+                this.datas = this.refine(this.datas, this.state, this.state);
+        }
+        this._stable = this.datas !== undefined;// stable if it have initial result datas
+        !this._stable && this.emit('unstable', this.state);
+    }
+
+    /**
      * get a Builder-key pair for Store::map
      * @param {string} name
      * @returns {{store: Store, name: *}}
@@ -195,90 +279,6 @@ export default class Store extends EventEmitter {
                 store.push(datas);
         }
         return store;
-    }
-
-    /**
-     * Constructor, will build a rescope store
-     *
-     * (context, {require,use,refine,state, datas})
-     * (context)
-     *
-     * @param context {object} context where to find the other stores (default : static staticContext )
-     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-     */
-    constructor() {
-        super();
-        var argz         = [...arguments],
-            _static      = this.constructor,
-            context      = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            cfg          = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
-            name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
-            watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
-            initialState = _static.initialState;
-
-        this._uid          = cfg._uid || shortid.generate();
-        this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
-        this.locks         = 0;
-        this._onStabilize  = [];
-
-        this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
-        if ( isString(argz[0]) ) {
-            if ( context.__context[name] )
-                console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-            context.__context[name] = this;
-        }
-
-        if ( cfg && cfg.on ) {
-            this.on(cfg.on);
-        }
-        // this.state      = this.state || {};
-
-        this._use = watchs;
-        this.name = name;
-
-        if ( context.stores ) {
-            this.contextObj = context;
-            this.context    = context.stores;
-        } else {
-            this.contextObj = new Context(context);
-            this.context    = context.stores;
-        }
-
-
-        this._stable       = true;
-        this._rev          = 1;
-        this._revs         = {};
-        this.stores        = {};
-        this.__retainLocks = {all : 0};
-        this._require      = [];
-
-        if ( _static.require )
-            this._require.push(..._static.require);
-        if ( cfg.require )
-            this._require.push(...cfg.require);
-
-        this._followers = [];
-
-        if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
-            this.datas = cfg.datas;
-        if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-            initialState = cfg.state;
-
-        if ( refine )
-            this.refine = refine;
-
-        if ( !!this._use && this._use.length ) {// if there initial watchs anyway
-            this.pull(this._use);
-        }
-
-        if ( initialState ) {// sync refine
-            this.state = {...initialState};
-            if ( this.isComplete() && this.datas === undefined )
-                this.datas = this.refine(this.datas, this.state, this.state);
-        }
-        this._stable = this.datas !== undefined;// stable if it have initial result datas
-        !this._stable && this.emit('unstable', this.state);
     }
 
     /**

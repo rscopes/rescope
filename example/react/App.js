@@ -23806,9 +23806,9 @@
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
@@ -23848,188 +23848,21 @@
 	var Store = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
 	
-	    _createClass(Store, null, [{
-	        key: 'as',
-	
-	
-	        /**
-	         * get a Builder-key pair for Store::map
-	         * @param {string} name
-	         * @returns {{store: Store, name: *}}
-	         */
-	        // default state
-	        /**
-	         *
-	         * @type {number}
-	         */
-	        // overridable list of source stores
-	        value: function as(name) {
-	            return { store: this, name: name };
-	        }
-	
-	        /**
-	         * Map all named stores in {keys} to the {object}'s state
-	         * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
-	         * @static
-	         * @param object {React.Component|Store|...} target state aware object
-	         * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-	         */
-	
-	        /**
-	         * if retain goes to 0 :
-	         * false to not destroy,
-	         * 0 to sync auto destroy
-	         * Ms to autodestroy after tm ms if no retain has been called
-	         * @type {boolean|Int}
-	         */
-	        // overridable list of store that will allow push if updated
-	
-	    }, {
-	        key: 'map',
-	        value: function map(component, keys, context, origin) {
-	            var _this2 = this;
-	
-	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-	
-	            var targetRevs = component._revs || {};
-	            // var targetContext  = component.stores || (component.stores = new Context({}));
-	            var initialOutputs = {};
-	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
-	
-	            context = context || Store.staticContext;
-	
-	            // if (!targetContext.__context)
-	            //     debugger;
-	
-	            keys = keys.filter(
-	            // @todo : use query refs
-	            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
-	            function (key) {
-	                if (!key) {
-	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
-	                    return false;
-	                }
-	                var name = void 0,
-	                    alias = void 0,
-	                    store = void 0;
-	                if (key.store && key.name) {
-	                    alias = name = key.name;
-	                    store = key.store;
-	                } else if (isFunction(key)) {
-	                    name = alias = key.name || key.defaultName;
-	                    store = key;
-	                } else {
-	                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-	                    name = key[0];
-	                    store = context.__context[key[0]];
-	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
-	                }
-	
-	                if (targetRevs[name]) return false; // ignore dbl uses for now
-	                if (!store) {
-	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
-	                    return false;
-	                } else if (isFunction(store)) {
-	                    _this2.mountStore(name, context);
-	
-	                    context.__context[name].bind(component, alias, setInitial);
-	                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
-	                    //     context.__context[key[0]].push();
-	                    // }
-	                } else {
-	                    store.bind(component, alias, setInitial);
-	                }
-	                targetRevs[alias] = targetRevs[alias] || true;
-	                // !targetContext.__context[alias] && targetContext.register({[alias] : context.__context[name]});
-	                if (context.__context[name].hasOwnProperty('datas')) initialOutputs[alias] = context.datas[name];
-	                return true;
-	            });
-	            var mixedCWUnmount,
-	                unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-	
-	            if (component.hasOwnProperty(unMountKey)) {
-	                mixedCWUnmount = component[unMountKey];
-	            }
-	
-	            component[unMountKey] = function () {
-	                // todo hop
-	                delete this[unMountKey];
-	                if (mixedCWUnmount) this[unMountKey] = mixedCWUnmount;
-	                keys.map(function (key) {
-	                    var name = void 0,
-	                        alias = void 0,
-	                        store = void 0;
-	                    if (key.store && key.name) {
-	                        alias = name = key.name;
-	                        store = key.store;
-	                    } else if (isFunction(key)) {
-	                        name = alias = key.name || key.defaultName;
-	                        store = context.__context[name];
-	                    } else {
-	                        key = key.split(':');
-	                        name = key[0];
-	                        store = context.__context[key[0]];
-	                        alias = key[1] || key[0];
-	                    }
-	
-	                    store && !isFunction(store) && store.unBind(component, alias);
-	                });
-	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
-	            };
-	
-	            return initialOutputs;
-	        }
-	    }, {
-	        key: 'getContext',
-	        value: function getContext(contexts) {
-	            var skey = isArray(contexts) ? contexts.sort(function (a, b) {
-	                if (a.firstname < b.firstname) return -1;
-	                if (a.firstname > b.firstname) return 1;
-	                return 0;
-	            }).join('::') : contexts;
-	            return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
-	        }
-	    }, {
-	        key: 'mountStore',
-	        value: function mountStore(name, context, store, state, datas) {
-	            var ctx = void 0,
-	                contextMap = context.__context;
-	            contextMap[name] = store = store || contextMap[name];
-	            if (!store) {
-	                console.error("Not a mappable store item '" + name + ' !!', store);
-	                return false;
-	            } else if (isFunction(store)) {
-	                //
-	                if (store && (store.contexts || store.context)) {
-	                    ctx = this.getContext(store.contexts || [store.context]);
-	
-	                    ctx.register(_defineProperty({}, name, ctx.__context[name] || store));
-	
-	                    contextMap[name] = ctx[name] = new store(context, { state: state, datas: datas });
-	                    ctx._watchStore(name);
-	                    return ctx[name];
-	                } else store = contextMap[name] = new store(context, { state: state, datas: datas });
-	                contextMap[name].relink(name);
-	            } else {
-	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
-	
-	                if (datas !== undefined) store.push(datas);
-	            }
-	            return store;
-	        }
-	
-	        /**
-	         * Constructor, will build a rescope store
-	         *
-	         * (context, {require,use,refine,state, datas})
-	         * (context)
-	         *
-	         * @param context {object} context where to find the other stores (default : static staticContext )
-	         * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-	         */
-	
-	    }]);
-	
+	    /**
+	     * Constructor, will build a rescope store
+	     *
+	     * (context, {require,use,refine,state, datas})
+	     * (context)
+	     *
+	     * @param context {object} context where to find the other stores (default : static staticContext )
+	     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+	     */
+	    // default state
+	    /**
+	     *
+	     * @type {number}
+	     */
+	    // overridable list of source stores
 	    function Store() {
 	        var _this$_require, _this$_require2;
 	
@@ -24107,14 +23940,30 @@
 	    }
 	
 	    /**
-	     * Overridable method to know if a state change should be propag to the listening stores & components
-	     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
-	     * If not it will always return true
+	     * get a Builder-key pair for Store::map
+	     * @param {string} name
+	     * @returns {{store: Store, name: *}}
 	     */
+	
+	    /**
+	     * if retain goes to 0 :
+	     * false to not destroy,
+	     * 0 to sync auto destroy
+	     * Ms to autodestroy after tm ms if no retain has been called
+	     * @type {boolean|Int}
+	     */
+	    // overridable list of store that will allow push if updated
 	
 	
 	    _createClass(Store, [{
 	        key: 'shouldPropag',
+	
+	
+	        /**
+	         * Overridable method to know if a state change should be propag to the listening stores & components
+	         * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
+	         * If not it will always return true
+	         */
 	        value: function shouldPropag(nDatas) {
 	            var _static = this.constructor,
 	                r,
@@ -24165,7 +24014,7 @@
 	    }, {
 	        key: 'stabilize',
 	        value: function stabilize(cb) {
-	            var _this3 = this;
+	            var _this2 = this;
 	
 	            var me = this;
 	            cb && me.once('stable', cb);
@@ -24178,7 +24027,7 @@
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
 	                // me._stable       = true;
-	                _this3._stabilizer = null;
+	                _this2._stabilizer = null;
 	                // this.release();
 	            }));
 	        }
@@ -24196,13 +24045,13 @@
 	    }, {
 	        key: 'pull',
 	        value: function pull(stores, doWait, origin) {
-	            var _this4 = this;
+	            var _this3 = this;
 	
 	            var initialOutputs = Store.map(this, stores, this.contextObj, origin, true);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
-	                    return _this4.context[s] && _this4.wait(_this4.context[s]);
+	                    return _this3.context[s] && _this3.wait(_this3.context[s]);
 	                });
 	                this.release();
 	            }
@@ -24318,19 +24167,19 @@
 	    }, {
 	        key: 'on',
 	        value: function on(lists) {
-	            var _this5 = this;
+	            var _this4 = this;
 	
 	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', _this5).call(_this5, k, lists[k]);
+	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', _this4).call(_this4, k, lists[k]);
 	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', this).apply(this, arguments);
 	        }
 	    }, {
 	        key: 'removeListener',
 	        value: function removeListener(lists) {
-	            var _this6 = this;
+	            var _this5 = this;
 	
 	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'removeListener', _this6).call(_this6, k, lists[k]);
+	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'removeListener', _this5).call(_this5, k, lists[k]);
 	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'removeListener', this).apply(this, arguments);
 	        }
 	
@@ -24343,7 +24192,7 @@
 	    }, {
 	        key: 'relink',
 	        value: function relink(from) {
-	            var _this7 = this;
+	            var _this6 = this;
 	
 	            var context = this.contextObj,
 	                _static = this.constructor;
@@ -24354,7 +24203,7 @@
 	
 	            if (this._require) {
 	                this._require.forEach(function (store) {
-	                    return _this7.wait(context.__context[store]);
+	                    return _this6.wait(context.__context[store]);
 	                });
 	            }
 	        }
@@ -24433,11 +24282,11 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this8 = this;
+	            var _this7 = this;
 	
 	            if (this._stable) return cb(null, this.datas);
 	            this.once('stable', function (e) {
-	                return cb(null, _this8.datas);
+	                return cb(null, _this7.datas);
 	            });
 	        }
 	
@@ -24473,7 +24322,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(cb) {
-	            var _this9 = this;
+	            var _this8 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
@@ -24487,12 +24336,12 @@
 	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this9.datas) return;
+	                    if (!_this8.datas) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this9.datas);
+	                        follower[0](_this8.datas);
 	                    } else {
 	                        // cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this9.datas) : _this9.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.datas) : _this8.datas
 	                        // ,
 	                        // cb && (
 	                        //     () => (!(--i) && cb())
@@ -24520,7 +24369,7 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this10 = this;
+	            var _this9 = this;
 	
 	            //console.log("dispose", this._uid, reason);
 	            // if (this.__retainLocks.all == 0)
@@ -24534,15 +24383,15 @@
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        _this10.then(function (s) {
+	                        _this9.then(function (s) {
 	                            //  console.log("wtf   ", reason, !this.__retainLocks.all);
 	
-	                            !_this10.__retainLocks.all && _this10.destroy();
+	                            !_this9.__retainLocks.all && _this9.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
 	                    this.then(function (s) {
-	                        return !_this10.__retainLocks.all && _this10.destroy();
+	                        return !_this9.__retainLocks.all && _this9.destroy();
 	                    });
 	                }
 	            }
@@ -24558,6 +24407,153 @@
 	            this.dead = true;
 	            this._revs = this.datas = this.state = this.context = null;
 	            this.removeAllListeners();
+	        }
+	    }], [{
+	        key: 'as',
+	        value: function as(name) {
+	            return { store: this, name: name };
+	        }
+	
+	        /**
+	         * Map all named stores in {keys} to the {object}'s state
+	         * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
+	         * @static
+	         * @param object {React.Component|Store|...} target state aware object
+	         * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
+	         */
+	
+	    }, {
+	        key: 'map',
+	        value: function map(component, keys, context, origin) {
+	            var _this10 = this;
+	
+	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+	
+	            var targetRevs = component._revs || {};
+	            // var targetContext  = component.stores || (component.stores = new Context({}));
+	            var initialOutputs = {};
+	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
+	
+	            context = context || Store.staticContext;
+	
+	            // if (!targetContext.__context)
+	            //     debugger;
+	
+	            keys = keys.filter(
+	            // @todo : use query refs
+	            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
+	            function (key) {
+	                if (!key) {
+	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+	                    return false;
+	                }
+	                var name = void 0,
+	                    alias = void 0,
+	                    store = void 0;
+	                if (key.store && key.name) {
+	                    alias = name = key.name;
+	                    store = key.store;
+	                } else if (isFunction(key)) {
+	                    name = alias = key.name || key.defaultName;
+	                    store = key;
+	                } else {
+	                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
+	                    name = key[0];
+	                    store = context.__context[key[0]];
+	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
+	                }
+	
+	                if (targetRevs[name]) return false; // ignore dbl uses for now
+	                if (!store) {
+	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
+	                    return false;
+	                } else if (isFunction(store)) {
+	                    _this10.mountStore(name, context);
+	
+	                    context.__context[name].bind(component, alias, setInitial);
+	                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
+	                    //     context.__context[key[0]].push();
+	                    // }
+	                } else {
+	                    store.bind(component, alias, setInitial);
+	                }
+	                targetRevs[alias] = targetRevs[alias] || true;
+	                // !targetContext.__context[alias] && targetContext.register({[alias] : context.__context[name]});
+	                if (context.__context[name].hasOwnProperty('datas')) initialOutputs[alias] = context.datas[name];
+	                return true;
+	            });
+	            var mixedCWUnmount,
+	                unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
+	
+	            if (component.hasOwnProperty(unMountKey)) {
+	                mixedCWUnmount = component[unMountKey];
+	            }
+	
+	            component[unMountKey] = function () {
+	                // todo hop
+	                delete this[unMountKey];
+	                if (mixedCWUnmount) this[unMountKey] = mixedCWUnmount;
+	                keys.map(function (key) {
+	                    var name = void 0,
+	                        alias = void 0,
+	                        store = void 0;
+	                    if (key.store && key.name) {
+	                        alias = name = key.name;
+	                        store = key.store;
+	                    } else if (isFunction(key)) {
+	                        name = alias = key.name || key.defaultName;
+	                        store = context.__context[name];
+	                    } else {
+	                        key = key.split(':');
+	                        name = key[0];
+	                        store = context.__context[key[0]];
+	                        alias = key[1] || key[0];
+	                    }
+	
+	                    store && !isFunction(store) && store.unBind(component, alias);
+	                });
+	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
+	            };
+	
+	            return initialOutputs;
+	        }
+	    }, {
+	        key: 'getContext',
+	        value: function getContext(contexts) {
+	            var skey = isArray(contexts) ? contexts.sort(function (a, b) {
+	                if (a.firstname < b.firstname) return -1;
+	                if (a.firstname > b.firstname) return 1;
+	                return 0;
+	            }).join('::') : contexts;
+	            return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
+	        }
+	    }, {
+	        key: 'mountStore',
+	        value: function mountStore(name, context, store, state, datas) {
+	            var ctx = void 0,
+	                contextMap = context.__context;
+	            contextMap[name] = store = store || contextMap[name];
+	            if (!store) {
+	                console.error("Not a mappable store item '" + name + ' !!', store);
+	                return false;
+	            } else if (isFunction(store)) {
+	                //
+	                if (store && (store.contexts || store.context)) {
+	                    ctx = this.getContext(store.contexts || [store.context]);
+	
+	                    ctx.register(_defineProperty({}, name, ctx.__context[name] || store));
+	
+	                    contextMap[name] = ctx[name] = new store(context, { state: state, datas: datas });
+	                    ctx._watchStore(name);
+	                    return ctx[name];
+	                } else store = contextMap[name] = new store(context, { state: state, datas: datas });
+	                contextMap[name].relink(name);
+	            } else {
+	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+	
+	                if (datas !== undefined) store.push(datas);
+	            }
+	            return store;
 	        }
 	    }]);
 	

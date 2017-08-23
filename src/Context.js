@@ -49,10 +49,6 @@ export default class Context extends EventEmitter {
     static defaultMaxListeners = 100;
     static persistenceTm = 0;
 
-    static getContext(key) {
-        return openContexts[key] = openContexts[key] || new Context({});
-    };
-
     constructor(ctx, {id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy} = {}) {
         super();
 
@@ -115,6 +111,10 @@ export default class Context extends EventEmitter {
                 }
             )
     }
+
+    static getContext(key) {
+        return openContexts[key] = openContexts[key] || new Context({});
+    };
 
     mount(id, state, datas) {
         if (isArray(id)) {
@@ -437,15 +437,17 @@ export default class Context extends EventEmitter {
 
     release(reason) {
         //console.log("release", reason);
-
-      //  if (this.__w8Locks.all == 0)
-        //    throw new Error("Release more than locking ! : "+reason);
-
-        this.__w8Locks.all--;
+    
+    
         if (reason) {
+            if (this.__w8Locks[reason] == 0)
+                console.error("Release more than locking !",reason);
             this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
             this.__w8Locks[reason]--;
         }
+        if (this.__w8Locks.all == 0)
+            console.error("Release more than locking !");
+        this.__w8Locks.all--;
         if (!this.__w8Locks.all) {
             this._stabilizerTM && clearTimeout(this._stabilizerTM);
             this._propagTM && clearTimeout(this._propagTM);
@@ -523,15 +525,21 @@ export default class Context extends EventEmitter {
     }
 
     dispose(reason) {
-      //  console.log("dispose", this._id, reason);
-       // if (this.__retainLocks.all == 0)
-         //   throw new Error("Dispose more than retaining ! : "+reason);
-
-        this.__retainLocks.all--;
         if (reason) {
+    
+            if (this.__retainLocks[reason] == 0)
+                throw new Error("Dispose more than retaining !");
+            
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]--;
         }
+        
+        if (this.__retainLocks.all == 0)
+            throw new Error("Dispose more than retaining !");
+        
+        this.__retainLocks.all--;
+    
+    
         if (!this.__retainLocks.all) {
             if (this._persistenceTm) {
                 this._destroyTM && clearTimeout(this._destroyTM);

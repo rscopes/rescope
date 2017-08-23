@@ -96,9 +96,9 @@
 	    value: true
 	});
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -152,13 +152,6 @@
 	
 	var Context = function (_EventEmitter) {
 	    _inherits(Context, _EventEmitter);
-	
-	    _createClass(Context, null, [{
-	        key: 'getContext',
-	        value: function getContext(key) {
-	            return openContexts[key] = openContexts[key] || new Context({});
-	        }
-	    }]);
 	
 	    function Context(ctx) {
 	        var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
@@ -628,14 +621,14 @@
 	
 	            //console.log("release", reason);
 	
-	            //  if (this.__w8Locks.all == 0)
-	            //    throw new Error("Release more than locking ! : "+reason);
 	
-	            this.__w8Locks.all--;
 	            if (reason) {
+	                if (this.__w8Locks[reason] == 0) console.error("Release more than locking !", reason);
 	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
 	                this.__w8Locks[reason]--;
 	            }
+	            if (this.__w8Locks.all == 0) console.error("Release more than locking !");
+	            this.__w8Locks.all--;
 	            if (!this.__w8Locks.all) {
 	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
 	                this._propagTM && clearTimeout(this._propagTM);
@@ -721,15 +714,18 @@
 	        value: function dispose(reason) {
 	            var _this18 = this;
 	
-	            //  console.log("dispose", this._id, reason);
-	            // if (this.__retainLocks.all == 0)
-	            //   throw new Error("Dispose more than retaining ! : "+reason);
-	
-	            this.__retainLocks.all--;
 	            if (reason) {
+	
+	                if (this.__retainLocks[reason] == 0) throw new Error("Dispose more than retaining !");
+	
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
 	                this.__retainLocks[reason]--;
 	            }
+	
+	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining !");
+	
+	            this.__retainLocks.all--;
+	
 	            if (!this.__retainLocks.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
@@ -787,6 +783,11 @@
 	            // this.datas = this.state = this.context = this.stores = null;
 	            // this._datas = this._state = this._stores = null;
 	
+	        }
+	    }], [{
+	        key: 'getContext',
+	        value: function getContext(key) {
+	            return openContexts[key] = openContexts[key] || new Context({});
 	        }
 	    }]);
 	
@@ -2098,9 +2099,7 @@
 	            var _static = this.constructor;
 	            var i = 0;
 	
-	            //   if (this.locks == 0)
-	            //     throw new Error("Release more than locking !");
-	
+	            if (this.locks == 0) console.error("Release more than locking !");
 	
 	            if (! --this.locks && this.datas && this.isComplete()) {
 	                this._stable = true;
@@ -2142,14 +2141,16 @@
 	        value: function dispose(reason) {
 	            var _this9 = this;
 	
-	            //console.log("dispose", this._uid, reason);
-	            // if (this.__retainLocks.all == 0)
-	            //   throw new Error("Dispose more than retaining ! : "+reason);
-	            this.__retainLocks.all--;
 	            if (reason) {
+	
+	                if (this.__retainLocks[reason] == 0) throw new Error("Dispose more than retaining !");
+	
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
 	                this.__retainLocks[reason]--;
 	            }
+	
+	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining !");
+	
 	            if (!this.__retainLocks.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);

@@ -618,6 +618,11 @@ export default class Store extends EventEmitter {
         var _static = this.constructor;
         let i       = 0;
 
+        if (this.locks == 0)
+            throw new Error("Release more than locking !");
+
+
+
         if ( !--this.locks && this.datas && this.isComplete() ) {
             this._stable = true;
 
@@ -651,6 +656,7 @@ export default class Store extends EventEmitter {
     }
 
     retain( reason ) {
+    //    console.log("retain", this._uid, reason);
         this.__retainLocks.all++;
         if ( reason ) {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
@@ -659,6 +665,9 @@ export default class Store extends EventEmitter {
     }
 
     dispose( reason ) {
+        //console.log("dispose", this._uid, reason);
+        if (this.__retainLocks.all == 0)
+            throw new Error("Dispose more than retaining ! : "+reason);
         this.__retainLocks.all--;
         if ( reason ) {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
@@ -669,7 +678,11 @@ export default class Store extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        this.then(s => (!this.__retainLocks.all && this.destroy()));
+                        this.then(s => {
+                          //  console.log("wtf   ", reason, !this.__retainLocks.all);
+
+                            !this.__retainLocks.all && this.destroy()
+                        });
                     },
                     this._persistenceTm
                 );
@@ -680,6 +693,7 @@ export default class Store extends EventEmitter {
     }
 
     destroy() {
+      //  console.log("destroy", this._uid);
 
         this.emit('destroy', this);
         if ( this._stabilizer )

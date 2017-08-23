@@ -197,7 +197,12 @@
 	        __proto__push(_this, 'datas', parent);
 	        _this.parent = parent;
 	
+	        if (parent) {
+	            parent._addChild(_this);
+	        }
+	
 	        _this.sources = [];
+	        _this._childContexts = [];
 	
 	        _this.__retainLocks = { all: 0 };
 	        _this.__w8Locks = { all: 1 };
@@ -208,6 +213,7 @@
 	        _this._followers = [];
 	        if (parent) {
 	            parent.retain("isMyParent");
+	            !parent._stable && _this.wait("isMyParent");
 	            parent.on(_this.__parentList = {
 	                'stable': function stable(s) {
 	                    return _this.release("isMyParent");
@@ -224,11 +230,11 @@
 	
 	        _this.register(ctx, state, datas);
 	        _this.__w8Locks.all--;
-	        _this._stable = !!_this.__w8Locks.all;
+	        _this._stable = !_this.__w8Locks.all;
 	
 	        if (autoDestroy) setTimeout(function (tm) {
-	            _this.retain();
-	            _this.dispose();
+	            _this.retain("autoDestroy");
+	            _this.dispose("autoDestroy");
 	        });
 	        return _this;
 	    }
@@ -303,6 +309,7 @@
 	                lists = void 0;
 	            this.__mixed.push(targetCtx);
 	            targetCtx.retain();
+	            if (!targetCtx._stable) this.wait(targetCtx._id);
 	
 	            this.__mixedList.push(lists = {
 	                'stable': function stable(s) {
@@ -579,69 +586,35 @@
 	            });
 	        }
 	    }, {
-	        key: 'retain',
-	        value: function retain(reason) {
-	            this.__retainLocks.all++;
-	            if (reason) {
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]++;
-	            }
-	        }
-	    }, {
-	        key: 'dispose',
-	        value: function dispose(reason) {
-	            var _this13 = this;
-	
-	            this.__retainLocks.all--;
-	            if (reason) {
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]--;
-	            }
-	            if (!this.__retainLocks.all) {
-	                if (this._persistenceTm) {
-	                    this._destroyTM && clearTimeout(this._destroyTM);
-	                    this._destroyTM = setTimeout(function (e) {
-	                        _this13.then(function (s) {
-	                            return !_this13.__retainLocks.all && _this13.destroy();
-	                        });
-	                    }, this._persistenceTm);
-	                } else {
-	                    this.then(function (s) {
-	                        return !_this13.__retainLocks.all && _this13.destroy();
-	                    });
-	                }
-	            }
-	        }
-	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
+	            var _this13 = this;
+	
+	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	            var reason = arguments[1];
+	
+	            stores.forEach(function (id) {
+	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
+	            });
+	        }
+	    }, {
+	        key: 'disposeStores',
+	        value: function disposeStores() {
 	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
-	            });
-	        }
-	    }, {
-	        key: 'disposeStores',
-	        value: function disposeStores() {
-	            var _this15 = this;
-	
-	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	            var reason = arguments[1];
-	
-	            stores.forEach(function (id) {
-	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
+	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
 	            });
 	        }
 	    }, {
 	        key: 'wait',
 	        value: function wait(reason) {
-	            console.log("wait", reason);
+	            //  console.log("wait", reason);
+	            this._stable && !this.__w8Locks.all && this.emit("unstable", this);
 	            this._stable = false;
-	            !this.__w8Locks.all && this.emit("unstable", this);
 	            this.__w8Locks.all++;
 	            if (reason) {
 	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
@@ -651,42 +624,45 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this16 = this;
+	            var _this15 = this;
 	
-	            console.log("release", reason);
+	            //console.log("release", reason);
+	
+	            if (this.__w8Locks.all == 0) throw new Error("Release more than locking ! : " + reason);
+	
 	            this.__w8Locks.all--;
 	            if (reason) {
 	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
 	                this.__w8Locks[reason]--;
 	            }
-	            this._stable = true;
 	            if (!this.__w8Locks.all) {
 	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
 	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (!_this16._stable) return _this16._stabilizerTM = null;
+	                    if (!_this15.__w8Locks.all) return _this15._stabilizerTM = null;
 	
-	                    _this16.emit("stable", _this16);
+	                    _this15._stable = true;
+	                    _this15.emit("stable", _this15);
 	
-	                    _this16._propag();
+	                    _this15._propag();
 	                });
 	            }
 	        }
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this17 = this;
+	            var _this16 = this;
 	
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
-	                _this17._propag();
+	                _this16._propag();
 	            }, 50);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this18 = this;
+	            var _this17 = this;
 	
 	            if (this._followers.length) this._followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -694,7 +670,7 @@
 	                    as = _ref3[2],
 	                    lastRevs = _ref3[3];
 	
-	                var datas = _this18.getUpdates(lastRevs);
+	                var datas = _this17.getUpdates(lastRevs);
 	                if (!datas) return;
 	                if (typeof obj != "function") {
 	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
@@ -706,7 +682,69 @@
 	            });
 	            this.emit("update", this.getUpdates());
 	        }
+	    }, {
+	        key: '_getAllChilds',
+	        value: function _getAllChilds() {
+	            var childs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	
+	            childs.push.apply(childs, _toConsumableArray(this._childContexts));
+	            this._childContexts.forEach(function (ctx) {
+	                ctx._getAllChilds(childs);
+	            });
+	            return childs;
+	        }
+	    }, {
+	        key: '_addChild',
+	        value: function _addChild(ctx) {
+	            this._childContexts.push(ctx);
+	        }
+	    }, {
+	        key: '_rmChild',
+	        value: function _rmChild(ctx) {
+	            var i = this._childContexts.indexOf(ctx);
+	            if (i != -1) this._childContexts.splice(i, 1);
+	        }
+	    }, {
+	        key: 'retain',
+	        value: function retain(reason) {
+	            this.__retainLocks.all++;
+	            //console.log("retain", this._id, reason);
+	
+	            if (reason) {
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]++;
+	            }
+	        }
+	    }, {
+	        key: 'dispose',
+	        value: function dispose(reason) {
+	            var _this18 = this;
+	
+	            //  console.log("dispose", this._id, reason);
+	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining ! : " + reason);
+	
+	            this.__retainLocks.all--;
+	            if (reason) {
+	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
+	                this.__retainLocks[reason]--;
+	            }
+	            if (!this.__retainLocks.all) {
+	                if (this._persistenceTm) {
+	                    this._destroyTM && clearTimeout(this._destroyTM);
+	                    this._destroyTM = setTimeout(function (e) {
+	                        // console.log("wtf ctx", this._id, reason, this.__w8Locks, this._stable);
+	                        _this18.then(function (s) {
+	                            //   console.log("wtf ctx then", this._id, reason, this.__w8Locks);
+	                            !_this18.__retainLocks.all && _this18.destroy();
+	                        });
+	                    }, this._persistenceTm);
+	                } else {
+	                    this.then(function (s) {
+	                        return !_this18.__retainLocks.all && _this18.destroy();
+	                    });
+	                }
+	            }
+	        }
 	        /**
 	         * order destroy of local stores
 	         */
@@ -718,10 +756,12 @@
 	
 	            var ctx = this.__context;
 	
+	            // console.log("destroy", this._id);
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this19.__context[id].removeListener(_this19.__listening[id]);
 	            });
+	
 	            this.__listening = {};
 	
 	            if (this._isLocalId) delete openContexts[this._id];
@@ -740,6 +780,7 @@
 	            if (this.parent) {
 	                this.parent.removeListener(this.__parentList);
 	                this.parent.dispose("isMyParent");
+	                this.parent._rmChild(this);
 	            }
 	            // this.datas = this.state = this.context = this.stores = null;
 	            // this._datas = this._state = this._stores = null;
@@ -2206,6 +2247,8 @@
 	            var _static = this.constructor;
 	            var i = 0;
 	
+	            if (this.locks == 0) throw new Error("Release more than locking !");
+	
 	            if (! --this.locks && this.datas && this.isComplete()) {
 	                this._stable = true;
 	
@@ -2234,6 +2277,7 @@
 	    }, {
 	        key: 'retain',
 	        value: function retain(reason) {
+	            //    console.log("retain", this._uid, reason);
 	            this.__retainLocks.all++;
 	            if (reason) {
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
@@ -2245,6 +2289,8 @@
 	        value: function dispose(reason) {
 	            var _this10 = this;
 	
+	            //console.log("dispose", this._uid, reason);
+	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining ! : " + reason);
 	            this.__retainLocks.all--;
 	            if (reason) {
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
@@ -2255,7 +2301,9 @@
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
 	                        _this10.then(function (s) {
-	                            return !_this10.__retainLocks.all && _this10.destroy();
+	                            //  console.log("wtf   ", reason, !this.__retainLocks.all);
+	
+	                            !_this10.__retainLocks.all && _this10.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
@@ -2268,6 +2316,7 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
+	            //  console.log("destroy", this._uid);
 	
 	            this.emit('destroy', this);
 	            if (this._stabilizer) clearTimeout(this._stabilizer);

@@ -22872,7 +22872,8 @@
 	
 	            //console.log("release", reason);
 	
-	            if (this.__w8Locks.all == 0) throw new Error("Release more than locking ! : " + reason);
+	            //  if (this.__w8Locks.all == 0)
+	            //    throw new Error("Release more than locking ! : "+reason);
 	
 	            this.__w8Locks.all--;
 	            if (reason) {
@@ -22965,7 +22966,8 @@
 	            var _this18 = this;
 	
 	            //  console.log("dispose", this._id, reason);
-	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining ! : " + reason);
+	            // if (this.__retainLocks.all == 0)
+	            //   throw new Error("Dispose more than retaining ! : "+reason);
 	
 	            this.__retainLocks.all--;
 	            if (reason) {
@@ -24476,7 +24478,9 @@
 	            var _static = this.constructor;
 	            var i = 0;
 	
-	            if (this.locks == 0) throw new Error("Release more than locking !");
+	            //   if (this.locks == 0)
+	            //     throw new Error("Release more than locking !");
+	
 	
 	            if (! --this.locks && this.datas && this.isComplete()) {
 	                this._stable = true;
@@ -24519,7 +24523,8 @@
 	            var _this10 = this;
 	
 	            //console.log("dispose", this._uid, reason);
-	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining ! : " + reason);
+	            // if (this.__retainLocks.all == 0)
+	            //   throw new Error("Dispose more than retaining ! : "+reason);
 	            this.__retainLocks.all--;
 	            if (reason) {
 	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;

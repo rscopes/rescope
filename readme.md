@@ -9,12 +9,16 @@ ReScope is a simple, flexible, predictable \& effective Store system inspired by
 Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output datas in a deterministic way.<br>
 These outputs are then, used as partial "key" in other stores states, or "predictible" datas in dumb components.<br>
 
-Rescope Contexts manages a pool of stores and allow easy serialisation, export & restore of you're Application State.
-Rescope Contexts provide : 
+By " a deterministic way ", i mean : <br/>
+All state-making values should come from the entry state; <br>
+so even if there 500 stores interconnected : theirs outputs datas will remain determined by a limited number of key "seeds" stores.
+
+Rescope Contexts manages a pool of stores and provide :
+- easy serialisation, export & restore of you're Application State.
 - Contexts inheriting & mixing,
 - Chain destroy of contexts
 
-Rescope can maintain, serialize and restore server & client side :
+Rescope Stores could maintain, serialize and restore server & client side :
 - enhanced records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status (act as router)

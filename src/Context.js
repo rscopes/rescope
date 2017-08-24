@@ -30,7 +30,7 @@ var isString = require('isstring'),
     EventEmitter = require('events'),
     isFunction = require('isfunction')
     , shortid = require('shortid')
-    , __proto__push = (target, id, parent) => {
+    , __proto__push = ( target, id, parent ) => {
         let here = {
             [id]: function () {
             }
@@ -48,22 +48,22 @@ export default class Context extends EventEmitter {
     static Store = null;
     static defaultMaxListeners = 100;
     static persistenceTm = 0;
-
-    constructor(ctx, {id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy} = {}) {
+    
+    constructor( ctx, { id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
         super();
-
+        
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         this._id = id = id || ("_____" + shortid.generate());
-
-        if (openContexts[id]) {
+        
+        if ( openContexts[id] ) {
             // openContexts[id].register(ctx);
             return openContexts[id]
         }
-
+        
         openContexts[id] = this;
         this._isLocalId = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
-
+        
         this.stores = {};
         this.state = {};
         this.datas = {};
@@ -71,23 +71,23 @@ export default class Context extends EventEmitter {
         __proto__push(this, 'state', parent);
         __proto__push(this, 'datas', parent);
         this.parent = parent;
-
-        if (parent) {
+        
+        if ( parent ) {
             parent._addChild(this);
-
+            
         }
-
+        
         this.sources = [];
         this._childContexts = [];
-
-        this.__retainLocks = {all: 0};
-        this.__w8Locks = {all: 1};
+        
+        this.__retainLocks = { all: 0 };
+        this.__w8Locks = { all: 1 };
         this.__listening = {};
         this.__context = {};
         this.__mixed = [];
         this.__mixedList = [];
         this._followers = [];
-        if (parent) {
+        if ( parent ) {
             parent.retain("isMyParent");
             !parent._stable && this.wait("isMyParent");
             parent.on(this.__parentList = {
@@ -97,13 +97,13 @@ export default class Context extends EventEmitter {
             });
             // this.register(parent.__context, state, datas);
         }
-
-
+        
+        
         this.register(ctx, state, datas);
         this.__w8Locks.all--;
         this._stable = !this.__w8Locks.all;
-
-        if (autoDestroy)
+        
+        if ( autoDestroy )
             setTimeout(
                 tm => {
                     this.retain("autoDestroy");
@@ -111,24 +111,25 @@ export default class Context extends EventEmitter {
                 }
             )
     }
-
-    static getContext(key) {
+    
+    static getContext( key ) {
         return openContexts[key] = openContexts[key] || new Context({});
     };
-
-    mount(id, state, datas) {
-        if (isArray(id)) {
+    
+    mount( id, state, datas ) {
+        if ( isArray(id) ) {
             id.forEach(k => this._mount(k, state && state[k], datas && datas[k]));
-        } else {
+        }
+        else {
             this._mount(...arguments);
         }
         return this;
     }
-
-    _mount(id, state, datas) {
-        if (!this.__context[id]) {//ask mixed || parent
-            if (this.__mixed.reduce((mounted, ctx) => (mounted || ctx._mount(id, state, datas)), false) ||
-                !this.parent)
+    
+    _mount( id, state, datas ) {
+        if ( !this.__context[id] ) {//ask mixed || parent
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, datas)), false) ||
+                !this.parent )
                 return;
             return this.parent._mount(...arguments);
         }
@@ -136,17 +137,17 @@ export default class Context extends EventEmitter {
         this._watchStore(id);
         return this.__context[id];
     }
-
-    _watchStore(id, state, datas) {
-        if (!this.__context[id]) {//ask mixed || parent
-            if (this.__mixed.reduce((mounted, ctx) => (mounted || ctx._watchStore(id, state, datas)), false) ||
-                !this.parent)
+    
+    _watchStore( id, state, datas ) {
+        if ( !this.__context[id] ) {//ask mixed || parent
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, datas)), false) ||
+                !this.parent )
                 return;
             return this.parent._watchStore(...arguments);
         }
-        if (!this.__listening[id] && !isFunction(this.__context[id])) {
+        if ( !this.__listening[id] && !isFunction(this.__context[id]) ) {
             !this.__context[id].isStable() && this.wait(id);
-
+            
             this.__context[id].on(
                 this.__listening[id] = {
                     'update': s => this.propag(),
@@ -156,14 +157,14 @@ export default class Context extends EventEmitter {
         }
         return true;
     }
-
-    mixin(targetCtx) {
+    
+    mixin( targetCtx ) {
         let parent = this.parent, lists;
         this.__mixed.push(targetCtx)
         targetCtx.retain();
-        if (!targetCtx._stable)
+        if ( !targetCtx._stable )
             this.wait(targetCtx._id);
-
+        
         this.__mixedList.push(lists = {
             'stable': s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
@@ -174,20 +175,20 @@ export default class Context extends EventEmitter {
         __proto__push(this, 'state', parent);
         __proto__push(this, 'datas', parent);
         targetCtx.relink(targetCtx.__context, this, true);
-
+        
         __proto__push(this, 'stores', this);
         __proto__push(this, 'state', this);
         __proto__push(this, 'datas', this);
         this.relink(this.__context, this);
     }
-
-    register(rawCtx, state = {}, datas = {}) {
+    
+    register( rawCtx, state = {}, datas = {} ) {
         this.relink(rawCtx, this, false, state, datas);
         Object.keys(rawCtx).forEach(
             id => (isFunction(rawCtx[id]) && rawCtx[id].singleton && this._mount(id, state[id], datas[id])))
-
+        
     }
-
+    
     /**
      * Map srcCtx store's on targetCtx headers proto's
      * @param srcCtx
@@ -195,202 +196,222 @@ export default class Context extends EventEmitter {
      * @param state
      * @param datas
      */
-    relink(srcCtx, targetCtx = this, external, state = {}, datas = {}) {
+    relink( srcCtx, targetCtx = this, external, state = {}, datas = {} ) {
         let lctx = targetCtx._stores.prototype;
         Object.keys(srcCtx)
-            .forEach(
-                id => {
-                    if (targetCtx.__context[id] === srcCtx[id] ||
-                        targetCtx.__context[id] && (targetCtx.__context[id].constructor === srcCtx[id] ))
-                        return;
-
-                    if (targetCtx.__context[id]) {
-                        console.warn("Rescope Context : ", id, " already exist in this context !");
-                        return;
-                    }
-                    if (!external)
-                        this.__context[id] = srcCtx[id];
-
-                    Object.defineProperty(
-                        lctx,
-                        id,
-                        ((ctx, id) => (
-                            {
-                                get: () => this.__context[id]
-                            }
-                        ))
-                        (this.__context, id)
-                    );
-                    Object.defineProperty(
-                        targetCtx._state.prototype,
-                        id,
-                        ((ctx, id) => (
-                            {
-                                get: () => (ctx[id] && ctx[id].state),
-                                set: (v) => (this._mount(id, v))
-                            }
-                        ))
-                        (this.__context, id)
-                    );
-                    Object.defineProperty(
-                        targetCtx._datas.prototype,
-                        id,
-                        ((ctx, id) => (
-                            {
-                                get: () => (ctx[id] && ctx[id].datas),
-                                set: (v) => (this._mount(id, undefined, v))
-                            }
-                        ))
-                        (this.__context, id)
-                    );
-                }
-            )
+              .forEach(
+                  id => {
+                      if ( targetCtx.__context[id] === srcCtx[id] ||
+                          targetCtx.__context[id] && (targetCtx.__context[id].constructor === srcCtx[id] ) )
+                          return;
+                
+                      if ( targetCtx.__context[id] ) {
+                          console.warn("Rescope Context : ", id, " already exist in this context !");
+                          return;
+                      }
+                      if ( !external )
+                          this.__context[id] = srcCtx[id];
+                
+                      Object.defineProperty(
+                          lctx,
+                          id,
+                          (( ctx, id ) => (
+                              {
+                                  get: () => this.__context[id]
+                              }
+                          ))
+                          (this.__context, id)
+                      );
+                      Object.defineProperty(
+                          targetCtx._state.prototype,
+                          id,
+                          (( ctx, id ) => (
+                              {
+                                  get: () => (ctx[id] && ctx[id].state),
+                                  set: ( v ) => (this._mount(id, v))
+                              }
+                          ))
+                          (this.__context, id)
+                      );
+                      Object.defineProperty(
+                          targetCtx._datas.prototype,
+                          id,
+                          (( ctx, id ) => (
+                              {
+                                  get: () => (ctx[id] && ctx[id].datas),
+                                  set: ( v ) => (this._mount(id, undefined, v))
+                              }
+                          ))
+                          (this.__context, id)
+                      );
+                  }
+              )
     }
-
+    
     /**
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    bind(obj, key, as, setInitial = true) {
+    bind( obj, key, as, setInitial = true ) {
         let lastRevs, datas;
-        if (key && !isArray(key))
+        if ( key && !isArray(key) )
             key = [key];
-
+        
         // key = key||
-
-        if (as === true) {
+        
+        if ( as === true ) {
             setInitial = true;
             as = null;
         }
-
+        
         this._followers.push(
             [
                 obj,
                 key,
                 as,
-                lastRevs = key && key.reduce((revs, id) => (revs[id] = 0, revs), {})
+                lastRevs = key && key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
             ]);
-
+        
         this.mount(key);
-
-        if (setInitial && this._stable) {
+        
+        if ( setInitial && this._stable ) {
             datas = this.getUpdates(lastRevs);
-            if (!datas) return;
-            if (typeof obj != "function") {
-                if (as) obj.setState({[as]: datas});
+            if ( !datas ) return;
+            if ( typeof obj != "function" ) {
+                if ( as ) obj.setState({ [as]: datas });
                 else obj.setState(datas);
-            } else {
+            }
+            else {
                 obj(datas);
             }
             // lastRevs &&
             // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
         }
     }
-
+    
     /**
      * Un bind this context off the given component-keys
      * @param obj
      * @param key
      * @returns {Array.<*>}
      */
-    unBind(obj, key, as) {
+    unBind( obj, key, as ) {
         var followers = this._followers,
             i = followers && followers.length;
-        while (followers && i--)
-            if (followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
-                ('' + followers[i][2]) == ('' + as))
+        while ( followers && i-- )
+            if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
+                ('' + followers[i][2]) == ('' + as) )
                 return followers.splice(i, 1);
     }
-
-
-    map(to, stores, bind = true) {
+    
+    
+    map( to, stores, bind = true ) {
         this.mount(stores);
         bind && this.bind(to, stores, null, false);
-
-        return stores.reduce((datas, id) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
+        
+        return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
-
-    getUpdates(revs, output, updated) {
+    
+    getStoresRevs( stores = {} ) {
         let ctx = this.__context;
-
+        
+        Object.keys(ctx).forEach(
+            id => {
+                if ( !isFunction(ctx[id])
+                ) {
+                    stores[id] = ctx[id]._rev;
+                }
+                else if (!stores.hasOwnProperty(id))
+                    stores[id] = false
+            }
+        );
+        
+        this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(stores), stores), stores);
+        this.parent && this.parent.getStoresRevs(stores);
+        return stores;
+    }
+    
+    getUpdates( revs, output, updated ) {
+        let ctx = this.__context;
+        
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
-                if (!output[id]
+                if ( !output[id]
                     && ( !revs
                         || (revs.hasOwnProperty(id) && revs[id] === undefined)
                         || !( !revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id] ))
                 ) {
-
+                    
                     updated = true;
-
+                    
                     output[id] = this.datas[id];
-                    if (revs && revs[id] !== undefined)
+                    if ( revs && revs[id] !== undefined )
                         revs[id] = ctx[id]._rev;
-
+                    
                 }
             }
         );
-        updated = this.__mixed.reduce((updated, ctx) => (ctx.getUpdates(revs, output, updated) || updated), updated);
+        updated = this.__mixed.reduce(( updated, ctx ) => (ctx.getUpdates(revs, output, updated) || updated), updated);
         updated = this.parent && this.parent.getUpdates(revs, output, updated) || updated;
         return updated && output;
     }
-
-    serialize(flags_states = /.*/, flags_datas = /.*/) {
-        let ctx = this.__context, output = {state: {}, datas: {}},
+    
+    serialize( flags_states = /.*/, flags_datas = /.*/ ) {
+        let ctx = this.__context, output = { state: {}, datas: {} },
             _flags_states,
             _flags_datas;
-        if (isArray(flags_states))
+        if ( isArray(flags_states) )
             flags_states.forEach(id => (output.state[id] = this.state[id]))
-
-        if (isArray(flags_datas))
+        
+        if ( isArray(flags_datas) )
             flags_datas.forEach(id => (output.datas[id] = this.datas[id]))
-
-        if (!isArray(flags_datas) && !isArray(flags_states))
+        
+        if ( !isArray(flags_datas) && !isArray(flags_states) )
             Object.keys(ctx).forEach(
                 id => {
-                    if (isFunction(ctx[id]))
+                    if ( isFunction(ctx[id]) )
                         return;
-
+                    
                     let flags = ctx[id].constructor.flags;
-
+                    
                     flags = isArray(flags) ? flags : [flags || ""];
-
-                    if (flags.reduce((r, flag) => (r || _flags_states.test(flag)), false))
+                    
+                    if ( flags.reduce(( r, flag ) => (r || _flags_states.test(flag)), false) )
                         output.state[id] = this.state[id];
-
-                    if (flags.reduce((r, flag) => (r || _flags_datas.test(flag)), false))
+                    
+                    if ( flags.reduce(( r, flag ) => (r || _flags_datas.test(flag)), false) )
                         output.datas[id] = this.datas[id];
                 }
             )
         return output;
     }
-
-    on(lists) {
-
-        if (!isString(lists) && lists)
+    
+    on( lists ) {
+        
+        if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
     }
-
-    removeListener(lists) {
-        if (!isString(lists) && lists)
+    
+    removeListener( lists ) {
+        if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
         else super.removeListener(...arguments);
     }
-
+    
     /**
      * once('stable', cb)
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    then(cb) {
-        if (this._stable)
+    then( cb ) {
+        if ( this._stable )
             return cb(null, this.datas);
         this.once('stable', e => cb(null, this.datas));
     }
-
-    restore({state, datas}, quiet) {
+    
+    restore( { state, datas }, quiet ) {
         let ctx = this.__context;
         Object.keys(datas).forEach(
             id => {
@@ -409,64 +430,63 @@ export default class Context extends EventEmitter {
             }
         );
     }
-
-
-
-    retainStores(stores = [], reason) {
+    
+    
+    retainStores( stores = [], reason ) {
         stores.forEach(
             id => (this.stores[id] && this.stores[id].retain && this.stores[id].retain(reason))
         )
     }
-
-    disposeStores(stores = [], reason) {
+    
+    disposeStores( stores = [], reason ) {
         stores.forEach(
             id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
         )
     }
-
-    wait(reason) {
-      //  console.log("wait", reason);
-        this._stable&&!this.__w8Locks.all && this.emit("unstable", this);
+    
+    wait( reason ) {
+        //  console.log("wait", reason);
+        this._stable && !this.__w8Locks.all && this.emit("unstable", this);
         this._stable = false;
         this.__w8Locks.all++;
-        if (reason) {
+        if ( reason ) {
             this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
             this.__w8Locks[reason]++;
         }
     }
-
-    release(reason) {
+    
+    release( reason ) {
         //console.log("release", reason);
-    
-    
-        if (reason) {
-            if (this.__w8Locks[reason] == 0)
-                console.error("Release more than locking !",reason);
+        
+        
+        if ( reason ) {
+            if ( this.__w8Locks[reason] == 0 )
+                console.error("Release more than locking !", reason);
             this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
             this.__w8Locks[reason]--;
         }
-        if (this.__w8Locks.all == 0)
+        if ( this.__w8Locks.all == 0 )
             console.error("Release more than locking !");
         this.__w8Locks.all--;
-        if (!this.__w8Locks.all) {
+        if ( !this.__w8Locks.all ) {
             this._stabilizerTM && clearTimeout(this._stabilizerTM);
             this._propagTM && clearTimeout(this._propagTM);
-
+            
             this._stabilizerTM = setTimeout(
                 e => {
-                    if (!this.__w8Locks.all)
+                    if ( !this.__w8Locks.all )
                         return this._stabilizerTM = null;
-
+                    
                     this._stable = true;
                     this.emit("stable", this);
-
+                    
                     this._propag()
                 }
             );
         }
-
+        
     }
-
+    
     propag() {
         this._propagTM && clearTimeout(this._propagTM);
         this._propagTM = setTimeout(
@@ -475,16 +495,17 @@ export default class Context extends EventEmitter {
             }, 50
         );
     }
-
+    
     _propag() {
-        if (this._followers.length)
-            this._followers.forEach(({0: obj, 1: key, 2: as, 3: lastRevs}) => {
+        if ( this._followers.length )
+            this._followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs } ) => {
                 let datas = this.getUpdates(lastRevs);
-                if (!datas) return;
-                if (typeof obj != "function") {
-                    if (as) obj.setState({[as]: datas});
+                if ( !datas ) return;
+                if ( typeof obj != "function" ) {
+                    if ( as ) obj.setState({ [as]: datas });
                     else obj.setState(datas);
-                } else {
+                }
+                else {
                     obj(datas, lastRevs && [...lastRevs] || "no revs");
                 }
                 // lastRevs &&
@@ -492,112 +513,114 @@ export default class Context extends EventEmitter {
             });
         this.emit("update", this.getUpdates());
     }
-
-
-    _getAllChilds(childs=[]) {
+    
+    
+    _getAllChilds( childs = [] ) {
         childs.push(...this._childContexts)
         this._childContexts.forEach(
-            ctx=>{
+            ctx => {
                 ctx._getAllChilds(childs);
             }
         );
         return childs;
     }
-
-    _addChild(ctx) {
+    
+    _addChild( ctx ) {
         this._childContexts.push(ctx);
     }
-
-    _rmChild(ctx) {
+    
+    _rmChild( ctx ) {
         let i = this._childContexts.indexOf(ctx);
-        if (i != -1)
+        if ( i != -1 )
             this._childContexts.splice(i, 1);
     }
-
-    retain(reason) {
+    
+    retain( reason ) {
         this.__retainLocks.all++;
         //console.log("retain", this._id, reason);
-
-        if (reason) {
+        
+        if ( reason ) {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]++;
         }
     }
-
-    dispose(reason) {
-        if (reason) {
     
-            if (this.__retainLocks[reason] == 0)
+    dispose( reason ) {
+        if ( reason ) {
+            
+            if ( this.__retainLocks[reason] == 0 )
                 throw new Error("Dispose more than retaining !");
             
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]--;
         }
         
-        if (this.__retainLocks.all == 0)
+        if ( this.__retainLocks.all == 0 )
             throw new Error("Dispose more than retaining !");
         
         this.__retainLocks.all--;
-    
-    
-        if (!this.__retainLocks.all) {
-            if (this._persistenceTm) {
+        
+        
+        if ( !this.__retainLocks.all ) {
+            if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                       // console.log("wtf ctx", this._id, reason, this.__w8Locks, this._stable);
+                        // console.log("wtf ctx", this._id, reason, this.__w8Locks, this._stable);
                         this.then(s => {
-                         //   console.log("wtf ctx then", this._id, reason, this.__w8Locks);
-                            !this.__retainLocks.all && this.destroy()});
+                            //   console.log("wtf ctx then", this._id, reason, this.__w8Locks);
+                            !this.__retainLocks.all && this.destroy()
+                        });
                     },
                     this._persistenceTm
                 );
-            } else {
+            }
+            else {
                 this.then(s => (!this.__retainLocks.all && this.destroy()));
             }
         }
     }
+    
     /**
      * order destroy of local stores
      */
     destroy() {
         let ctx = this.__context;
-
-       // console.log("destroy", this._id);
+        
+        // console.log("destroy", this._id);
         this.emit("destroy");
         Object.keys(
             this.__listening
         ).forEach(
             id => this.__context[id].removeListener(this.__listening[id])
         );
-
-
-
+        
+        
         this.__listening = {};
-
-        if (this._isLocalId)
+        
+        if ( this._isLocalId )
             delete openContexts[this._id];
         this._followers.length = 0;
-
-        for (let key in ctx)
-            if (!isFunction(ctx[key])) {
-                if (ctx[key].contextObj === this)
+        
+        for ( let key in ctx )
+            if ( !isFunction(ctx[key]) ) {
+                if ( ctx[key].contextObj === this )
                     ctx[key].destroy();
-
+                
                 ctx[key] = ctx[key].constructor;
             }
-        while (this.__mixedList.length) {
+        while ( this.__mixedList.length ) {
             this.__mixed[0].removeListener(this.__mixedList.shift());
             this.__mixed.shift().dispose();
         }
-        if (this.parent) {
+        if ( this.parent ) {
             this.parent.removeListener(this.__parentList);
             this.parent.dispose("isMyParent");
             this.parent._rmChild(this);
         }
         // this.datas = this.state = this.context = this.stores = null;
         // this._datas = this._state = this._stores = null;
-
-
+        
+        
     }
 }

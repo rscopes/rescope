@@ -22730,6 +22730,25 @@
 	            }, {});
 	        }
 	    }, {
+	        key: 'getStoresRevs',
+	        value: function getStoresRevs() {
+	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	
+	            var ctx = this.__context;
+	
+	            Object.keys(ctx).forEach(function (id) {
+	                if (!isFunction(ctx[id])) {
+	                    stores[id] = ctx[id]._rev;
+	                } else if (!stores.hasOwnProperty(id)) stores[id] = false;
+	            });
+	
+	            this.__mixed.reduce(function (updated, ctx) {
+	                return ctx.getStoresRevs(stores), stores;
+	            }, stores);
+	            this.parent && this.parent.getStoresRevs(stores);
+	            return stores;
+	        }
+	    }, {
 	        key: 'getUpdates',
 	        value: function getUpdates(revs, output, updated) {
 	            var _this8 = this;
@@ -23003,6 +23022,7 @@
 	                }
 	            }
 	        }
+	
 	        /**
 	         * order destroy of local stores
 	         */

@@ -11,15 +11,16 @@ These outputs are then, used as partial "key" in other stores states, or "predic
 
 By " a deterministic way ", i mean : <br/>
 All state-making values should come from the entry state; <br>
-so even if there 500 stores interconnected : theirs outputs datas will remain determined by a limited number of key "seeds" stores.
+so even if there 500 interdependent stores  : theirs outputs datas will remain determined by a limited number of key "seeds" stores.
 
 Rescope Contexts manages a pool of stores and provide :
 - easy serialisation, export & restore of you're Application State.
 - Contexts inheriting & mixing,
+- Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
 - Chain destroy of contexts
 
 Rescope Stores could maintain, serialize and restore server & client side :
-- enhanced records matching some ids,
+- Enhanced records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status (act as router)
 - session, etc... 
@@ -37,17 +38,19 @@ Because :
  
 ### What else ?
 
-- Easy stores injections
-- Semaphores API (wait, release, etc... fns )
+- Easy stores & deps injections
+- Semaphores API (wait, release, retain, dispose, etc... fns )
 - Promise like APIs
 - Simple methods to contextualize, preload, hook & bind the stores
 - Inheritable ES6/7 class
+- Inheritable Store Contexts
 - Easy serialize
-- Inherit node EventEmitter api
-- Synchrone injection (React SSR) 
+- Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
 - Flexible Async management
 - Lazy store instantiation
 - Compatible webpack & nodejs
+- Easy pairing of remote / webworker based stores
+- Library agnostic
 - Another alternative to Redux & co
 - etc..
 
@@ -63,41 +66,30 @@ DIY or push mutations (setState) on the right store
 
 ``` jsx
 
-import Rescope from "rescope";
+import {Context} from "rescope";
 
 let pageContextStores = {/* ... some initial store definitions */}
 
-let MyPageContext = new Rescope({...pageContextStores}); // stores are lazy instanciated on the context hashmap
+let MyStaticContext = new Context({...stores_instancied_or_not}); // stores are lazy instanciated on the context hashmap
+let MyPageContext = new Context({...stores_instancied_or_not}, {parent:MyStaticContext});
 
 
-// you can add some store to this context 
-(new MyPageContext.Store("AnotherStore").setState({status:"yo!!!"})
-
-// you can do a full preload using default / restored key values 
-MyPageContext.fetch(
-    (err, datas, context)=>{
-        // here all the store are stable
+// you can preload using default / restored key values
+MyPageContext.mount(["someStores"], {/*states by id*/}, {/*datas by id*/})
+.then(
+    (err, datas)=>{
+        // here all the store datas are in store
         
    
     }
 );
 
-
-// or wait & bind only specifics stores and theirs dependencies 
-(new MyPageContext.Store(["TopRecipes", "News"])
-    .once(
-     'stable',
-     (state)=>{
-       // state should contain TopRecipes & News
-     }
-    )
-    
 // Or inject them with synchrone initial output state :
 // .... ( say we are in a react comp constructor )
 this.state = {
    someKey : true,
    // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyPageContext(this, ["AppState", "AnotherStore"]) 
+   ...MyPageContext.map(this, ["AppState", "AnotherStore"])
 }
 // ....
 
@@ -105,131 +97,3 @@ this.state = {
 
 
 
-
-## Partial Prototype 
- 
-``` jsx
-export default class Store extends EventEmitter {
-
-    static use  = [];// overridable list of source stores
-    static follow  = [];// overridable list of store that will trigger refine if updated
-    static require  = [];// overridable list of  store/keys required to trigger refine & propagation
-    
-    static staticContext  = {};// default global stores context
-    static defaultMaxListeners = 20;// for EventEmiter super class
-    
-    static initialState = null;// overridable initial state values
-    
-    
-    datas = null; // synchrone initial output
-    
-    /**
-     * Constructor, will build a rescope store
-     *
-     * (context, name, keys, refine)
-     * (context, name, keys)
-     * (keys, name)
-     * (keys)
-     * (context, name, refine)
-     * (context, name)
-     * (context)
-     *
-     * @param context {object} context where to find the other stores
-     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-     */
-    constructor() 
-
-    /**
-     * get a store-key pair for Store::map
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    as( name ) 
-    
-    /**
-     * get a (store contructor)-key pair for Store::map
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    static as( name ) 
-
-    /**
-     * Un bind this store off the given component-key
-     * @param obj
-     * @param key
-     * @returns {Array.<*>}
-     */
-    unBind( obj, key ) 
-
-    /**
-     * Bind this store changes to the given component-key
-     * @param obj {React.Component|Store|function)
-     * @param key {string} optional key where to map the public state
-     */
-    bind( obj, key ) 
-
-    /**
-     * Overridable method to know if a datas change should be propag to the listening stores & components
-     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated 
-     * If not it will always return true
-     */
-    shouldPropag( ns )
-
-    /**
-     * Overridable refiner / reducer / remapper 
-     * If datas & newState are simple hash maps default refine will return {...lastDatas, ...newState}
-     * if not it will return the last datas
-     * @param datas
-     * @param newState
-     * @param changes
-     * @returns {*}
-     */
-    refine(lastDatas, newState, changes) 
-
-    /**
-     * Pull & maintain some stores in the state
-     * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-     */
-    pull( stores ) 
-
-    /**
-     * Apply refine on the state & push the resulting datas to the followers if this.locks == 0
-     * @param datas=null
-     * @param cb
-     */
-    push( datas, cb ) 
-    
-    /**
-     * Update the current state & refine it once the store is stable
-     * @param pState
-     * @param cb
-     */
-    setState( pState, cb ) 
-
-    /**
-     * once('stable', cb)
-     * @param cb {function} then
-     * @returns {this}
-     */
-    then( cb )
-    
-    /**
-     * Add a lock so the store will not propag it state untill release() is call (this.locks reach 0)
-     * @param previous {Store|number|Array} Store to wait, releases to wait or array of stuff to wait
-     * @returns {this}
-     */
-    wait( previous )
-
-    /**
-     * Decrease locks for this store, if it reach 0 & it have a public state,
-     * the state will be propagated to the followers,
-     * then, all stuff passed to "then" will be exec / released
-     * @param desync
-     * @returns {*}
-     */
-    release( cb ) 
-
-
-    destroy() 
-}
-```

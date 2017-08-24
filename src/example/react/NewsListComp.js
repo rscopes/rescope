@@ -14,11 +14,14 @@ import React from "react";
 import {Context} from "../../Rescope";
 
 export default class NewsListComp extends React.Component {
-
-    constructor( ) {
+    
+    static contextTypes = {
+        rescope: React.PropTypes.object
+    };
+    constructor( props, context ) {
         super(...arguments);
         this.state = {
-            ...Context.contexts.appContext.pull(this, ["userEvents"])
+            ...context.rescope.map(this, ["userEvents"])
         };
 
     }

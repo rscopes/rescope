@@ -10,63 +10,74 @@
 
 import React from "react";
 // import Rescope, {Store} from "../../Rescope";
-let ReactDom      = require('react-dom'),
-    Rescope       = require('../../Rescope'),
-    Context       = Rescope.Context,
-    NewsListComp  = require('./NewsListComp'),
+let ReactDom = require('react-dom'),
+    Rescope = require('../../Rescope'),
+    Context = Rescope.Context,
+    NewsListComp = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
 
 let
-    GlobalStaticContext = new Context({}, {id : "static", defaultMaxListeners : 500});
+    GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
 
-new Context(new StoresContext(), {id : "appContext", parent : GlobalStaticContext, defaultMaxListeners : 500});
+new Context(new StoresContext(), { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 
 class App extends React.Component {
     static renderTo = ( node ) => {
+        
         Context.contexts.appContext.mount(
-            ["status", "appState"]
-        ).pull(
+            ["userEvents"]
+        ).then(
             ( err, state, context ) => {
                 ReactDom.render(<App/>, node);
             }
         )
-
+        
     }
-
-
+    
+    static contextTypes = {
+        rescope: React.PropTypes.object
+    };
+    static childContextTypes = {
+        rescope: React.PropTypes.object
+    };
+    
     constructor() {
         super(...arguments);
-
         this.state = {
             ...Context.contexts.appContext.map(this, ["status", "appState"])
         };
     }
-
+    
+    getChildContext() {
+        return this.context = {rescope:Context.contexts.appContext};
+    }
+    
+    
     render() {
-        let appState = this.stores.appState;
+        let { state:context } = Context.contexts.appContext,
+            {state} = this;
         return (
             <div>
                 <h1>Really basic drafty rescope + react mini app example</h1>
-
-                <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}}>
+                
+                <div style={ { border: "solid 1px lightgrey", borderRadius: "3px" } }>
                     <b><u>
                         <button
-                            onClick={() => appState.setState(
-                                {currentUserId : 'MissTick'})}>MissTick events
+                            onClick={ () => (context.appState = { currentUserId: 'MissTick' }) }>MissTick events
                         </button>
                     </u></b>&nbsp;&nbsp;
                     <b><u>
                         <button
-                            onClick={() => appState.setState({currentUserId : 'MrNice'})}>MrNice events
+                            onClick={ () => (context.appState = { currentUserId: 'MrNice' }) }>MrNice events
                         </button>
                     </u></b>
                 </div>
                 <pre>
-                  {this.state.status && JSON.stringify(this.state.status, null, 2)}
+                  { state.status && JSON.stringify(state.status, null, 2) }
                 </pre>
                 <NewsListComp/>
-
+            
             </div>
         );
     }

@@ -1,4 +1,4 @@
-# Caipi Rescope 2 beta
+# Caipi Rescope 2 rc
 
 ## ReScope What ?
 

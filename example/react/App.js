@@ -102,9 +102,16 @@
 	    }
 	
 	    _createClass(App, [{
+	        key: 'getChildContext',
+	        value: function getChildContext() {
+	            return this.context = { rescope: Context.contexts.appContext };
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var appState = this.stores.appState;
+	            var context = Context.contexts.appContext.state,
+	                state = this.state;
+	
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -126,7 +133,7 @@
 	                                'button',
 	                                {
 	                                    onClick: function onClick() {
-	                                        return appState.setState({ currentUserId: 'MissTick' });
+	                                        return context.appState = { currentUserId: 'MissTick' };
 	                                    } },
 	                                'MissTick events'
 	                            )
@@ -143,7 +150,7 @@
 	                                'button',
 	                                {
 	                                    onClick: function onClick() {
-	                                        return appState.setState({ currentUserId: 'MrNice' });
+	                                        return context.appState = { currentUserId: 'MrNice' };
 	                                    } },
 	                                'MrNice events'
 	                            )
@@ -153,7 +160,7 @@
 	                _react2.default.createElement(
 	                    'pre',
 	                    null,
-	                    this.state.status && JSON.stringify(this.state.status, null, 2)
+	                    state.status && JSON.stringify(state.status, null, 2)
 	                ),
 	                _react2.default.createElement(NewsListComp, null)
 	            );
@@ -164,10 +171,19 @@
 	}(_react2.default.Component);
 	
 	App.renderTo = function (node) {
-	    Context.contexts.appContext.mount(["status", "appState"]).pull(function (err, state, context) {
+	
+	    Context.contexts.appContext.mount(["userEvents"]).then(function (err, state, context) {
 	        ReactDom.render(_react2.default.createElement(App, null), node);
 	    });
 	};
+	
+	App.contextTypes = {
+	    rescope: _react2.default.PropTypes.object
+	};
+	App.childContextTypes = {
+	    rescope: _react2.default.PropTypes.object
+	};
+	
 	
 	window.App = App;
 
@@ -24610,12 +24626,12 @@
 	var NewsListComp = function (_React$Component) {
 	    _inherits(NewsListComp, _React$Component);
 	
-	    function NewsListComp() {
+	    function NewsListComp(props, context) {
 	        _classCallCheck(this, NewsListComp);
 	
 	        var _this = _possibleConstructorReturn(this, (NewsListComp.__proto__ || Object.getPrototypeOf(NewsListComp)).apply(this, arguments));
 	
-	        _this.state = _extends({}, _Rescope.Context.contexts.appContext.pull(_this, ["userEvents"]));
+	        _this.state = _extends({}, context.rescope.map(_this, ["userEvents"]));
 	
 	        return _this;
 	    }
@@ -24663,6 +24679,9 @@
 	    return NewsListComp;
 	}(_react2.default.Component);
 	
+	NewsListComp.contextTypes = {
+	    rescope: _react2.default.PropTypes.object
+	};
 	exports.default = NewsListComp;
 	;
 	module.exports = exports["default"];

@@ -9,7 +9,6 @@
  */
 
 import React from "react";
-// import Rescope, {Store} from "../../Rescope";
 let ReactDom = require('react-dom'),
     Rescope = require('../../Rescope'),
     Context = Rescope.Context,

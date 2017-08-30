@@ -10,8 +10,7 @@ Rescope Stores read an entry state (kind of "key" that can be anything) and main
 These outputs are then, used as partial "key" in other stores states, or "predictible" datas in dumb components.<br>
 
 By " a deterministic way ", i mean : <br/>
-All state-making values should come from the entry state; <br>
-so even if there 500 interdependent stores  : theirs outputs datas will remain determined by a limited number of key "seeds" stores.
+All state-making values should come from a limited number of key "seeds" stores; so "final" store's output datas will remain determined by theses key values.
 
 Rescope Contexts manages a pool of stores and provide :
 - easy serialisation, export & restore of you're Application State.
@@ -19,7 +18,7 @@ Rescope Contexts manages a pool of stores and provide :
 - Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
 - Chain destroy of contexts
 
-Rescope Stores could maintain, serialize and restore server & client side :
+Rescope Stores maintain, serialize and restore server & client side :
 - Enhanced records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status (act as router)
@@ -29,22 +28,21 @@ Rescope Stores could maintain, serialize and restore server & client side :
 
 Because :
 
-- This is simple, flexible & effective, 
+- This is simple, flexible & effective,
+- Seems like "React Components" for datas,
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
 - This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores, 
 - 1 stem super class to rule all the async process
 - Do all the jobs and really don't care witch kind of templates/whatever receive the datas
-
  
 ### What else ?
 
 - Easy stores & deps injections
 - Semaphores API (wait, release, retain, dispose, etc... fns )
 - Promise like APIs
-- Simple methods to contextualize, preload, hook & bind the stores
 - Inheritable ES6/7 class
-- Inheritable Store Contexts
-- Easy serialize
+- Inheritable & mixable Store Contexts
+- Easy, partial or complete contexts serialization
 - Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
 - Flexible Async management
 - Lazy store instantiation
@@ -84,12 +82,16 @@ MyPageContext.mount(["someStores"], {/*states by id*/}, {/*datas by id*/})
     }
 );
 
+let MyMixableContext = new Context({...stores_instancied_or_not});
+let MyLocalContext = new Context({...stores_instancied_or_not});
+MyLocalContext.mixin(MyMixableContext);
+
 // Or inject them with synchrone initial output state :
 // .... ( say we are in a react comp constructor )
 this.state = {
    someKey : true,
    // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyPageContext.map(this, ["AppState", "AnotherStore"])
+   ...MyLocalContext.map(this, ["AppState", "AnotherStore"])
 }
 // ....
 
@@ -97,3 +99,7 @@ this.state = {
 
 
 
+## What's next ?
+
+- Optimize
+- Possibly some semantic/normalisation updates

@@ -1,4 +1,4 @@
-# Caipi Rescope 2 rc
+# Rescope 2 rc
 
 ## ReScope What ?
 

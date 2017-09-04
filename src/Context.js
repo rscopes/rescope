@@ -19,20 +19,20 @@
  */
 
 
-var isString = require('isstring'),
-    isArray = require('isarray'),
-    EventEmitter = require('events'),
-    isFunction = require('isfunction')
-    , shortid = require('shortid')
+var isString        = require('isstring'),
+    isArray         = require('isarray'),
+    EventEmitter    = require('events'),
+    isFunction      = require('isfunction')
+    , shortid       = require('shortid')
     , __proto__push = ( target, id, parent ) => {
-        let here = {
-            [id]: function () {
-            }
-        };
-        here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
-        target[id] = new here[id]();
-        target['_' + id] = here[id];
+    let here = {
+        [id]: function () {
+        }
     };
+    here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
+    target[id] = new here[id]();
+    target['_' + id] = here[id];
+};
 
 let openContexts = {};
 
@@ -85,9 +85,9 @@ export default class Context extends EventEmitter {
             parent.retain("isMyParent");
             !parent._stable && this.wait("isMyParent");
             parent.on(this.__parentList = {
-                'stable': s => this.release("isMyParent"),
+                'stable'  : s => this.release("isMyParent"),
                 'unstable': s => this.wait("isMyParent"),
-                'update': s => this._propag()
+                'update'  : s => this._propag()
             });
             // this.register(parent.__context, state, datas);
         }
@@ -144,8 +144,8 @@ export default class Context extends EventEmitter {
             
             this.__context[id].on(
                 this.__listening[id] = {
-                    'update': s => this.propag(),
-                    'stable': s => this.release(id),
+                    'update'  : s => this.propag(),
+                    'stable'  : s => this.release(id),
                     'unstable': s => this.wait(id)
                 });
         }
@@ -160,9 +160,9 @@ export default class Context extends EventEmitter {
             this.wait(targetCtx._id);
         
         this.__mixedList.push(lists = {
-            'stable': s => this.release(targetCtx._id),
+            'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
-            'update': s => this._propag()
+            'update'  : s => this._propag()
         })
         targetCtx.on(lists);
         __proto__push(this, 'stores', parent);
@@ -291,7 +291,7 @@ export default class Context extends EventEmitter {
      */
     unBind( obj, key, as ) {
         var followers = this._followers,
-            i = followers && followers.length;
+            i         = followers && followers.length;
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
                 ('' + followers[i][2]) == ('' + as) )
@@ -315,7 +315,7 @@ export default class Context extends EventEmitter {
                 ) {
                     stores[id] = ctx[id]._rev;
                 }
-                else if (!stores.hasOwnProperty(id))
+                else if ( !stores.hasOwnProperty(id) )
                     stores[id] = false
             }
         );
@@ -409,18 +409,14 @@ export default class Context extends EventEmitter {
         let ctx = this.__context;
         Object.keys(datas).forEach(
             id => {
-                quiet ?
-                    ctx.datas = datas[id]
-                    :
-                    ctx.push(datas[id]);
+                quiet ? ctx.datas = datas[id]
+                    : ctx.push(datas[id]);
             }
         );
         Object.keys(state).forEach(
             id => {
-                quiet ?
-                    ctx.state = state[id]
-                    :
-                    ctx.setState(state[id]);
+                quiet ? ctx.state = state[id]
+                    : ctx.setState(state[id]);
             }
         );
     }

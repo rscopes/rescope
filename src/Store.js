@@ -29,17 +29,17 @@ var isString     = require('isstring')
 
 
 export default class Store extends EventEmitter {
-
-    static use                        = [];// overridable list of source stores
+    
+    static use = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext              = new Context({}, {id : "static"});
-    static initialState               = undefined;// default state
+    static staticContext = new Context({}, { id: "static" });
+    static initialState = undefined;// default state
     /**
      *
      * @type {number}
      */
-           static defaultMaxListeners = 100;
+    static defaultMaxListeners = 100;
     /**
      * if retain goes to 0 :
      * false to not destroy,
@@ -47,8 +47,8 @@ export default class Store extends EventEmitter {
      * Ms to autodestroy after tm ms if no retain has been called
      * @type {boolean|Int}
      */
-           static persistenceTm       = false;
-
+    static persistenceTm = false;
+    
     /**
      * Constructor, will build a rescope store
      *
@@ -68,80 +68,81 @@ export default class Store extends EventEmitter {
             watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
             initialState = _static.initialState;
-
-        this._uid          = cfg._uid || shortid.generate();
+        
+        this._uid = cfg._uid || shortid.generate();
         this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
-        this.locks         = 0;
-        this._onStabilize  = [];
-
+        this.locks = 0;
+        this._onStabilize = [];
+        
         this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
         if ( isString(argz[0]) ) {
             if ( context.__context[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
             context.__context[name] = this;
         }
-
+        
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
         }
         // this.state      = this.state || {};
-
+        
         this._use = watchs;
         this.name = name;
-
+        
         if ( context.stores ) {
             this.contextObj = context;
-            this.context    = context.stores;
-        } else {
-            this.contextObj = new Context(context);
-            this.context    = context.stores;
+            this.context = context.stores;
         }
-
-
-        this._stable       = true;
-        this._rev          = 1;
-        this._revs         = {};
-        this.stores        = {};
-        this.__retainLocks = {all : 0};
-        this._require      = [];
-
+        else {
+            this.contextObj = new Context(context);
+            this.context = context.stores;
+        }
+        
+        
+        this._stable = true;
+        this._rev = 1;
+        this._revs = {};
+        this.stores = {};
+        this.__retainLocks = { all: 0 };
+        this._require = [];
+        
         if ( _static.require )
             this._require.push(..._static.require);
         if ( cfg.require )
             this._require.push(...cfg.require);
-
+        
         this._followers = [];
-
+        
         if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
             this.datas = cfg.datas;
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
             initialState = cfg.state;
-
+        
         if ( refine )
             this.refine = refine;
-
+        
         if ( !!this._use && this._use.length ) {// if there initial watchs anyway
             this.pull(this._use);
         }
-
+        
         if ( initialState ) {// sync refine
-            this.state = {...initialState};
+            this.state = { ...initialState };
             if ( this.isComplete() && this.datas === undefined )
                 this.datas = this.refine(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
         !this._stable && this.emit('unstable', this.state);
     }
-
+    
     /**
      * get a Builder-key pair for Store::map
      * @param {string} name
      * @returns {{store: Store, name: *}}
      */
     static as( name ) {
-        return {store : this, name};
+        return { store: this, name };
     }
-
+    
     /**
      * Map all named stores in {keys} to the {object}'s state
      * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
@@ -150,18 +151,18 @@ export default class Store extends EventEmitter {
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
     static map( component, keys, context, origin, setInitial = false ) {
-        var targetRevs     = component._revs || {};
-        // var targetContext  = component.stores || (component.stores = new Context({}));
+        var targetRevs = component._revs || {};
+        var targetContext = component.stores || (component.stores = {});
         var initialOutputs = {};
-        keys               = isArray(keys) ? [...keys] : [keys];
-
-
+        keys = isArray(keys) ? [...keys] : [keys];
+        
+        
         context = context || Store.staticContext;
-
+        
         // if (!targetContext.__context)
         //     debugger;
-
-        keys           = keys.filter(
+        
+        keys = keys.filter(
             // @todo : use query refs
             // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
             ( key ) => {
@@ -175,44 +176,48 @@ export default class Store extends EventEmitter {
                 if ( key.store && key.name ) {
                     alias = name = key.name;
                     store = key.store;
-                } else if ( isFunction(key) ) {
+                }
+                else if ( isFunction(key) ) {
                     name = alias = key.name || key.defaultName;
                     store = key;
-                } else {
-                    key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-                    name  = key[0];
-                    store = context.__context[key[0]];
+                }
+                else {
+                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
+                    name = key[0];
+                    store = context.stores[key[0]];
                     alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
-
+                
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
                 if ( !store ) {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
-                } else if ( isFunction(store) ) {
+                }
+                else if ( isFunction(store) ) {
                     this.mountStore(name, context)
-
-                    context.__context[name].bind(component, alias, setInitial);
+                    
+                    context.stores[name].bind(component, alias, setInitial);
                     // if ( context.__context[key[0]].state ) {// do sync push after constructor
                     //     context.__context[key[0]].push();
                     // }
-                } else {
+                }
+                else {
                     store.bind(component, alias, setInitial);
                 }
                 targetRevs[alias] = targetRevs[alias] || true;
-                // !targetContext.__context[alias] && targetContext.register({[alias] : context.__context[name]});
-                if ( context.__context[name].hasOwnProperty('datas') )
-                    initialOutputs[alias] = context.datas[name];
+                !targetContext[name] && (targetContext[name] = context.stores[name]);
+                if ( context.stores[name].hasOwnProperty('datas') )
+                    initialOutputs[name] = context.datas[name];
                 return true;
             }
         );
         var mixedCWUnmount,
             unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-
+        
         if ( component.hasOwnProperty(unMountKey) ) {
             mixedCWUnmount = component[unMountKey];
         }
-
+        
         component[unMountKey] = function () {// todo hop
             delete this[unMountKey];
             if ( mixedCWUnmount )
@@ -225,65 +230,70 @@ export default class Store extends EventEmitter {
                     if ( key.store && key.name ) {
                         alias = name = key.name;
                         store = key.store;
-                    } else if ( isFunction(key) ) {
+                    }
+                    else if ( isFunction(key) ) {
                         name = alias = key.name || key.defaultName;
-                        store = context.__context[name];
-                    } else {
-                        key   = key.split(':');
-                        name  = key[0];
-                        store = context.__context[key[0]];
+                        store = context.stores[name];
+                    }
+                    else {
+                        key = key.split(':');
+                        name = key[0];
+                        store = context.stores[key[0]];
                         alias = key[1] || key[0];
                     }
-
+                    
                     store && !isFunction(store) && store.unBind(component, alias)
                 }
             );
             return this[unMountKey] && this[unMountKey].apply(this, arguments);
         }
-
+        
         return initialOutputs;
     }
-
+    
     static getContext( contexts ) {
         let skey = isArray(contexts) ? contexts.sort(( a, b ) => {
             if ( a.firstname < b.firstname ) return -1;
             if ( a.firstname > b.firstname ) return 1;
             return 0;
         }).join('::') : contexts;
-        return Context.contexts[skey] = Context.contexts[skey] || new Context({}, {id : skey});
+        return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
     }
-
+    
     static mountStore( name, context, store, state, datas ) {
         let ctx, contextMap = context.__context;
-        contextMap[name]    = store = store || contextMap[name];
+        contextMap[name] = store = store || contextMap[name];
         if ( !store ) {
             console.error("Not a mappable store item '" + name + ' !!', store);
             return false;
-        } else if ( isFunction(store) ) {
+        }
+        else if ( isFunction(store) ) {
             //
             if ( store && (store.contexts || store.context) ) {
                 ctx = this.getContext(store.contexts || [store.context]);
-
-                ctx.register({[name] : ctx.__context[name] || store});
-
-                contextMap[name] = ctx[name] = new store(context, {state, datas});
+                
+                ctx.register({ [name]: ctx.__context[name] || store });
+                
+                contextMap[name] = ctx[name] = new store(context, { state, datas });
                 ctx._watchStore(name);
                 return ctx[name];
-            } else
-                store = contextMap[name] = new store(context, {state, datas});
+            }
+            else
+                store = contextMap[name] = new store(context, { state, datas });
             contextMap[name].relink(name);
-        } else {
+        }
+        else {
             if ( state !== undefined && datas === undefined )
                 store.setState(state);
             else if ( state !== undefined )
                 store.state = state;
-
+            
             if ( datas !== undefined )
                 store.push(datas);
         }
         return store;
     }
-
+    
     /**
      * Overridable method to know if a state change should be propag to the listening stores & components
      * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
@@ -292,13 +302,13 @@ export default class Store extends EventEmitter {
     shouldPropag( nDatas ) {
         var _static = this.constructor, r,
             cDatas  = this.datas;
-
+        
         // if ( !cState )
         //     return true;
         if ( !cDatas && (!_static.follow || !_static.follow.length ||
                 _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
             return true;
-
+        
         if ( isArray(_static.follow) )
             _static.follow.forEach(
                 ( key ) => {
@@ -319,10 +329,10 @@ export default class Store extends EventEmitter {
                 }
             );
         }
-
+        
         return !!r;
     }
-
+    
     /**
      * Overridable refiner / remapper
      * If state or lastPublicState are simple hash maps refine will return {...datas, ...state}
@@ -333,13 +343,13 @@ export default class Store extends EventEmitter {
      */
     refine( datas, state, changes ) {
         state = state || this.state;
-
+        
         if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
             return state;
         else
-            return {...datas, ...state}
+            return { ...datas, ...state }
     }
-
+    
     /**
      * Debounce this store propagation ( & reducing )
      * @param cb
@@ -348,12 +358,12 @@ export default class Store extends EventEmitter {
         var me = this;
         cb && me.once('stable', cb);
         this._stable && this.emit('unstable', this.state, this.datas);
-
+        
         me._stable = false;
-
+        
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
-
+        
         this._stabilizer = setTimeout(
             this.push.bind(
                 this,
@@ -365,11 +375,11 @@ export default class Store extends EventEmitter {
                 }
             ));
     }
-
+    
     dispatch( event ) {
         return;
     }
-
+    
     /**
      * Pull stores in the private state
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
@@ -383,21 +393,21 @@ export default class Store extends EventEmitter {
         }
         return initialOutputs;
     }
-
+    
     /**
      * Apply refine/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
     push( datas, force, cb ) {
-        cb            = force === true ? cb : force;
-        force         = force === true;
+        cb = force === true ? cb : force;
+        force = force === true;
         var i         = 0,
             me        = this,
-            nextState = !datas && {...this.state, ...this._changesSW} || this.state,
+            nextState = !datas && { ...this.state, ...this._changesSW } || this.state,
             nextDatas = datas ||
                 (this.isComplete(nextState) ? this.refine(this.datas, nextState, this._changesSW) : this.datas);
-
-
+        
+        
         this.state = nextState;
         if ( !force &&
             (
@@ -407,13 +417,13 @@ export default class Store extends EventEmitter {
             cb && cb();
             return false;
         }
-
+        
         this.datas = nextDatas;
         this.locks++;
         this.release(cb);
-
+        
     }
-
+    
     /**
      * Update the current private state & push it once the store is stable
      * @param pState
@@ -429,23 +439,25 @@ export default class Store extends EventEmitter {
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change        = true;
+                change = true;
                 this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k]    = pState[k];
+                changes[k] = pState[k];
             }
-
+        
         if ( sync ) {
             this.push();
             cb && cb();
-
-        } else {
+            
+        }
+        else {
             if ( change ) {
                 this.stabilize(cb);
-            } else cb && cb();
+            }
+            else cb && cb();
         }
         return this;
     }
-
+    
     /**
      * Update the current private state & push it once the store is stable
      * @param pState
@@ -461,47 +473,47 @@ export default class Store extends EventEmitter {
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change        = true;
+                change = true;
                 this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k]    = pState[k];
+                changes[k] = pState[k];
             }
         this.push();
         return this.datas;
     }
-
+    
     /**
      * Replace the current private state & push it once the store is stable
      * @param pState
      * @param cb
      */
     replaceState( pState, cb ) {
-        var i      = 0, me = this;
+        var i = 0, me = this;
         this.state = pState;
-
+        
         this.stabilize(cb);
     }
-
+    
     /**
      * get a store-key pair for Store::map
      * @param {string} name
      * @returns {{store: Store, name: *}}
      */
     as( name ) {
-        return {store : this, name};
+        return { store: this, name };
     }
-
+    
     on( lists ) {
         if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
     }
-
+    
     removeListener( lists ) {
         if ( !isString(lists) && lists )
             Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
         else super.removeListener(...arguments);
     }
-
+    
     /**
      * relink bindings & requires
      * @param {string} name
@@ -514,7 +526,7 @@ export default class Store extends EventEmitter {
             //todo unlink
             this.pull(_static.use, false, from);
         }
-
+        
         if ( this._require ) {
             this._require.forEach(
                 store => (
@@ -523,7 +535,7 @@ export default class Store extends EventEmitter {
             );
         }
     }
-
+    
     /**
      * is complete (all requiered keys are here)
      * @returns bool
@@ -539,7 +551,7 @@ export default class Store extends EventEmitter {
             )
         );
     }
-
+    
     /**
      * is stable
      * @returns bool
@@ -547,7 +559,7 @@ export default class Store extends EventEmitter {
     isStable() {
         return this._stable;
     }
-
+    
     /**
      * Un bind this store off the given component-key
      * @param obj
@@ -557,11 +569,11 @@ export default class Store extends EventEmitter {
     unBind( obj, key ) {
         var followers = this._followers,
             i         = followers && followers.length;
-        while (followers && i--)
+        while ( followers && i-- )
             if ( followers[i][0] == obj && followers[i][1] == key )
                 return followers.splice(i, 1);
     }
-
+    
     /**
      * Bind this store changes to the given component-key
      * @param obj {React.Component|Store|function)
@@ -571,14 +583,15 @@ export default class Store extends EventEmitter {
         this._followers.push([obj, key]);
         if ( setInitial && this.datas && this._stable ) {
             if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({[key] : this.datas});
+                if ( key ) obj.setState({ [key]: this.datas });
                 else obj.setState(this.datas);
-            } else {
+            }
+            else {
                 obj(this.datas);
             }
         }
     }
-
+    
     /**
      * once('stable', cb)
      * @param obj {React.Component|Store|function)
@@ -589,7 +602,7 @@ export default class Store extends EventEmitter {
             return cb(null, this.datas);
         this.once('stable', e => cb(null, this.datas));
     }
-
+    
     /**
      * Add a lock so the store will not propag it state untill release() is call
      * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
@@ -600,7 +613,7 @@ export default class Store extends EventEmitter {
             return this.locks += previous;
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
-
+        
         this._stable && this.emit('unstable', this.state, this.datas);
         this._stable = false;
         this.locks++;
@@ -609,7 +622,7 @@ export default class Store extends EventEmitter {
         }
         return this;
     }
-
+    
     /**
      * Decrease locks for this store, if it reach 0 & it have a public state,
      * it will be propagated to the followers,
@@ -619,30 +632,28 @@ export default class Store extends EventEmitter {
      */
     release( cb ) {
         var _static = this.constructor;
-        let i       = 0;
-
-       if (this.locks == 0)
-           console.error("Release more than locking !");
-
-
-
+        let i = 0;
+        
+        if ( this.locks == 0 )
+            console.error("Release more than locking !");
+        
+        
         if ( !--this.locks && this.datas && this.isComplete() ) {
             this._stable = true;
-
-
+            
+            
             this._rev = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
                     if ( !this.datas ) return;
                     if ( typeof follower[0] == "function" ) {
                         follower[0](this.datas);
-                    } else {
+                    }
+                    else {
                         // cb && i++;
                         follower[0].setState(
-                            (follower[1]) ?
-                            {[follower[1]] : this.datas}
-                                :
-                            this.datas
+                            (follower[1]) ? { [follower[1]]: this.datas }
+                                : this.datas
                             // ,
                             // cb && (
                             //     () => (!(--i) && cb())
@@ -650,64 +661,76 @@ export default class Store extends EventEmitter {
                         );
                     }
                 });
-
+            
             this.emit('stable', this.datas);
             this.emit('update', this.datas);
             cb && cb()
-        } else cb && this.then(cb);
+        }
+        else cb && this.then(cb);
         return this;
     }
-
+    
     retain( reason ) {
-    //    console.log("retain", this._uid, reason);
+        //    console.log("retain", this._uid, reason);
         this.__retainLocks.all++;
         if ( reason ) {
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]++;
         }
     }
-
+    
     dispose( reason ) {
-        if (reason) {
-        
-            if (this.__retainLocks[reason] == 0)
+        if ( reason ) {
+            
+            if ( this.__retainLocks[reason] == 0 )
                 throw new Error("Dispose more than retaining !");
-        
+            
             this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
             this.__retainLocks[reason]--;
         }
-    
-        if (this.__retainLocks.all == 0)
+        
+        if ( this.__retainLocks.all == 0 )
             throw new Error("Dispose more than retaining !");
-    
+        
         if ( !this.__retainLocks.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
                         this.then(s => {
-                          //  console.log("wtf   ", reason, !this.__retainLocks.all);
-
+                            //  console.log("wtf   ", reason, !this.__retainLocks.all);
+                            
                             !this.__retainLocks.all && this.destroy()
                         });
                     },
                     this._persistenceTm
                 );
-            } else {
+            }
+            else {
                 this.then(s => (!this.__retainLocks.all && this.destroy()));
             }
         }
     }
-
+    
     destroy() {
-      //  console.log("destroy", this._uid);
-
+        //  console.log("destroy", this._uid);
+        
         this.emit('destroy', this);
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
+    
+        if ( this._followers.length )
+            this._followers.forEach(
+                ( follower ) => {
+                    if ( typeof follower[0] !== "function" ) {
+                        if ( follower[0].stores )
+                            delete follower[0].stores[follower[1]];
+                    }
+                }
+            );
         this._followers.length = 0;
-        this.dead              = true;
-        this._revs             = this.datas = this.state = this.context = null;
+        this.dead = true;
+        this._revs = this.datas = this.state = this.context = null;
         this.removeAllListeners();
     }
 }

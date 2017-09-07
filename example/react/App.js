@@ -78,7 +78,6 @@
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 	
-	// import Rescope, {Store} from "../../Rescope";
 	var ReactDom = __webpack_require__(38),
 	    Rescope = __webpack_require__(185),
 	    Context = Rescope.Context,
@@ -22371,19 +22370,13 @@
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
 	/*
-	 * Copyright (c) 2017.  Caipi Labs.  All rights reserved.
+	 * Copyright (c)  2017 Caipi Labs .
 	 *
-	 * This File is part of Caipi. You can redistribute it and/or modify
-	 * it under the terms of the GNU Affero General Public License as
-	 * published by the Free Software Foundation, either version 3 of the
-	 * License, or (at your option) any later version.
-	 * This program is distributed in the hope that it will be useful,
-	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 * GNU Affero General Public License for more details.
-	 * You should have received a copy of the GNU Affero General Public License
-	 * along with this program. If not, see <http://www.gnu.org/licenses/>.
-	 *  This project is dual licensed under AGPL and Commercial Licence.
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	 *
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
@@ -23865,6 +23858,9 @@
 	 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 	 *
 	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	 *
+	 * @author : Nathanael Braun
+	 * @contact : caipilabs@gmail.com
 	 */
 	
 	/**
@@ -24440,6 +24436,12 @@
 	
 	            this.emit('destroy', this);
 	            if (this._stabilizer) clearTimeout(this._stabilizer);
+	
+	            if (this._followers.length) this._followers.forEach(function (follower) {
+	                if (typeof follower[0] !== "function") {
+	                    if (follower[0].stores) delete follower[0].stores[follower[1]];
+	                }
+	            });
 	            this._followers.length = 0;
 	            this.dead = true;
 	            this._revs = this.datas = this.state = this.context = null;
@@ -24467,7 +24469,7 @@
 	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 	
 	            var targetRevs = component._revs || {};
-	            // var targetContext  = component.stores || (component.stores = new Context({}));
+	            var targetContext = component.stores || (component.stores = {});
 	            var initialOutputs = {};
 	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
@@ -24496,7 +24498,7 @@
 	                } else {
 	                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
 	                    name = key[0];
-	                    store = context.__context[key[0]];
+	                    store = context.stores[key[0]];
 	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
 	                }
 	
@@ -24507,7 +24509,7 @@
 	                } else if (isFunction(store)) {
 	                    _this10.mountStore(name, context);
 	
-	                    context.__context[name].bind(component, alias, setInitial);
+	                    context.stores[name].bind(component, alias, setInitial);
 	                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
 	                    //     context.__context[key[0]].push();
 	                    // }
@@ -24515,8 +24517,8 @@
 	                    store.bind(component, alias, setInitial);
 	                }
 	                targetRevs[alias] = targetRevs[alias] || true;
-	                // !targetContext.__context[alias] && targetContext.register({[alias] : context.__context[name]});
-	                if (context.__context[name].hasOwnProperty('datas')) initialOutputs[alias] = context.datas[name];
+	                !targetContext[name] && (targetContext[name] = context.stores[name]);
+	                if (context.stores[name].hasOwnProperty('datas')) initialOutputs[name] = context.datas[name];
 	                return true;
 	            });
 	            var mixedCWUnmount,
@@ -24539,11 +24541,11 @@
 	                        store = key.store;
 	                    } else if (isFunction(key)) {
 	                        name = alias = key.name || key.defaultName;
-	                        store = context.__context[name];
+	                        store = context.stores[name];
 	                    } else {
 	                        key = key.split(':');
 	                        name = key[0];
-	                        store = context.__context[key[0]];
+	                        store = context.stores[key[0]];
 	                        alias = key[1] || key[0];
 	                    }
 	

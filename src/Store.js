@@ -71,7 +71,9 @@ export default class Store extends EventEmitter {
         
         this._uid = cfg._uid || shortid.generate();
         this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
-        this.locks = 0;
+        
+        this.__retains = { all: 0 };
+        this.__locks = { all: 0 };
         this._onStabilize = [];
         
         this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
@@ -86,7 +88,7 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
         
-        this._use = watchs;
+        this._use = [...watchs, ..._static.use];
         this.name = name;
         
         if ( context.stores ) {
@@ -103,7 +105,6 @@ export default class Store extends EventEmitter {
         this._rev = 1;
         this._revs = {};
         this.stores = {};
-        this.__retainLocks = { all: 0 };
         this._require = [];
         
         if ( _static.require )
@@ -419,7 +420,7 @@ export default class Store extends EventEmitter {
         }
         
         this.datas = nextDatas;
-        this.locks++;
+        this.__locks.all++;
         this.release(cb);
         
     }
@@ -610,13 +611,19 @@ export default class Store extends EventEmitter {
      */
     wait( previous ) {
         if ( typeof previous == "number" )
-            return this.locks += previous;
+            return this.__locks.all += previous;
         if ( isArray(previous) )
             return previous.map(this.wait.bind(this));
         
         this._stable && this.emit('unstable', this.state, this.datas);
         this._stable = false;
-        this.locks++;
+        this.__locks.all++;
+        
+        let reason = isString(previous) ? previous : null;
+        if ( reason ) {
+            this.__locks[reason] = this.__locks[reason] || 0;
+            this.__locks[reason]++;
+        }
         if ( previous && isFunction(previous.then) ) {
             previous.then(this.release.bind(this, null));
         }
@@ -630,18 +637,27 @@ export default class Store extends EventEmitter {
      * @param desync
      * @returns {*}
      */
-    release( cb ) {
+    release( reason, cb ) {
         var _static = this.constructor;
         let i = 0;
         
-        if ( this.locks == 0 )
+        if ( isFunction(reason) ) {
+            cb = reason;
+            reason = null;
+        }
+        
+        if ( reason ) {
+            if ( this.__locks[reason] == 0 )
+                console.error("Release more than locking !", reason);
+            this.__locks[reason] = this.__locks[reason] || 0;
+            this.__locks[reason]--;
+        }
+        
+        if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        
-        if ( !--this.locks && this.datas && this.isComplete() ) {
+        if ( !--this.__locks.all && this.datas && this.isComplete() ) {
             this._stable = true;
-            
-            
             this._rev = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
@@ -671,43 +687,42 @@ export default class Store extends EventEmitter {
     }
     
     retain( reason ) {
-        //    console.log("retain", this._uid, reason);
-        this.__retainLocks.all++;
+        this.__retains.all++;
         if ( reason ) {
-            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-            this.__retainLocks[reason]++;
+            this.__retains[reason] = this.__retains[reason] || 0;
+            this.__retains[reason]++;
         }
     }
     
     dispose( reason ) {
         if ( reason ) {
             
-            if ( this.__retainLocks[reason] == 0 )
+            if ( this.__retains[reason] == 0 )
                 throw new Error("Dispose more than retaining !");
             
-            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-            this.__retainLocks[reason]--;
+            this.__retains[reason] = this.__retains[reason] || 0;
+            this.__retains[reason]--;
         }
         
-        if ( this.__retainLocks.all == 0 )
+        if ( this.__retains.all == 0 )
             throw new Error("Dispose more than retaining !");
         
-        if ( !this.__retainLocks.all ) {
+        if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
                         this.then(s => {
-                            //  console.log("wtf   ", reason, !this.__retainLocks.all);
+                            //  console.log("wtf   ", reason, !this.__retains.all);
                             
-                            !this.__retainLocks.all && this.destroy()
+                            !this.__retains.all && this.destroy()
                         });
                     },
                     this._persistenceTm
                 );
             }
             else {
-                this.then(s => (!this.__retainLocks.all && this.destroy()));
+                this.then(s => (!this.__retains.all && this.destroy()));
             }
         }
     }
@@ -718,7 +733,7 @@ export default class Store extends EventEmitter {
         this.emit('destroy', this);
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
-    
+        
         if ( this._followers.length )
             this._followers.forEach(
                 ( follower ) => {

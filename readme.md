@@ -103,3 +103,4 @@ this.state = {
 
 - Optimize
 - Possibly some semantic/normalisation updates
+- add catch & finally

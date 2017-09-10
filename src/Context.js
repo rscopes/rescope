@@ -74,8 +74,8 @@ export default class Context extends EventEmitter {
         this.sources = [];
         this._childContexts = [];
         
-        this.__retainLocks = { all: 0 };
-        this.__w8Locks = { all: 1 };
+        this.__retains = { all: 0 };
+        this.__locks = { all: 1 };
         this.__listening = {};
         this.__context = {};
         this.__mixed = [];
@@ -94,8 +94,8 @@ export default class Context extends EventEmitter {
         
         
         this.register(ctx, state, datas);
-        this.__w8Locks.all--;
-        this._stable = !this.__w8Locks.all;
+        this.__locks.all--;
+        this._stable = !this.__locks.all;
         
         if ( autoDestroy )
             setTimeout(
@@ -436,35 +436,34 @@ export default class Context extends EventEmitter {
     
     wait( reason ) {
         //  console.log("wait", reason);
-        this._stable && !this.__w8Locks.all && this.emit("unstable", this);
+        this._stable && !this.__locks.all && this.emit("unstable", this);
         this._stable = false;
-        this.__w8Locks.all++;
+        this.__locks.all++;
         if ( reason ) {
-            this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
-            this.__w8Locks[reason]++;
+            this.__locks[reason] = this.__locks[reason] || 0;
+            this.__locks[reason]++;
         }
     }
     
     release( reason ) {
-        //console.log("release", reason);
-        
         
         if ( reason ) {
-            if ( this.__w8Locks[reason] == 0 )
+            if ( this.__locks[reason] == 0 )
                 console.error("Release more than locking !", reason);
-            this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
-            this.__w8Locks[reason]--;
+            this.__locks[reason] = this.__locks[reason] || 0;
+            this.__locks[reason]--;
         }
-        if ( this.__w8Locks.all == 0 )
+        if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
-        this.__w8Locks.all--;
-        if ( !this.__w8Locks.all ) {
+        
+        this.__locks.all--;
+        if ( !this.__locks.all ) {
             this._stabilizerTM && clearTimeout(this._stabilizerTM);
             this._propagTM && clearTimeout(this._propagTM);
             
             this._stabilizerTM = setTimeout(
                 e => {
-                    if ( !this.__w8Locks.all )
+                    if ( !this.__locks.all )
                         return this._stabilizerTM = null;
                     
                     this._stable = true;
@@ -504,7 +503,6 @@ export default class Context extends EventEmitter {
         this.emit("update", this.getUpdates());
     }
     
-    
     _getAllChilds( childs = [] ) {
         childs.push(...this._childContexts)
         this._childContexts.forEach(
@@ -526,47 +524,47 @@ export default class Context extends EventEmitter {
     }
     
     retain( reason ) {
-        this.__retainLocks.all++;
+        this.__retains.all++;
         //console.log("retain", this._id, reason);
         
         if ( reason ) {
-            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-            this.__retainLocks[reason]++;
+            this.__retains[reason] = this.__retains[reason] || 0;
+            this.__retains[reason]++;
         }
     }
     
     dispose( reason ) {
         if ( reason ) {
             
-            if ( this.__retainLocks[reason] == 0 )
+            if ( this.__retains[reason] == 0 )
                 throw new Error("Dispose more than retaining !");
             
-            this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-            this.__retainLocks[reason]--;
+            this.__retains[reason] = this.__retains[reason] || 0;
+            this.__retains[reason]--;
         }
         
-        if ( this.__retainLocks.all == 0 )
+        if ( this.__retains.all == 0 )
             throw new Error("Dispose more than retaining !");
         
-        this.__retainLocks.all--;
+        this.__retains.all--;
         
         
-        if ( !this.__retainLocks.all ) {
+        if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        // console.log("wtf ctx", this._id, reason, this.__w8Locks, this._stable);
+                        // console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
                         this.then(s => {
-                            //   console.log("wtf ctx then", this._id, reason, this.__w8Locks);
-                            !this.__retainLocks.all && this.destroy()
+                            //   console.log("wtf ctx then", this._id, reason, this.__locks);
+                            !this.__retains.all && this.destroy()
                         });
                     },
                     this._persistenceTm
                 );
             }
             else {
-                this.then(s => (!this.__retainLocks.all && this.destroy()));
+                this.then(s => (!this.__retains.all && this.destroy()));
             }
         }
     }

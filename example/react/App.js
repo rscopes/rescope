@@ -22450,8 +22450,8 @@
 	        _this.sources = [];
 	        _this._childContexts = [];
 	
-	        _this.__retainLocks = { all: 0 };
-	        _this.__w8Locks = { all: 1 };
+	        _this.__retains = { all: 0 };
+	        _this.__locks = { all: 1 };
 	        _this.__listening = {};
 	        _this.__context = {};
 	        _this.__mixed = [];
@@ -22475,8 +22475,8 @@
 	        }
 	
 	        _this.register(ctx, state, datas);
-	        _this.__w8Locks.all--;
-	        _this._stable = !_this.__w8Locks.all;
+	        _this.__locks.all--;
+	        _this._stable = !_this.__locks.all;
 	
 	        if (autoDestroy) setTimeout(function (tm) {
 	            _this.retain("autoDestroy");
@@ -22878,12 +22878,12 @@
 	        key: 'wait',
 	        value: function wait(reason) {
 	            //  console.log("wait", reason);
-	            this._stable && !this.__w8Locks.all && this.emit("unstable", this);
+	            this._stable && !this.__locks.all && this.emit("unstable", this);
 	            this._stable = false;
-	            this.__w8Locks.all++;
+	            this.__locks.all++;
 	            if (reason) {
-	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
-	                this.__w8Locks[reason]++;
+	                this.__locks[reason] = this.__locks[reason] || 0;
+	                this.__locks[reason]++;
 	            }
 	        }
 	    }, {
@@ -22891,22 +22891,20 @@
 	        value: function release(reason) {
 	            var _this15 = this;
 	
-	            //console.log("release", reason);
-	
-	
 	            if (reason) {
-	                if (this.__w8Locks[reason] == 0) console.error("Release more than locking !", reason);
-	                this.__w8Locks[reason] = this.__w8Locks[reason] || 0;
-	                this.__w8Locks[reason]--;
+	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
+	                this.__locks[reason] = this.__locks[reason] || 0;
+	                this.__locks[reason]--;
 	            }
-	            if (this.__w8Locks.all == 0) console.error("Release more than locking !");
-	            this.__w8Locks.all--;
-	            if (!this.__w8Locks.all) {
+	            if (!reason && this.__locks.all == 0) console.error("Release more than locking !");
+	
+	            this.__locks.all--;
+	            if (!this.__locks.all) {
 	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
 	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (!_this15.__w8Locks.all) return _this15._stabilizerTM = null;
+	                    if (!_this15.__locks.all) return _this15._stabilizerTM = null;
 	
 	                    _this15._stable = true;
 	                    _this15.emit("stable", _this15);
@@ -22973,12 +22971,12 @@
 	    }, {
 	        key: 'retain',
 	        value: function retain(reason) {
-	            this.__retainLocks.all++;
+	            this.__retains.all++;
 	            //console.log("retain", this._id, reason);
 	
 	            if (reason) {
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]++;
+	                this.__retains[reason] = this.__retains[reason] || 0;
+	                this.__retains[reason]++;
 	            }
 	        }
 	    }, {
@@ -22988,29 +22986,29 @@
 	
 	            if (reason) {
 	
-	                if (this.__retainLocks[reason] == 0) throw new Error("Dispose more than retaining !");
+	                if (this.__retains[reason] == 0) throw new Error("Dispose more than retaining !");
 	
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]--;
+	                this.__retains[reason] = this.__retains[reason] || 0;
+	                this.__retains[reason]--;
 	            }
 	
-	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining !");
+	            if (this.__retains.all == 0) throw new Error("Dispose more than retaining !");
 	
-	            this.__retainLocks.all--;
+	            this.__retains.all--;
 	
-	            if (!this.__retainLocks.all) {
+	            if (!this.__retains.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        // console.log("wtf ctx", this._id, reason, this.__w8Locks, this._stable);
+	                        // console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
 	                        _this18.then(function (s) {
-	                            //   console.log("wtf ctx then", this._id, reason, this.__w8Locks);
-	                            !_this18.__retainLocks.all && _this18.destroy();
+	                            //   console.log("wtf ctx then", this._id, reason, this.__locks);
+	                            !_this18.__retains.all && _this18.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
 	                    this.then(function (s) {
-	                        return !_this18.__retainLocks.all && _this18.destroy();
+	                        return !_this18.__retains.all && _this18.destroy();
 	                    });
 	                }
 	            }
@@ -23915,7 +23913,9 @@
 	
 	        _this._uid = cfg._uid || shortid.generate();
 	        _this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
-	        _this.locks = 0;
+	
+	        _this.__retains = { all: 0 };
+	        _this.__locks = { all: 0 };
 	        _this._onStabilize = [];
 	
 	        _this._persistenceTm = cfg.persistenceTm || _this.constructor.persistenceTm;
@@ -23929,7 +23929,7 @@
 	        }
 	        // this.state      = this.state || {};
 	
-	        _this._use = watchs;
+	        _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use));
 	        _this.name = name;
 	
 	        if (context.stores) {
@@ -23944,7 +23944,6 @@
 	        _this._rev = 1;
 	        _this._revs = {};
 	        _this.stores = {};
-	        _this.__retainLocks = { all: 0 };
 	        _this._require = [];
 	
 	        if (_static.require) (_this$_require = _this._require).push.apply(_this$_require, _toConsumableArray(_static.require));
@@ -24113,7 +24112,7 @@
 	            }
 	
 	            this.datas = nextDatas;
-	            this.locks++;
+	            this.__locks.all++;
 	            this.release(cb);
 	        }
 	
@@ -24332,12 +24331,18 @@
 	    }, {
 	        key: 'wait',
 	        value: function wait(previous) {
-	            if (typeof previous == "number") return this.locks += previous;
+	            if (typeof previous == "number") return this.__locks.all += previous;
 	            if (isArray(previous)) return previous.map(this.wait.bind(this));
 	
 	            this._stable && this.emit('unstable', this.state, this.datas);
 	            this._stable = false;
-	            this.locks++;
+	            this.__locks.all++;
+	
+	            var reason = isString(previous) ? previous : null;
+	            if (reason) {
+	                this.__locks[reason] = this.__locks[reason] || 0;
+	                this.__locks[reason]++;
+	            }
 	            if (previous && isFunction(previous.then)) {
 	                previous.then(this.release.bind(this, null));
 	            }
@@ -24354,17 +24359,27 @@
 	
 	    }, {
 	        key: 'release',
-	        value: function release(cb) {
+	        value: function release(reason, cb) {
 	            var _this8 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0;
 	
-	            if (this.locks == 0) console.error("Release more than locking !");
+	            if (isFunction(reason)) {
+	                cb = reason;
+	                reason = null;
+	            }
 	
-	            if (! --this.locks && this.datas && this.isComplete()) {
+	            if (reason) {
+	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
+	                this.__locks[reason] = this.__locks[reason] || 0;
+	                this.__locks[reason]--;
+	            }
+	
+	            if (!reason && this.__locks.all == 0) console.error("Release more than locking !");
+	
+	            if (! --this.__locks.all && this.datas && this.isComplete()) {
 	                this._stable = true;
-	
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
 	                    if (!_this8.datas) return;
@@ -24390,11 +24405,10 @@
 	    }, {
 	        key: 'retain',
 	        value: function retain(reason) {
-	            //    console.log("retain", this._uid, reason);
-	            this.__retainLocks.all++;
+	            this.__retains.all++;
 	            if (reason) {
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]++;
+	                this.__retains[reason] = this.__retains[reason] || 0;
+	                this.__retains[reason]++;
 	            }
 	        }
 	    }, {
@@ -24404,27 +24418,27 @@
 	
 	            if (reason) {
 	
-	                if (this.__retainLocks[reason] == 0) throw new Error("Dispose more than retaining !");
+	                if (this.__retains[reason] == 0) throw new Error("Dispose more than retaining !");
 	
-	                this.__retainLocks[reason] = this.__retainLocks[reason] || 0;
-	                this.__retainLocks[reason]--;
+	                this.__retains[reason] = this.__retains[reason] || 0;
+	                this.__retains[reason]--;
 	            }
 	
-	            if (this.__retainLocks.all == 0) throw new Error("Dispose more than retaining !");
+	            if (this.__retains.all == 0) throw new Error("Dispose more than retaining !");
 	
-	            if (!this.__retainLocks.all) {
+	            if (!this.__retains.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
 	                        _this9.then(function (s) {
-	                            //  console.log("wtf   ", reason, !this.__retainLocks.all);
+	                            //  console.log("wtf   ", reason, !this.__retains.all);
 	
-	                            !_this9.__retainLocks.all && _this9.destroy();
+	                            !_this9.__retains.all && _this9.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
 	                    this.then(function (s) {
-	                        return !_this9.__retainLocks.all && _this9.destroy();
+	                        return !_this9.__retains.all && _this9.destroy();
 	                    });
 	                }
 	            }

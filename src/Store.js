@@ -34,7 +34,8 @@ export default class Store extends EventEmitter {
     static follow;// overridable list of store that will allow push if updated
     static require;
     static staticContext = new Context({}, { id: "static" });
-    static initialState = undefined;// default state
+    static initialState = undefined;// default state @depreciated
+    static state = undefined;// default state
     /**
      *
      * @type {number}
@@ -67,7 +68,7 @@ export default class Store extends EventEmitter {
             name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
             refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
-            initialState = _static.initialState;
+            initialState = _static.state || _static.initialState;
         
         this._uid = cfg._uid || shortid.generate();
         this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
@@ -122,12 +123,15 @@ export default class Store extends EventEmitter {
         if ( refine )
             this.refine = refine;
         
-        if ( !!this._use && this._use.length ) {// if there initial watchs anyway
-            this.pull(this._use);
-        }
+        //if ( !!this._use && this._use.length ) {// if there initial watchs anyway
+        //    this.pull(this._use);
+        //}
         
-        if ( initialState ) {// sync refine
-            this.state = { ...initialState };
+        if ( initialState || this._use.length ) {// sync refine
+            this.state = {
+                ...(initialState||{}),
+                ...context.map(this, this._use)
+            };
             if ( this.isComplete() && this.datas === undefined )
                 this.datas = this.refine(this.datas, this.state, this.state);
         }
@@ -195,7 +199,7 @@ export default class Store extends EventEmitter {
                     return false;
                 }
                 else if ( isFunction(store) ) {
-                    this.mountStore(name, context)
+                    context._mount(name)
                     
                     context.stores[name].bind(component, alias, setInitial);
                     // if ( context.__context[key[0]].state ) {// do sync push after constructor
@@ -261,39 +265,6 @@ export default class Store extends EventEmitter {
         return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
     }
     
-    static mountStore( name, context, store, state, datas ) {
-        let ctx, contextMap = context.__context;
-        contextMap[name] = store = store || contextMap[name];
-        if ( !store ) {
-            console.error("Not a mappable store item '" + name + ' !!', store);
-            return false;
-        }
-        else if ( isFunction(store) ) {
-            //
-            if ( store && (store.contexts || store.context) ) {
-                ctx = this.getContext(store.contexts || [store.context]);
-                
-                ctx.register({ [name]: ctx.__context[name] || store });
-                
-                contextMap[name] = ctx[name] = new store(context, { state, datas });
-                ctx._watchStore(name);
-                return ctx[name];
-            }
-            else
-                store = contextMap[name] = new store(context, { state, datas });
-            contextMap[name].relink(name);
-        }
-        else {
-            if ( state !== undefined && datas === undefined )
-                store.setState(state);
-            else if ( state !== undefined )
-                store.state = state;
-            
-            if ( datas !== undefined )
-                store.push(datas);
-        }
-        return store;
-    }
     
     /**
      * Overridable method to know if a state change should be propag to the listening stores & components

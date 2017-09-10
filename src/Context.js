@@ -127,7 +127,24 @@ export default class Context extends EventEmitter {
                 return;
             return this.parent._mount(...arguments);
         }
-        this.constructor.Store.mountStore(id, this, null, state, datas);
+        //this.constructor.Store.mountStore(id, this, null, state, datas);
+        let store = this.__context[id];
+        
+        if ( isFunction(store) ) {
+            this.__context[id] = new store(this, { state, datas });
+            //this.__context[id].relink(id);
+        }
+        else {
+            if ( state !== undefined && datas === undefined )
+                store.setState(state);
+            else if ( state !== undefined )
+                store.state = state;
+            
+            if ( datas !== undefined )
+                store.push(datas);
+        }
+        
+        
         this._watchStore(id);
         return this.__context[id];
     }

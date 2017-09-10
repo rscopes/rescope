@@ -84,9 +84,11 @@
 	    NewsListComp = __webpack_require__(202),
 	    StoresContext = __webpack_require__(203);
 	
+	// create empty global context for fun
 	var GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
 	
-	new Context(new StoresContext(), { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
+	// create "appContext" with the stores
+	new Context(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 	
 	var App = function (_React$Component) {
 	    _inherits(App, _React$Component);
@@ -22511,7 +22513,18 @@
 	                }, false) || !this.parent) return;
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            }
-	            this.constructor.Store.mountStore(id, this, null, state, datas);
+	            //this.constructor.Store.mountStore(id, this, null, state, datas);
+	            var store = this.__context[id];
+	
+	            if (isFunction(store)) {
+	                this.__context[id] = new store(this, { state: state, datas: datas });
+	                //this.__context[id].relink(id);
+	            } else {
+	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+	
+	                if (datas !== undefined) store.push(datas);
+	            }
+	
 	            this._watchStore(id);
 	            return this.__context[id];
 	        }
@@ -23893,7 +23906,7 @@
 	     *
 	     * @type {number}
 	     */
-	    // overridable list of source stores
+	    // overridable list of store that will allow push if updated
 	    function Store() {
 	        var _this$_require, _this$_require2;
 	
@@ -23909,7 +23922,7 @@
 	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
 	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
-	            initialState = _static.initialState;
+	            initialState = _static.state || _static.initialState;
 	
 	        _this._uid = cfg._uid || shortid.generate();
 	        _this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
@@ -23956,14 +23969,13 @@
 	
 	        if (refine) _this.refine = refine;
 	
-	        if (!!_this._use && _this._use.length) {
-	            // if there initial watchs anyway
-	            _this.pull(_this._use);
-	        }
+	        //if ( !!this._use && this._use.length ) {// if there initial watchs anyway
+	        //    this.pull(this._use);
+	        //}
 	
-	        if (initialState) {
+	        if (initialState || _this._use.length) {
 	            // sync refine
-	            _this.state = _extends({}, initialState);
+	            _this.state = _extends({}, initialState || {}, context.map(_this, _this._use));
 	            if (_this.isComplete() && _this.datas === undefined) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
@@ -23984,7 +23996,8 @@
 	     * Ms to autodestroy after tm ms if no retain has been called
 	     * @type {boolean|Int}
 	     */
-	    // overridable list of store that will allow push if updated
+	    // default state @depreciated
+	    // overridable list of source stores
 	
 	
 	    _createClass(Store, [{
@@ -24478,8 +24491,6 @@
 	    }, {
 	        key: 'map',
 	        value: function map(component, keys, context, origin) {
-	            var _this10 = this;
-	
 	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 	
 	            var targetRevs = component._revs || {};
@@ -24521,7 +24532,7 @@
 	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
 	                    return false;
 	                } else if (isFunction(store)) {
-	                    _this10.mountStore(name, context);
+	                    context._mount(name);
 	
 	                    context.stores[name].bind(component, alias, setInitial);
 	                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
@@ -24580,34 +24591,6 @@
 	            }).join('::') : contexts;
 	            return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
 	        }
-	    }, {
-	        key: 'mountStore',
-	        value: function mountStore(name, context, store, state, datas) {
-	            var ctx = void 0,
-	                contextMap = context.__context;
-	            contextMap[name] = store = store || contextMap[name];
-	            if (!store) {
-	                console.error("Not a mappable store item '" + name + ' !!', store);
-	                return false;
-	            } else if (isFunction(store)) {
-	                //
-	                if (store && (store.contexts || store.context)) {
-	                    ctx = this.getContext(store.contexts || [store.context]);
-	
-	                    ctx.register(_defineProperty({}, name, ctx.__context[name] || store));
-	
-	                    contextMap[name] = ctx[name] = new store(context, { state: state, datas: datas });
-	                    ctx._watchStore(name);
-	                    return ctx[name];
-	                } else store = contextMap[name] = new store(context, { state: state, datas: datas });
-	                contextMap[name].relink(name);
-	            } else {
-	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
-	
-	                if (datas !== undefined) store.push(datas);
-	            }
-	            return store;
-	        }
 	    }]);
 	
 	    return Store;
@@ -24616,6 +24599,7 @@
 	Store.use = [];
 	Store.staticContext = new Context({}, { id: "static" });
 	Store.initialState = undefined;
+	Store.state = undefined;
 	Store.defaultMaxListeners = 100;
 	Store.persistenceTm = false;
 	exports.default = Store;
@@ -24889,10 +24873,7 @@
 	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _temp5)
 	};
 	
-	exports.default = function () {
-	    return _extends({}, MyStoreContext);
-	};
-	
+	exports.default = _extends({}, MyStoreContext);
 	module.exports = exports["default"];
 
 /***/ }),

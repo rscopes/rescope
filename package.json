@@ -8,6 +8,7 @@
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
     "build": "webpack",
+    "test": "mocha --compilers js:babel-core/register ./test/*.test.js -b",
     "dev": "webpack -w"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "isfunction": "0.0.6",
     "isnumber": "^1.0.0",
     "isstring": "^1.0.6",
+    "mocha": "^3.5.1",
     "shortid": "^2.2.8",
     "webpack-node-externals": "^1.6.0"
   },

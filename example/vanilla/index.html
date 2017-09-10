@@ -29,12 +29,11 @@
 <pre id="status">Preloading...</pre>
 <div id="events"></div>
 <script>
-    var context = window.context = new StoreContext(),
-        NewsList = new NewsListComp(document.getElementById("events"));
-    window.App   = new Rescope.Context(context);
+    var NewsList = new NewsListComp(document.getElementById("events"));
+    window.App = new Rescope.Context(StoreContext);
 
 
-    App.state.appState = {currentUserId : "MissTick"}
+    App.state.appState = { currentUserId: "MissTick" }
 
     App.mount("userEvents").then(
         function ( err, datas ) {

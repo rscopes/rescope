@@ -18,27 +18,77 @@ import Rescope from "../../Rescope";
 import StoreContext from "../StoresContext";
 
 function NewsListComp( target = document.createElement('div') ) {
-
+    
     this.setState = ( state ) => {
         console.log("redraw")
         target.innerHTML =
             (
                 state.userEvents &&
                 state.userEvents.events
-                    .map(
-                        ( evt ) => `
+                     .map(
+                         ( evt ) => `
                                     <div style="border: solid 1px lightgrey;border-radius: 3px">
                                         <b><u><center>Event type : ${evt.type}</center></u></b>
                                         <p>${evt.text}</p>
                                     </div>`
-                    ).join()
+                     ).join()
                 || "<b><u><center>Loading...</center></u></b>"
             );
     };
-    this.node     = target;
+    this.node = target;
 }
 
-window.Rescope      = Rescope;
+window.Rescope = Rescope;
 window.StoreContext = StoreContext;
 window.NewsListComp = NewsListComp;
+
+
+let StaticContext = new Rescope.Context(
+    {
+        global_1: class global_1 extends Rescope.Store {
+            static state = { ok: true };
+        },
+        global_2: class global_2 extends Rescope.Store {
+            static state = { ok: true };
+        }
+    }
+    ),
+    TestContext   = new Rescope.Context(
+        {
+            local_1: class local_1 extends Rescope.Store {
+                static use = ["global_1"];
+            
+                //static state = { ok: true };
+                refine( datas, state ) {
+                    return { ...datas, ...state };
+                }
+            },
+            local_2: class local_2 extends Rescope.Store {
+                static state = { ok: true };
+            
+                refine( datas, state ) {
+                    return { ...datas, ...state };
+                }
+            },
+            local_3: class local_3 extends Rescope.Store {
+                static use = ["global_2", "local_2"];
+            
+                static state = { ok: true };
+                refine( datas, state ) {
+                    return { ...datas, ...state };
+                }
+            }
+        },
+        {
+            parent: StaticContext
+        }
+    );
+TestContext
+.mount("local_3")
+.then(
+    ( e, datas ) => {
+        debugger
+    }
+)
+
 export default NewsListComp;

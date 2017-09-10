@@ -9,17 +9,19 @@
  */
 
 import React from "react";
-let ReactDom = require('react-dom'),
-    Rescope = require('../../Rescope'),
-    Context = Rescope.Context,
-    NewsListComp = require('./NewsListComp'),
+
+let ReactDom      = require('react-dom'),
+    Rescope       = require('../../Rescope'),
+    Context       = Rescope.Context,
+    NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
+// create empty global context for fun
+let GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
 
-let
-    GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
 
-new Context(new StoresContext(), { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
+// create "appContext" with the stores
+new Context(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 
 class App extends React.Component {
     static renderTo = ( node ) => {
@@ -49,13 +51,13 @@ class App extends React.Component {
     }
     
     getChildContext() {
-        return this.context = {rescope:Context.contexts.appContext};
+        return this.context = { rescope: Context.contexts.appContext };
     }
     
     
     render() {
-        let { state:context } = Context.contexts.appContext,
-            {state} = this;
+        let { state: context } = Context.contexts.appContext,
+            { state }          = this;
         return (
             <div>
                 <h1>Really basic drafty rescope + react mini app example</h1>

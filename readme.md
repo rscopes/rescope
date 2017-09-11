@@ -4,6 +4,9 @@
 
 ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
 
+[![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Caipi)
+
+
 ## What ?
 
 Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output datas in a deterministic way.<br>

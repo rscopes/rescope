@@ -1,6 +1,7 @@
 # Rescope 2 rc
 
 [![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Caipi)
+[![https://nodei.co/npm/rescope.png?downloads=true&downloadRank=true&stars=true](https://nodei.co/npm/rescope.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/rescope)
 
 ## ReScope What ?
 

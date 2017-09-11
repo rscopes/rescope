@@ -34,7 +34,7 @@ describe('Rescope', function () {
         TestContext;
     it('should build well', function ( done ) {
         this.timeout(Infinity);
-
+        
         child_process.exec(
             'npm run build',
             {
@@ -43,7 +43,7 @@ describe('Rescope', function () {
             function ( error, stdout, stderr ) {
                 done(error)
             });
-
+        
     });
     it('should require well', function ( done ) {
         Rescope = require('../dist/Rescope');
@@ -140,26 +140,26 @@ describe('Rescope', function () {
                              if ( ok ) done();
                              else done(new Error("fail"))
                          }
-                   )
+        )
         
     });
     it('should async mount them well 2', function ( done ) {
         this.timeout(4000);
         TestContext.state.local_1 = { updated: true };// should trigger global 1 wich will push in 1000ms
         TestContext.once('stable',
-                                        ( e, _datas ) => {
+                         ( e, _datas ) => {
             
-                                            let datas = TestContext.datas,
-                                                ok    =
-                                                    datas.global_1.asyncUpdated &&
-                                                    datas.local_1.ok &&
-                                                    datas.local_3.global_2.updated;
+                             let datas = TestContext.datas,
+                                 ok    =
+                                     datas.global_1.asyncUpdated &&
+                                     datas.local_1.ok &&
+                                     datas.local_3.global_2.updated;
             
-                                            //console.log(datas.local_1)
+                             //console.log(datas.local_1)
             
-                                            if ( ok ) done();
-                                            else done(new Error("fail"))
-                                        }
+                             if ( ok ) done();
+                             else done(new Error("fail"))
+                         }
         )
         
     });

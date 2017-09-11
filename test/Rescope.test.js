@@ -107,24 +107,20 @@ describe('Rescope', function () {
         done()
     });
     it('should synchrone init them well', function ( done ) {
-        Rescope = require('../dist/Rescope').default;
-        TestContext
-        .mount("local_3")
-        .then(
-            ( e, datas ) => {
-                let ok =
-                        !datas.global_1 &&
-                        datas.global_2.ok &&
-                        !datas.local_1 &&
-                        datas.local_2.ok &&
-                        datas.local_3.ok &&
-                        datas.local_3.local_2.ok &&
-                        datas.local_3.global_2.ok;
-                
-                if ( ok ) done();
-                else done("fail")
-            }
-        )
+        TestContext.state.local_3 = { updated: true };// should trigger global 1 wich will push in 1000ms
+        
+        let datas = TestContext.datas,
+            ok    =
+                !datas.global_1 &&
+                datas.global_2.ok &&
+                !datas.local_1 &&
+                datas.local_2.ok &&
+                datas.local_3.ok &&
+                datas.local_3.local_2.ok &&
+                datas.local_3.global_2.ok;
+        
+        if ( ok ) done();
+        else done("fail")
     });
     it('should async update them well', function ( done ) {
         TestContext.stores.global_2.setState({ updated: true });

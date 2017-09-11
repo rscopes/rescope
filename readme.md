@@ -1,11 +1,10 @@
 # Rescope 2 rc
 
+[![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Caipi)
+
 ## ReScope What ?
 
 ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
-
-[![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Caipi)
-
 
 ## What ?
 

@@ -109,3 +109,6 @@ this.state = {
 - Optimize
 - Possibly some semantic/normalisation updates
 - add catch & finally
+
+
+[![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

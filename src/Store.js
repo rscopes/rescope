@@ -118,7 +118,7 @@ export default class Store extends EventEmitter {
         if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
             this.datas = cfg.datas;
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-            initialState = cfg.state;
+            initialState = { ...initialState, ...cfg.state };
         
         if ( refine )
             this.refine = refine;
@@ -129,7 +129,7 @@ export default class Store extends EventEmitter {
         
         if ( initialState || this._use.length ) {// sync refine
             this.state = {
-                ...(initialState||{}),
+                ...(initialState || {}),
                 ...context.map(this, this._use)
             };
             if ( this.isComplete() && this.datas === undefined )

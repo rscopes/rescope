@@ -50,7 +50,7 @@ export default class Context extends EventEmitter {
         this._id = id = id || ("_____" + shortid.generate());
         
         if ( openContexts[id] ) {
-            // openContexts[id].register(ctx);
+            openContexts[id].register(ctx);
             return openContexts[id]
         }
         
@@ -83,10 +83,10 @@ export default class Context extends EventEmitter {
         this._followers = [];
         if ( parent ) {
             parent.retain("isMyParent");
-            !parent._stable && this.wait("isMyParent");
+            !parent._stable && this.wait("waitingParent");
             parent.on(this.__parentList = {
-                'stable'  : s => this.release("isMyParent"),
-                'unstable': s => this.wait("isMyParent"),
+                'stable'  : s => this.release("waitingParent"),
+                'unstable': s => this.wait("waitingParent"),
                 'update'  : s => this._propag()
             });
             // this.register(parent.__context, state, datas);
@@ -217,7 +217,7 @@ export default class Context extends EventEmitter {
                           return;
                 
                       if ( targetCtx.__context[id] ) {
-                          console.warn("Rescope Context : ", id, " already exist in this context !");
+                          console.warn("Rescope Store : ", id, " already exist in this context ! (skipping)");
                           return;
                       }
                       if ( !external )
@@ -452,7 +452,7 @@ export default class Context extends EventEmitter {
     }
     
     wait( reason ) {
-        //  console.log("wait", reason);
+        //console.log("wait", reason);
         this._stable && !this.__locks.all && this.emit("unstable", this);
         this._stable = false;
         this.__locks.all++;
@@ -464,6 +464,7 @@ export default class Context extends EventEmitter {
     
     release( reason ) {
         
+        //console.log("release", reason);
         if ( reason ) {
             if ( this.__locks[reason] == 0 )
                 console.error("Release more than locking !", reason);
@@ -480,7 +481,7 @@ export default class Context extends EventEmitter {
             
             this._stabilizerTM = setTimeout(
                 e => {
-                    if ( !this.__locks.all )
+                    if ( this.__locks.all )
                         return this._stabilizerTM = null;
                     
                     this._stable = true;
@@ -551,6 +552,7 @@ export default class Context extends EventEmitter {
     }
     
     dispose( reason ) {
+        //console.log("dispose", this._id, reason);
         if ( reason ) {
             
             if ( this.__retains[reason] == 0 )
@@ -571,9 +573,9 @@ export default class Context extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        // console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
+                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
                         this.then(s => {
-                            //   console.log("wtf ctx then", this._id, reason, this.__locks);
+                            //console.log("wtf ctx then", this._id, reason, this.__locks);
                             !this.__retains.all && this.destroy()
                         });
                     },
@@ -592,7 +594,7 @@ export default class Context extends EventEmitter {
     destroy() {
         let ctx = this.__context;
         
-        // console.log("destroy", this._id);
+        //console.log("destroy", this._id);
         this.emit("destroy");
         Object.keys(
             this.__listening

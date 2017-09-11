@@ -22429,7 +22429,7 @@
 	        if (openContexts[id]) {
 	            var _ret;
 	
-	            // openContexts[id].register(ctx);
+	            openContexts[id].register(ctx);
 	            return _ret = openContexts[id], _possibleConstructorReturn(_this, _ret);
 	        }
 	
@@ -22461,13 +22461,13 @@
 	        _this._followers = [];
 	        if (parent) {
 	            parent.retain("isMyParent");
-	            !parent._stable && _this.wait("isMyParent");
+	            !parent._stable && _this.wait("waitingParent");
 	            parent.on(_this.__parentList = {
 	                'stable': function stable(s) {
-	                    return _this.release("isMyParent");
+	                    return _this.release("waitingParent");
 	                },
 	                'unstable': function unstable(s) {
-	                    return _this.wait("isMyParent");
+	                    return _this.wait("waitingParent");
 	                },
 	                'update': function update(s) {
 	                    return _this._propag();
@@ -22630,7 +22630,7 @@
 	                if (targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
 	
 	                if (targetCtx.__context[id]) {
-	                    console.warn("Rescope Context : ", id, " already exist in this context !");
+	                    console.warn("Rescope Store : ", id, " already exist in this context ! (skipping)");
 	                    return;
 	                }
 	                if (!external) _this6.__context[id] = srcCtx[id];
@@ -22890,7 +22890,7 @@
 	    }, {
 	        key: 'wait',
 	        value: function wait(reason) {
-	            //  console.log("wait", reason);
+	            //console.log("wait", reason);
 	            this._stable && !this.__locks.all && this.emit("unstable", this);
 	            this._stable = false;
 	            this.__locks.all++;
@@ -22904,6 +22904,7 @@
 	        value: function release(reason) {
 	            var _this15 = this;
 	
+	            //console.log("release", reason);
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
 	                this.__locks[reason] = this.__locks[reason] || 0;
@@ -22917,7 +22918,7 @@
 	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (!_this15.__locks.all) return _this15._stabilizerTM = null;
+	                    if (_this15.__locks.all) return _this15._stabilizerTM = null;
 	
 	                    _this15._stable = true;
 	                    _this15.emit("stable", _this15);
@@ -22997,6 +22998,7 @@
 	        value: function dispose(reason) {
 	            var _this18 = this;
 	
+	            //console.log("dispose", this._id, reason);
 	            if (reason) {
 	
 	                if (this.__retains[reason] == 0) throw new Error("Dispose more than retaining !");
@@ -23013,9 +23015,9 @@
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        // console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
+	                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
 	                        _this18.then(function (s) {
-	                            //   console.log("wtf ctx then", this._id, reason, this.__locks);
+	                            //console.log("wtf ctx then", this._id, reason, this.__locks);
 	                            !_this18.__retains.all && _this18.destroy();
 	                        });
 	                    }, this._persistenceTm);
@@ -23038,7 +23040,7 @@
 	
 	            var ctx = this.__context;
 	
-	            // console.log("destroy", this._id);
+	            //console.log("destroy", this._id);
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this19.__context[id].removeListener(_this19.__listening[id]);
@@ -23965,7 +23967,7 @@
 	        _this._followers = [];
 	
 	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
-	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = cfg.state;
+	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
 	        if (refine) _this.refine = refine;
 	

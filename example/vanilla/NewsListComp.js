@@ -168,7 +168,7 @@
 	        if (openContexts[id]) {
 	            var _ret;
 	
-	            // openContexts[id].register(ctx);
+	            openContexts[id].register(ctx);
 	            return _ret = openContexts[id], _possibleConstructorReturn(_this, _ret);
 	        }
 	
@@ -200,13 +200,13 @@
 	        _this._followers = [];
 	        if (parent) {
 	            parent.retain("isMyParent");
-	            !parent._stable && _this.wait("isMyParent");
+	            !parent._stable && _this.wait("waitingParent");
 	            parent.on(_this.__parentList = {
 	                'stable': function stable(s) {
-	                    return _this.release("isMyParent");
+	                    return _this.release("waitingParent");
 	                },
 	                'unstable': function unstable(s) {
-	                    return _this.wait("isMyParent");
+	                    return _this.wait("waitingParent");
 	                },
 	                'update': function update(s) {
 	                    return _this._propag();
@@ -369,7 +369,7 @@
 	                if (targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
 	
 	                if (targetCtx.__context[id]) {
-	                    console.warn("Rescope Context : ", id, " already exist in this context !");
+	                    console.warn("Rescope Store : ", id, " already exist in this context ! (skipping)");
 	                    return;
 	                }
 	                if (!external) _this6.__context[id] = srcCtx[id];
@@ -629,7 +629,7 @@
 	    }, {
 	        key: 'wait',
 	        value: function wait(reason) {
-	            //  console.log("wait", reason);
+	            //console.log("wait", reason);
 	            this._stable && !this.__locks.all && this.emit("unstable", this);
 	            this._stable = false;
 	            this.__locks.all++;
@@ -643,6 +643,7 @@
 	        value: function release(reason) {
 	            var _this15 = this;
 	
+	            //console.log("release", reason);
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
 	                this.__locks[reason] = this.__locks[reason] || 0;
@@ -656,7 +657,7 @@
 	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (!_this15.__locks.all) return _this15._stabilizerTM = null;
+	                    if (_this15.__locks.all) return _this15._stabilizerTM = null;
 	
 	                    _this15._stable = true;
 	                    _this15.emit("stable", _this15);
@@ -736,6 +737,7 @@
 	        value: function dispose(reason) {
 	            var _this18 = this;
 	
+	            //console.log("dispose", this._id, reason);
 	            if (reason) {
 	
 	                if (this.__retains[reason] == 0) throw new Error("Dispose more than retaining !");
@@ -752,9 +754,9 @@
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        // console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
+	                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
 	                        _this18.then(function (s) {
-	                            //   console.log("wtf ctx then", this._id, reason, this.__locks);
+	                            //console.log("wtf ctx then", this._id, reason, this.__locks);
 	                            !_this18.__retains.all && _this18.destroy();
 	                        });
 	                    }, this._persistenceTm);
@@ -777,7 +779,7 @@
 	
 	            var ctx = this.__context;
 	
-	            // console.log("destroy", this._id);
+	            //console.log("destroy", this._id);
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this19.__context[id].removeListener(_this19.__listening[id]);
@@ -1719,7 +1721,7 @@
 	        _this._followers = [];
 	
 	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
-	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = cfg.state;
+	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
 	        if (refine) _this.refine = refine;
 	
@@ -2600,28 +2602,6 @@
 	    value: true
 	});
 	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _class, _temp, _class2, _temp2, _class3, _temp3, _class4, _temp4, _class5, _temp5; /*
-	                                                                                        * Copyright (c)  2017 Caipi Labs .
-	                                                                                        *
-	                                                                                        * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-	                                                                                        *
-	                                                                                        * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-	                                                                                        *
-	                                                                                        * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	                                                                                        */
-	
-	/**
-	 * @author Nathanael BRAUN
-	 *
-	 * Date: 25/01/2017
-	 * Time: 11:08
-	 */
-	
-	
 	var _Rescope = __webpack_require__(185);
 	
 	var _Rescope2 = _interopRequireDefault(_Rescope);
@@ -2632,12 +2612,22 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	/*
+	 * Copyright (c)  2017 Caipi Labs .
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	 */
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
+	/**
+	 * @author Nathanael BRAUN
+	 *
+	 * Date: 25/01/2017
+	 * Time: 11:08
+	 */
 	function NewsListComp() {
 	    var target = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.createElement('div');
 	
@@ -2654,95 +2644,6 @@
 	window.Rescope = _Rescope2.default;
 	window.StoreContext = _StoresContext2.default;
 	window.NewsListComp = NewsListComp;
-	
-	var StaticContext = new _Rescope2.default.Context({
-	    global_1: (_temp = _class = function (_Rescope$Store) {
-	        _inherits(global_1, _Rescope$Store);
-	
-	        function global_1() {
-	            _classCallCheck(this, global_1);
-	
-	            return _possibleConstructorReturn(this, (global_1.__proto__ || Object.getPrototypeOf(global_1)).apply(this, arguments));
-	        }
-	
-	        return global_1;
-	    }(_Rescope2.default.Store), _class.state = { ok: true }, _temp),
-	    global_2: (_temp2 = _class2 = function (_Rescope$Store2) {
-	        _inherits(global_2, _Rescope$Store2);
-	
-	        function global_2() {
-	            _classCallCheck(this, global_2);
-	
-	            return _possibleConstructorReturn(this, (global_2.__proto__ || Object.getPrototypeOf(global_2)).apply(this, arguments));
-	        }
-	
-	        return global_2;
-	    }(_Rescope2.default.Store), _class2.state = { ok: true }, _temp2)
-	}),
-	    TestContext = new _Rescope2.default.Context({
-	    local_1: (_temp3 = _class3 = function (_Rescope$Store3) {
-	        _inherits(local_1, _Rescope$Store3);
-	
-	        function local_1() {
-	            _classCallCheck(this, local_1);
-	
-	            return _possibleConstructorReturn(this, (local_1.__proto__ || Object.getPrototypeOf(local_1)).apply(this, arguments));
-	        }
-	
-	        _createClass(local_1, [{
-	            key: "refine",
-	
-	
-	            //static state = { ok: true };
-	            value: function refine(datas, state) {
-	                return _extends({}, datas, state);
-	            }
-	        }]);
-	
-	        return local_1;
-	    }(_Rescope2.default.Store), _class3.use = ["global_1"], _temp3),
-	    local_2: (_temp4 = _class4 = function (_Rescope$Store4) {
-	        _inherits(local_2, _Rescope$Store4);
-	
-	        function local_2() {
-	            _classCallCheck(this, local_2);
-	
-	            return _possibleConstructorReturn(this, (local_2.__proto__ || Object.getPrototypeOf(local_2)).apply(this, arguments));
-	        }
-	
-	        _createClass(local_2, [{
-	            key: "refine",
-	            value: function refine(datas, state) {
-	                return _extends({}, datas, state);
-	            }
-	        }]);
-	
-	        return local_2;
-	    }(_Rescope2.default.Store), _class4.state = { ok: true }, _temp4),
-	    local_3: (_temp5 = _class5 = function (_Rescope$Store5) {
-	        _inherits(local_3, _Rescope$Store5);
-	
-	        function local_3() {
-	            _classCallCheck(this, local_3);
-	
-	            return _possibleConstructorReturn(this, (local_3.__proto__ || Object.getPrototypeOf(local_3)).apply(this, arguments));
-	        }
-	
-	        _createClass(local_3, [{
-	            key: "refine",
-	            value: function refine(datas, state) {
-	                return _extends({}, datas, state);
-	            }
-	        }]);
-	
-	        return local_3;
-	    }(_Rescope2.default.Store), _class5.use = ["global_2", "local_2"], _class5.state = { ok: true }, _temp5)
-	}, {
-	    parent: StaticContext
-	});
-	TestContext.mount("local_3").then(function (e, datas) {
-	    debugger;
-	});
 	
 	exports.default = NewsListComp;
 	module.exports = exports["default"];

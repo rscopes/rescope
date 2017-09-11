@@ -124,8 +124,7 @@ describe('Rescope', function () {
     });
     it('should async update them well', function ( done ) {
         TestContext.stores.global_2.setState({ updated: true });
-        TestContext.stores.local_3
-                   .once('stable',
+        TestContext.once('stable',
                          ( e, _datas ) => {
             
                              let datas = TestContext.datas,
@@ -147,7 +146,7 @@ describe('Rescope', function () {
     it('should async mount them well 2', function ( done ) {
         this.timeout(4000);
         TestContext.state.local_1 = { updated: true };// should trigger global 1 wich will push in 1000ms
-        TestContext.stores.local_1.once('stable',
+        TestContext.once('stable',
                                         ( e, _datas ) => {
             
                                             let datas = TestContext.datas,

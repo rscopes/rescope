@@ -107,7 +107,7 @@ describe('Rescope', function () {
         done()
     });
     it('should synchrone init them well', function ( done ) {
-        TestContext.state.local_3 = { updated: true };// should trigger global 1 wich will push in 1000ms
+        TestContext.state.local_3 = { updated: true };// should mount all the required store
         
         let datas = TestContext.datas,
             ok    =

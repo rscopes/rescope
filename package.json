@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Predictable 'state' based store & context system for (but not limited to) ReactJS.",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/Rescope.js",

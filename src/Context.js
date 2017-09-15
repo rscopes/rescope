@@ -279,7 +279,7 @@ export default class Context extends EventEmitter {
             [
                 obj,
                 key,
-                as,
+                as || undefined,
                 lastRevs = key && key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
             ]);
         
@@ -311,15 +311,33 @@ export default class Context extends EventEmitter {
             i         = followers && followers.length;
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
-                ('' + followers[i][2]) == ('' + as) )
+                followers[i][2] == as )
                 return followers.splice(i, 1);
     }
     
     
     map( to, stores, bind = true ) {
+        stores = isArray(stores) ? stores : [stores];
         this.mount(stores);
-        bind && this.bind(to, stores, null, false);
-        
+        if ( bind ) {
+            this.bind(to, stores, undefined, false);
+            
+            var mixedCWUnmount,
+                unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
+            
+            if ( to.hasOwnProperty(unMountKey) ) {
+                mixedCWUnmount = to[unMountKey];
+            }
+            
+            to[unMountKey] = () => {
+                delete to[unMountKey];
+                if ( mixedCWUnmount )
+                    to[unMountKey] = mixedCWUnmount;
+                
+                this.unBind(to, stores);
+            }
+            
+        }
         return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
     

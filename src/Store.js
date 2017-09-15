@@ -637,21 +637,22 @@ export default class Store extends EventEmitter {
                         follower[0](this.datas);
                     }
                     else {
-                        // cb && i++;
+                        //cb && i++;
                         follower[0].setState(
                             (follower[1]) ? { [follower[1]]: this.datas }
                                 : this.datas
-                            // ,
-                            // cb && (
-                            //     () => (!(--i) && cb())
-                            // )
+                            //,
+                            //cb && (
+                            //    () => (!(--i) && cb())
+                            //)
                         );
                     }
                 });
-            
+            //else
             this.emit('stable', this.datas);
             this.emit('update', this.datas);
             cb && cb()
+            //
         }
         else cb && this.then(cb);
         return this;

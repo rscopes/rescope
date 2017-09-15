@@ -22686,7 +22686,7 @@
 	                as = null;
 	            }
 	
-	            this._followers.push([obj, key, as, lastRevs = key && key.reduce(function (revs, id) {
+	            this._followers.push([obj, key, as || undefined, lastRevs = key && key.reduce(function (revs, id) {
 	                return revs[id] = 0, revs;
 	            }, {})]);
 	
@@ -22718,7 +22718,7 @@
 	            var followers = this._followers,
 	                i = followers && followers.length;
 	            while (followers && i--) {
-	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && '' + followers[i][2] == '' + as) return followers.splice(i, 1);
+	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && followers[i][2] == as) return followers.splice(i, 1);
 	            }
 	        }
 	    }, {
@@ -22728,9 +22728,25 @@
 	
 	            var bind = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 	
+	            stores = isArray(stores) ? stores : [stores];
 	            this.mount(stores);
-	            bind && this.bind(to, stores, null, false);
+	            if (bind) {
+	                this.bind(to, stores, undefined, false);
 	
+	                var mixedCWUnmount,
+	                    unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
+	
+	                if (to.hasOwnProperty(unMountKey)) {
+	                    mixedCWUnmount = to[unMountKey];
+	                }
+	
+	                to[unMountKey] = function () {
+	                    delete to[unMountKey];
+	                    if (mixedCWUnmount) to[unMountKey] = mixedCWUnmount;
+	
+	                    _this7.unBind(to, stores);
+	                };
+	            }
 	            return stores.reduce(function (datas, id) {
 	                return datas[id] = _this7.stores[id] && _this7.stores[id].datas, datas;
 	            }, {});
@@ -24401,19 +24417,20 @@
 	                    if (typeof follower[0] == "function") {
 	                        follower[0](_this8.datas);
 	                    } else {
-	                        // cb && i++;
+	                        //cb && i++;
 	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.datas) : _this8.datas
-	                        // ,
-	                        // cb && (
-	                        //     () => (!(--i) && cb())
-	                        // )
+	                        //,
+	                        //cb && (
+	                        //    () => (!(--i) && cb())
+	                        //)
 	                        );
 	                    }
 	                });
-	
+	                //else
 	                this.emit('stable', this.datas);
 	                this.emit('update', this.datas);
 	                cb && cb();
+	                //
 	            } else cb && this.then(cb);
 	            return this;
 	        }

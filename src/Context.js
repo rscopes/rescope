@@ -270,8 +270,8 @@ export default class Context extends EventEmitter {
         
         // key = key||
         
-        if ( as === false ) {
-            setInitial = false;
+        if ( as === false || as === true) {
+            setInitial = as;
             as = null;
         }
         

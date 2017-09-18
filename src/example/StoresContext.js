@@ -24,7 +24,7 @@ let MyStoreContext = {
         static use = ["appState"];
     },
     appState   : class appState extends Store {
-        static initialState = {
+        static state = {
             currentUserId: "MrNice"
         };
         
@@ -77,7 +77,7 @@ let MyStoreContext = {
     userEvents : class userEvents extends Store {
         static use = ["currentUser"];
         static require = ["currentUser"];
-        datas = {};
+        static datas = {};
         
         refine( datas, { currentUser: { _id: nUserId } }, changes ) {
             let { cUserId = void 0 } = datas;

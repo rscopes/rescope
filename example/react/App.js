@@ -22681,8 +22681,8 @@
 	
 	            // key = key||
 	
-	            if (as === true) {
-	                setInitial = true;
+	            if (as === false) {
+	                setInitial = false;
 	                as = null;
 	            }
 	
@@ -22728,12 +22728,16 @@
 	
 	            var bind = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 	
+	            var Store = this.constructor.Store;
 	            stores = isArray(stores) ? stores : [stores];
 	            this.mount(stores);
-	            if (bind) {
+	            if (bind && to instanceof Store) {
+	                //console.warn('way')
+	                Store.map(to, stores, this, this, false);
+	            } else if (bind) {
 	                this.bind(to, stores, undefined, false);
 	
-	                var mixedCWUnmount,
+	                var mixedCWUnmount = void 0,
 	                    unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
 	
 	                if (to.hasOwnProperty(unMountKey)) {
@@ -23982,14 +23986,11 @@
 	
 	        _this._followers = [];
 	
+	        if (_static.datas !== undefined) _this.datas = _extends({}, _static.datas);
 	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
 	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
 	        if (refine) _this.refine = refine;
-	
-	        //if ( !!this._use && this._use.length ) {// if there initial watchs anyway
-	        //    this.pull(this._use);
-	        //}
 	
 	        if (initialState || _this._use.length) {
 	            // sync refine
@@ -24110,7 +24111,7 @@
 	        value: function pull(stores, doWait, origin) {
 	            var _this3 = this;
 	
-	            var initialOutputs = Store.map(this, stores, this.contextObj, origin, true);
+	            var initialOutputs = this.contextObj.map(this, stores);
 	            if (doWait) {
 	                this.wait();
 	                stores.forEach(function (s) {
@@ -24739,7 +24740,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _class, _temp, _class2, _temp2, _class3, _temp3, _class4, _temp5; /*
+	var _class, _temp, _class2, _temp2, _class3, _temp3, _class4, _temp4; /*
 	                                                                       * Copyright (c)  2017 Caipi Labs .
 	                                                                       *
 	                                                                       * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -24789,7 +24790,7 @@
 	        }
 	
 	        return appState;
-	    }(_Rescope.Store), _class2.initialState = {
+	    }(_Rescope.Store), _class2.state = {
 	        currentUserId: "MrNice"
 	    }, _temp2),
 	    currentUser: (_temp3 = _class3 = function (_Store3) {
@@ -24836,29 +24837,21 @@
 	
 	        return currentUser;
 	    }(_Rescope.Store), _class3.use = ["appState"], _temp3),
-	    userEvents: (_temp5 = _class4 = function (_Store4) {
+	    userEvents: (_temp4 = _class4 = function (_Store4) {
 	        _inherits(userEvents, _Store4);
 	
 	        function userEvents() {
-	            var _ref2;
-	
-	            var _temp4, _this5, _ret;
-	
 	            _classCallCheck(this, userEvents);
 	
-	            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	                args[_key] = arguments[_key];
-	            }
-	
-	            return _ret = (_temp4 = (_this5 = _possibleConstructorReturn(this, (_ref2 = userEvents.__proto__ || Object.getPrototypeOf(userEvents)).call.apply(_ref2, [this].concat(args))), _this5), _this5.datas = {}, _temp4), _possibleConstructorReturn(_this5, _ret);
+	            return _possibleConstructorReturn(this, (userEvents.__proto__ || Object.getPrototypeOf(userEvents)).apply(this, arguments));
 	        }
 	
 	        _createClass(userEvents, [{
 	            key: "refine",
-	            value: function refine(datas, _ref3, changes) {
+	            value: function refine(datas, _ref2, changes) {
 	                var _this6 = this;
 	
-	                var nUserId = _ref3.currentUser._id;
+	                var nUserId = _ref2.currentUser._id;
 	                var _datas$cUserId = datas.cUserId,
 	                    cUserId = _datas$cUserId === undefined ? void 0 : _datas$cUserId;
 	
@@ -24889,7 +24882,7 @@
 	        }]);
 	
 	        return userEvents;
-	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _temp5)
+	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _class4.datas = {}, _temp4)
 	};
 	
 	exports.default = _extends({}, MyStoreContext);

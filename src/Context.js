@@ -270,8 +270,8 @@ export default class Context extends EventEmitter {
         
         // key = key||
         
-        if ( as === true ) {
-            setInitial = true;
+        if ( as === false ) {
+            setInitial = false;
             as = null;
         }
         
@@ -315,14 +315,18 @@ export default class Context extends EventEmitter {
                 return followers.splice(i, 1);
     }
     
-    
     map( to, stores, bind = true ) {
+        let Store = this.constructor.Store;
         stores = isArray(stores) ? stores : [stores];
         this.mount(stores);
-        if ( bind ) {
+        if ( bind && to instanceof Store ) {
+            //console.warn('way')
+            Store.map(to, stores, this, this, false)
+        }
+        else if ( bind ) {
             this.bind(to, stores, undefined, false);
             
-            var mixedCWUnmount,
+            let mixedCWUnmount,
                 unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
             
             if ( to.hasOwnProperty(unMountKey) ) {

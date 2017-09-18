@@ -42,5 +42,4 @@ window.Rescope = Rescope;
 window.StoreContext = StoreContext;
 window.NewsListComp = NewsListComp;
 
-
 export default NewsListComp;

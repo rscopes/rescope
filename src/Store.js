@@ -115,6 +115,8 @@ export default class Store extends EventEmitter {
         
         this._followers = [];
         
+        if ( _static.datas !== undefined )
+            this.datas = { ..._static.datas };
         if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
             this.datas = cfg.datas;
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
@@ -123,9 +125,6 @@ export default class Store extends EventEmitter {
         if ( refine )
             this.refine = refine;
         
-        //if ( !!this._use && this._use.length ) {// if there initial watchs anyway
-        //    this.pull(this._use);
-        //}
         
         if ( initialState || this._use.length ) {// sync refine
             this.state = {
@@ -357,7 +356,7 @@ export default class Store extends EventEmitter {
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
-        let initialOutputs = Store.map(this, stores, this.contextObj, origin, true);
+        let initialOutputs = this.contextObj.map(this, stores);
         if ( doWait ) {
             this.wait();
             stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));

@@ -22514,11 +22514,11 @@
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            }
 	            //this.constructor.Store.mountStore(id, this, null, state, datas);
-	            var store = this.__context[id];
+	            var store = this.__context[id],
+	                ctx = void 0;
 	
 	            if (isFunction(store)) {
 	                this.__context[id] = new store(this, { state: state, datas: datas });
-	                //this.__context[id].relink(id);
 	            } else {
 	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
@@ -22759,19 +22759,23 @@
 	        key: 'getStoresRevs',
 	        value: function getStoresRevs() {
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var local = arguments[1];
 	
 	            var ctx = this.__context;
-	
+	            if (!stores) {
+	                stores = {};
+	            }
 	            Object.keys(ctx).forEach(function (id) {
 	                if (!isFunction(ctx[id])) {
 	                    stores[id] = ctx[id]._rev;
 	                } else if (!stores.hasOwnProperty(id)) stores[id] = false;
 	            });
-	
-	            this.__mixed.reduce(function (updated, ctx) {
-	                return ctx.getStoresRevs(stores), stores;
-	            }, stores);
-	            this.parent && this.parent.getStoresRevs(stores);
+	            if (!local) {
+	                this.__mixed.reduce(function (updated, ctx) {
+	                    return ctx.getStoresRevs(stores), stores;
+	                }, stores);
+	                this.parent && this.parent.getStoresRevs(stores);
+	            }
 	            return stores;
 	        }
 	    }, {
@@ -23092,8 +23096,13 @@
 	        }
 	    }], [{
 	        key: 'getContext',
-	        value: function getContext(key) {
-	            return openContexts[key] = openContexts[key] || new Context({});
+	        value: function getContext(contexts) {
+	            var skey = isArray(contexts) ? contexts.sort(function (a, b) {
+	                if (a.firstname < b.firstname) return -1;
+	                if (a.firstname > b.firstname) return 1;
+	                return 0;
+	            }).join('::') : contexts;
+	            return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
 	        }
 	    }]);
 	
@@ -24451,14 +24460,14 @@
 	
 	            if (reason) {
 	
-	                if (this.__retains[reason] == 0) throw new Error("Dispose more than retaining !");
+	                if (!this.__retains[reason]) throw new Error("Dispose more than retaining !");
 	
 	                this.__retains[reason] = this.__retains[reason] || 0;
 	                this.__retains[reason]--;
 	            }
-	
 	            if (this.__retains.all == 0) throw new Error("Dispose more than retaining !");
 	
+	            this.__retains.all--;
 	            if (!this.__retains.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
@@ -24600,16 +24609,6 @@
 	            };
 	
 	            return initialOutputs;
-	        }
-	    }, {
-	        key: 'getContext',
-	        value: function getContext(contexts) {
-	            var skey = isArray(contexts) ? contexts.sort(function (a, b) {
-	                if (a.firstname < b.firstname) return -1;
-	                if (a.firstname > b.firstname) return 1;
-	                return 0;
-	            }).join('::') : contexts;
-	            return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
 	        }
 	    }]);
 	

@@ -106,8 +106,13 @@ export default class Context extends EventEmitter {
             )
     }
     
-    static getContext( key ) {
-        return openContexts[key] = openContexts[key] || new Context({});
+    static getContext( contexts ) {
+        let skey = isArray(contexts) ? contexts.sort(( a, b ) => {
+            if ( a.firstname < b.firstname ) return -1;
+            if ( a.firstname > b.firstname ) return 1;
+            return 0;
+        }).join('::') : contexts;
+        return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
     };
     
     mount( id, state, datas ) {
@@ -128,11 +133,10 @@ export default class Context extends EventEmitter {
             return this.parent._mount(...arguments);
         }
         //this.constructor.Store.mountStore(id, this, null, state, datas);
-        let store = this.__context[id];
+        let store = this.__context[id], ctx;
         
         if ( isFunction(store) ) {
             this.__context[id] = new store(this, { state, datas });
-            //this.__context[id].relink(id);
         }
         else {
             if ( state !== undefined && datas === undefined )
@@ -345,9 +349,11 @@ export default class Context extends EventEmitter {
         return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
     
-    getStoresRevs( stores = {} ) {
+    getStoresRevs( stores = {}, local ) {
         let ctx = this.__context;
-        
+        if ( !stores ) {
+            stores = {};
+        }
         Object.keys(ctx).forEach(
             id => {
                 if ( !isFunction(ctx[id])
@@ -358,9 +364,10 @@ export default class Context extends EventEmitter {
                     stores[id] = false
             }
         );
-        
-        this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(stores), stores), stores);
-        this.parent && this.parent.getStoresRevs(stores);
+        if ( !local ) {
+            this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(stores), stores), stores);
+            this.parent && this.parent.getStoresRevs(stores);
+        }
         return stores;
     }
     

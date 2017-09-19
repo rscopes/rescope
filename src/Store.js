@@ -89,7 +89,7 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
         
-        this._use = [...watchs, ...(_static.use||[])];
+        this._use = [...watchs, ...(_static.use || [])];
         this.name = name;
         
         if ( context.stores ) {
@@ -253,15 +253,6 @@ export default class Store extends EventEmitter {
         }
         
         return initialOutputs;
-    }
-    
-    static getContext( contexts ) {
-        let skey = isArray(contexts) ? contexts.sort(( a, b ) => {
-            if ( a.firstname < b.firstname ) return -1;
-            if ( a.firstname > b.firstname ) return 1;
-            return 0;
-        }).join('::') : contexts;
-        return Context.contexts[skey] = Context.contexts[skey] || new Context({}, { id: skey });
     }
     
     
@@ -668,16 +659,16 @@ export default class Store extends EventEmitter {
     dispose( reason ) {
         if ( reason ) {
             
-            if ( this.__retains[reason] == 0 )
+            if ( !this.__retains[reason] )
                 throw new Error("Dispose more than retaining !");
             
             this.__retains[reason] = this.__retains[reason] || 0;
             this.__retains[reason]--;
         }
-        
         if ( this.__retains.all == 0 )
             throw new Error("Dispose more than retaining !");
         
+        this.__retains.all--;
         if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);

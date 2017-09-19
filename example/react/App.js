@@ -22955,7 +22955,7 @@
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
 	                _this16._propag();
-	            }, 50);
+	            }, 15);
 	        }
 	    }, {
 	        key: '_propag',
@@ -23964,7 +23964,7 @@
 	        }
 	        // this.state      = this.state || {};
 	
-	        _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use));
+	        _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use || []));
 	        _this.name = name;
 	
 	        if (context.stores) {

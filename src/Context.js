@@ -270,7 +270,7 @@ export default class Context extends EventEmitter {
         
         // key = key||
         
-        if ( as === false || as === true) {
+        if ( as === false || as === true ) {
             setInitial = as;
             as = null;
         }
@@ -521,7 +521,7 @@ export default class Context extends EventEmitter {
         this._propagTM = setTimeout(
             e => {
                 this._propag()
-            }, 50
+            }, 15
         );
     }
     

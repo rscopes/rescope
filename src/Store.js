@@ -89,7 +89,7 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
         
-        this._use = [...watchs, ..._static.use];
+        this._use = [...watchs, ...(_static.use||[])];
         this.name = name;
         
         if ( context.stores ) {

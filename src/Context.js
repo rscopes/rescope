@@ -134,7 +134,7 @@ export default class Context extends EventEmitter {
         }
         //this.constructor.Store.mountStore(id, this, null, state, datas);
         let store = this.__context[id], ctx;
-        
+        //console.warn("mount on ", this._id, ' ', id, isFunction(store));
         if ( isFunction(store) ) {
             this.__context[id] = new store(this, { state, datas });
         }
@@ -147,8 +147,9 @@ export default class Context extends EventEmitter {
             if ( datas !== undefined )
                 store.push(datas);
         }
-        
-        
+    
+    
+        //console.warn("mount on ", this.stores[id]);
         this._watchStore(id);
         return this.__context[id];
     }
@@ -165,6 +166,9 @@ export default class Context extends EventEmitter {
             
             this.__context[id].on(
                 this.__listening[id] = {
+                    'destroy' : s => {
+                        this.__context[id] = this.__context[id].constructor
+                    },
                     'update'  : s => this.propag(),
                     'stable'  : s => this.release(id),
                     'unstable': s => this.wait(id)
@@ -475,6 +479,8 @@ export default class Context extends EventEmitter {
     }
     
     disposeStores( stores = [], reason ) {
+        //console.warn("disposeStores", stores, reason, this.stores[stores[0]]);
+    
         stores.forEach(
             id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
         )
@@ -623,7 +629,7 @@ export default class Context extends EventEmitter {
     destroy() {
         let ctx = this.__context;
         
-        //console.log("destroy", this._id);
+        //console.warn("destroy", this._id);
         this.emit("destroy");
         Object.keys(
             this.__listening

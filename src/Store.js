@@ -600,7 +600,7 @@ export default class Store extends EventEmitter {
      */
     release( reason, cb ) {
         var _static = this.constructor;
-        let i = 0;
+        let i = 0, wasStable = this._stable;
         
         if ( isFunction(reason) ) {
             cb = reason;
@@ -639,7 +639,7 @@ export default class Store extends EventEmitter {
                     }
                 });
             //else
-            this.emit('stable', this.datas);
+            !wasStable && this.emit('stable', this.datas);
             this.emit('update', this.datas);
             cb && cb()
             //
@@ -657,6 +657,7 @@ export default class Store extends EventEmitter {
     }
     
     dispose( reason ) {
+        //console.warn("dispose", reason, this.__retains);
         if ( reason ) {
             
             if ( !this.__retains[reason] )
@@ -669,6 +670,9 @@ export default class Store extends EventEmitter {
             throw new Error("Dispose more than retaining !");
         
         this.__retains.all--;
+        
+        //console.warn("disposed", reason, this.__retains);
+        
         if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);

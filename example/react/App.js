@@ -22516,7 +22516,7 @@
 	            //this.constructor.Store.mountStore(id, this, null, state, datas);
 	            var store = this.__context[id],
 	                ctx = void 0;
-	
+	            //console.warn("mount on ", this._id, ' ', id, isFunction(store));
 	            if (isFunction(store)) {
 	                this.__context[id] = new store(this, { state: state, datas: datas });
 	            } else {
@@ -22525,6 +22525,7 @@
 	                if (datas !== undefined) store.push(datas);
 	            }
 	
+	            //console.warn("mount on ", this.stores[id]);
 	            this._watchStore(id);
 	            return this.__context[id];
 	        }
@@ -22546,6 +22547,9 @@
 	                !this.__context[id].isStable() && this.wait(id);
 	
 	                this.__context[id].on(this.__listening[id] = {
+	                    'destroy': function destroy(s) {
+	                        _this3.__context[id] = _this3.__context[id].constructor;
+	                    },
 	                    'update': function update(s) {
 	                        return _this3.propag();
 	                    },
@@ -22907,6 +22911,8 @@
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
+	            //console.warn("disposeStores", stores, reason, this.stores[stores[0]]);
+	
 	            stores.forEach(function (id) {
 	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
 	            });
@@ -23064,7 +23070,7 @@
 	
 	            var ctx = this.__context;
 	
-	            //console.log("destroy", this._id);
+	            //console.warn("destroy", this._id);
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this19.__context[id].removeListener(_this19.__listening[id]);
@@ -24404,7 +24410,8 @@
 	            var _this8 = this;
 	
 	            var _static = this.constructor;
-	            var i = 0;
+	            var i = 0,
+	                wasStable = this._stable;
 	
 	            if (isFunction(reason)) {
 	                cb = reason;
@@ -24437,7 +24444,7 @@
 	                    }
 	                });
 	                //else
-	                this.emit('stable', this.datas);
+	                !wasStable && this.emit('stable', this.datas);
 	                this.emit('update', this.datas);
 	                cb && cb();
 	                //
@@ -24458,6 +24465,7 @@
 	        value: function dispose(reason) {
 	            var _this9 = this;
 	
+	            //console.warn("dispose", reason, this.__retains);
 	            if (reason) {
 	
 	                if (!this.__retains[reason]) throw new Error("Dispose more than retaining !");
@@ -24468,6 +24476,9 @@
 	            if (this.__retains.all == 0) throw new Error("Dispose more than retaining !");
 	
 	            this.__retains.all--;
+	
+	            //console.warn("disposed", reason, this.__retains);
+	
 	            if (!this.__retains.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);

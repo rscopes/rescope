@@ -164,7 +164,6 @@ export default class Context extends EventEmitter {
         }
         if ( !this.__listening[id] && !isFunction(this.__context[id]) ) {
             !this.__context[id].isStable() && this.wait(id);
-            
             this.__context[id].on(
                 this.__listening[id] = {
                     'destroy' : s => {

@@ -266,6 +266,7 @@
 	
 	            //console.warn("mount on ", this.stores[id]);
 	            this._watchStore(id);
+	
 	            return this.__context[id];
 	        }
 	    }, {
@@ -287,6 +288,7 @@
 	
 	                this.__context[id].on(this.__listening[id] = {
 	                    'destroy': function destroy(s) {
+	                        delete _this3.__listening[id];
 	                        _this3.__context[id] = _this3.__context[id].constructor;
 	                    },
 	                    'update': function update(s) {
@@ -347,6 +349,7 @@
 	            Object.keys(rawCtx).forEach(function (id) {
 	                return isFunction(rawCtx[id]) && rawCtx[id].singleton && _this5._mount(id, state[id], datas[id]);
 	            });
+	            //this.stores.__proto__ = this._stores.prototype;
 	        }
 	
 	        /**
@@ -373,10 +376,14 @@
 	                if (targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
 	
 	                if (targetCtx.__context[id]) {
-	                    console.warn("Rescope Store : ", id, " already exist in this context ! (skipping)");
+	                    if (!external && !isFunction(targetCtx.__context[id])) {
+	                        console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
+	                        targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
+	                    }
+	                    if (!external && isFunction(targetCtx.__context[id])) targetCtx.__context[id] = srcCtx[id];
+	
 	                    return;
-	                }
-	                if (!external) _this6.__context[id] = srcCtx[id];
+	                } else if (!external) _this6.__context[id] = srcCtx[id];
 	
 	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {
@@ -475,7 +482,6 @@
 	            stores = isArray(stores) ? stores : [stores];
 	            this.mount(stores);
 	            if (bind && to instanceof Store) {
-	                //console.warn('way')
 	                Store.map(to, stores, this, this, false);
 	            } else if (bind) {
 	                this.bind(to, stores, undefined, false);

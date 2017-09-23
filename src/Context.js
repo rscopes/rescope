@@ -147,10 +147,11 @@ export default class Context extends EventEmitter {
             if ( datas !== undefined )
                 store.push(datas);
         }
-    
-    
+        
+        
         //console.warn("mount on ", this.stores[id]);
         this._watchStore(id);
+        
         return this.__context[id];
     }
     
@@ -167,7 +168,8 @@ export default class Context extends EventEmitter {
             this.__context[id].on(
                 this.__listening[id] = {
                     'destroy' : s => {
-                        this.__context[id] = this.__context[id].constructor
+                        delete this.__listening[id];
+                        this.__context[id] = this.__context[id].constructor;
                     },
                     'update'  : s => this.propag(),
                     'stable'  : s => this.release(id),
@@ -205,7 +207,7 @@ export default class Context extends EventEmitter {
         this.relink(rawCtx, this, false, state, datas);
         Object.keys(rawCtx).forEach(
             id => (isFunction(rawCtx[id]) && rawCtx[id].singleton && this._mount(id, state[id], datas[id])))
-        
+        //this.stores.__proto__ = this._stores.prototype;
     }
     
     /**
@@ -225,10 +227,17 @@ export default class Context extends EventEmitter {
                           return;
                 
                       if ( targetCtx.__context[id] ) {
-                          console.warn("Rescope Store : ", id, " already exist in this context ! (skipping)");
+                          if ( !external && !isFunction(targetCtx.__context[id]) ) {
+                              console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
+                              targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
+                        
+                          }
+                          if ( !external && isFunction(targetCtx.__context[id]) )
+                              targetCtx.__context[id] = srcCtx[id];
+                    
                           return;
                       }
-                      if ( !external )
+                      else if ( !external )
                           this.__context[id] = srcCtx[id];
                 
                       Object.defineProperty(
@@ -328,7 +337,6 @@ export default class Context extends EventEmitter {
         stores = isArray(stores) ? stores : [stores];
         this.mount(stores);
         if ( bind && to instanceof Store ) {
-            //console.warn('way')
             Store.map(to, stores, this, this, false)
         }
         else if ( bind ) {
@@ -480,7 +488,7 @@ export default class Context extends EventEmitter {
     
     disposeStores( stores = [], reason ) {
         //console.warn("disposeStores", stores, reason, this.stores[stores[0]]);
-    
+        
         stores.forEach(
             id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
         )

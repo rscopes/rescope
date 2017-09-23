@@ -195,23 +195,25 @@ describe('Rescope', function () {
     });
     it('should async auto destroy store well', function ( done ) {
         this.timeout(10000);
-        let
-            TestContext2 = new Rescope.Context(
-                {
-                },
-                {
-                    parent       : StaticContext,
-                    persistenceTm: 3000,
-                    autoDestroy  : true
-                }
-            );
-        TestContext2.mount(
+    
+        TestContext.mount(
             ["stats"])
                    .then(
                        ( e, r ) => {
-                           TestContext2.retainStores(["stats"]);
+    
+                           TestContext.retainStores(["stats"]);
                            setTimeout(
                                tm => {
+                                   let
+                                       TestContext2 = new Rescope.Context(
+                                           {
+                                           },
+                                           {
+                                               parent       : StaticContext,
+                                               persistenceTm: 3000,
+                                               autoDestroy  : true
+                                           }
+                                       );
                                    TestContext2.disposeStores(["stats"]);
                                    if ( typeof TestContext2.stores['stats'] == 'function' )
                                        done(new Error("Not working !!!"));

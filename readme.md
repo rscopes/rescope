@@ -71,10 +71,12 @@ DIY or push mutations (setState) on the right store
 
 import {Context} from "rescope";
 
-let pageContextStores = {/* ... some initial store definitions */}
 
 let MyStaticContext = new Context({...stores_instancied_or_not}); // stores are lazy instanciated on the context hashmap
-let MyPageContext = new Context({...stores_instancied_or_not}, {parent:MyStaticContext});
+let MyPageContext = new Context({
+...stores,
+
+}, {parent:MyStaticContext});
 
 
 // you can preload using default / restored key values

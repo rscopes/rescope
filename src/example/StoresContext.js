@@ -35,7 +35,7 @@ let MyStoreContext = {
         //     });
         // }
         
-        // refine( datas, newState, changes ) {
+        // apply( datas, newState, changes ) {
         //     // do some routing (map on url)
         //     return newState;
         // }
@@ -43,7 +43,7 @@ let MyStoreContext = {
     currentUser: class currentUser extends Store {
         static use = ["appState"];// list of source stores id
         
-        refine( datas, { appState: { currentUserId: NewUserId } }, changes ) {
+        apply( datas, { appState: { currentUserId: NewUserId } }, changes ) {
             let LastUserId = datas && datas._id;
             
             console.info("currentUser state updated : ", changes);
@@ -79,7 +79,7 @@ let MyStoreContext = {
         static require = ["currentUser"];
         static datas = {};
         
-        refine( datas, { currentUser: { _id: nUserId } }, changes ) {
+        apply( datas, { currentUser: { _id: nUserId } }, changes ) {
             let { cUserId = void 0 } = datas;
             
             

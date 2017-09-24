@@ -22546,7 +22546,6 @@
 	            }
 	            if (!this.__listening[id] && !isFunction(this.__context[id])) {
 	                !this.__context[id].isStable() && this.wait(id);
-	
 	                this.__context[id].on(this.__listening[id] = {
 	                    'destroy': function destroy(s) {
 	                        delete _this3.__listening[id];
@@ -23938,7 +23937,7 @@
 	    /**
 	     * Constructor, will build a rescope store
 	     *
-	     * (context, {require,use,refine,state, datas})
+	     * (context, {require,use,apply,state, datas})
 	     * (context)
 	     *
 	     * @param context {object} context where to find the other stores (default : static staticContext )
@@ -23964,7 +23963,7 @@
 	            name = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
 	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
 	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        refine = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+	        apply = isFunction(argz[0]) ? argz.shift() : cfg.apply || null,
 	            initialState = _static.state || _static.initialState;
 	
 	        _this._uid = cfg._uid || shortid.generate();
@@ -24011,12 +24010,12 @@
 	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
 	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
-	        if (refine) _this.refine = refine;
+	        if (apply) _this.apply = apply;
 	
 	        if (initialState || _this._use.length) {
-	            // sync refine
+	            // sync apply
 	            _this.state = _extends({}, initialState || {}, context.map(_this, _this._use));
-	            if (_this.isComplete() && _this.datas === undefined) _this.datas = _this.refine(_this.datas, _this.state, _this.state);
+	            if (_this.isComplete() && _this.datas === undefined) _this.datas = _this.apply(_this.datas, _this.state, _this.state);
 	        }
 	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
 	        !_this._stable && _this.emit('unstable', _this.state);
@@ -24075,11 +24074,29 @@
 	        }
 	
 	        /**
-	         * Overridable refiner / remapper
-	         * If state or lastPublicState are simple hash maps refine will return {...datas, ...state}
+	         * Overridable applier / remapper
+	         * If state or lastPublicState are simple hash maps apply will return {...datas, ...state}
 	         * if not it will return the last private state
 	         * @param datas
 	         * @param state
+	         * @returns {*}
+	         */
+	
+	    }, {
+	        key: 'apply',
+	        value: function apply(datas, state, changes) {
+	            state = state || this.state;
+	
+	            if (this.refine) return this.refine.apply(this, arguments);
+	
+	            if (!datas || datas.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, datas, state);
+	        }
+	
+	        /**
+	         * @depreciated
+	         * @param datas
+	         * @param state
+	         * @param changes
 	         * @returns {*}
 	         */
 	
@@ -24144,7 +24161,7 @@
 	        }
 	
 	        /**
-	         * Apply refine/remap on the private state & push the resulting "public" state to followers
+	         * Apply apply/remap on the private state & push the resulting "public" state to followers
 	         * @param cb
 	         */
 	
@@ -24156,7 +24173,7 @@
 	            var i = 0,
 	                me = this,
 	                nextState = !datas && _extends({}, this.state, this._changesSW) || this.state,
-	                nextDatas = datas || (this.isComplete(nextState) ? this.refine(this.datas, nextState, this._changesSW) : this.datas);
+	                nextDatas = datas || (this.isComplete(nextState) ? this.apply(this.datas, nextState, this._changesSW) : this.datas);
 	
 	            this.state = nextState;
 	            if (!force && (!this.datas && this.datas === nextDatas || !this.shouldPropag(nextDatas))) {
@@ -24819,10 +24836,10 @@
 	        }
 	
 	        _createClass(currentUser, [{
-	            key: "refine",
+	            key: "apply",
 	            // list of source stores id
 	
-	            value: function refine(datas, _ref, changes) {
+	            value: function apply(datas, _ref, changes) {
 	                var _this4 = this;
 	
 	                var NewUserId = _ref.appState.currentUserId;
@@ -24863,8 +24880,8 @@
 	        }
 	
 	        _createClass(userEvents, [{
-	            key: "refine",
-	            value: function refine(datas, _ref2, changes) {
+	            key: "apply",
+	            value: function apply(datas, _ref2, changes) {
 	                var _this6 = this;
 	
 	                var nUserId = _ref2.currentUser._id;

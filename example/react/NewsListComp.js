@@ -21608,7 +21608,7 @@
 	        }
 	
 	        /**
-	         * Constructor, will build a store/refiner/reducer
+	         * Constructor, will build a store/applyr/reducer
 	         *
 	         * (context, keys, name)
 	         * (context, name)
@@ -21763,8 +21763,8 @@
 	        }
 	
 	        /**
-	         * Overridable refiner / remapper
-	         * If privateState or lastPublicState are simple hash maps refine will return {...lastPublicState, ...privateState}
+	         * Overridable applyr / remapper
+	         * If privateState or lastPublicState are simple hash maps apply will return {...lastPublicState, ...privateState}
 	         * if not it will return the last private state
 	         * @param lastPublicState
 	         * @param privateState
@@ -21772,8 +21772,8 @@
 	         */
 	
 	    }, {
-	        key: 'refine',
-	        value: function refine(lastPublicState, privateState) {
+	        key: 'apply',
+	        value: function apply(lastPublicState, privateState) {
 	            privateState = privateState || this._state;
 	            if (!lastPublicState || lastPublicState.__proto__ !== objProto || privateState.__proto__ !== objProto) return privateState;else return _extends({}, lastPublicState, privateState);
 	        }
@@ -21814,7 +21814,7 @@
 	        }
 	
 	        /**
-	         * Apply refine/remap on the private state & push the resulting "public" state to followers
+	         * Apply apply/remap on the private state & push the resulting "public" state to followers
 	         * @param cb
 	         */
 	
@@ -21824,7 +21824,7 @@
 	            cb = force === true ? cb : force;
 	            var i = 0,
 	                me = this,
-	                nState = state || this.refine(this.state, this._state);
+	                nState = state || this.apply(this.state, this._state);
 	
 	            if (!force && !this.shouldPropag(nState)) {
 	                cb && cb();
@@ -22499,10 +22499,10 @@
 	        }
 	
 	        _createClass(currentUser, [{
-	            key: "refine",
+	            key: "apply",
 	            // list of source stores id
 	
-	            value: function refine(lastState, privateState) {
+	            value: function apply(lastState, privateState) {
 	                var _this4 = this;
 	
 	                var NewUserId = privateState.session && privateState.session.currentUserId,
@@ -22548,8 +22548,8 @@
 	            } // list of source stores id
 	
 	        }, {
-	            key: "refine",
-	            value: function refine(lastState, privateState) {
+	            key: "apply",
+	            value: function apply(lastState, privateState) {
 	                var _this6 = this;
 	
 	                var nUserId = privateState.currentUser._id;

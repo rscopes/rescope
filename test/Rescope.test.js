@@ -56,7 +56,7 @@ describe('Rescope', function () {
                 global_1: class global_1 extends Rescope.Store {
                     static state = { ok: true };
                     
-                    refine( datas, state ) {
+                    apply( datas, state ) {
                         this.wait("async creeps");
                         //console.log("g1")
                         setTimeout(

@@ -53,7 +53,7 @@ export default class Store extends EventEmitter {
     /**
      * Constructor, will build a rescope store
      *
-     * (context, {require,use,refine,state, datas})
+     * (context, {require,use,apply,state, datas})
      * (context)
      *
      * @param context {object} context where to find the other stores (default : static staticContext )
@@ -67,7 +67,7 @@ export default class Store extends EventEmitter {
             cfg          = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
             name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            refine       = isFunction(argz[0]) ? argz.shift() : cfg.refine || null,
+            apply        = isFunction(argz[0]) ? argz.shift() : cfg.apply || null,
             initialState = _static.state || _static.initialState;
         
         this._uid = cfg._uid || shortid.generate();
@@ -122,17 +122,17 @@ export default class Store extends EventEmitter {
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
             initialState = { ...initialState, ...cfg.state };
         
-        if ( refine )
-            this.refine = refine;
+        if ( apply )
+            this.apply = apply;
         
         
-        if ( initialState || this._use.length ) {// sync refine
+        if ( initialState || this._use.length ) {// sync apply
             this.state = {
                 ...(initialState || {}),
                 ...context.map(this, this._use)
             };
             if ( this.isComplete() && this.datas === undefined )
-                this.datas = this.refine(this.datas, this.state, this.state);
+                this.datas = this.apply(this.datas, this.state, this.state);
         }
         this._stable = this.datas !== undefined;// stable if it have initial result datas
         !this._stable && this.emit('unstable', this.state);
@@ -296,11 +296,30 @@ export default class Store extends EventEmitter {
     }
     
     /**
-     * Overridable refiner / remapper
-     * If state or lastPublicState are simple hash maps refine will return {...datas, ...state}
+     * Overridable applier / remapper
+     * If state or lastPublicState are simple hash maps apply will return {...datas, ...state}
      * if not it will return the last private state
      * @param datas
      * @param state
+     * @returns {*}
+     */
+    apply( datas, state, changes ) {
+        state = state || this.state;
+        
+        if ( this.refine )
+            return this.refine(...arguments);
+        
+        if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
+            return state;
+        else
+            return { ...datas, ...state }
+    }
+    
+    /**
+     * @depreciated
+     * @param datas
+     * @param state
+     * @param changes
      * @returns {*}
      */
     refine( datas, state, changes ) {
@@ -357,7 +376,7 @@ export default class Store extends EventEmitter {
     }
     
     /**
-     * Apply refine/remap on the private state & push the resulting "public" state to followers
+     * Apply apply/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
     push( datas, force, cb ) {
@@ -367,7 +386,7 @@ export default class Store extends EventEmitter {
             me        = this,
             nextState = !datas && { ...this.state, ...this._changesSW } || this.state,
             nextDatas = datas ||
-                (this.isComplete(nextState) ? this.refine(this.datas, nextState, this._changesSW) : this.datas);
+                (this.isComplete(nextState) ? this.apply(this.datas, nextState, this._changesSW) : this.datas);
         
         
         this.state = nextState;

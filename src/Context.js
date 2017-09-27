@@ -126,6 +126,11 @@ export default class Context extends EventEmitter {
     }
     
     _mount( id, state, datas ) {
+        if ( typeof id !== 'string' ) {
+            this.register({ [id.name]: id.store });
+            id = id.name;
+        }
+        
         if ( !this.__context[id] ) {//ask mixed || parent
             if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, datas)), false) ||
                 !this.parent )

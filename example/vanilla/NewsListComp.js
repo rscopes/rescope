@@ -243,6 +243,11 @@
 	    }, {
 	        key: '_mount',
 	        value: function _mount(id, state, datas) {
+	            if (typeof id !== 'string') {
+	                this.register(_defineProperty({}, id.name, id.store));
+	                id = id.name;
+	            }
+	
 	            if (!this.__context[id]) {
 	                var _parent;
 	

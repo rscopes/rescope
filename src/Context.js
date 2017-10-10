@@ -25,42 +25,41 @@ var isString        = require('isstring'),
     isFunction      = require('isfunction')
     , shortid       = require('shortid')
     , __proto__push = ( target, id, parent ) => {
-    let here = {
+    let here           = {
         [id]: function () {
         }
     };
     here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
-    target[id] = new here[id]();
-    target['_' + id] = here[id];
-};
-
-let openContexts = {};
+    target[id]         = new here[id]();
+    target['_' + id]   = here[id];
+},
+    openContexts    = {};
 
 
 export default class Context extends EventEmitter {
-    static contexts = openContexts;
-    static Store = null;
+    static contexts            = openContexts;
+    static Store               = null;
     static defaultMaxListeners = 100;
-    static persistenceTm = 0;
+    static persistenceTm       = 0;
     
     constructor( ctx, { id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
-        this._id = id = id || ("_____" + shortid.generate());
+        this._id           = id = id || ("_____" + shortid.generate());
         
         if ( openContexts[id] ) {
             openContexts[id].register(ctx);
             return openContexts[id]
         }
         
-        openContexts[id] = this;
-        this._isLocalId = true;
+        openContexts[id]    = this;
+        this._isLocalId     = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
         this.stores = {};
-        this.state = {};
-        this.datas = {};
+        this.state  = {};
+        this.datas  = {};
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'datas', parent);
@@ -71,16 +70,16 @@ export default class Context extends EventEmitter {
             
         }
         
-        this.sources = [];
+        this.sources        = [];
         this._childContexts = [];
         
-        this.__retains = { all: 0 };
-        this.__locks = { all: 1 };
+        this.__retains   = { all: 0 };
+        this.__locks     = { all: 1 };
         this.__listening = {};
-        this.__context = {};
-        this.__mixed = [];
+        this.__context   = {};
+        this.__mixed     = [];
         this.__mixedList = [];
-        this._followers = [];
+        this._followers  = [];
         if ( parent ) {
             parent.retain("isMyParent");
             !parent._stable && this.wait("waitingParent");
@@ -293,7 +292,7 @@ export default class Context extends EventEmitter {
         
         if ( as === false || as === true ) {
             setInitial = as;
-            as = null;
+            as         = null;
         }
         
         this._followers.push(
@@ -338,7 +337,7 @@ export default class Context extends EventEmitter {
     
     map( to, stores, bind = true ) {
         let Store = this.constructor.Store;
-        stores = isArray(stores) ? stores : [stores];
+        stores    = isArray(stores) ? stores : [stores];
         this.mount(stores);
         if ( bind && to instanceof Store ) {
             Store.map(to, stores, this, this, false)

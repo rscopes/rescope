@@ -22401,9 +22401,8 @@
 	    here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
 	    target[id] = new here[id]();
 	    target['_' + id] = here[id];
-	};
-	
-	var openContexts = {};
+	},
+	    openContexts = {};
 	
 	var Context = function (_EventEmitter) {
 	    _inherits(Context, _EventEmitter);
@@ -22691,7 +22690,8 @@
 	            var setInitial = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 	
 	            var lastRevs = void 0,
-	                datas = void 0;
+	                datas = void 0,
+	                reKey = void 0;
 	            if (key && !isArray(key)) key = [key];
 	
 	            // key = key||
@@ -22701,7 +22701,11 @@
 	                as = null;
 	            }
 	
-	            this._followers.push([obj, key, as || undefined, lastRevs = key && key.reduce(function (revs, id) {
+	            reKey = key.map(function (id) {
+	                return isString(id) ? id : id.name;
+	            });
+	
+	            this._followers.push([obj, key, as || undefined, lastRevs = reKey && reKey.reduce(function (revs, id) {
 	                return revs[id] = 0, revs;
 	            }, {})]);
 	

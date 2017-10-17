@@ -284,7 +284,7 @@ export default class Context extends EventEmitter {
      * @param key {string} optional key where to map the public state
      */
     bind( obj, key, as, setInitial = true ) {
-        let lastRevs, datas;
+        let lastRevs, datas, reKey;
         if ( key && !isArray(key) )
             key = [key];
         
@@ -295,12 +295,14 @@ export default class Context extends EventEmitter {
             as         = null;
         }
         
+        reKey = key.map(id => (isString(id) ? id : id.name))
+        
         this._followers.push(
             [
                 obj,
                 key,
                 as || undefined,
-                lastRevs = key && key.reduce(( revs, id ) => (revs[id] = 0, revs), {})
+                lastRevs = reKey && reKey.reduce(( revs, id ) => (revs[id] = 0, revs), {})
             ]);
         
         this.mount(key);

@@ -295,7 +295,7 @@ export default class Context extends EventEmitter {
             as         = null;
         }
         
-        reKey = key.map(id => (isString(id) ? id : id.name))
+        reKey = key.map(id => (isString(id) ? id : id.name));
         
         this._followers.push(
             [

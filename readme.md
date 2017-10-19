@@ -1,4 +1,4 @@
-# Rescope 2 rc
+# Rescope 2
 
 [![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)

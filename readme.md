@@ -23,7 +23,7 @@ Rescope Contexts manages a pool of stores and provide :
 - Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
 - Chain destroy of contexts
 
-Rescope Stores maintain, serialize and restore server & client side :
+Rescope Stores maintain server & client side :
 - Enhanced records matching some ids,
 - Processed & interpolated datas, ready for render
 - Page state & status (act as router)
@@ -61,21 +61,27 @@ Because :
 
 DIY or push mutations (setState) on the right store
 
-## (Dumb) Simple \& working examples [here](src/example) 
+## Doc ?
+
+Just code for now, check :
+
+### (Dumb) Simple \& working examples [here](src/example)
 
 \*: The Store's context is common to the vanilla & react example
+
+### And the [tests](test/Rescope.test.js)
 
 ## Theoric example :
 
 ``` jsx
 
-import {Context} from "rescope";
+import {Context, Store} from "rescope";
 
 
 let MyStaticContext = new Context({...stores_instancied_or_not}); // stores are lazy instanciated on the context hashmap
 let MyPageContext = new Context({
 ...stores,
-
+example : class example extends Store{/*...*/}
 }, {parent:MyStaticContext});
 
 
@@ -109,8 +115,9 @@ this.state = {
 ## What's next ?
 
 - Optimize
+- Better deps definition
 - Possibly some semantic/normalisation updates
-- add catch & finally
+- add error catching
 
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

@@ -45,7 +45,7 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	module.exports = __webpack_require__(205);
+	module.exports = __webpack_require__(203);
 
 
 /***/ }),
@@ -81,8 +81,8 @@
 	var ReactDom = __webpack_require__(38),
 	    Rescope = __webpack_require__(185),
 	    Context = Rescope.Context,
-	    NewsListComp = __webpack_require__(202),
-	    StoresContext = __webpack_require__(203);
+	    NewsListComp = __webpack_require__(200),
+	    StoresContext = __webpack_require__(201);
 	
 	// create empty global context for fun
 	var GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
@@ -22326,7 +22326,7 @@
 	
 	var _Context2 = _interopRequireDefault(_Context);
 	
-	var _Store = __webpack_require__(201);
+	var _Store = __webpack_require__(199);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
@@ -22357,9 +22357,9 @@
 	    value: true
 	});
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -22391,11 +22391,9 @@
 	 * Time: 17:15
 	 */
 	
-	var isString = __webpack_require__(187),
-	    isArray = __webpack_require__(188),
-	    EventEmitter = __webpack_require__(189),
-	    isFunction = __webpack_require__(190),
-	    shortid = __webpack_require__(191),
+	var is = __webpack_require__(187),
+	    EventEmitter = __webpack_require__(188),
+	    shortid = __webpack_require__(189),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var here = _defineProperty({}, id, function () {});
 	    here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
@@ -22407,7 +22405,36 @@
 	var Context = function (_EventEmitter) {
 	    _inherits(Context, _EventEmitter);
 	
-	    function Context(ctx) {
+	    _createClass(Context, null, [{
+	        key: 'getContext',
+	        // all active contexts
+	
+	        // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	        value: function getContext(contexts) {
+	            var skey = is.array(contexts) ? contexts.sort(function (a, b) {
+	                if (a.firstname < b.firstname) return -1;
+	                if (a.firstname > b.firstname) return 1;
+	                return 0;
+	            }).join('::') : contexts;
+	            return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
+	        }
+	    }]);
+	
+	    /**
+	     * Init a Rescope context
+	     *
+	     * @param storesMap {Object} Object with the origin stores
+	     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' context)
+	     * @param parent
+	     * @param state
+	     * @param datas
+	     * @param name
+	     * @param defaultMaxListeners
+	     * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	     * @param autoDestroy  {bool} will trigger retain & dispose after start
+	     * @returns {Context}
+	     */
+	    function Context(storesMap) {
 	        var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
 	            id = _ref.id,
 	            parent = _ref.parent,
@@ -22428,7 +22455,7 @@
 	        if (openContexts[id]) {
 	            var _ret;
 	
-	            openContexts[id].register(ctx);
+	            openContexts[id].register(storesMap);
 	            return _ret = openContexts[id], _possibleConstructorReturn(_this, _ret);
 	        }
 	
@@ -22475,7 +22502,7 @@
 	            // this.register(parent.__context, state, datas);
 	        }
 	
-	        _this.register(ctx, state, datas);
+	        _this.register(storesMap, state, datas);
 	        _this.__locks.all--;
 	        _this._stable = !_this.__locks.all;
 	
@@ -22486,13 +22513,25 @@
 	        return _this;
 	    }
 	
+	    /**
+	     *
+	     * Mount the stores in storesList, in this context or in its parents or mixed contexts
+	     *
+	     * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
+	     *     Store:as
+	     * @param state
+	     * @param datas
+	     * @returns {Context}
+	     */
+	
+	
 	    _createClass(Context, [{
 	        key: 'mount',
-	        value: function mount(id, state, datas) {
+	        value: function mount(storesList, state, datas) {
 	            var _this2 = this;
 	
-	            if (isArray(id)) {
-	                id.forEach(function (k) {
+	            if (is.array(storesList)) {
+	                storesList.forEach(function (k) {
 	                    return _this2._mount(k, state && state[k], datas && datas[k]);
 	                });
 	            } else {
@@ -22520,8 +22559,8 @@
 	            //this.constructor.Store.mountStore(id, this, null, state, datas);
 	            var store = this.__context[id],
 	                ctx = void 0;
-	            //console.warn("mount on ", this._id, ' ', id, isFunction(store));
-	            if (isFunction(store)) {
+	            //console.warn("mount on ", this._id, ' ', id, is.fn(store));
+	            if (is.fn(store)) {
 	                this.__context[id] = new store(this, { state: state, datas: datas });
 	            } else {
 	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
@@ -22548,7 +22587,7 @@
 	                }, false) || !this.parent) return;
 	                return (_parent2 = this.parent)._watchStore.apply(_parent2, arguments);
 	            }
-	            if (!this.__listening[id] && !isFunction(this.__context[id])) {
+	            if (!this.__listening[id] && !is.fn(this.__context[id])) {
 	                !this.__context[id].isStable() && this.wait(id);
 	                this.__context[id].on(this.__listening[id] = {
 	                    'destroy': function destroy(s) {
@@ -22568,6 +22607,13 @@
 	            }
 	            return true;
 	        }
+	
+	        /**
+	         * Mix targetCtx on this context
+	         * Mixed context parents are NOT mapped
+	         * @param targetCtx
+	         */
+	
 	    }, {
 	        key: 'mixin',
 	        value: function mixin(targetCtx) {
@@ -22601,19 +22647,26 @@
 	            __proto__push(this, 'datas', this);
 	            this.relink(this.__context, this);
 	        }
+	
+	        /**
+	         * Register stores in storesMap & link them in the protos
+	         * @param storesMap
+	         * @param state
+	         * @param datas
+	         */
+	
 	    }, {
 	        key: 'register',
-	        value: function register(rawCtx) {
+	        value: function register(storesMap) {
 	            var _this5 = this;
 	
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
-	            this.relink(rawCtx, this, false, state, datas);
-	            Object.keys(rawCtx).forEach(function (id) {
-	                return isFunction(rawCtx[id]) && rawCtx[id].singleton && _this5._mount(id, state[id], datas[id]);
+	            this.relink(storesMap, this, false, state, datas);
+	            Object.keys(storesMap).forEach(function (id) {
+	                return is.fn(storesMap[id]) && storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
 	            });
-	            //this.stores.__proto__ = this._stores.prototype;
 	        }
 	
 	        /**
@@ -22640,11 +22693,11 @@
 	                if (targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
 	
 	                if (targetCtx.__context[id]) {
-	                    if (!external && !isFunction(targetCtx.__context[id])) {
+	                    if (!external && !is.fn(targetCtx.__context[id])) {
 	                        console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
 	                        targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
 	                    }
-	                    if (!external && isFunction(targetCtx.__context[id])) targetCtx.__context[id] = srcCtx[id];
+	                    if (!external && is.fn(targetCtx.__context[id])) targetCtx.__context[id] = srcCtx[id];
 	
 	                    return;
 	                } else if (!external) _this6.__context[id] = srcCtx[id];
@@ -22680,8 +22733,12 @@
 	        }
 	
 	        /**
-	         * @param obj {React.Component|Store|function)
-	         * @param key {string} optional key where to map the public state
+	         * Bind stores from this context, his parents and mixed context
+	         *
+	         * @param obj {React.Component|Store|function}
+	         * @param key {string*} stores keys to bind updates
+	         * @param as
+	         * @param setInitial=true {bool} false to not propag initial value
 	         */
 	
 	    }, {
@@ -22692,9 +22749,7 @@
 	            var lastRevs = void 0,
 	                datas = void 0,
 	                reKey = void 0;
-	            if (key && !isArray(key)) key = [key];
-	
-	            // key = key||
+	            if (key && !is.array(key)) key = [key];
 	
 	            if (as === false || as === true) {
 	                setInitial = as;
@@ -22702,7 +22757,7 @@
 	            }
 	
 	            reKey = key.map(function (id) {
-	                return isString(id) ? id : id.name;
+	                return is.string(id) ? id : id.name;
 	            });
 	
 	            this._followers.push([obj, key, as || undefined, lastRevs = reKey && reKey.reduce(function (revs, id) {
@@ -22740,20 +22795,31 @@
 	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && followers[i][2] == as) return followers.splice(i, 1);
 	            }
 	        }
+	
+	        /**
+	         * Mount the stores in storesList from this context, its parents and mixed context
+	         * Bind them to 'to'
+	         * Hook 'to' so it will auto unbind on 'destroy' or 'componentWillUnmount'
+	         * @param to
+	         * @param storesList
+	         * @param bind
+	         * @returns {Object} Initial outputs of the stores in 'storesList'
+	         */
+	
 	    }, {
 	        key: 'map',
-	        value: function map(to, stores) {
+	        value: function map(to, storesList) {
 	            var _this7 = this;
 	
 	            var bind = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 	
 	            var Store = this.constructor.Store;
-	            stores = isArray(stores) ? stores : [stores];
-	            this.mount(stores);
+	            storesList = is.array(storesList) ? storesList : [storesList];
+	            this.mount(storesList);
 	            if (bind && to instanceof Store) {
-	                Store.map(to, stores, this, this, false);
+	                Store.map(to, storesList, this, this, false);
 	            } else if (bind) {
-	                this.bind(to, stores, undefined, false);
+	                this.bind(to, storesList, undefined, false);
 	
 	                var mixedCWUnmount = void 0,
 	                    unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
@@ -22766,59 +22832,86 @@
 	                    delete to[unMountKey];
 	                    if (mixedCWUnmount) to[unMountKey] = mixedCWUnmount;
 	
-	                    _this7.unBind(to, stores);
+	                    _this7.unBind(to, storesList);
+	                    return to[unMountKey] && to[unMountKey].apply(to, arguments);
 	                };
 	            }
-	            return stores.reduce(function (datas, id) {
+	            return storesList.reduce(function (datas, id) {
 	                return datas[id] = _this7.stores[id] && _this7.stores[id].datas, datas;
 	            }, {});
 	        }
+	
+	        /**
+	         * Get or update storesRevMap's revisions
+	         * @param storesRevMap
+	         * @param local
+	         * @returns {{}}
+	         */
+	
 	    }, {
 	        key: 'getStoresRevs',
 	        value: function getStoresRevs() {
-	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var storesRevMap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	            var local = arguments[1];
 	
 	            var ctx = this.__context;
-	            if (!stores) {
-	                stores = {};
+	            if (!storesRevMap) {
+	                storesRevMap = {};
 	            }
 	            Object.keys(ctx).forEach(function (id) {
-	                if (!isFunction(ctx[id])) {
-	                    stores[id] = ctx[id]._rev;
-	                } else if (!stores.hasOwnProperty(id)) stores[id] = false;
+	                if (!is.fn(ctx[id])) {
+	                    storesRevMap[id] = ctx[id]._rev;
+	                } else if (!storesRevMap.hasOwnProperty(id)) storesRevMap[id] = false;
 	            });
 	            if (!local) {
 	                this.__mixed.reduce(function (updated, ctx) {
-	                    return ctx.getStoresRevs(stores), stores;
-	                }, stores);
-	                this.parent && this.parent.getStoresRevs(stores);
+	                    return ctx.getStoresRevs(storesRevMap), storesRevMap;
+	                }, storesRevMap);
+	                this.parent && this.parent.getStoresRevs(storesRevMap);
 	            }
-	            return stores;
+	            return storesRevMap;
 	        }
+	
+	        /**
+	         * Get or update output basing storesRevMap's revisions.
+	         * If a store in 'storesRevMap' is updated; add it to 'output'
+	         * @param storesRevMap
+	         * @param output
+	         * @param updated
+	         * @returns {*|{}}
+	         */
+	
 	    }, {
 	        key: 'getUpdates',
-	        value: function getUpdates(revs, output, updated) {
+	        value: function getUpdates(storesRevMap, output, updated) {
 	            var _this8 = this;
 	
 	            var ctx = this.__context;
 	
 	            output = output || {};
 	            Object.keys(ctx).forEach(function (id) {
-	                if (!output[id] && (!revs || revs.hasOwnProperty(id) && revs[id] === undefined || !(!revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id]))) {
+	                if (!output[id] && (!storesRevMap || storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))) {
 	
 	                    updated = true;
 	
 	                    output[id] = _this8.datas[id];
-	                    if (revs && revs[id] !== undefined) revs[id] = ctx[id]._rev;
+	                    if (storesRevMap && storesRevMap[id] !== undefined) storesRevMap[id] = ctx[id]._rev;
 	                }
 	            });
 	            updated = this.__mixed.reduce(function (updated, ctx) {
-	                return ctx.getUpdates(revs, output, updated) || updated;
+	                return ctx.getUpdates(storesRevMap, output, updated) || updated;
 	            }, updated);
-	            updated = this.parent && this.parent.getUpdates(revs, output, updated) || updated;
+	            updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
 	            return updated && output;
 	        }
+	
+	        /**
+	         *
+	         * @param flags_states
+	         * @param flags_datas
+	         * @returns {{state: {}, datas: {}}}
+	         */
+	
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
@@ -22831,20 +22924,20 @@
 	                output = { state: {}, datas: {} },
 	                _flags_states = void 0,
 	                _flags_datas = void 0;
-	            if (isArray(flags_states)) flags_states.forEach(function (id) {
+	            if (is.array(flags_states)) flags_states.forEach(function (id) {
 	                return output.state[id] = _this9.state[id];
 	            });
 	
-	            if (isArray(flags_datas)) flags_datas.forEach(function (id) {
+	            if (is.array(flags_datas)) flags_datas.forEach(function (id) {
 	                return output.datas[id] = _this9.datas[id];
 	            });
 	
-	            if (!isArray(flags_datas) && !isArray(flags_states)) Object.keys(ctx).forEach(function (id) {
-	                if (isFunction(ctx[id])) return;
+	            if (!is.array(flags_datas) && !is.array(flags_states)) Object.keys(ctx).forEach(function (id) {
+	                if (is.fn(ctx[id])) return;
 	
 	                var flags = ctx[id].constructor.flags;
 	
-	                flags = isArray(flags) ? flags : [flags || ""];
+	                flags = is.array(flags) ? flags : [flags || ""];
 	
 	                if (flags.reduce(function (r, flag) {
 	                    return r || _flags_states.test(flag);
@@ -22861,7 +22954,7 @@
 	        value: function on(lists) {
 	            var _this10 = this;
 	
-	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
 	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', _this10).call(_this10, k, lists[k]);
 	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', this).apply(this, arguments);
 	        }
@@ -22870,7 +22963,7 @@
 	        value: function removeListener(lists) {
 	            var _this11 = this;
 	
-	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
 	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'removeListener', _this11).call(_this11, k, lists[k]);
 	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'removeListener', this).apply(this, arguments);
 	        }
@@ -23096,7 +23189,7 @@
 	            this._followers.length = 0;
 	
 	            for (var key in ctx) {
-	                if (!isFunction(ctx[key])) {
+	                if (!is.fn(ctx[key])) {
 	                    if (ctx[key].contextObj === this) ctx[key].destroy();
 	
 	                    ctx[key] = ctx[key].constructor;
@@ -23114,87 +23207,826 @@
 	            // this._datas = this._state = this._stores = null;
 	
 	        }
-	    }], [{
-	        key: 'getContext',
-	        value: function getContext(contexts) {
-	            var skey = isArray(contexts) ? contexts.sort(function (a, b) {
-	                if (a.firstname < b.firstname) return -1;
-	                if (a.firstname > b.firstname) return 1;
-	                return 0;
-	            }).join('::') : contexts;
-	            return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
-	        }
 	    }]);
 	
 	    return Context;
 	}(EventEmitter);
 	
-	Context.contexts = openContexts;
-	Context.Store = null;
 	Context.defaultMaxListeners = 100;
 	Context.persistenceTm = 0;
+	Context.Store = null;
+	Context.contexts = openContexts;
 	exports.default = Context;
 	module.exports = exports['default'];
 
 /***/ }),
 /* 187 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;;(function (factory) {
-	  if (true)
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  else if (typeof exports === 'object' && !!exports && !exports.nodeType)
-	    if (typeof module === 'object' && !!module && module.exports)
-	      module.exports = factory();
-	    else
-	      exports['default'] = factory();
-	  else if (typeof YUI === 'function' && YUI.add)
-	    YUI.add('is-string', function (Y) { Y['default'] = factory(); }, '1.0.7');
-	  else
-	    String.isString = factory();
-	})(function () {
-	  var strToString  = ('').toString,
-	      hasBind      = Function.prototype && Function.prototype.bind,
-	      strToStrCall = hasBind && strToString.call.bind(strToString),
-	      isString     = function (str) {
-	        /*@cc_on
-	          @if (@_jscript_version >= 5) @*/
-	            try {
-	                hasBind ? strToStrCall(str) : strToString.call(str);
-	                return true;
-	            } catch (e) {
-	                return false;
-	            }
-	          /*@end
-	        @*/
-	      };
+	/* globals window, HTMLElement */
 	
-	  return function (str) {
-	    return  typeof str === 'string' ||
-	            str && typeof str === 'object' &&
-	            /*@cc_on
-	              @if (@_jscript_version < 5.5)
-	                /^\s*function\s*String\(\)\s*{\s*\[native code\]\s*}\s*$/.test(str.constructor)
-	              @else @*/
-	                isString(str)
-	              /*@end
-	            @*/
-	            || false;
-	  };
-	});
+	'use strict';
+	
+	/**!
+	 * is
+	 * the definitive JavaScript type testing library
+	 *
+	 * @copyright 2013-2014 Enrico Marino / Jordan Harband
+	 * @license MIT
+	 */
+	
+	var objProto = Object.prototype;
+	var owns = objProto.hasOwnProperty;
+	var toStr = objProto.toString;
+	var symbolValueOf;
+	if (typeof Symbol === 'function') {
+	  symbolValueOf = Symbol.prototype.valueOf;
+	}
+	var isActualNaN = function (value) {
+	  return value !== value;
+	};
+	var NON_HOST_TYPES = {
+	  'boolean': 1,
+	  number: 1,
+	  string: 1,
+	  undefined: 1
+	};
+	
+	var base64Regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
+	var hexRegex = /^[A-Fa-f0-9]+$/;
+	
+	/**
+	 * Expose `is`
+	 */
+	
+	var is = {};
+	
+	/**
+	 * Test general.
+	 */
+	
+	/**
+	 * is.type
+	 * Test if `value` is a type of `type`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @param {String} type type
+	 * @return {Boolean} true if `value` is a type of `type`, false otherwise
+	 * @api public
+	 */
+	
+	is.a = is.type = function (value, type) {
+	  return typeof value === type;
+	};
+	
+	/**
+	 * is.defined
+	 * Test if `value` is defined.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is defined, false otherwise
+	 * @api public
+	 */
+	
+	is.defined = function (value) {
+	  return typeof value !== 'undefined';
+	};
+	
+	/**
+	 * is.empty
+	 * Test if `value` is empty.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is empty, false otherwise
+	 * @api public
+	 */
+	
+	is.empty = function (value) {
+	  var type = toStr.call(value);
+	  var key;
+	
+	  if (type === '[object Array]' || type === '[object Arguments]' || type === '[object String]') {
+	    return value.length === 0;
+	  }
+	
+	  if (type === '[object Object]') {
+	    for (key in value) {
+	      if (owns.call(value, key)) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  return !value;
+	};
+	
+	/**
+	 * is.equal
+	 * Test if `value` is equal to `other`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @param {Mixed} other value to compare with
+	 * @return {Boolean} true if `value` is equal to `other`, false otherwise
+	 */
+	
+	is.equal = function equal(value, other) {
+	  if (value === other) {
+	    return true;
+	  }
+	
+	  var type = toStr.call(value);
+	  var key;
+	
+	  if (type !== toStr.call(other)) {
+	    return false;
+	  }
+	
+	  if (type === '[object Object]') {
+	    for (key in value) {
+	      if (!is.equal(value[key], other[key]) || !(key in other)) {
+	        return false;
+	      }
+	    }
+	    for (key in other) {
+	      if (!is.equal(value[key], other[key]) || !(key in value)) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  if (type === '[object Array]') {
+	    key = value.length;
+	    if (key !== other.length) {
+	      return false;
+	    }
+	    while (key--) {
+	      if (!is.equal(value[key], other[key])) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  if (type === '[object Function]') {
+	    return value.prototype === other.prototype;
+	  }
+	
+	  if (type === '[object Date]') {
+	    return value.getTime() === other.getTime();
+	  }
+	
+	  return false;
+	};
+	
+	/**
+	 * is.hosted
+	 * Test if `value` is hosted by `host`.
+	 *
+	 * @param {Mixed} value to test
+	 * @param {Mixed} host host to test with
+	 * @return {Boolean} true if `value` is hosted by `host`, false otherwise
+	 * @api public
+	 */
+	
+	is.hosted = function (value, host) {
+	  var type = typeof host[value];
+	  return type === 'object' ? !!host[value] : !NON_HOST_TYPES[type];
+	};
+	
+	/**
+	 * is.instance
+	 * Test if `value` is an instance of `constructor`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an instance of `constructor`
+	 * @api public
+	 */
+	
+	is.instance = is['instanceof'] = function (value, constructor) {
+	  return value instanceof constructor;
+	};
+	
+	/**
+	 * is.nil / is.null
+	 * Test if `value` is null.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is null, false otherwise
+	 * @api public
+	 */
+	
+	is.nil = is['null'] = function (value) {
+	  return value === null;
+	};
+	
+	/**
+	 * is.undef / is.undefined
+	 * Test if `value` is undefined.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is undefined, false otherwise
+	 * @api public
+	 */
+	
+	is.undef = is.undefined = function (value) {
+	  return typeof value === 'undefined';
+	};
+	
+	/**
+	 * Test arguments.
+	 */
+	
+	/**
+	 * is.args
+	 * Test if `value` is an arguments object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an arguments object, false otherwise
+	 * @api public
+	 */
+	
+	is.args = is.arguments = function (value) {
+	  var isStandardArguments = toStr.call(value) === '[object Arguments]';
+	  var isOldArguments = !is.array(value) && is.arraylike(value) && is.object(value) && is.fn(value.callee);
+	  return isStandardArguments || isOldArguments;
+	};
+	
+	/**
+	 * Test array.
+	 */
+	
+	/**
+	 * is.array
+	 * Test if 'value' is an array.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an array, false otherwise
+	 * @api public
+	 */
+	
+	is.array = Array.isArray || function (value) {
+	  return toStr.call(value) === '[object Array]';
+	};
+	
+	/**
+	 * is.arguments.empty
+	 * Test if `value` is an empty arguments object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an empty arguments object, false otherwise
+	 * @api public
+	 */
+	is.args.empty = function (value) {
+	  return is.args(value) && value.length === 0;
+	};
+	
+	/**
+	 * is.array.empty
+	 * Test if `value` is an empty array.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an empty array, false otherwise
+	 * @api public
+	 */
+	is.array.empty = function (value) {
+	  return is.array(value) && value.length === 0;
+	};
+	
+	/**
+	 * is.arraylike
+	 * Test if `value` is an arraylike object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an arguments object, false otherwise
+	 * @api public
+	 */
+	
+	is.arraylike = function (value) {
+	  return !!value && !is.bool(value)
+	    && owns.call(value, 'length')
+	    && isFinite(value.length)
+	    && is.number(value.length)
+	    && value.length >= 0;
+	};
+	
+	/**
+	 * Test boolean.
+	 */
+	
+	/**
+	 * is.bool
+	 * Test if `value` is a boolean.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a boolean, false otherwise
+	 * @api public
+	 */
+	
+	is.bool = is['boolean'] = function (value) {
+	  return toStr.call(value) === '[object Boolean]';
+	};
+	
+	/**
+	 * is.false
+	 * Test if `value` is false.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is false, false otherwise
+	 * @api public
+	 */
+	
+	is['false'] = function (value) {
+	  return is.bool(value) && Boolean(Number(value)) === false;
+	};
+	
+	/**
+	 * is.true
+	 * Test if `value` is true.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is true, false otherwise
+	 * @api public
+	 */
+	
+	is['true'] = function (value) {
+	  return is.bool(value) && Boolean(Number(value)) === true;
+	};
+	
+	/**
+	 * Test date.
+	 */
+	
+	/**
+	 * is.date
+	 * Test if `value` is a date.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a date, false otherwise
+	 * @api public
+	 */
+	
+	is.date = function (value) {
+	  return toStr.call(value) === '[object Date]';
+	};
+	
+	/**
+	 * is.date.valid
+	 * Test if `value` is a valid date.
+	 *
+	 * @param {Mixed} value value to test
+	 * @returns {Boolean} true if `value` is a valid date, false otherwise
+	 */
+	is.date.valid = function (value) {
+	  return is.date(value) && !isNaN(Number(value));
+	};
+	
+	/**
+	 * Test element.
+	 */
+	
+	/**
+	 * is.element
+	 * Test if `value` is an html element.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an HTML Element, false otherwise
+	 * @api public
+	 */
+	
+	is.element = function (value) {
+	  return value !== undefined
+	    && typeof HTMLElement !== 'undefined'
+	    && value instanceof HTMLElement
+	    && value.nodeType === 1;
+	};
+	
+	/**
+	 * Test error.
+	 */
+	
+	/**
+	 * is.error
+	 * Test if `value` is an error object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an error object, false otherwise
+	 * @api public
+	 */
+	
+	is.error = function (value) {
+	  return toStr.call(value) === '[object Error]';
+	};
+	
+	/**
+	 * Test function.
+	 */
+	
+	/**
+	 * is.fn / is.function (deprecated)
+	 * Test if `value` is a function.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a function, false otherwise
+	 * @api public
+	 */
+	
+	is.fn = is['function'] = function (value) {
+	  var isAlert = typeof window !== 'undefined' && value === window.alert;
+	  if (isAlert) {
+	    return true;
+	  }
+	  var str = toStr.call(value);
+	  return str === '[object Function]' || str === '[object GeneratorFunction]' || str === '[object AsyncFunction]';
+	};
+	
+	/**
+	 * Test number.
+	 */
+	
+	/**
+	 * is.number
+	 * Test if `value` is a number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a number, false otherwise
+	 * @api public
+	 */
+	
+	is.number = function (value) {
+	  return toStr.call(value) === '[object Number]';
+	};
+	
+	/**
+	 * is.infinite
+	 * Test if `value` is positive or negative infinity.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is positive or negative Infinity, false otherwise
+	 * @api public
+	 */
+	is.infinite = function (value) {
+	  return value === Infinity || value === -Infinity;
+	};
+	
+	/**
+	 * is.decimal
+	 * Test if `value` is a decimal number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a decimal number, false otherwise
+	 * @api public
+	 */
+	
+	is.decimal = function (value) {
+	  return is.number(value) && !isActualNaN(value) && !is.infinite(value) && value % 1 !== 0;
+	};
+	
+	/**
+	 * is.divisibleBy
+	 * Test if `value` is divisible by `n`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} n dividend
+	 * @return {Boolean} true if `value` is divisible by `n`, false otherwise
+	 * @api public
+	 */
+	
+	is.divisibleBy = function (value, n) {
+	  var isDividendInfinite = is.infinite(value);
+	  var isDivisorInfinite = is.infinite(n);
+	  var isNonZeroNumber = is.number(value) && !isActualNaN(value) && is.number(n) && !isActualNaN(n) && n !== 0;
+	  return isDividendInfinite || isDivisorInfinite || (isNonZeroNumber && value % n === 0);
+	};
+	
+	/**
+	 * is.integer
+	 * Test if `value` is an integer.
+	 *
+	 * @param value to test
+	 * @return {Boolean} true if `value` is an integer, false otherwise
+	 * @api public
+	 */
+	
+	is.integer = is['int'] = function (value) {
+	  return is.number(value) && !isActualNaN(value) && value % 1 === 0;
+	};
+	
+	/**
+	 * is.maximum
+	 * Test if `value` is greater than 'others' values.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Array} others values to compare with
+	 * @return {Boolean} true if `value` is greater than `others` values
+	 * @api public
+	 */
+	
+	is.maximum = function (value, others) {
+	  if (isActualNaN(value)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.arraylike(others)) {
+	    throw new TypeError('second argument must be array-like');
+	  }
+	  var len = others.length;
+	
+	  while (--len >= 0) {
+	    if (value < others[len]) {
+	      return false;
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * is.minimum
+	 * Test if `value` is less than `others` values.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Array} others values to compare with
+	 * @return {Boolean} true if `value` is less than `others` values
+	 * @api public
+	 */
+	
+	is.minimum = function (value, others) {
+	  if (isActualNaN(value)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.arraylike(others)) {
+	    throw new TypeError('second argument must be array-like');
+	  }
+	  var len = others.length;
+	
+	  while (--len >= 0) {
+	    if (value > others[len]) {
+	      return false;
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * is.nan
+	 * Test if `value` is not a number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is not a number, false otherwise
+	 * @api public
+	 */
+	
+	is.nan = function (value) {
+	  return !is.number(value) || value !== value;
+	};
+	
+	/**
+	 * is.even
+	 * Test if `value` is an even number.
+	 *
+	 * @param {Number} value value to test
+	 * @return {Boolean} true if `value` is an even number, false otherwise
+	 * @api public
+	 */
+	
+	is.even = function (value) {
+	  return is.infinite(value) || (is.number(value) && value === value && value % 2 === 0);
+	};
+	
+	/**
+	 * is.odd
+	 * Test if `value` is an odd number.
+	 *
+	 * @param {Number} value value to test
+	 * @return {Boolean} true if `value` is an odd number, false otherwise
+	 * @api public
+	 */
+	
+	is.odd = function (value) {
+	  return is.infinite(value) || (is.number(value) && value === value && value % 2 !== 0);
+	};
+	
+	/**
+	 * is.ge
+	 * Test if `value` is greater than or equal to `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	is.ge = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value >= other;
+	};
+	
+	/**
+	 * is.gt
+	 * Test if `value` is greater than `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	is.gt = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value > other;
+	};
+	
+	/**
+	 * is.le
+	 * Test if `value` is less than or equal to `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean} if 'value' is less than or equal to 'other'
+	 * @api public
+	 */
+	
+	is.le = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value <= other;
+	};
+	
+	/**
+	 * is.lt
+	 * Test if `value` is less than `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean} if `value` is less than `other`
+	 * @api public
+	 */
+	
+	is.lt = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value < other;
+	};
+	
+	/**
+	 * is.within
+	 * Test if `value` is within `start` and `finish`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} start lower bound
+	 * @param {Number} finish upper bound
+	 * @return {Boolean} true if 'value' is is within 'start' and 'finish'
+	 * @api public
+	 */
+	is.within = function (value, start, finish) {
+	  if (isActualNaN(value) || isActualNaN(start) || isActualNaN(finish)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.number(value) || !is.number(start) || !is.number(finish)) {
+	    throw new TypeError('all arguments must be numbers');
+	  }
+	  var isAnyInfinite = is.infinite(value) || is.infinite(start) || is.infinite(finish);
+	  return isAnyInfinite || (value >= start && value <= finish);
+	};
+	
+	/**
+	 * Test object.
+	 */
+	
+	/**
+	 * is.object
+	 * Test if `value` is an object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an object, false otherwise
+	 * @api public
+	 */
+	is.object = function (value) {
+	  return toStr.call(value) === '[object Object]';
+	};
+	
+	/**
+	 * is.primitive
+	 * Test if `value` is a primitive.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a primitive, false otherwise
+	 * @api public
+	 */
+	is.primitive = function isPrimitive(value) {
+	  if (!value) {
+	    return true;
+	  }
+	  if (typeof value === 'object' || is.object(value) || is.fn(value) || is.array(value)) {
+	    return false;
+	  }
+	  return true;
+	};
+	
+	/**
+	 * is.hash
+	 * Test if `value` is a hash - a plain object literal.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a hash, false otherwise
+	 * @api public
+	 */
+	
+	is.hash = function (value) {
+	  return is.object(value) && value.constructor === Object && !value.nodeType && !value.setInterval;
+	};
+	
+	/**
+	 * Test regexp.
+	 */
+	
+	/**
+	 * is.regexp
+	 * Test if `value` is a regular expression.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a regexp, false otherwise
+	 * @api public
+	 */
+	
+	is.regexp = function (value) {
+	  return toStr.call(value) === '[object RegExp]';
+	};
+	
+	/**
+	 * Test string.
+	 */
+	
+	/**
+	 * is.string
+	 * Test if `value` is a string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a string, false otherwise
+	 * @api public
+	 */
+	
+	is.string = function (value) {
+	  return toStr.call(value) === '[object String]';
+	};
+	
+	/**
+	 * Test base64 string.
+	 */
+	
+	/**
+	 * is.base64
+	 * Test if `value` is a valid base64 encoded string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a base64 encoded string, false otherwise
+	 * @api public
+	 */
+	
+	is.base64 = function (value) {
+	  return is.string(value) && (!value.length || base64Regex.test(value));
+	};
+	
+	/**
+	 * Test base64 string.
+	 */
+	
+	/**
+	 * is.hex
+	 * Test if `value` is a valid hex encoded string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a hex encoded string, false otherwise
+	 * @api public
+	 */
+	
+	is.hex = function (value) {
+	  return is.string(value) && (!value.length || hexRegex.test(value));
+	};
+	
+	/**
+	 * is.symbol
+	 * Test if `value` is an ES6 Symbol
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a Symbol, false otherise
+	 * @api public
+	 */
+	
+	is.symbol = function (value) {
+	  return typeof Symbol === 'function' && toStr.call(value) === '[object Symbol]' && typeof symbolValueOf.call(value) === 'symbol';
+	};
+	
+	module.exports = is;
 
 
 /***/ }),
 /* 188 */
-/***/ (function(module, exports) {
-
-	module.exports = Array.isArray || function (arr) {
-	  return Object.prototype.toString.call(arr) == '[object Array]';
-	};
-
-
-/***/ }),
-/* 189 */
 /***/ (function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -23502,45 +24334,30 @@
 
 
 /***/ }),
+/* 189 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = __webpack_require__(190);
+
+
+/***/ }),
 /* 190 */
-/***/ (function(module, exports) {
-
-	// if (typeof require !== 'undefined') {}
-	
-	var isFunction = function (functionToCheck) {
-		var getType = {};
-		return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-	};
-	
-	if (typeof module !== 'undefined' && module.exports) {
-		module.exports = isFunction;
-	}
-
-/***/ }),
-/* 191 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	module.exports = __webpack_require__(192);
-
-
-/***/ }),
-/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var alphabet = __webpack_require__(193);
-	var encode = __webpack_require__(195);
-	var decode = __webpack_require__(197);
-	var build = __webpack_require__(198);
-	var isValid = __webpack_require__(199);
+	var alphabet = __webpack_require__(191);
+	var encode = __webpack_require__(193);
+	var decode = __webpack_require__(195);
+	var build = __webpack_require__(196);
+	var isValid = __webpack_require__(197);
 	
 	// if you are using cluster or multiple servers use this to make each instance
 	// has a unique value for worker
 	// Note: I don't know if this is automatically set when using third
 	// party cluster solutions such as pm2.
-	var clusterWorkerId = __webpack_require__(200) || 0;
+	var clusterWorkerId = __webpack_require__(198) || 0;
 	
 	/**
 	 * Set the seed.
@@ -23596,12 +24413,12 @@
 
 
 /***/ }),
-/* 193 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomFromSeed = __webpack_require__(194);
+	var randomFromSeed = __webpack_require__(192);
 	
 	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
 	var alphabet;
@@ -23700,7 +24517,7 @@
 
 
 /***/ }),
-/* 194 */
+/* 192 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -23731,12 +24548,12 @@
 
 
 /***/ }),
-/* 195 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomByte = __webpack_require__(196);
+	var randomByte = __webpack_require__(194);
 	
 	function encode(lookup, number) {
 	    var loopCounter = 0;
@@ -23756,7 +24573,7 @@
 
 
 /***/ }),
-/* 196 */
+/* 194 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -23776,11 +24593,11 @@
 
 
 /***/ }),
-/* 197 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(193);
+	var alphabet = __webpack_require__(191);
 	
 	/**
 	 * Decode the id to get the version and worker
@@ -23799,13 +24616,13 @@
 
 
 /***/ }),
-/* 198 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var encode = __webpack_require__(195);
-	var alphabet = __webpack_require__(193);
+	var encode = __webpack_require__(193);
+	var alphabet = __webpack_require__(191);
 	
 	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
 	// This number should be updated every year or so to keep the generated id short.
@@ -23853,11 +24670,11 @@
 
 
 /***/ }),
-/* 199 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(193);
+	var alphabet = __webpack_require__(191);
 	
 	function isShortId(id) {
 	    if (!id || typeof id !== 'string' || id.length < 6 ) {
@@ -23878,7 +24695,7 @@
 
 
 /***/ }),
-/* 200 */
+/* 198 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -23887,7 +24704,7 @@
 
 
 /***/ }),
-/* 201 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23931,12 +24748,10 @@
 	 * @todo : lot of optims...
 	 */
 	
-	var isString = __webpack_require__(187),
-	    isArray = __webpack_require__(188),
-	    isFunction = __webpack_require__(190),
+	var is = __webpack_require__(187),
 	    Context = __webpack_require__(186),
-	    EventEmitter = __webpack_require__(189),
-	    shortid = __webpack_require__(191),
+	    EventEmitter = __webpack_require__(188),
+	    shortid = __webpack_require__(189),
 	    objProto = Object.getPrototypeOf({}),
 	    openContexts = {};
 	
@@ -23967,12 +24782,14 @@
 	
 	        var argz = [].concat(Array.prototype.slice.call(arguments)),
 	            _static = _this.constructor,
-	            context = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-	            cfg = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
-	            name = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
-	            watchs = isArray(argz[0]) ? argz.shift() : cfg.use || [],
-	            // watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-	        apply = isFunction(argz[0]) ? argz.shift() : cfg.apply || null,
+	            context = !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : _static.staticContext,
+	            cfg = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
+	            name = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
+	            watchs = is.array(argz[0]) ? argz.shift() : cfg.use || [],
+	            // watchs need to be defined after all the
+	        // store are registered : so we can't deal
+	        // with any "static use" automaticly
+	        apply = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
 	            initialState = _static.state || _static.initialState;
 	
 	        _this._uid = cfg._uid || shortid.generate();
@@ -23983,7 +24800,7 @@
 	        _this._onStabilize = [];
 	
 	        _this._persistenceTm = cfg.persistenceTm || _this.constructor.persistenceTm;
-	        if (isString(argz[0])) {
+	        if (is.string(argz[0])) {
 	            if (context.__context[name]) console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
 	            context.__context[name] = _this;
 	        }
@@ -24068,7 +24885,7 @@
 	                return r || nDatas && nDatas[i];
 	            }, false))) return true;
 	
-	            if (isArray(_static.follow)) _static.follow.forEach(function (key) {
+	            if (is.array(_static.follow)) _static.follow.forEach(function (key) {
 	                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
 	            });else if (_static.follow === 'strict') r = nDatas === cDatas;else {
 	                cDatas && Object.keys(cDatas).forEach(function (key) {
@@ -24280,7 +25097,7 @@
 	        value: function on(lists) {
 	            var _this4 = this;
 	
-	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
 	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', _this4).call(_this4, k, lists[k]);
 	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'on', this).apply(this, arguments);
 	        }
@@ -24289,7 +25106,7 @@
 	        value: function removeListener(lists) {
 	            var _this5 = this;
 	
-	            if (!isString(lists) && lists) Object.keys(lists).forEach(function (k) {
+	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
 	                return _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'removeListener', _this5).call(_this5, k, lists[k]);
 	            });else _get(Store.prototype.__proto__ || Object.getPrototypeOf(Store.prototype), 'removeListener', this).apply(this, arguments);
 	        }
@@ -24411,18 +25228,18 @@
 	        key: 'wait',
 	        value: function wait(previous) {
 	            if (typeof previous == "number") return this.__locks.all += previous;
-	            if (isArray(previous)) return previous.map(this.wait.bind(this));
+	            if (is.array(previous)) return previous.map(this.wait.bind(this));
 	
 	            this._stable && this.emit('unstable', this.state, this.datas);
 	            this._stable = false;
 	            this.__locks.all++;
 	
-	            var reason = isString(previous) ? previous : null;
+	            var reason = is.string(previous) ? previous : null;
 	            if (reason) {
 	                this.__locks[reason] = this.__locks[reason] || 0;
 	                this.__locks[reason]++;
 	            }
-	            if (previous && isFunction(previous.then)) {
+	            if (previous && is.fn(previous.then)) {
 	                previous.then(this.release.bind(this, null));
 	            }
 	            return this;
@@ -24445,7 +25262,7 @@
 	            var i = 0,
 	                wasStable = this._stable;
 	
-	            if (isFunction(reason)) {
+	            if (is.fn(reason)) {
 	                cb = reason;
 	                reason = null;
 	            }
@@ -24568,7 +25385,7 @@
 	            var targetRevs = component._revs || {};
 	            var targetContext = component.stores || (component.stores = {});
 	            var initialOutputs = {};
-	            keys = isArray(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
+	            keys = is.array(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
 	            context = context || Store.staticContext;
 	
@@ -24589,7 +25406,7 @@
 	                if (key.store && key.name) {
 	                    alias = name = key.name;
 	                    store = key.store;
-	                } else if (isFunction(key)) {
+	                } else if (is.fn(key)) {
 	                    name = alias = key.name || key.defaultName;
 	                    store = key;
 	                } else {
@@ -24603,7 +25420,7 @@
 	                if (!store) {
 	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
 	                    return false;
-	                } else if (isFunction(store)) {
+	                } else if (is.fn(store)) {
 	                    context._mount(name);
 	
 	                    context.stores[name].bind(component, alias, setInitial);
@@ -24626,9 +25443,9 @@
 	            }
 	
 	            component[unMountKey] = function () {
-	                // todo hop
-	                delete this[unMountKey];
-	                if (mixedCWUnmount) this[unMountKey] = mixedCWUnmount;
+	                delete component[unMountKey];
+	                if (mixedCWUnmount) component[unMountKey] = mixedCWUnmount;
+	
 	                keys.map(function (key) {
 	                    var name = void 0,
 	                        alias = void 0,
@@ -24636,7 +25453,7 @@
 	                    if (key.store && key.name) {
 	                        alias = name = key.name;
 	                        store = key.store;
-	                    } else if (isFunction(key)) {
+	                    } else if (is.fn(key)) {
 	                        name = alias = key.name || key.defaultName;
 	                        store = context.stores[name];
 	                    } else {
@@ -24646,9 +25463,9 @@
 	                        alias = key[1] || key[0];
 	                    }
 	
-	                    store && !isFunction(store) && store.unBind(component, alias);
+	                    store && !is.fn(store) && store.unBind(component, alias);
 	                });
-	                return this[unMountKey] && this[unMountKey].apply(this, arguments);
+	                return component[unMountKey] && component[unMountKey].apply(component, arguments);
 	            };
 	
 	            return initialOutputs;
@@ -24668,7 +25485,7 @@
 	module.exports = exports['default'];
 
 /***/ }),
-/* 202 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -24769,7 +25586,7 @@
 	module.exports = exports["default"];
 
 /***/ }),
-/* 203 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -24808,7 +25625,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(204);
+	var stubs = __webpack_require__(202);
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -24931,7 +25748,7 @@
 	module.exports = exports["default"];
 
 /***/ }),
-/* 204 */
+/* 202 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -24989,7 +25806,7 @@
 	module.exports = exports["default"];
 
 /***/ }),
-/* 205 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/react/index.html";

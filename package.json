@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "events": "^1.1.1",
+    "is": "^3.2.1",
     "isarray": "0.0.1",
     "isfunction": "0.0.6",
     "isnumber": "^1.0.0",

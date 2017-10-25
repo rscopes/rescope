@@ -17,10 +17,7 @@
  * @todo : lot of optims...
  */
 
-var isString     = require('isstring')
-    , isArray    = require('isarray')
-    , isFunction = require('isfunction')
-    ,
+var is           = require('is'),
     Context      = require('./Context'),
     EventEmitter = require('events'),
     shortid      = require('shortid'),
@@ -30,17 +27,17 @@ var isString     = require('isstring')
 
 export default class Store extends EventEmitter {
     
-    static use = [];// overridable list of source stores
+    static use                        = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext = new Context({}, { id: "static" });
-    static initialState = undefined;// default state @depreciated
-    static state = undefined;// default state
+    static staticContext              = new Context({}, { id: "static" });
+    static initialState               = undefined;// default state @depreciated
+    static state                      = undefined;// default state
     /**
      *
      * @type {number}
      */
-    static defaultMaxListeners = 100;
+           static defaultMaxListeners = 100;
     /**
      * if retain goes to 0 :
      * false to not destroy,
@@ -48,7 +45,7 @@ export default class Store extends EventEmitter {
      * Ms to autodestroy after tm ms if no retain has been called
      * @type {boolean|Int}
      */
-    static persistenceTm = false;
+           static persistenceTm       = false;
     
     /**
      * Constructor, will build a rescope store
@@ -63,22 +60,24 @@ export default class Store extends EventEmitter {
         super();
         var argz         = [...arguments],
             _static      = this.constructor,
-            context      = !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : _static.staticContext,
-            cfg          = argz[0] && !isArray(argz[0]) && !isString(argz[0]) ? argz.shift() : {},
-            name         = isString(argz[0]) ? argz[0] : cfg.name || _static.name,
-            watchs       = isArray(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the store are registered : so we can't deal with any "static use" automaticly
-            apply        = isFunction(argz[0]) ? argz.shift() : cfg.apply || null,
+            context      = !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : _static.staticContext,
+            cfg          = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
+            name         = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
+            watchs       = is.array(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the
+                                                                            // store are registered : so we can't deal
+                                                                            // with any "static use" automaticly
+            apply        = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
             initialState = _static.state || _static.initialState;
         
-        this._uid = cfg._uid || shortid.generate();
+        this._uid          = cfg._uid || shortid.generate();
         this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
         
-        this.__retains = { all: 0 };
-        this.__locks = { all: 0 };
+        this.__retains    = { all: 0 };
+        this.__locks      = { all: 0 };
         this._onStabilize = [];
         
         this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
-        if ( isString(argz[0]) ) {
+        if ( is.string(argz[0]) ) {
             if ( context.__context[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
             context.__context[name] = this;
@@ -94,18 +93,18 @@ export default class Store extends EventEmitter {
         
         if ( context.stores ) {
             this.contextObj = context;
-            this.context = context.stores;
+            this.context    = context.stores;
         }
         else {
             this.contextObj = new Context(context);
-            this.context = context.stores;
+            this.context    = context.stores;
         }
         
         
-        this._stable = true;
-        this._rev = 1;
-        this._revs = {};
-        this.stores = {};
+        this._stable  = true;
+        this._rev     = 1;
+        this._revs    = {};
+        this.stores   = {};
         this._require = [];
         
         if ( _static.require )
@@ -155,10 +154,10 @@ export default class Store extends EventEmitter {
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
     static map( component, keys, context, origin, setInitial = false ) {
-        var targetRevs = component._revs || {};
-        var targetContext = component.stores || (component.stores = {});
+        var targetRevs     = component._revs || {};
+        var targetContext  = component.stores || (component.stores = {});
         var initialOutputs = {};
-        keys = isArray(keys) ? [...keys] : [keys];
+        keys               = is.array(keys) ? [...keys] : [keys];
         
         
         context = context || Store.staticContext;
@@ -166,7 +165,7 @@ export default class Store extends EventEmitter {
         // if (!targetContext.__context)
         //     debugger;
         
-        keys = keys.filter(
+        keys           = keys.filter(
             // @todo : use query refs
             // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
             ( key ) => {
@@ -181,13 +180,13 @@ export default class Store extends EventEmitter {
                     alias = name = key.name;
                     store = key.store;
                 }
-                else if ( isFunction(key) ) {
+                else if ( is.fn(key) ) {
                     name = alias = key.name || key.defaultName;
                     store = key;
                 }
                 else {
-                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-                    name = key[0];
+                    key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
+                    name  = key[0];
                     store = context.stores[key[0]];
                     alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
                 }
@@ -197,7 +196,7 @@ export default class Store extends EventEmitter {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
                 }
-                else if ( isFunction(store) ) {
+                else if ( is.fn(store) ) {
                     context._mount(name)
                     
                     context.stores[name].bind(component, alias, setInitial);
@@ -221,11 +220,12 @@ export default class Store extends EventEmitter {
         if ( component.hasOwnProperty(unMountKey) ) {
             mixedCWUnmount = component[unMountKey];
         }
-        
-        component[unMountKey] = function () {// todo hop
-            delete this[unMountKey];
+    
+        component[unMountKey] = (...argz) => {
+            delete component[unMountKey];
             if ( mixedCWUnmount )
-                this[unMountKey] = mixedCWUnmount;
+                component[unMountKey] = mixedCWUnmount;
+    
             keys.map(
                 ( key ) => {
                     let name,
@@ -235,21 +235,21 @@ export default class Store extends EventEmitter {
                         alias = name = key.name;
                         store = key.store;
                     }
-                    else if ( isFunction(key) ) {
+                    else if ( is.fn(key) ) {
                         name = alias = key.name || key.defaultName;
                         store = context.stores[name];
                     }
                     else {
-                        key = key.split(':');
-                        name = key[0];
+                        key   = key.split(':');
+                        name  = key[0];
                         store = context.stores[key[0]];
                         alias = key[1] || key[0];
                     }
-                    
-                    store && !isFunction(store) && store.unBind(component, alias)
+            
+                    store && !is.fn(store) && store.unBind(component, alias)
                 }
             );
-            return this[unMountKey] && this[unMountKey].apply(this, arguments);
+            return component[unMountKey] && component[unMountKey](...argz);
         }
         
         return initialOutputs;
@@ -271,7 +271,7 @@ export default class Store extends EventEmitter {
                 _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
             return true;
         
-        if ( isArray(_static.follow) )
+        if ( is.array(_static.follow) )
             _static.follow.forEach(
                 ( key ) => {
                     r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
@@ -380,8 +380,8 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     push( datas, force, cb ) {
-        cb = force === true ? cb : force;
-        force = force === true;
+        cb            = force === true ? cb : force;
+        force         = force === true;
         var i         = 0,
             me        = this,
             nextState = !datas && { ...this.state, ...this._changesSW } || this.state,
@@ -420,9 +420,9 @@ export default class Store extends EventEmitter {
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change = true;
+                change        = true;
                 this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k] = pState[k];
+                changes[k]    = pState[k];
             }
         
         if ( sync ) {
@@ -454,9 +454,9 @@ export default class Store extends EventEmitter {
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
-                change = true;
+                change        = true;
                 this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k] = pState[k];
+                changes[k]    = pState[k];
             }
         this.push();
         return this.datas;
@@ -468,7 +468,7 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     replaceState( pState, cb ) {
-        var i = 0, me = this;
+        var i      = 0, me = this;
         this.state = pState;
         
         this.stabilize(cb);
@@ -484,13 +484,13 @@ export default class Store extends EventEmitter {
     }
     
     on( lists ) {
-        if ( !isString(lists) && lists )
+        if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
     }
     
     removeListener( lists ) {
-        if ( !isString(lists) && lists )
+        if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
         else super.removeListener(...arguments);
     }
@@ -592,19 +592,19 @@ export default class Store extends EventEmitter {
     wait( previous ) {
         if ( typeof previous == "number" )
             return this.__locks.all += previous;
-        if ( isArray(previous) )
+        if ( is.array(previous) )
             return previous.map(this.wait.bind(this));
         
         this._stable && this.emit('unstable', this.state, this.datas);
         this._stable = false;
         this.__locks.all++;
         
-        let reason = isString(previous) ? previous : null;
+        let reason = is.string(previous) ? previous : null;
         if ( reason ) {
             this.__locks[reason] = this.__locks[reason] || 0;
             this.__locks[reason]++;
         }
-        if ( previous && isFunction(previous.then) ) {
+        if ( previous && is.fn(previous.then) ) {
             previous.then(this.release.bind(this, null));
         }
         return this;
@@ -619,10 +619,10 @@ export default class Store extends EventEmitter {
      */
     release( reason, cb ) {
         var _static = this.constructor;
-        let i = 0, wasStable = this._stable;
+        let i       = 0, wasStable = this._stable;
         
-        if ( isFunction(reason) ) {
-            cb = reason;
+        if ( is.fn(reason) ) {
+            cb     = reason;
             reason = null;
         }
         
@@ -638,7 +638,7 @@ export default class Store extends EventEmitter {
         
         if ( !--this.__locks.all && this.datas && this.isComplete() ) {
             this._stable = true;
-            this._rev = 1 + (this._rev + 1) % 1000000;//
+            this._rev    = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
                     if ( !this.datas ) return;
@@ -729,8 +729,8 @@ export default class Store extends EventEmitter {
                 }
             );
         this._followers.length = 0;
-        this.dead = true;
-        this._revs = this.datas = this.state = this.context = null;
+        this.dead              = true;
+        this._revs             = this.datas = this.state = this.context = null;
         this.removeAllListeners();
     }
 }

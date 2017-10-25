@@ -19,11 +19,9 @@
  */
 
 
-var isString        = require('isstring'),
-    isArray         = require('isarray'),
+var is              = require('is'),
     EventEmitter    = require('events'),
-    isFunction      = require('isfunction')
-    , shortid       = require('shortid')
+    shortid         = require('shortid')
     , __proto__push = ( target, id, parent ) => {
     let here           = {
         [id]: function () {
@@ -37,19 +35,42 @@ var isString        = require('isstring'),
 
 
 export default class Context extends EventEmitter {
-    static contexts            = openContexts;
-    static Store               = null;
     static defaultMaxListeners = 100;
-    static persistenceTm       = 0;
+    static persistenceTm       = 0;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static Store               = null;
+    static contexts            = openContexts;// all active contexts
     
-    constructor( ctx, { id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
+    static getContext( contexts ) {
+        let skey = is.array(contexts) ? contexts.sort(( a, b ) => {
+            if ( a.firstname < b.firstname ) return -1;
+            if ( a.firstname > b.firstname ) return 1;
+            return 0;
+        }).join('::') : contexts;
+        return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
+    };
+    
+    /**
+     * Init a Rescope context
+     *
+     * @param storesMap {Object} Object with the origin stores
+     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' context)
+     * @param parent
+     * @param state
+     * @param datas
+     * @param name
+     * @param defaultMaxListeners
+     * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+     * @param autoDestroy  {bool} will trigger retain & dispose after start
+     * @returns {Context}
+     */
+    constructor( storesMap, { id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         this._id           = id = id || ("_____" + shortid.generate());
         
         if ( openContexts[id] ) {
-            openContexts[id].register(ctx);
+            openContexts[id].register(storesMap);
             return openContexts[id]
         }
         
@@ -92,7 +113,7 @@ export default class Context extends EventEmitter {
         }
         
         
-        this.register(ctx, state, datas);
+        this.register(storesMap, state, datas);
         this.__locks.all--;
         this._stable = !this.__locks.all;
         
@@ -105,18 +126,19 @@ export default class Context extends EventEmitter {
             )
     }
     
-    static getContext( contexts ) {
-        let skey = isArray(contexts) ? contexts.sort(( a, b ) => {
-            if ( a.firstname < b.firstname ) return -1;
-            if ( a.firstname > b.firstname ) return 1;
-            return 0;
-        }).join('::') : contexts;
-        return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
-    };
-    
-    mount( id, state, datas ) {
-        if ( isArray(id) ) {
-            id.forEach(k => this._mount(k, state && state[k], datas && datas[k]));
+    /**
+     *
+     * Mount the stores in storesList, in this context or in its parents or mixed contexts
+     *
+     * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
+     *     Store:as
+     * @param state
+     * @param datas
+     * @returns {Context}
+     */
+    mount( storesList, state, datas ) {
+        if ( is.array(storesList) ) {
+            storesList.forEach(k => this._mount(k, state && state[k], datas && datas[k]));
         }
         else {
             this._mount(...arguments);
@@ -138,8 +160,8 @@ export default class Context extends EventEmitter {
         }
         //this.constructor.Store.mountStore(id, this, null, state, datas);
         let store = this.__context[id], ctx;
-        //console.warn("mount on ", this._id, ' ', id, isFunction(store));
-        if ( isFunction(store) ) {
+        //console.warn("mount on ", this._id, ' ', id, is.fn(store));
+        if ( is.fn(store) ) {
             this.__context[id] = new store(this, { state, datas });
         }
         else {
@@ -166,7 +188,7 @@ export default class Context extends EventEmitter {
                 return;
             return this.parent._watchStore(...arguments);
         }
-        if ( !this.__listening[id] && !isFunction(this.__context[id]) ) {
+        if ( !this.__listening[id] && !is.fn(this.__context[id]) ) {
             !this.__context[id].isStable() && this.wait(id);
             this.__context[id].on(
                 this.__listening[id] = {
@@ -182,6 +204,11 @@ export default class Context extends EventEmitter {
         return true;
     }
     
+    /**
+     * Mix targetCtx on this context
+     * Mixed context parents are NOT mapped
+     * @param targetCtx
+     */
     mixin( targetCtx ) {
         let parent = this.parent, lists;
         this.__mixed.push(targetCtx)
@@ -206,11 +233,16 @@ export default class Context extends EventEmitter {
         this.relink(this.__context, this);
     }
     
-    register( rawCtx, state = {}, datas = {} ) {
-        this.relink(rawCtx, this, false, state, datas);
-        Object.keys(rawCtx).forEach(
-            id => (isFunction(rawCtx[id]) && rawCtx[id].singleton && this._mount(id, state[id], datas[id])))
-        //this.stores.__proto__ = this._stores.prototype;
+    /**
+     * Register stores in storesMap & link them in the protos
+     * @param storesMap
+     * @param state
+     * @param datas
+     */
+    register( storesMap, state = {}, datas = {} ) {
+        this.relink(storesMap, this, false, state, datas);
+        Object.keys(storesMap).forEach(
+            id => (is.fn(storesMap[id]) && storesMap[id].singleton && this._mount(id, state[id], datas[id])))
     }
     
     /**
@@ -230,12 +262,12 @@ export default class Context extends EventEmitter {
                           return;
                 
                       if ( targetCtx.__context[id] ) {
-                          if ( !external && !isFunction(targetCtx.__context[id]) ) {
+                          if ( !external && !is.fn(targetCtx.__context[id]) ) {
                               console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
                               targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
                         
                           }
-                          if ( !external && isFunction(targetCtx.__context[id]) )
+                          if ( !external && is.fn(targetCtx.__context[id]) )
                               targetCtx.__context[id] = srcCtx[id];
                     
                           return;
@@ -280,22 +312,24 @@ export default class Context extends EventEmitter {
     }
     
     /**
-     * @param obj {React.Component|Store|function)
-     * @param key {string} optional key where to map the public state
+     * Bind stores from this context, his parents and mixed context
+     *
+     * @param obj {React.Component|Store|function}
+     * @param key {string*} stores keys to bind updates
+     * @param as
+     * @param setInitial=true {bool} false to not propag initial value
      */
     bind( obj, key, as, setInitial = true ) {
         let lastRevs, datas, reKey;
-        if ( key && !isArray(key) )
+        if ( key && !is.array(key) )
             key = [key];
-        
-        // key = key||
         
         if ( as === false || as === true ) {
             setInitial = as;
             as         = null;
         }
         
-        reKey = key.map(id => (isString(id) ? id : id.name));
+        reKey = key.map(id => (is.string(id) ? id : id.name));
         
         this._followers.push(
             [
@@ -337,15 +371,24 @@ export default class Context extends EventEmitter {
                 return followers.splice(i, 1);
     }
     
-    map( to, stores, bind = true ) {
-        let Store = this.constructor.Store;
-        stores    = isArray(stores) ? stores : [stores];
-        this.mount(stores);
+    /**
+     * Mount the stores in storesList from this context, its parents and mixed context
+     * Bind them to 'to'
+     * Hook 'to' so it will auto unbind on 'destroy' or 'componentWillUnmount'
+     * @param to
+     * @param storesList
+     * @param bind
+     * @returns {Object} Initial outputs of the stores in 'storesList'
+     */
+    map( to, storesList, bind = true ) {
+        let Store  = this.constructor.Store;
+        storesList = is.array(storesList) ? storesList : [storesList];
+        this.mount(storesList);
         if ( bind && to instanceof Store ) {
-            Store.map(to, stores, this, this, false)
+            Store.map(to, storesList, this, this, false)
         }
         else if ( bind ) {
-            this.bind(to, stores, undefined, false);
+            this.bind(to, storesList, undefined, false);
             
             let mixedCWUnmount,
                 unMountKey = to.isReactComponent ? "componentWillUnmount" : "destroy";
@@ -354,85 +397,106 @@ export default class Context extends EventEmitter {
                 mixedCWUnmount = to[unMountKey];
             }
             
-            to[unMountKey] = () => {
+            to[unMountKey] = (...argz) => {
                 delete to[unMountKey];
                 if ( mixedCWUnmount )
                     to[unMountKey] = mixedCWUnmount;
                 
-                this.unBind(to, stores);
+                this.unBind(to, storesList);
+                return to[unMountKey] && to[unMountKey](...argz);
             }
             
         }
-        return stores.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
+        return storesList.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
     }
     
-    getStoresRevs( stores = {}, local ) {
+    /**
+     * Get or update storesRevMap's revisions
+     * @param storesRevMap
+     * @param local
+     * @returns {{}}
+     */
+    getStoresRevs( storesRevMap = {}, local ) {
         let ctx = this.__context;
-        if ( !stores ) {
-            stores = {};
+        if ( !storesRevMap ) {
+            storesRevMap = {};
         }
         Object.keys(ctx).forEach(
             id => {
-                if ( !isFunction(ctx[id])
+                if ( !is.fn(ctx[id])
                 ) {
-                    stores[id] = ctx[id]._rev;
+                    storesRevMap[id] = ctx[id]._rev;
                 }
-                else if ( !stores.hasOwnProperty(id) )
-                    stores[id] = false
+                else if ( !storesRevMap.hasOwnProperty(id) )
+                    storesRevMap[id] = false
             }
         );
         if ( !local ) {
-            this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(stores), stores), stores);
-            this.parent && this.parent.getStoresRevs(stores);
+            this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(storesRevMap), storesRevMap), storesRevMap);
+            this.parent && this.parent.getStoresRevs(storesRevMap);
         }
-        return stores;
+        return storesRevMap;
     }
     
-    getUpdates( revs, output, updated ) {
+    /**
+     * Get or update output basing storesRevMap's revisions.
+     * If a store in 'storesRevMap' is updated; add it to 'output'
+     * @param storesRevMap
+     * @param output
+     * @param updated
+     * @returns {*|{}}
+     */
+    getUpdates( storesRevMap, output, updated ) {
         let ctx = this.__context;
         
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
                 if ( !output[id]
-                    && ( !revs
-                        || (revs.hasOwnProperty(id) && revs[id] === undefined)
-                        || !( !revs.hasOwnProperty(id) || ctx[id]._rev <= revs[id] ))
+                    && ( !storesRevMap
+                        || (storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined)
+                        || !( !storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id] ))
                 ) {
                     
                     updated = true;
                     
                     output[id] = this.datas[id];
-                    if ( revs && revs[id] !== undefined )
-                        revs[id] = ctx[id]._rev;
+                    if ( storesRevMap && storesRevMap[id] !== undefined )
+                        storesRevMap[id] = ctx[id]._rev;
                     
                 }
             }
         );
-        updated = this.__mixed.reduce(( updated, ctx ) => (ctx.getUpdates(revs, output, updated) || updated), updated);
-        updated = this.parent && this.parent.getUpdates(revs, output, updated) || updated;
+        updated = this.__mixed.reduce(( updated, ctx ) => (ctx.getUpdates(storesRevMap, output, updated) || updated), updated);
+        updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
         return updated && output;
     }
     
+    /**
+     *
+     * @param flags_states
+     * @param flags_datas
+     * @returns {{state: {}, datas: {}}}
+     */
     serialize( flags_states = /.*/, flags_datas = /.*/ ) {
         let ctx = this.__context, output = { state: {}, datas: {} },
             _flags_states,
             _flags_datas;
-        if ( isArray(flags_states) )
+        if ( is.array(flags_states) )
             flags_states.forEach(id => (output.state[id] = this.state[id]))
         
-        if ( isArray(flags_datas) )
+        if ( is.array(flags_datas) )
             flags_datas.forEach(id => (output.datas[id] = this.datas[id]))
         
-        if ( !isArray(flags_datas) && !isArray(flags_states) )
+        if ( !is.array(flags_datas) && !is.array(flags_states) )
             Object.keys(ctx).forEach(
                 id => {
-                    if ( isFunction(ctx[id]) )
+                    if ( is.fn(ctx[id]) )
                         return;
                     
                     let flags = ctx[id].constructor.flags;
                     
-                    flags = isArray(flags) ? flags : [flags || ""];
+                    flags = is.array(flags) ? flags : [flags || ""];
                     
                     if ( flags.reduce(( r, flag ) => (r || _flags_states.test(flag)), false) )
                         output.state[id] = this.state[id];
@@ -446,13 +510,13 @@ export default class Context extends EventEmitter {
     
     on( lists ) {
         
-        if ( !isString(lists) && lists )
+        if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
     }
     
     removeListener( lists ) {
-        if ( !isString(lists) && lists )
+        if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
         else super.removeListener(...arguments);
     }
@@ -483,7 +547,6 @@ export default class Context extends EventEmitter {
             }
         );
     }
-    
     
     retainStores( stores = [], reason ) {
         stores.forEach(
@@ -658,7 +721,7 @@ export default class Context extends EventEmitter {
         this._followers.length = 0;
         
         for ( let key in ctx )
-            if ( !isFunction(ctx[key]) ) {
+            if ( !is.fn(ctx[key]) ) {
                 if ( ctx[key].contextObj === this )
                     ctx[key].destroy();
                 

@@ -18,10 +18,10 @@
  */
 
 var child_process = require('child_process');
-var os = require('os');
-var shortid = require('shortid');
-var path       = require('path'),
-    packageCfg = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json'));
+var os            = require('os');
+var shortid       = require('shortid');
+var path          = require('path'),
+    packageCfg    = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json'));
 
 
 var util  = require('util'),
@@ -34,7 +34,7 @@ describe('Rescope', function () {
         TestContext;
     it('should build well', function ( done ) {
         this.timeout(Infinity);
-
+        
         child_process.exec(
             'npm run build',
             {
@@ -43,7 +43,7 @@ describe('Rescope', function () {
             function ( error, stdout, stderr ) {
                 done(error)
             });
-
+        
     });
     it('should require well', function ( done ) {
         Rescope = require('../dist/Rescope');
@@ -77,7 +77,7 @@ describe('Rescope', function () {
                     static state = { ok: true };
                     static context = "static";
                     static persistenceTm = 1000 * 5;
-
+                    
                 }
             },
             {
@@ -85,7 +85,7 @@ describe('Rescope', function () {
                 //autoDestroy  : true
             }
         );
-        TestContext = new Rescope.Context(
+        TestContext   = new Rescope.Context(
             {
                 local_1: class local_1 extends Rescope.Store {
                     static use = ["global_1"];
@@ -110,7 +110,7 @@ describe('Rescope', function () {
     });
     it('should synchrone init them well', function ( done ) {
         TestContext.state.local_3 = { updated: true };// should mount all the required store
-        
+
         let datas = TestContext.datas,
             ok    =
                 !datas.global_1 &&
@@ -120,7 +120,7 @@ describe('Rescope', function () {
                 datas.local_3.ok &&
                 datas.local_3.local_2.ok &&
                 datas.local_3.global_2.ok;
-        
+
         if ( ok ) done();
         else done("fail")
     });
@@ -128,7 +128,7 @@ describe('Rescope', function () {
         this.timeout(4000);
         TestContext.once('update',
                          ( e, _datas ) => {
-            
+
                              let datas = TestContext.datas,
                                  ok    =
                                      !datas.global_1 &&
@@ -139,16 +139,16 @@ describe('Rescope', function () {
                                      datas.local_3.local_2.ok &&
                                      datas.local_3.global_2.ok &&
                                      datas.local_3.global_2.updated;
-            
+
                              !ok && console.log(datas)
-            
-            
+
+
                              if ( ok ) done();
                              else done(new Error("fail"))
                          }
         )
         TestContext.state.global_2 = { updated: true };
-        
+
     });
     it('should async mount them well 2', function ( done ) {
         this.timeout(4000);
@@ -193,21 +193,56 @@ describe('Rescope', function () {
         );
         TestContext.state.global_2 = { resync: true };// should mount all the required store
     });
+    it('should mixin contexts well', function ( done ) {
+        this.timeout(10000);
+        
+        let
+            TestContext0 = new Rescope.Context(
+                {
+                    test0: class local_2 extends Rescope.Store {
+                        static state = { ok: true };
+                    }
+                },
+                {
+                    //parent       : StaticContext,
+                    persistenceTm: 3000,
+                    autoDestroy  : true
+                }
+            );
+        let
+            TestContext2 = new Rescope.Context(
+                {
+                    local_2: class local_2 extends Rescope.Store {
+                        static state = { ok: true };
+                    }
+                },
+                {
+                    parent       : TestContext0,
+                    persistenceTm: 3000,
+                    autoDestroy  : true
+                }
+            );
+        TestContext2.mixin(StaticContext);
+        if ( TestContext2.stores['global_1'] && TestContext2.stores['local_2'] && TestContext2.stores['test0'] )
+            done();
+        else
+            done(new Error("Not working !!!"));
+        
+    });
     it('should async auto destroy store well', function ( done ) {
         this.timeout(10000);
-    
+        
         TestContext.mount(
             ["stats"])
                    .then(
                        ( e, r ) => {
-    
+                
                            TestContext.retainStores(["stats"]);
                            setTimeout(
                                tm => {
                                    let
                                        TestContext2 = new Rescope.Context(
-                                           {
-                                           },
+                                           {},
                                            {
                                                parent       : StaticContext,
                                                persistenceTm: 3000,
@@ -224,7 +259,7 @@ describe('Rescope', function () {
                            )
                        }
                    );
-
+        
     });
     it('should async auto destroy them well', function ( done ) {
         this.timeout(10000);

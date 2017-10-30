@@ -215,31 +215,29 @@ export default class Context extends EventEmitter {
         targetCtx.retain();
         if ( !targetCtx._stable )
             this.wait(targetCtx._id);
-    
-        var protos = {
-            //stores:
-            __context:[]
-            };
+        
         this.__mixedList.push(lists = {
             'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
             'update'  : s => this._propag()
         })
+        this.stores = {};
+        this.state  = {};
+        this.datas  = {};
         targetCtx.on(lists);
-        __proto__push(protos, 'stores');
-        __proto__push(protos, 'state');
-        __proto__push(protos, 'datas');
-        targetCtx.relink(targetCtx.__context, protos, true);
-        protos.stores.__proto__.__proto__ = this.stores.__proto__.__proto__;
-        this.stores.__proto__.__proto__ = protos.stores.__proto__;
-        protos.state.__proto__.__proto__ = this.state.__proto__.__proto__;
-        this.state.__proto__.__proto__ = protos.state.__proto__;
-        protos.datas.__proto__.__proto__ = this.datas.__proto__.__proto__;
-        this.datas.__proto__.__proto__ = protos.datas.__proto__;
-        //__proto__push(this, 'stores', this);
-        //__proto__push(this, 'state', this);
-        //__proto__push(this, 'datas', this);
-        //this.relink(this.__context, this);
+        __proto__push(this, 'stores', parent);
+        __proto__push(this, 'state', parent);
+        __proto__push(this, 'datas', parent);
+        
+        this.relink(this.__context, this, false, true);
+        this.__mixed.forEach(
+            ctx => {
+                __proto__push(this, 'stores');
+                __proto__push(this, 'state');
+                __proto__push(this, 'datas');
+                ctx.relink(ctx.__context, this, true, true)
+            }
+        )
     }
     
     /**
@@ -249,7 +247,7 @@ export default class Context extends EventEmitter {
      * @param datas
      */
     register( storesMap, state = {}, datas = {} ) {
-        this.relink(storesMap, this, false, state, datas);
+        this.relink(storesMap, this, false, false, state, datas);
         Object.keys(storesMap).forEach(
             id => (is.fn(storesMap[id]) && storesMap[id].singleton && this._mount(id, state[id], datas[id])))
     }
@@ -261,16 +259,16 @@ export default class Context extends EventEmitter {
      * @param state
      * @param datas
      */
-    relink( srcCtx, targetCtx = this, external, state = {}, datas = {} ) {
+    relink( srcCtx, targetCtx = this, external, force, state = {}, datas = {} ) {
         let lctx = targetCtx._stores.prototype;
         Object.keys(srcCtx)
               .forEach(
                   id => {
-                      if ( targetCtx.__context[id] === srcCtx[id] ||
+                      if ( !force && targetCtx.__context[id] === srcCtx[id] ||
                           targetCtx.__context[id] && (targetCtx.__context[id].constructor === srcCtx[id] ) )
                           return;
                 
-                      if ( targetCtx.__context[id] ) {
+                      if ( !force && targetCtx.__context[id] ) {
                           if ( !external && !is.fn(targetCtx.__context[id]) ) {
                               console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
                               targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
@@ -281,7 +279,7 @@ export default class Context extends EventEmitter {
                     
                           return;
                       }
-                      else if ( !external )
+                      else if ( !force && !external )
                           this.__context[id] = srcCtx[id];
                 
                       Object.defineProperty(
@@ -406,7 +404,7 @@ export default class Context extends EventEmitter {
                 mixedCWUnmount = to[unMountKey];
             }
             
-            to[unMountKey] = (...argz) => {
+            to[unMountKey] = ( ...argz ) => {
                 delete to[unMountKey];
                 if ( mixedCWUnmount )
                     to[unMountKey] = mixedCWUnmount;

@@ -364,6 +364,10 @@
 	            targetCtx.retain();
 	            if (!targetCtx._stable) this.wait(targetCtx._id);
 	
+	            var protos = {
+	                //stores:
+	                __context: []
+	            };
 	            this.__mixedList.push(lists = {
 	                'stable': function stable(s) {
 	                    return _this4.release(targetCtx._id);
@@ -376,15 +380,20 @@
 	                }
 	            });
 	            targetCtx.on(lists);
-	            __proto__push(this, 'stores', parent);
-	            __proto__push(this, 'state', parent);
-	            __proto__push(this, 'datas', parent);
-	            targetCtx.relink(targetCtx.__context, this, true);
-	
-	            __proto__push(this, 'stores', this);
-	            __proto__push(this, 'state', this);
-	            __proto__push(this, 'datas', this);
-	            this.relink(this.__context, this);
+	            __proto__push(protos, 'stores');
+	            __proto__push(protos, 'state');
+	            __proto__push(protos, 'datas');
+	            targetCtx.relink(targetCtx.__context, protos, true);
+	            protos.stores.__proto__.__proto__ = this.stores.__proto__.__proto__;
+	            this.stores.__proto__.__proto__ = protos.stores.__proto__;
+	            protos.state.__proto__.__proto__ = this.state.__proto__.__proto__;
+	            this.state.__proto__.__proto__ = protos.state.__proto__;
+	            protos.datas.__proto__.__proto__ = this.datas.__proto__.__proto__;
+	            this.datas.__proto__.__proto__ = protos.datas.__proto__;
+	            //__proto__push(this, 'stores', this);
+	            //__proto__push(this, 'state', this);
+	            //__proto__push(this, 'datas', this);
+	            //this.relink(this.__context, this);
 	        }
 	
 	        /**

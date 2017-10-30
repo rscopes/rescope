@@ -364,10 +364,6 @@
 	            targetCtx.retain();
 	            if (!targetCtx._stable) this.wait(targetCtx._id);
 	
-	            var protos = {
-	                //stores:
-	                __context: []
-	            };
 	            this.__mixedList.push(lists = {
 	                'stable': function stable(s) {
 	                    return _this4.release(targetCtx._id);
@@ -379,21 +375,21 @@
 	                    return _this4._propag();
 	                }
 	            });
+	            this.stores = {};
+	            this.state = {};
+	            this.datas = {};
 	            targetCtx.on(lists);
-	            __proto__push(protos, 'stores');
-	            __proto__push(protos, 'state');
-	            __proto__push(protos, 'datas');
-	            targetCtx.relink(targetCtx.__context, protos, true);
-	            protos.stores.__proto__.__proto__ = this.stores.__proto__.__proto__;
-	            this.stores.__proto__.__proto__ = protos.stores.__proto__;
-	            protos.state.__proto__.__proto__ = this.state.__proto__.__proto__;
-	            this.state.__proto__.__proto__ = protos.state.__proto__;
-	            protos.datas.__proto__.__proto__ = this.datas.__proto__.__proto__;
-	            this.datas.__proto__.__proto__ = protos.datas.__proto__;
-	            //__proto__push(this, 'stores', this);
-	            //__proto__push(this, 'state', this);
-	            //__proto__push(this, 'datas', this);
-	            //this.relink(this.__context, this);
+	            __proto__push(this, 'stores', parent);
+	            __proto__push(this, 'state', parent);
+	            __proto__push(this, 'datas', parent);
+	
+	            this.relink(this.__context, this, false, true);
+	            this.__mixed.forEach(function (ctx) {
+	                __proto__push(_this4, 'stores');
+	                __proto__push(_this4, 'state');
+	                __proto__push(_this4, 'datas');
+	                ctx.relink(ctx.__context, _this4, true, true);
+	            });
 	        }
 	
 	        /**
@@ -411,7 +407,7 @@
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
-	            this.relink(storesMap, this, false, state, datas);
+	            this.relink(storesMap, this, false, false, state, datas);
 	            Object.keys(storesMap).forEach(function (id) {
 	                return is.fn(storesMap[id]) && storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
 	            });
@@ -430,17 +426,18 @@
 	        value: function relink(srcCtx) {
 	            var targetCtx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this;
 	            var external = arguments[2];
+	            var force = arguments[3];
 	
 	            var _this6 = this;
 	
-	            var state = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-	            var datas = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	            var state = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	            var datas = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 	
 	            var lctx = targetCtx._stores.prototype;
 	            Object.keys(srcCtx).forEach(function (id) {
-	                if (targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
+	                if (!force && targetCtx.__context[id] === srcCtx[id] || targetCtx.__context[id] && targetCtx.__context[id].constructor === srcCtx[id]) return;
 	
-	                if (targetCtx.__context[id]) {
+	                if (!force && targetCtx.__context[id]) {
 	                    if (!external && !is.fn(targetCtx.__context[id])) {
 	                        console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
 	                        targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
@@ -448,7 +445,7 @@
 	                    if (!external && is.fn(targetCtx.__context[id])) targetCtx.__context[id] = srcCtx[id];
 	
 	                    return;
-	                } else if (!external) _this6.__context[id] = srcCtx[id];
+	                } else if (!force && !external) _this6.__context[id] = srcCtx[id];
 	
 	                Object.defineProperty(lctx, id, function (ctx, id) {
 	                    return {

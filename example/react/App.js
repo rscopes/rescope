@@ -22708,33 +22708,27 @@
 	                    return;
 	                } else if (!force && !external) _this6.__context[id] = srcCtx[id];
 	
-	                Object.defineProperty(lctx, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return _this6.__context[id];
-	                        }
-	                    };
-	                }(_this6.__context, id));
-	                Object.defineProperty(targetCtx._state.prototype, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return ctx[id] && ctx[id].state;
-	                        },
-	                        set: function set(v) {
-	                            return _this6._mount(id, v);
-	                        }
-	                    };
-	                }(_this6.__context, id));
-	                Object.defineProperty(targetCtx._datas.prototype, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return ctx[id] && ctx[id].datas;
-	                        },
-	                        set: function set(v) {
-	                            return _this6._mount(id, undefined, v);
-	                        }
-	                    };
-	                }(_this6.__context, id));
+	                Object.defineProperty(lctx, id, {
+	                    get: function get() {
+	                        return _this6.__context[id];
+	                    }
+	                });
+	                Object.defineProperty(targetCtx._state.prototype, id, {
+	                    get: function get() {
+	                        return _this6.__context[id] && _this6.__context[id].state;
+	                    },
+	                    set: function set(v) {
+	                        return _this6._mount(id, v);
+	                    }
+	                });
+	                Object.defineProperty(targetCtx._datas.prototype, id, {
+	                    get: function get() {
+	                        return _this6.__context[id] && _this6.__context[id].datas;
+	                    },
+	                    set: function set(v) {
+	                        return _this6._mount(id, undefined, v);
+	                    }
+	                });
 	            });
 	        }
 	
@@ -22780,8 +22774,6 @@
 	                } else {
 	                    obj(datas);
 	                }
-	                // lastRevs &&
-	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
 	            }
 	        }
 	
@@ -23024,8 +23016,6 @@
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
-	            //console.warn("disposeStores", stores, reason, this.stores[stores[0]]);
-	
 	            stores.forEach(function (id) {
 	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
 	            });
@@ -23078,7 +23068,7 @@
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
 	                _this16._propag();
-	            }, 15);
+	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
@@ -23130,7 +23120,6 @@
 	        value: function retain(reason) {
 	            this.__retains.all++;
 	            //console.log("retain", this._id, reason);
-	
 	            if (reason) {
 	                this.__retains[reason] = this.__retains[reason] || 0;
 	                this.__retains[reason]++;
@@ -23209,9 +23198,8 @@
 	                this.parent.dispose("isMyParent");
 	                this.parent._rmChild(this);
 	            }
-	            // this.datas = this.state = this.context = this.stores = null;
-	            // this._datas = this._state = this._stores = null;
-	
+	            this.datas = this.state = this.context = this.stores = null;
+	            this._datas = this._state = this._stores = null;
 	        }
 	    }]);
 	
@@ -25322,7 +25310,6 @@
 	
 	            //console.warn("dispose", reason, this.__retains);
 	            if (reason) {
-	
 	                if (!this.__retains[reason]) throw new Error("Dispose more than retaining !");
 	
 	                this.__retains[reason] = this.__retains[reason] || 0;
@@ -25332,15 +25319,12 @@
 	
 	            this.__retains.all--;
 	
-	            //console.warn("disposed", reason, this.__retains);
-	
 	            if (!this.__retains.all) {
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
+	                        _this9._destroyTM = null;
 	                        _this9.then(function (s) {
-	                            //  console.log("wtf   ", reason, !this.__retains.all);
-	
 	                            !_this9.__retains.all && _this9.destroy();
 	                        });
 	                    }, this._persistenceTm);

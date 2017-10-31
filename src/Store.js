@@ -220,12 +220,12 @@ export default class Store extends EventEmitter {
         if ( component.hasOwnProperty(unMountKey) ) {
             mixedCWUnmount = component[unMountKey];
         }
-    
-        component[unMountKey] = (...argz) => {
+        
+        component[unMountKey] = ( ...argz ) => {
             delete component[unMountKey];
             if ( mixedCWUnmount )
                 component[unMountKey] = mixedCWUnmount;
-    
+            
             keys.map(
                 ( key ) => {
                     let name,
@@ -245,7 +245,7 @@ export default class Store extends EventEmitter {
                         store = context.stores[key[0]];
                         alias = key[1] || key[0];
                     }
-            
+                    
                     store && !is.fn(store) && store.unBind(component, alias)
                 }
             );
@@ -678,7 +678,6 @@ export default class Store extends EventEmitter {
     dispose( reason ) {
         //console.warn("dispose", reason, this.__retains);
         if ( reason ) {
-            
             if ( !this.__retains[reason] )
                 throw new Error("Dispose more than retaining !");
             
@@ -690,16 +689,13 @@ export default class Store extends EventEmitter {
         
         this.__retains.all--;
         
-        //console.warn("disposed", reason, this.__retains);
-        
         if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
+                        this._destroyTM = null;
                         this.then(s => {
-                            //  console.log("wtf   ", reason, !this.__retains.all);
-                            
                             !this.__retains.all && this.destroy()
                         });
                     },

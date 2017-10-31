@@ -624,6 +624,14 @@ export default class Context extends EventEmitter {
         this.emit("update", this.getUpdates());
     }
     
+    /**
+     * is stable
+     * @returns bool
+     */
+    isStable() {
+        return this._stable;
+    }
+    
     _getAllChilds( childs = [] ) {
         childs.push(...this._childContexts)
         this._childContexts.forEach(
@@ -726,8 +734,8 @@ export default class Context extends EventEmitter {
             this.parent.dispose("isMyParent");
             this.parent._rmChild(this);
         }
-         this.datas = this.state = this.context = this.stores = null;
-         this._datas = this._state = this._stores = null;
+        this.datas = this.state = this.context = this.stores = null;
+        this._datas = this._state = this._stores = null;
         
         
     }

@@ -285,34 +285,25 @@ export default class Context extends EventEmitter {
                       Object.defineProperty(
                           lctx,
                           id,
-                          (( ctx, id ) => (
-                              {
-                                  get: () => this.__context[id]
-                              }
-                          ))
-                          (this.__context, id)
+                          {
+                              get: () => this.__context[id]
+                          }
                       );
                       Object.defineProperty(
                           targetCtx._state.prototype,
                           id,
-                          (( ctx, id ) => (
-                              {
-                                  get: () => (ctx[id] && ctx[id].state),
-                                  set: ( v ) => (this._mount(id, v))
-                              }
-                          ))
-                          (this.__context, id)
+                          {
+                              get: () => (this.__context[id] && this.__context[id].state),
+                              set: ( v ) => (this._mount(id, v))
+                          }
                       );
                       Object.defineProperty(
                           targetCtx._datas.prototype,
                           id,
-                          (( ctx, id ) => (
-                              {
-                                  get: () => (ctx[id] && ctx[id].datas),
-                                  set: ( v ) => (this._mount(id, undefined, v))
-                              }
-                          ))
-                          (this.__context, id)
+                          {
+                              get: () => (this.__context[id] && this.__context[id].datas),
+                              set: ( v ) => (this._mount(id, undefined, v))
+                          }
                       );
                   }
               )
@@ -358,8 +349,6 @@ export default class Context extends EventEmitter {
             else {
                 obj(datas);
             }
-            // lastRevs &&
-            // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
         }
     }
     
@@ -490,10 +479,10 @@ export default class Context extends EventEmitter {
             _flags_states,
             _flags_datas;
         if ( is.array(flags_states) )
-            flags_states.forEach(id => (output.state[id] = this.state[id]))
+            flags_states.forEach(id => (output.state[id] = this.state[id]));
         
         if ( is.array(flags_datas) )
-            flags_datas.forEach(id => (output.datas[id] = this.datas[id]))
+            flags_datas.forEach(id => (output.datas[id] = this.datas[id]));
         
         if ( !is.array(flags_datas) && !is.array(flags_states) )
             Object.keys(ctx).forEach(
@@ -516,7 +505,6 @@ export default class Context extends EventEmitter {
     }
     
     on( lists ) {
-        
         if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.on(k, lists[k]));
         else super.on(...arguments);
@@ -562,8 +550,6 @@ export default class Context extends EventEmitter {
     }
     
     disposeStores( stores = [], reason ) {
-        //console.warn("disposeStores", stores, reason, this.stores[stores[0]]);
-        
         stores.forEach(
             id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
         )
@@ -581,7 +567,6 @@ export default class Context extends EventEmitter {
     }
     
     release( reason ) {
-        
         //console.log("release", reason);
         if ( reason ) {
             if ( this.__locks[reason] == 0 )
@@ -617,7 +602,7 @@ export default class Context extends EventEmitter {
         this._propagTM = setTimeout(
             e => {
                 this._propag()
-            }, 15
+            }, 2
         );
     }
     
@@ -662,7 +647,6 @@ export default class Context extends EventEmitter {
     retain( reason ) {
         this.__retains.all++;
         //console.log("retain", this._id, reason);
-        
         if ( reason ) {
             this.__retains[reason] = this.__retains[reason] || 0;
             this.__retains[reason]++;
@@ -684,7 +668,6 @@ export default class Context extends EventEmitter {
             throw new Error("Dispose more than retaining !");
         
         this.__retains.all--;
-        
         
         if ( !this.__retains.all ) {
             if ( this._persistenceTm ) {
@@ -743,8 +726,8 @@ export default class Context extends EventEmitter {
             this.parent.dispose("isMyParent");
             this.parent._rmChild(this);
         }
-        // this.datas = this.state = this.context = this.stores = null;
-        // this._datas = this._state = this._stores = null;
+         this.datas = this.state = this.context = this.stores = null;
+         this._datas = this._state = this._stores = null;
         
         
     }

@@ -22708,33 +22708,27 @@
 	                    return;
 	                } else if (!force && !external) _this6.__context[id] = srcCtx[id];
 	
-	                Object.defineProperty(lctx, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return _this6.__context[id];
-	                        }
-	                    };
-	                }(_this6.__context, id));
-	                Object.defineProperty(targetCtx._state.prototype, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return ctx[id] && ctx[id].state;
-	                        },
-	                        set: function set(v) {
-	                            return _this6._mount(id, v);
-	                        }
-	                    };
-	                }(_this6.__context, id));
-	                Object.defineProperty(targetCtx._datas.prototype, id, function (ctx, id) {
-	                    return {
-	                        get: function get() {
-	                            return ctx[id] && ctx[id].datas;
-	                        },
-	                        set: function set(v) {
-	                            return _this6._mount(id, undefined, v);
-	                        }
-	                    };
-	                }(_this6.__context, id));
+	                Object.defineProperty(lctx, id, {
+	                    get: function get() {
+	                        return _this6.__context[id];
+	                    }
+	                });
+	                Object.defineProperty(targetCtx._state.prototype, id, {
+	                    get: function get() {
+	                        return _this6.__context[id] && _this6.__context[id].state;
+	                    },
+	                    set: function set(v) {
+	                        return _this6._mount(id, v);
+	                    }
+	                });
+	                Object.defineProperty(targetCtx._datas.prototype, id, {
+	                    get: function get() {
+	                        return _this6.__context[id] && _this6.__context[id].datas;
+	                    },
+	                    set: function set(v) {
+	                        return _this6._mount(id, undefined, v);
+	                    }
+	                });
 	            });
 	        }
 	
@@ -23078,7 +23072,7 @@
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
 	                _this16._propag();
-	            }, 15);
+	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',

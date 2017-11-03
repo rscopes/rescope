@@ -350,7 +350,10 @@ export default class Store extends EventEmitter {
                 this,
                 null,
                 () => {//@todo
-                    // me._stable       = true;
+                    
+                    let stable = me._stable;
+                    me._stable = true;
+                    !stable && this.emit('stable', this.state, this.datas);
                     this._stabilizer = null;
                     // this.release();
                 }
@@ -400,7 +403,8 @@ export default class Store extends EventEmitter {
         }
         
         this.datas = nextDatas;
-        this.__locks.all++;
+        //this.__locks.all++;
+        this.wait(cb);
         this.release(cb);
         
     }

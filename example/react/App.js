@@ -22466,6 +22466,9 @@
 	        _this.stores = {};
 	        _this.state = {};
 	        _this.datas = {};
+	
+	        if (parent && parent.dead) throw new Error("Can't use a dead context as parent !");
+	
 	        __proto__push(_this, 'stores', parent);
 	        __proto__push(_this, 'state', parent);
 	        __proto__push(_this, 'datas', parent);
@@ -22622,8 +22625,10 @@
 	            var parent = this.parent,
 	                lists = void 0;
 	            this.__mixed.push(targetCtx);
-	            targetCtx.retain();
+	            targetCtx.retain("mixedTo");
 	            if (!targetCtx._stable) this.wait(targetCtx._id);
+	
+	            if (this.dead || targetCtx.dead) debugger;
 	
 	            this.__mixedList.push(lists = {
 	                'stable': function stable(s) {
@@ -22670,7 +22675,12 @@
 	
 	            this.relink(storesMap, this, false, false, state, datas);
 	            Object.keys(storesMap).forEach(function (id) {
-	                return is.fn(storesMap[id]) && storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
+	                if (is.fn(storesMap[id])) {
+	                    storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
+	                } else {
+	                    //storesMap[id].retain();
+	                    _this5._watchStore(id);
+	                }
 	            });
 	        }
 	
@@ -22886,12 +22896,12 @@
 	
 	            var ctx = this.__context;
 	
+	            if (!this.datas) debugger;
 	            output = output || {};
 	            Object.keys(ctx).forEach(function (id) {
 	                if (!output[id] && (!storesRevMap || storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))) {
 	
 	                    updated = true;
-	
 	                    output[id] = _this8.datas[id];
 	                    if (storesRevMap && storesRevMap[id] !== undefined) storesRevMap[id] = ctx[id]._rev;
 	                }
@@ -23038,6 +23048,7 @@
 	            var _this15 = this;
 	
 	            //console.log("release", reason);
+	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
 	                this.__locks[reason] = this.__locks[reason] || 0;
@@ -23048,15 +23059,17 @@
 	            this.__locks.all--;
 	            if (!this.__locks.all) {
 	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
-	                this._propagTM && clearTimeout(this._propagTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    if (_this15.__locks.all) return _this15._stabilizerTM = null;
+	                    _this15._stabilizerTM = null;
+	                    if (_this15.__locks.all) return;
+	
+	                    _this15._propagTM && clearTimeout(_this15._propagTM);
 	
 	                    _this15._stable = true;
 	                    _this15.emit("stable", _this15);
 	
-	                    _this15._propag();
+	                    !_this15.dead && _this15._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -23067,6 +23080,7 @@
 	
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
+	                _this16._propagTM = null;
 	                _this16._propag();
 	            }, 2);
 	        }
@@ -23092,6 +23106,17 @@
 	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
 	            });
 	            this.emit("update", this.getUpdates());
+	        }
+	
+	        /**
+	         * is stable
+	         * @returns bool
+	         */
+	
+	    }, {
+	        key: 'isStable',
+	        value: function isStable() {
+	            return this._stable;
 	        }
 	    }, {
 	        key: '_getAllChilds',
@@ -23144,6 +23169,7 @@
 	            this.__retains.all--;
 	
 	            if (!this.__retains.all) {
+	                //console.log("dispose do destroy ", this._id, this._persistenceTm);
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
@@ -23171,34 +23197,38 @@
 	            var _this19 = this;
 	
 	            var ctx = this.__context;
-	
 	            //console.warn("destroy", this._id);
+	            this.dead = true;
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
 	                return _this19.__context[id].removeListener(_this19.__listening[id]);
 	            });
 	
+	            this._stabilizerTM && clearTimeout(this._stabilizerTM);
+	            this._propagTM && clearTimeout(this._propagTM);
 	            this.__listening = {};
 	
 	            if (this._isLocalId) delete openContexts[this._id];
 	            this._followers.length = 0;
 	
-	            for (var key in ctx) {
-	                if (!is.fn(ctx[key])) {
-	                    if (ctx[key].contextObj === this) ctx[key].destroy();
-	
-	                    ctx[key] = ctx[key].constructor;
-	                }
-	            }while (this.__mixedList.length) {
+	            while (this.__mixedList.length) {
 	                this.__mixed[0].removeListener(this.__mixedList.shift());
-	                this.__mixed.shift().dispose();
+	                this.__mixed.shift().dispose("mixedTo");
 	            }
-	            if (this.parent) {
+	            if (this.__parentList) {
+	                this.parent._rmChild(this);
 	                this.parent.removeListener(this.__parentList);
 	                this.parent.dispose("isMyParent");
-	                this.parent._rmChild(this);
+	                this.__parentList = null;
 	            }
-	            this.datas = this.state = this.context = this.stores = null;
+	            //for ( let key in ctx )
+	            //    if ( !is.fn(ctx[key]) ) {
+	            //        if ( ctx[key].contextObj === this )
+	            //            ctx[key].dispose();
+	            //
+	            //        ctx[key] = ctx[key].constructor;
+	            //    }
+	            this.__mixed = this.datas = this.state = this.context = this.stores = null;
 	            this._datas = this._state = this._stores = null;
 	        }
 	    }]);
@@ -23207,7 +23237,7 @@
 	}(EventEmitter);
 	
 	Context.defaultMaxListeners = 100;
-	Context.persistenceTm = 0;
+	Context.persistenceTm = 1;
 	Context.Store = null;
 	Context.contexts = openContexts;
 	exports.default = Context;
@@ -24948,7 +24978,10 @@
 	
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
-	                // me._stable       = true;
+	
+	                var stable = me._stable;
+	                me._stable = true;
+	                !stable && _this2.emit('stable', _this2.state, _this2.datas);
 	                _this2._stabilizer = null;
 	                // this.release();
 	            }));
@@ -25002,7 +25035,8 @@
 	            }
 	
 	            this.datas = nextDatas;
-	            this.__locks.all++;
+	            //this.__locks.all++;
+	            this.wait(cb);
 	            this.release(cb);
 	        }
 	

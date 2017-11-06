@@ -82,7 +82,7 @@ export default class Context extends EventEmitter {
         this.state  = {};
         this.datas  = {};
         
-        if (parent && parent.dead)
+        if ( parent && parent.dead )
             throw new Error("Can't use a dead context as parent !");
         
         __proto__push(this, 'stores', parent);

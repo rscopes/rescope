@@ -336,11 +336,10 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     stabilize( cb ) {
-        var me = this;
-        cb && me.once('stable', cb);
+        cb && this.once('stable', cb);
         this._stable && this.emit('unstable', this.state, this.datas);
         
-        me._stable = false;
+        this._stable = false;
         
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
@@ -351,8 +350,8 @@ export default class Store extends EventEmitter {
                 null,
                 () => {//@todo
                     
-                    let stable = me._stable;
-                    me._stable = true;
+                    let stable   = this._stable;
+                    this._stable = true;
                     !stable && this.emit('stable', this.state, this.datas);
                     this._stabilizer = null;
                     // this.release();

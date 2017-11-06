@@ -2720,19 +2720,18 @@
 	        value: function stabilize(cb) {
 	            var _this2 = this;
 	
-	            var me = this;
-	            cb && me.once('stable', cb);
+	            cb && this.once('stable', cb);
 	            this._stable && this.emit('unstable', this.state, this.datas);
 	
-	            me._stable = false;
+	            this._stable = false;
 	
 	            if (this._stabilizer) clearTimeout(this._stabilizer);
 	
 	            this._stabilizer = setTimeout(this.push.bind(this, null, function () {
 	                //@todo
 	
-	                var stable = me._stable;
-	                me._stable = true;
+	                var stable = _this2._stable;
+	                _this2._stable = true;
 	                !stable && _this2.emit('stable', _this2.state, _this2.datas);
 	                _this2._stabilizer = null;
 	                // this.release();

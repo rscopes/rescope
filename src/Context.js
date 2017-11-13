@@ -36,7 +36,7 @@ var is              = require('is'),
 
 export default class Context extends EventEmitter {
     static defaultMaxListeners = 100;
-    static persistenceTm       = 0;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static persistenceTm       = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
     static Store               = null;
     static contexts            = openContexts;// all active contexts
     
@@ -81,6 +81,10 @@ export default class Context extends EventEmitter {
         this.stores = {};
         this.state  = {};
         this.datas  = {};
+        
+        if ( parent && parent.dead )
+            throw new Error("Can't use a dead context as parent !");
+        
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'datas', parent);
@@ -212,7 +216,7 @@ export default class Context extends EventEmitter {
     mixin( targetCtx ) {
         let parent = this.parent, lists;
         this.__mixed.push(targetCtx)
-        targetCtx.retain();
+        targetCtx.retain("mixedTo");
         if ( !targetCtx._stable )
             this.wait(targetCtx._id);
         
@@ -220,7 +224,8 @@ export default class Context extends EventEmitter {
             'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
             'update'  : s => this._propag()
-        })
+        });
+        
         this.stores = {};
         this.state  = {};
         this.datas  = {};
@@ -249,7 +254,16 @@ export default class Context extends EventEmitter {
     register( storesMap, state = {}, datas = {} ) {
         this.relink(storesMap, this, false, false, state, datas);
         Object.keys(storesMap).forEach(
-            id => (is.fn(storesMap[id]) && storesMap[id].singleton && this._mount(id, state[id], datas[id])))
+            id => {
+                if ( is.fn(storesMap[id]) ) {
+                    storesMap[id].singleton && this._mount(id, state[id], datas[id])
+                }
+                else {
+                    this._watchStore(id);
+                }
+            }
+        )
+        
     }
     
     /**
@@ -454,8 +468,7 @@ export default class Context extends EventEmitter {
                         || !( !storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id] ))
                 ) {
                     
-                    updated = true;
-                    
+                    updated    = true;
                     output[id] = this.datas[id];
                     if ( storesRevMap && storesRevMap[id] !== undefined )
                         storesRevMap[id] = ctx[id]._rev;
@@ -567,7 +580,7 @@ export default class Context extends EventEmitter {
     }
     
     release( reason ) {
-        //console.log("release", reason);
+        
         if ( reason ) {
             if ( this.__locks[reason] == 0 )
                 console.error("Release more than locking !", reason);
@@ -580,17 +593,19 @@ export default class Context extends EventEmitter {
         this.__locks.all--;
         if ( !this.__locks.all ) {
             this._stabilizerTM && clearTimeout(this._stabilizerTM);
-            this._propagTM && clearTimeout(this._propagTM);
             
             this._stabilizerTM = setTimeout(
                 e => {
+                    this._stabilizerTM = null;
                     if ( this.__locks.all )
-                        return this._stabilizerTM = null;
+                        return;
+                    
+                    this._propagTM && clearTimeout(this._propagTM);
                     
                     this._stable = true;
                     this.emit("stable", this);
                     
-                    this._propag()
+                    !this.dead && this._propag();// stability can induce destroy
                 }
             );
         }
@@ -601,6 +616,7 @@ export default class Context extends EventEmitter {
         this._propagTM && clearTimeout(this._propagTM);
         this._propagTM = setTimeout(
             e => {
+                this._propagTM = null;
                 this._propag()
             }, 2
         );
@@ -678,6 +694,7 @@ export default class Context extends EventEmitter {
         this.__retains.all--;
         
         if ( !this.__retains.all ) {
+            //console.log("dispose do destroy ", this._id, this._persistenceTm);
             if ( this._persistenceTm ) {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
@@ -701,9 +718,9 @@ export default class Context extends EventEmitter {
      * order destroy of local stores
      */
     destroy() {
-        let ctx = this.__context;
-        
+        let ctx   = this.__context;
         //console.warn("destroy", this._id);
+        this.dead = true;
         this.emit("destroy");
         Object.keys(
             this.__listening
@@ -711,30 +728,32 @@ export default class Context extends EventEmitter {
             id => this.__context[id].removeListener(this.__listening[id])
         );
         
-        
+        this._stabilizerTM && clearTimeout(this._stabilizerTM);
+        this._propagTM && clearTimeout(this._propagTM);
         this.__listening = {};
         
         if ( this._isLocalId )
             delete openContexts[this._id];
         this._followers.length = 0;
         
-        for ( let key in ctx )
-            if ( !is.fn(ctx[key]) ) {
-                if ( ctx[key].contextObj === this )
-                    ctx[key].destroy();
-                
-                ctx[key] = ctx[key].constructor;
-            }
         while ( this.__mixedList.length ) {
             this.__mixed[0].removeListener(this.__mixedList.shift());
-            this.__mixed.shift().dispose();
+            this.__mixed.shift().dispose("mixedTo");
         }
-        if ( this.parent ) {
+        if ( this.__parentList ) {
+            this.parent._rmChild(this);
             this.parent.removeListener(this.__parentList);
             this.parent.dispose("isMyParent");
-            this.parent._rmChild(this);
+            this.__parentList = null;
         }
-        this.datas = this.state = this.context = this.stores = null;
+        //for ( let key in ctx )
+        //    if ( !is.fn(ctx[key]) ) {
+        //        if ( ctx[key].contextObj === this )
+        //            ctx[key].dispose();
+        //
+        //        ctx[key] = ctx[key].constructor;
+        //    }
+        this.__mixed = this.datas = this.state = this.context = this.stores = null;
         this._datas = this._state = this._stores = null;
         
         

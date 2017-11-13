@@ -162,9 +162,6 @@ export default class Store extends EventEmitter {
         
         context = context || Store.staticContext;
         
-        // if (!targetContext.__context)
-        //     debugger;
-        
         keys           = keys.filter(
             // @todo : use query refs
             // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
@@ -336,11 +333,10 @@ export default class Store extends EventEmitter {
      * @param cb
      */
     stabilize( cb ) {
-        var me = this;
-        cb && me.once('stable', cb);
+        cb && this.once('stable', cb);
         this._stable && this.emit('unstable', this.state, this.datas);
         
-        me._stable = false;
+        this._stable = false;
         
         if ( this._stabilizer )
             clearTimeout(this._stabilizer);
@@ -350,7 +346,10 @@ export default class Store extends EventEmitter {
                 this,
                 null,
                 () => {//@todo
-                    // me._stable       = true;
+                    
+                    let stable   = this._stable;
+                    this._stable = true;
+                    !stable && this.emit('stable', this.state, this.datas);
                     this._stabilizer = null;
                     // this.release();
                 }
@@ -400,7 +399,8 @@ export default class Store extends EventEmitter {
         }
         
         this.datas = nextDatas;
-        this.__locks.all++;
+        //this.__locks.all++;
+        this.wait();
         this.release(cb);
         
     }

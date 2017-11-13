@@ -220,14 +220,12 @@ export default class Context extends EventEmitter {
         if ( !targetCtx._stable )
             this.wait(targetCtx._id);
         
-        if ( this.dead || targetCtx.dead )
-            debugger;
-        
         this.__mixedList.push(lists = {
             'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
             'update'  : s => this._propag()
-        })
+        });
+        
         this.stores = {};
         this.state  = {};
         this.datas  = {};
@@ -261,12 +259,8 @@ export default class Context extends EventEmitter {
                     storesMap[id].singleton && this._mount(id, state[id], datas[id])
                 }
                 else {
-                    //storesMap[id].retain();
                     this._watchStore(id);
-                    
                 }
-                
-                
             }
         )
         
@@ -465,8 +459,6 @@ export default class Context extends EventEmitter {
     getUpdates( storesRevMap, output, updated ) {
         let ctx = this.__context;
         
-        if ( !this.datas )
-            debugger;
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
@@ -588,7 +580,6 @@ export default class Context extends EventEmitter {
     }
     
     release( reason ) {
-        //console.log("release", reason);
         
         if ( reason ) {
             if ( this.__locks[reason] == 0 )

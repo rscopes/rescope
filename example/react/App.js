@@ -22628,8 +22628,6 @@
 	            targetCtx.retain("mixedTo");
 	            if (!targetCtx._stable) this.wait(targetCtx._id);
 	
-	            if (this.dead || targetCtx.dead) debugger;
-	
 	            this.__mixedList.push(lists = {
 	                'stable': function stable(s) {
 	                    return _this4.release(targetCtx._id);
@@ -22641,6 +22639,7 @@
 	                    return _this4._propag();
 	                }
 	            });
+	
 	            this.stores = {};
 	            this.state = {};
 	            this.datas = {};
@@ -22678,7 +22677,6 @@
 	                if (is.fn(storesMap[id])) {
 	                    storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
 	                } else {
-	                    //storesMap[id].retain();
 	                    _this5._watchStore(id);
 	                }
 	            });
@@ -22896,7 +22894,6 @@
 	
 	            var ctx = this.__context;
 	
-	            if (!this.datas) debugger;
 	            output = output || {};
 	            Object.keys(ctx).forEach(function (id) {
 	                if (!output[id] && (!storesRevMap || storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))) {
@@ -23046,8 +23043,6 @@
 	        key: 'release',
 	        value: function release(reason) {
 	            var _this15 = this;
-	
-	            //console.log("release", reason);
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -25035,7 +25030,7 @@
 	
 	            this.datas = nextDatas;
 	            //this.__locks.all++;
-	            this.wait(cb);
+	            this.wait();
 	            this.release(cb);
 	        }
 	
@@ -25411,9 +25406,6 @@
 	            keys = is.array(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
 	
 	            context = context || Store.staticContext;
-	
-	            // if (!targetContext.__context)
-	            //     debugger;
 	
 	            keys = keys.filter(
 	            // @todo : use query refs

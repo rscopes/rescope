@@ -162,9 +162,6 @@ export default class Store extends EventEmitter {
         
         context = context || Store.staticContext;
         
-        // if (!targetContext.__context)
-        //     debugger;
-        
         keys           = keys.filter(
             // @todo : use query refs
             // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
@@ -403,7 +400,7 @@ export default class Store extends EventEmitter {
         
         this.datas = nextDatas;
         //this.__locks.all++;
-        this.wait(cb);
+        this.wait();
         this.release(cb);
         
     }

@@ -22951,7 +22951,7 @@
 	            var _this10 = this;
 	
 	            Object.keys(this.__context).forEach(function (id) {
-	                if (!is.fn(_this10.__context[id])) _this10.__context[id].dispatch(action, data);
+	                if (!is.fn(_this10.__context[id])) _this10.__context[id].applyAction(action, data);
 	            });
 	
 	            this.__mixed.forEach(function (ctx) {
@@ -24556,7 +24556,12 @@
 	    EventEmitter = __webpack_require__(188),
 	    shortid = __webpack_require__(189),
 	    objProto = Object.getPrototypeOf({}),
-	    openContexts = {};
+	    openContexts = {},
+	    walk = function walk(obj, path) {
+	    var i = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+	
+	    return !obj ? obj : path.length == i + 1 ? obj[path[i]] : walk(obj[path[i]], path, i + 1);
+	};
 	
 	var Store = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
@@ -24613,7 +24618,7 @@
 	        }
 	        // this.state      = this.state || {};
 	
-	        _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use || []));
+	
 	        _this.name = name;
 	
 	        if (context.stores) {
@@ -24624,11 +24629,20 @@
 	            _this.context = context.stores;
 	        }
 	
-	        _this._stable = true;
 	        _this._rev = 1;
 	        _this._revs = {};
 	        _this.stores = {};
 	        _this._require = [];
+	
+	        if (is.array(_static.use)) {
+	            _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use || []));
+	        } else {
+	            _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(Object.keys(_static.use).map(function (key) {
+	                var ref = key.match(/^(\!?)(.*)$/);
+	                ref[1] && _this._require.push(ref[2]);
+	                return ref[2] + ':' + _static.use[key];
+	            })));
+	        }
 	
 	        if (_static.require) (_this$_require = _this._require).push.apply(_this$_require, _toConsumableArray(_static.require));
 	        if (cfg.require) (_this$_require2 = _this._require).push.apply(_this$_require2, _toConsumableArray(cfg.require));
@@ -24767,6 +24781,11 @@
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action, data) {
+	            this.context.dispatch(action, data);
+	        }
+	    }, {
+	        key: 'applyAction',
+	        value: function applyAction(action, data) {
 	            var actions = this.constructor.actions,
 	                ns = void 0;
 	
@@ -24984,11 +25003,11 @@
 	
 	    }, {
 	        key: 'unBind',
-	        value: function unBind(obj, key) {
+	        value: function unBind(obj, key, path) {
 	            var followers = this._followers,
 	                i = followers && followers.length;
 	            while (followers && i--) {
-	                if (followers[i][0] == obj && followers[i][1] == key) return followers.splice(i, 1);
+	                if (followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path) return followers.splice(i, 1);
 	            }
 	        }
 	
@@ -25002,13 +25021,15 @@
 	        key: 'bind',
 	        value: function bind(obj, key) {
 	            var setInitial = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+	            var path = arguments[3];
 	
-	            this._followers.push([obj, key]);
+	            this._followers.push([obj, key, path]);
 	            if (setInitial && this.data && this._stable) {
+	                var data = path ? walk(this.data, path) : this.data;
 	                if (typeof obj != "function") {
-	                    if (key) obj.setState(_defineProperty({}, key, this.data));else obj.setState(this.data);
+	                    if (key) obj.setState(_defineProperty({}, key, data));else obj.setState(data);
 	                } else {
-	                    obj(this.data);
+	                    obj(data);
 	                }
 	            }
 	        }
@@ -25091,12 +25112,14 @@
 	                this._stable = true;
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this8.data) return;
+	                    var data = follower[2] ? walk(_this8.data, follower[2]) : _this8.data;
+	                    if (!data) return;
+	
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this8.data);
+	                        follower[0](data);
 	                    } else {
 	                        //cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.data) : _this8.data
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], data) : data
 	                        //,
 	                        //cb && (
 	                        //    () => (!(--i) && cb())
@@ -25207,6 +25230,7 @@
 	                }
 	                var name = void 0,
 	                    alias = void 0,
+	                    path = void 0,
 	                    store = void 0;
 	                if (key.store && key.name) {
 	                    alias = name = key.name;
@@ -25215,10 +25239,11 @@
 	                    name = alias = key.name || key.defaultName;
 	                    store = key;
 	                } else {
-	                    key = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-	                    name = key[0];
-	                    store = context.stores[key[0]];
-	                    alias = key[1] == '*' ? null : key[2] || key[0]; // allow binding props  ([*])
+	                    key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	                    name = key[1];
+	                    path = key[2] && key[2].split('.').slice(1);
+	                    store = context.stores[key[1]];
+	                    alias = key[3] || path && path[path.length - 1] || key[1];
 	                }
 	
 	                if (targetRevs[name]) return false; // ignore dbl uses for now
@@ -25228,12 +25253,12 @@
 	                } else if (is.fn(store)) {
 	                    context._mount(name);
 	
-	                    context.stores[name].bind(component, alias, setInitial);
+	                    context.stores[name].bind(component, alias, setInitial, path);
 	                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
 	                    //     context.__context[key[0]].push();
 	                    // }
 	                } else {
-	                    store.bind(component, alias, setInitial);
+	                    store.bind(component, alias, setInitial, path);
 	                }
 	                targetRevs[alias] = targetRevs[alias] || true;
 	                !targetContext[name] && (targetContext[name] = context.stores[name]);
@@ -25254,6 +25279,7 @@
 	                keys.map(function (key) {
 	                    var name = void 0,
 	                        alias = void 0,
+	                        path = void 0,
 	                        store = void 0;
 	                    if (key.store && key.name) {
 	                        alias = name = key.name;
@@ -25262,13 +25288,14 @@
 	                        name = alias = key.name || key.defaultName;
 	                        store = context.stores[name];
 	                    } else {
-	                        key = key.split(':');
-	                        name = key[0];
-	                        store = context.stores[key[0]];
-	                        alias = key[1] || key[0];
+	                        key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	                        name = key[1];
+	                        path = key[2] && key[2].split('.');
+	                        store = context.stores[key[1]];
+	                        alias = key[3] || path && path[path.length - 1] || key[1];
 	                    }
 	
-	                    store && !is.fn(store) && store.unBind(component, alias);
+	                    store && !is.fn(store) && store.unBind(component, alias, path);
 	                });
 	                return component[unMountKey] && component[unMountKey].apply(component, arguments);
 	            };
@@ -25443,7 +25470,14 @@
 	        }
 	
 	        return status;
-	    }(_Rescope.Store), _class.singleton = true, _class.use = ["appState"], _temp),
+	    }(_Rescope.Store), _class.singleton = true, _class.use = ["appState"], _class.actions = {
+	        userEvents: function userEvents(msg) {
+	            return { userEvents: msg };
+	        },
+	        currentUser: function currentUser(msg) {
+	            return { currentUser: msg };
+	        }
+	    }, _temp),
 	    appState: (_temp2 = _class2 = function (_Store2) {
 	        _inherits(appState, _Store2);
 	
@@ -25515,30 +25549,30 @@
 	            value: function apply(data, _ref2, changes) {
 	                var _this6 = this;
 	
-	                var nUserId = _ref2.currentUser._id;
+	                var myUserId = _ref2.myUserId;
 	                var _data$cUserId = data.cUserId,
 	                    cUserId = _data$cUserId === undefined ? void 0 : _data$cUserId;
 	
 	
-	                if (nUserId != cUserId) {
+	                if (myUserId != cUserId) {
 	                    this.wait(); // do some async whithout pushing
 	                    setTimeout(function () {
 	                        // get somme user events or whatever...
 	                        _this6.push({
-	                            userId: nUserId,
-	                            count: stubs[nUserId].length,
-	                            events: stubs[nUserId],
-	                            eventsByType: stubs[nUserId].reduce(function (res, item) {
+	                            userId: myUserId,
+	                            count: stubs[myUserId].length,
+	                            events: stubs[myUserId],
+	                            eventsByType: stubs[myUserId].reduce(function (res, item) {
 	                                res[item.type] = res[item.type] || [res[item.type]];
 	                                res[item.type].push(item);
 	                                return res;
 	                            }, {})
 	                        }, function () {
-	                            _this6.context.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
+	                            _this6.dispatch("userEvents", stubs[myUserId].length + " events");
 	                        });
 	                        _this6.release();
 	                    }, 500);
-	                    this.context.status.setState({ userEvents: "user data change ! doing some async..." });
+	                    this.dispatch("userEvents", "user data change ! doing some async...");
 	                }
 	
 	                return data;
@@ -25546,7 +25580,9 @@
 	        }]);
 	
 	        return userEvents;
-	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _class4.data = {}, _temp4)
+	    }(_Rescope.Store), _class4.use = {
+	        "!currentUser.currentUserId": "myUserId"
+	    }, _class4.data = {}, _temp4)
 	};
 	
 	exports.default = _extends({}, MyStoreContext);

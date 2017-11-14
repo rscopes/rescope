@@ -12,7 +12,7 @@
  */
 var is = require('is');
 export default class Emitter {
-    _events   = {};
+    _events = {};
     
     on( evt, cb ) {
         if ( !is.string(evt) && evt )
@@ -26,15 +26,15 @@ export default class Emitter {
     un( evt, cb ) {
         if ( !is.string(evt) && evt )
             return Object.keys(evt).forEach(k => this.un(k, evt[k]));
-    
+        
         if ( !this._events[evt] ) return;
         var i = this._events[evt].indexOf(cb);
         this._events[evt].splice(i, 1);
     }
     
-    emit(evt, ...argz) {
+    emit( evt, ...argz ) {
         if ( !this._events[evt] ) return;
-        for (var i=0;i<this._events[evt].length;i++){
+        for ( var i = 0; i < this._events[evt].length; i++ ) {
             this._events[evt][i](...argz);
         }
     }

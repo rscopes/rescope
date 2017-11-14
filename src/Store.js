@@ -22,11 +22,16 @@ var is           = require('is'),
     EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({}),
-    openContexts = {};
+    openContexts = {},
+    walk         = function walk( obj, path, i = 0 ) {
+        return !obj ? obj : path.length == i + 1 ? obj[path[i]] : walk(obj[path[i]], path, i + 1);
+    }
+;
 
 
 export default class Store extends EventEmitter {
     
+    static import;
     static use                        = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
@@ -88,7 +93,7 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
         
-        this._use = [...watchs, ...(_static.use || [])];
+        
         this.name = name;
         
         if ( context.stores ) {
@@ -101,11 +106,26 @@ export default class Store extends EventEmitter {
         }
         
         
-        this._stable  = true;
         this._rev     = 1;
         this._revs    = {};
         this.stores   = {};
         this._require = [];
+        
+        if ( is.array(_static.use) ) {
+            this._use = [...watchs, ...(_static.use || [])];
+        }
+        else {
+            this._use = [...watchs, ...(
+                Object.keys(_static.use)
+                      .map(
+                          key => {
+                              let ref = key.match(/^(\!?)(.*)$/);
+                              ref[1] && this._require.push(ref[2]);
+                              return ref[2] + ':' + _static.use[key];
+                          }
+                      )
+            )];
+        }
         
         if ( _static.require )
             this._require.push(..._static.require);
@@ -172,6 +192,7 @@ export default class Store extends EventEmitter {
                 }
                 let name,
                     alias,
+                    path,
                     store;
                 if ( key.store && key.name ) {
                     alias = name = key.name;
@@ -182,10 +203,11 @@ export default class Store extends EventEmitter {
                     store = key;
                 }
                 else {
-                    key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-                    name  = key[0];
-                    store = context.stores[key[0]];
-                    alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
+                    key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                    name  = key[1];
+                    path  = key[2] && key[2].split('.').slice(1);
+                    store = context.stores[key[1]];
+                    alias = key[3] || path && path[path.length - 1] || key[1];
                 }
                 
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
@@ -196,13 +218,13 @@ export default class Store extends EventEmitter {
                 else if ( is.fn(store) ) {
                     context._mount(name)
                     
-                    context.stores[name].bind(component, alias, setInitial);
+                    context.stores[name].bind(component, alias, setInitial, path);
                     // if ( context.__context[key[0]].state ) {// do sync push after constructor
                     //     context.__context[key[0]].push();
                     // }
                 }
                 else {
-                    store.bind(component, alias, setInitial);
+                    store.bind(component, alias, setInitial, path);
                 }
                 targetRevs[alias] = targetRevs[alias] || true;
                 !targetContext[name] && (targetContext[name] = context.stores[name]);
@@ -226,7 +248,7 @@ export default class Store extends EventEmitter {
             keys.map(
                 ( key ) => {
                     let name,
-                        alias,
+                        alias, path,
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
@@ -237,13 +259,14 @@ export default class Store extends EventEmitter {
                         store = context.stores[name];
                     }
                     else {
-                        key   = key.split(':');
-                        name  = key[0];
-                        store = context.stores[key[0]];
-                        alias = key[1] || key[0];
+                        key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                        name  = key[1];
+                        path  = key[2] && key[2].split('.');
+                        store = context.stores[key[1]];
+                        alias = key[3] || path && path[path.length - 1] || key[1];
                     }
                     
-                    store && !is.fn(store) && store.unBind(component, alias)
+                    store && !is.fn(store) && store.unBind(component, alias, path)
                 }
             );
             return component[unMountKey] && component[unMountKey](...argz);
@@ -357,6 +380,10 @@ export default class Store extends EventEmitter {
     }
     
     dispatch( action, data ) {
+        this.context.dispatch(action, data);
+    }
+    
+    applyAction( action, data ) {
         let { actions } = this.constructor,
             ns;
         if ( actions && actions[action] ) {
@@ -552,11 +579,11 @@ export default class Store extends EventEmitter {
      * @param key
      * @returns {Array.<*>}
      */
-    unBind( obj, key ) {
+    unBind( obj, key, path ) {
         var followers = this._followers,
             i         = followers && followers.length;
         while ( followers && i-- )
-            if ( followers[i][0] == obj && followers[i][1] == key )
+            if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
                 return followers.splice(i, 1);
     }
     
@@ -565,15 +592,16 @@ export default class Store extends EventEmitter {
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    bind( obj, key, setInitial = true ) {
-        this._followers.push([obj, key]);
+    bind( obj, key, setInitial = true, path ) {
+        this._followers.push([obj, key, path]);
         if ( setInitial && this.data && this._stable ) {
+            let data = path ? walk(this.data, path) : this.data;
             if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({ [key]: this.data });
-                else obj.setState(this.data);
+                if ( key ) obj.setState({ [key]: data });
+                else obj.setState(data);
             }
             else {
-                obj(this.data);
+                obj(data);
             }
         }
     }
@@ -646,15 +674,17 @@ export default class Store extends EventEmitter {
             this._rev    = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
-                    if ( !this.data ) return;
+                    let data = follower[2] ? walk(this.data, follower[2]) : this.data;
+                    if ( !data ) return;
+                    
                     if ( typeof follower[0] == "function" ) {
-                        follower[0](this.data);
+                        follower[0](data);
                     }
                     else {
                         //cb && i++;
                         follower[0].setState(
-                            (follower[1]) ? { [follower[1]]: this.data }
-                                : this.data
+                            (follower[1]) ? { [follower[1]]: data }
+                                : data
                             //,
                             //cb && (
                             //    () => (!(--i) && cb())

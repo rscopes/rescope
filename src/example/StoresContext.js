@@ -22,6 +22,14 @@ let MyStoreContext = {
     status     : class status extends Store {
         static singleton = true;
         static use = ["appState"];
+        static actions = {
+            userEvents( msg ) {
+                return { userEvents: msg };
+            },
+            currentUser( msg ) {
+                return { currentUser: msg };
+            }
+        }
     },
     appState   : class appState extends Store {
         static state = {
@@ -75,25 +83,26 @@ let MyStoreContext = {
         }
     },
     userEvents : class userEvents extends Store {
-        static use = ["currentUser"];
-        static require = ["currentUser"];
+        static use = {
+            "!currentUser.currentUserId": "myUserId"
+        };
         static data = {};
         
-        apply( data, { currentUser: { _id: nUserId } }, changes ) {
+        apply( data, { myUserId }, changes ) {
             let { cUserId = void 0 } = data;
             
             
-            if ( nUserId != cUserId ) {
+            if ( myUserId != cUserId ) {
                 this.wait();// do some async whithout pushing
                 setTimeout(
                     () => {
                         // get somme user events or whatever...
                         this.push(
                             {
-                                userId      : nUserId,
-                                count       : stubs[nUserId].length,
-                                events      : stubs[nUserId],
-                                eventsByType: stubs[nUserId].reduce(
+                                userId      : myUserId,
+                                count       : stubs[myUserId].length,
+                                events      : stubs[myUserId],
+                                eventsByType: stubs[myUserId].reduce(
                                     ( res, item ) => {
                                         res[item.type] = res[item.type] || [res[item.type]];
                                         res[item.type].push(item);
@@ -103,13 +112,14 @@ let MyStoreContext = {
                                 )
                             },
                             () => {
-                                this.context.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
+                                this.dispatch("userEvents", stubs[myUserId].length + " events");
                             });
                         this.release();
                     },
                     500
                 );
-                this.context.status.setState({ userEvents: "user data change ! doing some async..." });
+                this.dispatch("userEvents", "user data change ! doing some async...");
+                
             }
             
             return data;

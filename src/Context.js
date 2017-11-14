@@ -515,7 +515,7 @@ export default class Context extends EventEmitter {
               .forEach(
                   id => {
                       if ( !is.fn(this.__context[id]) )
-                          this.__context[id].dispatch(action, data)
+                          this.__context[id].applyAction(action, data)
                   }
               );
         

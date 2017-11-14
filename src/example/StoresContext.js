@@ -16,7 +16,7 @@
  */
 import {Store} from "../Rescope";
 
-let stubs = require("./_stubs/datas");
+let stubs = require("./_stubs/data");
 
 let MyStoreContext = {
     status     : class status extends Store {
@@ -35,7 +35,7 @@ let MyStoreContext = {
         //     });
         // }
         
-        // apply( datas, newState, changes ) {
+        // apply( data, newState, changes ) {
         //     // do some routing (map on url)
         //     return newState;
         // }
@@ -43,8 +43,8 @@ let MyStoreContext = {
     currentUser: class currentUser extends Store {
         static use = ["appState"];// list of source stores id
         
-        apply( datas, { appState: { currentUserId: NewUserId } }, changes ) {
-            let LastUserId = datas && datas._id;
+        apply( data, { appState: { currentUserId: NewUserId } }, changes ) {
+            let LastUserId = data && data._id;
             
             console.info("currentUser state updated : ", changes);
             
@@ -59,7 +59,7 @@ let MyStoreContext = {
                                 login: NewUserId
                             },
                             () => {
-                                this.context.status.setState({ currentUser: JSON.stringify(this.datas) });
+                                this.context.status.setState({ currentUser: JSON.stringify(this.data) });
                             }
                         );
                         
@@ -71,16 +71,16 @@ let MyStoreContext = {
             }
             
             
-            return datas;
+            return data;
         }
     },
     userEvents : class userEvents extends Store {
         static use = ["currentUser"];
         static require = ["currentUser"];
-        static datas = {};
+        static data = {};
         
-        apply( datas, { currentUser: { _id: nUserId } }, changes ) {
-            let { cUserId = void 0 } = datas;
+        apply( data, { currentUser: { _id: nUserId } }, changes ) {
+            let { cUserId = void 0 } = data;
             
             
             if ( nUserId != cUserId ) {
@@ -109,10 +109,10 @@ let MyStoreContext = {
                     },
                     500
                 );
-                this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
+                this.context.status.setState({ userEvents: "user data change ! doing some async..." });
             }
             
-            return datas;
+            return data;
         }
     }
 };

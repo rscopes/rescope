@@ -7,15 +7,15 @@
 
 ## ReScope What ?
 
-ReScope is a simple, flexible, predictable \& effective Store system inspired by ReactJS methods.
+ReScope is a simple, **flexible**, predictable \& effective Store system inspired by ReactJS methods.
 
 ## What ?
 
-Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output datas in a deterministic way.<br>
-These outputs are then, used as partial "key" in other stores states, or "predictible" datas in dumb components.<br>
+Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output data in a deterministic way.<br>
+These outputs are then, used as partial "key" in other stores states, or "predictible" data in dumb components.<br>
 
 By " a deterministic way ", i mean : <br/>
-All state-making values should come from a limited number of key "seeds" stores; so "final" store's output datas will remain determined by theses key values.
+All state-making values should come from a limited number of key "seeds" stores; so "final" store's output data will remain determined by theses key values.
 
 Rescope Contexts manages a pool of stores and provide :
 - easy serialisation, export & restore of you're Application State.
@@ -25,7 +25,7 @@ Rescope Contexts manages a pool of stores and provide :
 
 Rescope Stores maintain server & client side :
 - Enhanced records matching some ids,
-- Processed & interpolated datas, ready for render
+- Processed & interpolated data, ready for render
 - Page state & status (act as router)
 - session, etc... 
 
@@ -34,11 +34,11 @@ Rescope Stores maintain server & client side :
 Because :
 
 - This is simple, flexible & effective,
-- Seems like "React Components" for datas,
+- Seems like "React Components" for data,
 - As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
 - This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores, 
 - 1 stem super class to rule all the async process
-- Do all the jobs and really don't care witch kind of templates/whatever receive the datas
+- Do all the jobs and really don't care witch kind of templates/whatever receive the data
  
 ### What else ?
 
@@ -71,6 +71,78 @@ Just code for now, check :
 
 ### And the [tests](test/Rescope.test.js)
 
+## Example app stores struture  :
+
+``` jsx
+
+import {Context, Store} from "rescope";
+
+
+let MyStaticContext = new Context({
+    AppConfig : class AppConfig extend Store{
+        data = {
+
+        }
+    }
+}); // stores are lazy instanciated on the context hashmap
+let MyPageContext = new Context({
+
+    AppState : class AppState extend Store{
+        static use     = ["AppConfig"];
+        static require = ["AppConfig"];
+
+
+        switchTodoList(todoListId){
+             this.setState({todoListId})
+        }
+    }
+    MyTodoList : class MyTodoList extend Store{
+        static use     = ["AppState"];
+        static require = ["AppState"];
+        static state   = {items:[]};
+        apply(currentDatas, {items, selected}, {AppState:{todoListId}}){
+
+            return {items, ;
+        }
+        select(ids){
+            let {selected} = this.data;
+        }
+        complete(ids, done){
+            let {selected} = this.data;
+        }
+        add(ids, done){
+            let {selected} = this.data;
+        }
+    }
+
+}, {parent:MyStaticContext});
+
+
+// you can preload using default / restored key values
+MyPageContext.mount(["someStores"], {/*states by id*/}, {/*data by id*/})
+.then(
+    (err, data)=>{
+        // here all the store data are in store
+
+    }
+);
+
+let MyMixableContext = new Context({...stores_instancied_or_not});
+let MyLocalContext = new Context({...stores_instancied_or_not});
+MyLocalContext.mixin(MyMixableContext);
+
+// Or inject them with synchrone initial output state :
+// .... ( say we are in a react comp constructor )
+this.state = {
+   someKey : true,
+   // inject & maintain AppState & AnotherStore outputs in the state
+   ...MyLocalContext.map(this, ["AppState", "AnotherStore"])
+}
+// ....
+
+```
+
+
 ## Theoric example :
 
 ``` jsx
@@ -86,12 +158,11 @@ example : class example extends Store{/*...*/}
 
 
 // you can preload using default / restored key values
-MyPageContext.mount(["someStores"], {/*states by id*/}, {/*datas by id*/})
+MyPageContext.mount(["someStores"], {/*states by id*/}, {/*data by id*/})
 .then(
-    (err, datas)=>{
-        // here all the store datas are in store
-        
-   
+    (err, data)=>{
+        // here all the store data are in store
+
     }
 );
 

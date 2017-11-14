@@ -45,8 +45,8 @@
 /***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(204);
-	module.exports = __webpack_require__(205);
+	__webpack_require__(203);
+	module.exports = __webpack_require__(204);
 
 
 /***/ }),
@@ -96,8 +96,6 @@
 	    value: true
 	});
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -121,13 +119,6 @@
 	 *
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
-	 */
-	
-	/**
-	 * @author Nathanael BRAUN
-	 *
-	 * Date: 13/08/2017
-	 * Time: 17:15
 	 */
 	
 	var is = __webpack_require__(187),
@@ -166,7 +157,7 @@
 	     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' context)
 	     * @param parent
 	     * @param state
-	     * @param datas
+	     * @param data
 	     * @param name
 	     * @param defaultMaxListeners
 	     * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
@@ -178,7 +169,7 @@
 	            id = _ref.id,
 	            parent = _ref.parent,
 	            state = _ref.state,
-	            datas = _ref.datas,
+	            data = _ref.data,
 	            name = _ref.name,
 	            defaultMaxListeners = _ref.defaultMaxListeners,
 	            persistenceTm = _ref.persistenceTm,
@@ -204,13 +195,13 @@
 	
 	        _this.stores = {};
 	        _this.state = {};
-	        _this.datas = {};
+	        _this.data = {};
 	
 	        if (parent && parent.dead) throw new Error("Can't use a dead context as parent !");
 	
 	        __proto__push(_this, 'stores', parent);
 	        __proto__push(_this, 'state', parent);
-	        __proto__push(_this, 'datas', parent);
+	        __proto__push(_this, 'data', parent);
 	        _this.parent = parent;
 	
 	        if (parent) {
@@ -241,10 +232,10 @@
 	                    return _this._propag();
 	                }
 	            });
-	            // this.register(parent.__context, state, datas);
+	            // this.register(parent.__context, state, data);
 	        }
 	
-	        _this.register(storesMap, state, datas);
+	        _this.register(storesMap, state, data);
 	        _this.__locks.all--;
 	        _this._stable = !_this.__locks.all;
 	
@@ -262,19 +253,19 @@
 	     * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
 	     *     Store:as
 	     * @param state
-	     * @param datas
+	     * @param data
 	     * @returns {Context}
 	     */
 	
 	
 	    _createClass(Context, [{
 	        key: 'mount',
-	        value: function mount(storesList, state, datas) {
+	        value: function mount(storesList, state, data) {
 	            var _this2 = this;
 	
 	            if (is.array(storesList)) {
 	                storesList.forEach(function (k) {
-	                    return _this2._mount(k, state && state[k], datas && datas[k]);
+	                    return _this2._mount(k, state && state[k], data && data[k]);
 	                });
 	            } else {
 	                this._mount.apply(this, arguments);
@@ -283,7 +274,7 @@
 	        }
 	    }, {
 	        key: '_mount',
-	        value: function _mount(id, state, datas) {
+	        value: function _mount(id, state, data) {
 	            if (typeof id !== 'string') {
 	                this.register(_defineProperty({}, id.name, id.store));
 	                id = id.name;
@@ -294,20 +285,20 @@
 	
 	                //ask mixed || parent
 	                if (this.__mixed.reduce(function (mounted, ctx) {
-	                    return mounted || ctx._mount(id, state, datas);
+	                    return mounted || ctx._mount(id, state, data);
 	                }, false) || !this.parent) return;
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            }
-	            //this.constructor.Store.mountStore(id, this, null, state, datas);
+	            //this.constructor.Store.mountStore(id, this, null, state, data);
 	            var store = this.__context[id],
 	                ctx = void 0;
 	            //console.warn("mount on ", this._id, ' ', id, is.fn(store));
 	            if (is.fn(store)) {
-	                this.__context[id] = new store(this, { state: state, datas: datas });
+	                this.__context[id] = new store(this, { state: state, data: data });
 	            } else {
-	                if (state !== undefined && datas === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+	                if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
-	                if (datas !== undefined) store.push(datas);
+	                if (data !== undefined) store.push(data);
 	            }
 	
 	            //console.warn("mount on ", this.stores[id]);
@@ -317,7 +308,7 @@
 	        }
 	    }, {
 	        key: '_watchStore',
-	        value: function _watchStore(id, state, datas) {
+	        value: function _watchStore(id, state, data) {
 	            var _this3 = this;
 	
 	            if (!this.__context[id]) {
@@ -325,7 +316,7 @@
 	
 	                //ask mixed || parent
 	                if (this.__mixed.reduce(function (mounted, ctx) {
-	                    return mounted || ctx._watchStore(id, state, datas);
+	                    return mounted || ctx._watchStore(id, state, data);
 	                }, false) || !this.parent) return;
 	                return (_parent2 = this.parent)._watchStore.apply(_parent2, arguments);
 	            }
@@ -381,17 +372,17 @@
 	
 	            this.stores = {};
 	            this.state = {};
-	            this.datas = {};
+	            this.data = {};
 	            targetCtx.on(lists);
 	            __proto__push(this, 'stores', parent);
 	            __proto__push(this, 'state', parent);
-	            __proto__push(this, 'datas', parent);
+	            __proto__push(this, 'data', parent);
 	
 	            this.relink(this.__context, this, false, true);
 	            this.__mixed.forEach(function (ctx) {
 	                __proto__push(_this4, 'stores');
 	                __proto__push(_this4, 'state');
-	                __proto__push(_this4, 'datas');
+	                __proto__push(_this4, 'data');
 	                ctx.relink(ctx.__context, _this4, true, true);
 	            });
 	        }
@@ -400,7 +391,7 @@
 	         * Register stores in storesMap & link them in the protos
 	         * @param storesMap
 	         * @param state
-	         * @param datas
+	         * @param data
 	         */
 	
 	    }, {
@@ -409,12 +400,12 @@
 	            var _this5 = this;
 	
 	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-	            var datas = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+	            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	
-	            this.relink(storesMap, this, false, false, state, datas);
+	            this.relink(storesMap, this, false, false, state, data);
 	            Object.keys(storesMap).forEach(function (id) {
 	                if (is.fn(storesMap[id])) {
-	                    storesMap[id].singleton && _this5._mount(id, state[id], datas[id]);
+	                    storesMap[id].singleton && _this5._mount(id, state[id], data[id]);
 	                } else {
 	                    _this5._watchStore(id);
 	                }
@@ -426,7 +417,7 @@
 	         * @param srcCtx
 	         * @param targetCtx
 	         * @param state
-	         * @param datas
+	         * @param data
 	         */
 	
 	    }, {
@@ -439,7 +430,7 @@
 	            var _this6 = this;
 	
 	            var state = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-	            var datas = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+	            var data = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 	
 	            var lctx = targetCtx._stores.prototype;
 	            Object.keys(srcCtx).forEach(function (id) {
@@ -468,9 +459,9 @@
 	                        return _this6._mount(id, v);
 	                    }
 	                });
-	                Object.defineProperty(targetCtx._datas.prototype, id, {
+	                Object.defineProperty(targetCtx._data.prototype, id, {
 	                    get: function get() {
-	                        return _this6.__context[id] && _this6.__context[id].datas;
+	                        return _this6.__context[id] && _this6.__context[id].data;
 	                    },
 	                    set: function set(v) {
 	                        return _this6._mount(id, undefined, v);
@@ -494,7 +485,7 @@
 	            var setInitial = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 	
 	            var lastRevs = void 0,
-	                datas = void 0,
+	                data = void 0,
 	                reKey = void 0;
 	            if (key && !is.array(key)) key = [key];
 	
@@ -514,12 +505,12 @@
 	            this.mount(key);
 	
 	            if (setInitial && this._stable) {
-	                datas = this.getUpdates(lastRevs);
-	                if (!datas) return;
+	                data = this.getUpdates(lastRevs);
+	                if (!data) return;
 	                if (typeof obj != "function") {
-	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
+	                    if (as) obj.setState(_defineProperty({}, as, data));else obj.setState(data);
 	                } else {
-	                    obj(datas);
+	                    obj(data);
 	                }
 	            }
 	        }
@@ -581,8 +572,8 @@
 	                    return to[unMountKey] && to[unMountKey].apply(to, arguments);
 	                };
 	            }
-	            return storesList.reduce(function (datas, id) {
-	                return datas[id] = _this7.stores[id] && _this7.stores[id].datas, datas;
+	            return storesList.reduce(function (data, id) {
+	                return data[id] = _this7.stores[id] && _this7.stores[id].data, data;
 	            }, {});
 	        }
 	
@@ -638,7 +629,7 @@
 	                if (!output[id] && (!storesRevMap || storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))) {
 	
 	                    updated = true;
-	                    output[id] = _this8.datas[id];
+	                    output[id] = _this8.data[id];
 	                    if (storesRevMap && storesRevMap[id] !== undefined) storesRevMap[id] = ctx[id]._rev;
 	                }
 	            });
@@ -652,8 +643,8 @@
 	        /**
 	         *
 	         * @param flags_states
-	         * @param flags_datas
-	         * @returns {{state: {}, datas: {}}}
+	         * @param flags_data
+	         * @returns {{state: {}, data: {}}}
 	         */
 	
 	    }, {
@@ -662,21 +653,21 @@
 	            var _this9 = this;
 	
 	            var flags_states = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : /.*/;
-	            var flags_datas = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /.*/;
+	            var flags_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /.*/;
 	
 	            var ctx = this.__context,
-	                output = { state: {}, datas: {} },
+	                output = { state: {}, data: {} },
 	                _flags_states = void 0,
-	                _flags_datas = void 0;
+	                _flags_data = void 0;
 	            if (is.array(flags_states)) flags_states.forEach(function (id) {
 	                return output.state[id] = _this9.state[id];
 	            });
 	
-	            if (is.array(flags_datas)) flags_datas.forEach(function (id) {
-	                return output.datas[id] = _this9.datas[id];
+	            if (is.array(flags_data)) flags_data.forEach(function (id) {
+	                return output.data[id] = _this9.data[id];
 	            });
 	
-	            if (!is.array(flags_datas) && !is.array(flags_states)) Object.keys(ctx).forEach(function (id) {
+	            if (!is.array(flags_data) && !is.array(flags_states)) Object.keys(ctx).forEach(function (id) {
 	                if (is.fn(ctx[id])) return;
 	
 	                var flags = ctx[id].constructor.flags;
@@ -688,28 +679,25 @@
 	                }, false)) output.state[id] = _this9.state[id];
 	
 	                if (flags.reduce(function (r, flag) {
-	                    return r || _flags_datas.test(flag);
-	                }, false)) output.datas[id] = _this9.datas[id];
+	                    return r || _flags_data.test(flag);
+	                }, false)) output.data[id] = _this9.data[id];
 	            });
 	            return output;
 	        }
 	    }, {
-	        key: 'on',
-	        value: function on(lists) {
+	        key: 'dispatch',
+	        value: function dispatch(action, data) {
 	            var _this10 = this;
 	
-	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', _this10).call(_this10, k, lists[k]);
-	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'on', this).apply(this, arguments);
-	        }
-	    }, {
-	        key: 'removeListener',
-	        value: function removeListener(lists) {
-	            var _this11 = this;
+	            Object.keys(this.__context).forEach(function (id) {
+	                if (!is.fn(_this10.__context[id])) _this10.__context[id].dispatch(action, data);
+	            });
 	
-	            if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
-	                return _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'removeListener', _this11).call(_this11, k, lists[k]);
-	            });else _get(Context.prototype.__proto__ || Object.getPrototypeOf(Context.prototype), 'removeListener', this).apply(this, arguments);
+	            this.__mixed.forEach(function (ctx) {
+	                return ctx.dispatch(action, data);
+	            });
+	            this.parent && this.parent.dispatch(action, data);
+	            return this;
 	        }
 	
 	        /**
@@ -721,22 +709,22 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this12 = this;
+	            var _this11 = this;
 	
-	            if (this._stable) return cb(null, this.datas);
+	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this12.datas);
+	                return cb(null, _this11.data);
 	            });
 	        }
 	    }, {
 	        key: 'restore',
 	        value: function restore(_ref2, quiet) {
 	            var state = _ref2.state,
-	                datas = _ref2.datas;
+	                data = _ref2.data;
 	
 	            var ctx = this.__context;
-	            Object.keys(datas).forEach(function (id) {
-	                quiet ? ctx.datas = datas[id] : ctx.push(datas[id]);
+	            Object.keys(data).forEach(function (id) {
+	                quiet ? ctx.data = data[id] : ctx.push(data[id]);
 	            });
 	            Object.keys(state).forEach(function (id) {
 	                quiet ? ctx.state = state[id] : ctx.setState(state[id]);
@@ -745,25 +733,25 @@
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
+	            var _this12 = this;
+	
+	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	            var reason = arguments[1];
+	
+	            stores.forEach(function (id) {
+	                return _this12.stores[id] && _this12.stores[id].retain && _this12.stores[id].retain(reason);
+	            });
+	        }
+	    }, {
+	        key: 'disposeStores',
+	        value: function disposeStores() {
 	            var _this13 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
-	            });
-	        }
-	    }, {
-	        key: 'disposeStores',
-	        value: function disposeStores() {
-	            var _this14 = this;
-	
-	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	            var reason = arguments[1];
-	
-	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
+	                return _this13.stores[id] && _this13.stores[id].dispose && _this13.stores[id].dispose(reason);
 	            });
 	        }
 	    }, {
@@ -781,7 +769,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this15 = this;
+	            var _this14 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -795,33 +783,33 @@
 	                this._stabilizerTM && clearTimeout(this._stabilizerTM);
 	
 	                this._stabilizerTM = setTimeout(function (e) {
-	                    _this15._stabilizerTM = null;
-	                    if (_this15.__locks.all) return;
+	                    _this14._stabilizerTM = null;
+	                    if (_this14.__locks.all) return;
 	
-	                    _this15._propagTM && clearTimeout(_this15._propagTM);
+	                    _this14._propagTM && clearTimeout(_this14._propagTM);
 	
-	                    _this15._stable = true;
-	                    _this15.emit("stable", _this15);
+	                    _this14._stable = true;
+	                    _this14.emit("stable", _this14);
 	
-	                    !_this15.dead && _this15._propag(); // stability can induce destroy
+	                    !_this14.dead && _this14._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this16 = this;
+	            var _this15 = this;
 	
 	            this._propagTM && clearTimeout(this._propagTM);
 	            this._propagTM = setTimeout(function (e) {
-	                _this16._propagTM = null;
-	                _this16._propag();
+	                _this15._propagTM = null;
+	                _this15._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this17 = this;
+	            var _this16 = this;
 	
 	            if (this._followers.length) this._followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -829,12 +817,12 @@
 	                    as = _ref3[2],
 	                    lastRevs = _ref3[3];
 	
-	                var datas = _this17.getUpdates(lastRevs);
-	                if (!datas) return;
+	                var data = _this16.getUpdates(lastRevs);
+	                if (!data) return;
 	                if (typeof obj != "function") {
-	                    if (as) obj.setState(_defineProperty({}, as, datas));else obj.setState(datas);
+	                    if (as) obj.setState(_defineProperty({}, as, data));else obj.setState(data);
 	                } else {
-	                    obj(datas, lastRevs && [].concat(_toConsumableArray(lastRevs)) || "no revs");
+	                    obj(data, lastRevs && [].concat(_toConsumableArray(lastRevs)) || "no revs");
 	                }
 	                // lastRevs &&
 	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
@@ -887,7 +875,7 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this18 = this;
+	            var _this17 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -908,14 +896,14 @@
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
 	                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
-	                        _this18.then(function (s) {
+	                        _this17.then(function (s) {
 	                            //console.log("wtf ctx then", this._id, reason, this.__locks);
-	                            !_this18.__retains.all && _this18.destroy();
+	                            !_this17.__retains.all && _this17.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
 	                    this.then(function (s) {
-	                        return !_this18.__retains.all && _this18.destroy();
+	                        return !_this17.__retains.all && _this17.destroy();
 	                    });
 	                }
 	            }
@@ -928,14 +916,14 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this19 = this;
+	            var _this18 = this;
 	
 	            var ctx = this.__context;
 	            //console.warn("destroy", this._id);
 	            this.dead = true;
 	            this.emit("destroy");
 	            Object.keys(this.__listening).forEach(function (id) {
-	                return _this19.__context[id].removeListener(_this19.__listening[id]);
+	                return _this18.__context[id].removeListener(_this18.__listening[id]);
 	            });
 	
 	            this._stabilizerTM && clearTimeout(this._stabilizerTM);
@@ -962,8 +950,8 @@
 	            //
 	            //        ctx[key] = ctx[key].constructor;
 	            //    }
-	            this.__mixed = this.datas = this.state = this.context = this.stores = null;
-	            this._datas = this._state = this._stores = null;
+	            this.__mixed = this.data = this.state = this.context = this.stores = null;
+	            this._data = this._state = this._stores = null;
 	        }
 	    }]);
 	
@@ -1787,311 +1775,108 @@
 /***/ }),
 
 /***/ 188:
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+	'use strict';
 	
-	function EventEmitter() {
-	  this._events = this._events || {};
-	  this._maxListeners = this._maxListeners || undefined;
-	}
-	module.exports = EventEmitter;
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	
-	// Backwards-compat with node 0.10.x
-	EventEmitter.EventEmitter = EventEmitter;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	EventEmitter.prototype._events = undefined;
-	EventEmitter.prototype._maxListeners = undefined;
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	// By default EventEmitters will print a warning if more than 10 listeners are
-	// added to it. This is a useful default which helps finding memory leaks.
-	EventEmitter.defaultMaxListeners = 10;
+	/*
+	 * Copyright (c)  2017 Caipi Labs .
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	 *
+	 * @author : Nathanael Braun
+	 * @contact : caipilabs@gmail.com
+	 */
+	var is = __webpack_require__(187);
 	
-	// Obviously not all Emitters should be limited to 10. This function allows
-	// that to be increased. Set to zero for unlimited.
-	EventEmitter.prototype.setMaxListeners = function(n) {
-	  if (!isNumber(n) || n < 0 || isNaN(n))
-	    throw TypeError('n must be a positive number');
-	  this._maxListeners = n;
-	  return this;
-	};
+	var Emitter = function () {
+	    function Emitter() {
+	        _classCallCheck(this, Emitter);
 	
-	EventEmitter.prototype.emit = function(type) {
-	  var er, handler, len, args, i, listeners;
-	
-	  if (!this._events)
-	    this._events = {};
-	
-	  // If there is no 'error' event listener then throw.
-	  if (type === 'error') {
-	    if (!this._events.error ||
-	        (isObject(this._events.error) && !this._events.error.length)) {
-	      er = arguments[1];
-	      if (er instanceof Error) {
-	        throw er; // Unhandled 'error' event
-	      } else {
-	        // At least give some kind of context to the user
-	        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-	        err.context = er;
-	        throw err;
-	      }
-	    }
-	  }
-	
-	  handler = this._events[type];
-	
-	  if (isUndefined(handler))
-	    return false;
-	
-	  if (isFunction(handler)) {
-	    switch (arguments.length) {
-	      // fast cases
-	      case 1:
-	        handler.call(this);
-	        break;
-	      case 2:
-	        handler.call(this, arguments[1]);
-	        break;
-	      case 3:
-	        handler.call(this, arguments[1], arguments[2]);
-	        break;
-	      // slower
-	      default:
-	        args = Array.prototype.slice.call(arguments, 1);
-	        handler.apply(this, args);
-	    }
-	  } else if (isObject(handler)) {
-	    args = Array.prototype.slice.call(arguments, 1);
-	    listeners = handler.slice();
-	    len = listeners.length;
-	    for (i = 0; i < len; i++)
-	      listeners[i].apply(this, args);
-	  }
-	
-	  return true;
-	};
-	
-	EventEmitter.prototype.addListener = function(type, listener) {
-	  var m;
-	
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
-	
-	  if (!this._events)
-	    this._events = {};
-	
-	  // To avoid recursion in the case that type === "newListener"! Before
-	  // adding it to the listeners, first emit "newListener".
-	  if (this._events.newListener)
-	    this.emit('newListener', type,
-	              isFunction(listener.listener) ?
-	              listener.listener : listener);
-	
-	  if (!this._events[type])
-	    // Optimize the case of one listener. Don't need the extra array object.
-	    this._events[type] = listener;
-	  else if (isObject(this._events[type]))
-	    // If we've already got an array, just append.
-	    this._events[type].push(listener);
-	  else
-	    // Adding the second element, need to change to array.
-	    this._events[type] = [this._events[type], listener];
-	
-	  // Check for listener leak
-	  if (isObject(this._events[type]) && !this._events[type].warned) {
-	    if (!isUndefined(this._maxListeners)) {
-	      m = this._maxListeners;
-	    } else {
-	      m = EventEmitter.defaultMaxListeners;
+	        this._events = {};
+	        this.__retains = {};
 	    }
 	
-	    if (m && m > 0 && this._events[type].length > m) {
-	      this._events[type].warned = true;
-	      console.error('(node) warning: possible EventEmitter memory ' +
-	                    'leak detected. %d listeners added. ' +
-	                    'Use emitter.setMaxListeners() to increase limit.',
-	                    this._events[type].length);
-	      if (typeof console.trace === 'function') {
-	        // not supported in IE 10
-	        console.trace();
-	      }
-	    }
-	  }
+	    _createClass(Emitter, [{
+	        key: 'on',
+	        value: function on(evt, cb) {
+	            var _this = this;
 	
-	  return this;
-	};
+	            if (!is.string(evt) && evt) return Object.keys(evt).forEach(function (k) {
+	                return _this.on(k, evt[k]);
+	            });
 	
-	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+	            this._events[evt] = this._events[evt] || [];
+	            this._events[evt].push(cb);
+	        }
+	    }, {
+	        key: 'un',
+	        value: function un(evt, cb) {
+	            var _this2 = this;
 	
-	EventEmitter.prototype.once = function(type, listener) {
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
+	            if (!is.string(evt) && evt) return Object.keys(evt).forEach(function (k) {
+	                return _this2.un(k, evt[k]);
+	            });
 	
-	  var fired = false;
+	            if (!this._events[evt]) return;
+	            var i = this._events[evt].indexOf(cb);
+	            this._events[evt].splice(i, 1);
+	        }
+	    }, {
+	        key: 'emit',
+	        value: function emit(evt) {
+	            if (!this._events[evt]) return;
 	
-	  function g() {
-	    this.removeListener(type, g);
+	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	                argz[_key - 1] = arguments[_key];
+	            }
 	
-	    if (!fired) {
-	      fired = true;
-	      listener.apply(this, arguments);
-	    }
-	  }
+	            for (var i = 0; i < this._events[evt].length; i++) {
+	                var _events$evt;
 	
-	  g.listener = listener;
-	  this.on(type, g);
+	                (_events$evt = this._events[evt])[i].apply(_events$evt, argz);
+	            }
+	        }
+	    }, {
+	        key: 'removeListener',
+	        value: function removeListener() {
+	            this.un.apply(this, arguments);
+	        }
+	    }, {
+	        key: 'once',
+	        value: function once(evt, cb) {
+	            var _this3 = this;
 	
-	  return this;
-	};
+	            var _fn = void 0;
+	            this.on(evt, _fn = function fn() {
+	                _this3.un(evt, _fn);
+	                cb.apply(undefined, arguments);
+	            });
+	        }
+	    }, {
+	        key: 'addListener',
+	        value: function addListener() {
+	            this.on.apply(this, arguments);
+	        }
+	    }]);
 	
-	// emits a 'removeListener' event iff the listener was removed
-	EventEmitter.prototype.removeListener = function(type, listener) {
-	  var list, position, length, i;
+	    return Emitter;
+	}();
 	
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
-	
-	  if (!this._events || !this._events[type])
-	    return this;
-	
-	  list = this._events[type];
-	  length = list.length;
-	  position = -1;
-	
-	  if (list === listener ||
-	      (isFunction(list.listener) && list.listener === listener)) {
-	    delete this._events[type];
-	    if (this._events.removeListener)
-	      this.emit('removeListener', type, listener);
-	
-	  } else if (isObject(list)) {
-	    for (i = length; i-- > 0;) {
-	      if (list[i] === listener ||
-	          (list[i].listener && list[i].listener === listener)) {
-	        position = i;
-	        break;
-	      }
-	    }
-	
-	    if (position < 0)
-	      return this;
-	
-	    if (list.length === 1) {
-	      list.length = 0;
-	      delete this._events[type];
-	    } else {
-	      list.splice(position, 1);
-	    }
-	
-	    if (this._events.removeListener)
-	      this.emit('removeListener', type, listener);
-	  }
-	
-	  return this;
-	};
-	
-	EventEmitter.prototype.removeAllListeners = function(type) {
-	  var key, listeners;
-	
-	  if (!this._events)
-	    return this;
-	
-	  // not listening for removeListener, no need to emit
-	  if (!this._events.removeListener) {
-	    if (arguments.length === 0)
-	      this._events = {};
-	    else if (this._events[type])
-	      delete this._events[type];
-	    return this;
-	  }
-	
-	  // emit removeListener for all listeners on all events
-	  if (arguments.length === 0) {
-	    for (key in this._events) {
-	      if (key === 'removeListener') continue;
-	      this.removeAllListeners(key);
-	    }
-	    this.removeAllListeners('removeListener');
-	    this._events = {};
-	    return this;
-	  }
-	
-	  listeners = this._events[type];
-	
-	  if (isFunction(listeners)) {
-	    this.removeListener(type, listeners);
-	  } else if (listeners) {
-	    // LIFO order
-	    while (listeners.length)
-	      this.removeListener(type, listeners[listeners.length - 1]);
-	  }
-	  delete this._events[type];
-	
-	  return this;
-	};
-	
-	EventEmitter.prototype.listeners = function(type) {
-	  var ret;
-	  if (!this._events || !this._events[type])
-	    ret = [];
-	  else if (isFunction(this._events[type]))
-	    ret = [this._events[type]];
-	  else
-	    ret = this._events[type].slice();
-	  return ret;
-	};
-	
-	EventEmitter.prototype.listenerCount = function(type) {
-	  if (this._events) {
-	    var evlistener = this._events[type];
-	
-	    if (isFunction(evlistener))
-	      return 1;
-	    else if (evlistener)
-	      return evlistener.length;
-	  }
-	  return 0;
-	};
-	
-	EventEmitter.listenerCount = function(emitter, type) {
-	  return emitter.listenerCount(type);
-	};
-	
-	function isFunction(arg) {
-	  return typeof arg === 'function';
-	}
-	
-	function isNumber(arg) {
-	  return typeof arg === 'number';
-	}
-	
-	function isObject(arg) {
-	  return typeof arg === 'object' && arg !== null;
-	}
-	
-	function isUndefined(arg) {
-	  return arg === void 0;
-	}
-
+	exports.default = Emitter;
+	module.exports = exports['default'];
 
 /***/ }),
 
@@ -2532,7 +2317,7 @@
 	    /**
 	     * Constructor, will build a rescope store
 	     *
-	     * (context, {require,use,apply,state, datas})
+	     * (context, {require,use,apply,state, data})
 	     * (context)
 	     *
 	     * @param context {object} context where to find the other stores (default : static staticContext )
@@ -2603,8 +2388,8 @@
 	
 	        _this._followers = [];
 	
-	        if (_static.datas !== undefined) _this.datas = _extends({}, _static.datas);
-	        if (cfg.hasOwnProperty("datas") && cfg.datas !== undefined) _this.datas = cfg.datas;
+	        if (_static.data !== undefined) _this.data = _extends({}, _static.data);
+	        if (cfg.hasOwnProperty("data") && cfg.data !== undefined) _this.data = cfg.data;
 	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
 	        if (apply) _this.apply = apply;
@@ -2612,9 +2397,9 @@
 	        if (initialState || _this._use.length) {
 	            // sync apply
 	            _this.state = _extends({}, initialState || {}, context.map(_this, _this._use));
-	            if (_this.isComplete() && _this.datas === undefined) _this.datas = _this.apply(_this.datas, _this.state, _this.state);
+	            if (_this.isComplete() && _this.data === undefined) _this.data = _this.apply(_this.data, _this.state, _this.state);
 	        }
-	        _this._stable = _this.datas !== undefined; // stable if it have initial result datas
+	        _this._stable = _this.data !== undefined; // stable if it have initial result data
 	        !_this._stable && _this.emit('unstable', _this.state);
 	        return _this;
 	    }
@@ -2648,7 +2433,7 @@
 	        value: function shouldPropag(nDatas) {
 	            var _static = this.constructor,
 	                r,
-	                cDatas = this.datas;
+	                cDatas = this.data;
 	
 	            // if ( !cState )
 	            //     return true;
@@ -2672,26 +2457,26 @@
 	
 	        /**
 	         * Overridable applier / remapper
-	         * If state or lastPublicState are simple hash maps apply will return {...datas, ...state}
+	         * If state or lastPublicState are simple hash maps apply will return {...data, ...state}
 	         * if not it will return the last private state
-	         * @param datas
+	         * @param data
 	         * @param state
 	         * @returns {*}
 	         */
 	
 	    }, {
 	        key: 'apply',
-	        value: function apply(datas, state, changes) {
+	        value: function apply(data, state, changes) {
 	            state = state || this.state;
 	
 	            if (this.refine) return this.refine.apply(this, arguments);
 	
-	            if (!datas || datas.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, datas, state);
+	            if (!data || data.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, data, state);
 	        }
 	
 	        /**
 	         * @depreciated
-	         * @param datas
+	         * @param data
 	         * @param state
 	         * @param changes
 	         * @returns {*}
@@ -2699,10 +2484,10 @@
 	
 	    }, {
 	        key: 'refine',
-	        value: function refine(datas, state, changes) {
+	        value: function refine(data, state, changes) {
 	            state = state || this.state;
 	
-	            if (!datas || datas.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, datas, state);
+	            if (!data || data.__proto__ !== objProto || state.__proto__ !== objProto) return state;else return _extends({}, data, state);
 	        }
 	
 	        /**
@@ -2716,7 +2501,7 @@
 	            var _this2 = this;
 	
 	            cb && this.once('stable', cb);
-	            this._stable && this.emit('unstable', this.state, this.datas);
+	            this._stable && this.emit('unstable', this.state, this.data);
 	
 	            this._stable = false;
 	
@@ -2727,15 +2512,21 @@
 	
 	                var stable = _this2._stable;
 	                _this2._stable = true;
-	                !stable && _this2.emit('stable', _this2.state, _this2.datas);
+	                !stable && _this2.emit('stable', _this2.state, _this2.data);
 	                _this2._stabilizer = null;
 	                // this.release();
 	            }));
 	        }
 	    }, {
 	        key: 'dispatch',
-	        value: function dispatch(event) {
-	            return;
+	        value: function dispatch(action, data) {
+	            var actions = this.constructor.actions,
+	                ns = void 0;
+	
+	            if (actions && actions[action]) {
+	                ns = actions[action].call(this, data);
+	                ns && this.setState(ns);
+	            }
 	        }
 	
 	        /**
@@ -2766,21 +2557,21 @@
 	
 	    }, {
 	        key: 'push',
-	        value: function push(datas, force, cb) {
+	        value: function push(data, force, cb) {
 	            cb = force === true ? cb : force;
 	            force = force === true;
 	            var i = 0,
 	                me = this,
-	                nextState = !datas && _extends({}, this.state, this._changesSW) || this.state,
-	                nextDatas = datas || (this.isComplete(nextState) ? this.apply(this.datas, nextState, this._changesSW) : this.datas);
+	                nextState = !data && _extends({}, this.state, this._changesSW) || this.state,
+	                nextDatas = data || (this.isComplete(nextState) ? this.apply(this.data, nextState, this._changesSW) : this.data);
 	
 	            this.state = nextState;
-	            if (!force && (!this.datas && this.datas === nextDatas || !this.shouldPropag(nextDatas))) {
+	            if (!force && (!this.data && this.data === nextDatas || !this.shouldPropag(nextDatas))) {
 	                cb && cb();
 	                return false;
 	            }
 	
-	            this.datas = nextDatas;
+	            this.data = nextDatas;
 	            //this.__locks.all++;
 	            this.wait();
 	            this.release(cb);
@@ -2836,7 +2627,7 @@
 	                    changes[k] = pState[k];
 	                }
 	            }this.push();
-	            return this.datas;
+	            return this.data;
 	        }
 	
 	        /**
@@ -2966,11 +2757,11 @@
 	            var setInitial = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 	
 	            this._followers.push([obj, key]);
-	            if (setInitial && this.datas && this._stable) {
+	            if (setInitial && this.data && this._stable) {
 	                if (typeof obj != "function") {
-	                    if (key) obj.setState(_defineProperty({}, key, this.datas));else obj.setState(this.datas);
+	                    if (key) obj.setState(_defineProperty({}, key, this.data));else obj.setState(this.data);
 	                } else {
-	                    obj(this.datas);
+	                    obj(this.data);
 	                }
 	            }
 	        }
@@ -2986,9 +2777,9 @@
 	        value: function then(cb) {
 	            var _this7 = this;
 	
-	            if (this._stable) return cb(null, this.datas);
+	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this7.datas);
+	                return cb(null, _this7.data);
 	            });
 	        }
 	
@@ -3004,7 +2795,7 @@
 	            if (typeof previous == "number") return this.__locks.all += previous;
 	            if (is.array(previous)) return previous.map(this.wait.bind(this));
 	
-	            this._stable && this.emit('unstable', this.state, this.datas);
+	            this._stable && this.emit('unstable', this.state, this.data);
 	            this._stable = false;
 	            this.__locks.all++;
 	
@@ -3049,16 +2840,16 @@
 	
 	            if (!reason && this.__locks.all == 0) console.error("Release more than locking !");
 	
-	            if (! --this.__locks.all && this.datas && this.isComplete()) {
+	            if (! --this.__locks.all && this.data && this.isComplete()) {
 	                this._stable = true;
 	                this._rev = 1 + (this._rev + 1) % 1000000; //
 	                if (this._followers.length) this._followers.forEach(function (follower) {
-	                    if (!_this8.datas) return;
+	                    if (!_this8.data) return;
 	                    if (typeof follower[0] == "function") {
-	                        follower[0](_this8.datas);
+	                        follower[0](_this8.data);
 	                    } else {
 	                        //cb && i++;
-	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.datas) : _this8.datas
+	                        follower[0].setState(follower[1] ? _defineProperty({}, follower[1], _this8.data) : _this8.data
 	                        //,
 	                        //cb && (
 	                        //    () => (!(--i) && cb())
@@ -3067,8 +2858,8 @@
 	                    }
 	                });
 	                //else
-	                !wasStable && this.emit('stable', this.datas);
-	                this.emit('update', this.datas);
+	                !wasStable && this.emit('stable', this.data);
+	                this.emit('update', this.data);
 	                cb && cb();
 	                //
 	            } else cb && this.then(cb);
@@ -3130,7 +2921,7 @@
 	            });
 	            this._followers.length = 0;
 	            this.dead = true;
-	            this._revs = this.datas = this.state = this.context = null;
+	            this._revs = this.data = this.state = this.context = null;
 	            this.removeAllListeners();
 	        }
 	    }], [{
@@ -3199,7 +2990,7 @@
 	                }
 	                targetRevs[alias] = targetRevs[alias] || true;
 	                !targetContext[name] && (targetContext[name] = context.stores[name]);
-	                if (context.stores[name].hasOwnProperty('datas')) initialOutputs[name] = context.datas[name];
+	                if (context.stores[name].hasOwnProperty('data')) initialOutputs[name] = context.data[name];
 	                return true;
 	            });
 	            var mixedCWUnmount,
@@ -3292,7 +3083,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var stubs = __webpack_require__(202);
+	var stubs = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./_stubs/data\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	
 	var MyStoreContext = {
 	    status: (_temp = _class = function (_Store) {
@@ -3332,12 +3123,12 @@
 	            key: "apply",
 	            // list of source stores id
 	
-	            value: function apply(datas, _ref, changes) {
+	            value: function apply(data, _ref, changes) {
 	                var _this4 = this;
 	
 	                var NewUserId = _ref.appState.currentUserId;
 	
-	                var LastUserId = datas && datas._id;
+	                var LastUserId = data && data._id;
 	
 	                console.info("currentUser state updated : ", changes);
 	
@@ -3349,7 +3140,7 @@
 	                            _id: NewUserId,
 	                            login: NewUserId
 	                        }, function () {
-	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.datas) });
+	                            _this4.context.status.setState({ currentUser: JSON.stringify(_this4.data) });
 	                        });
 	
 	                        _this4.release();
@@ -3357,7 +3148,7 @@
 	                    this.context.status.setState({ currentUser: "user id change ! doing some async..." });
 	                }
 	
-	                return datas;
+	                return data;
 	            }
 	        }]);
 	
@@ -3374,12 +3165,12 @@
 	
 	        _createClass(userEvents, [{
 	            key: "apply",
-	            value: function apply(datas, _ref2, changes) {
+	            value: function apply(data, _ref2, changes) {
 	                var _this6 = this;
 	
 	                var nUserId = _ref2.currentUser._id;
-	                var _datas$cUserId = datas.cUserId,
-	                    cUserId = _datas$cUserId === undefined ? void 0 : _datas$cUserId;
+	                var _data$cUserId = data.cUserId,
+	                    cUserId = _data$cUserId === undefined ? void 0 : _data$cUserId;
 	
 	
 	                if (nUserId != cUserId) {
@@ -3400,15 +3191,15 @@
 	                        });
 	                        _this6.release();
 	                    }, 500);
-	                    this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
+	                    this.context.status.setState({ userEvents: "user data change ! doing some async..." });
 	                }
 	
-	                return datas;
+	                return data;
 	            }
 	        }]);
 	
 	        return userEvents;
-	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _class4.datas = {}, _temp4)
+	    }(_Rescope.Store), _class4.use = ["currentUser"], _class4.require = ["currentUser"], _class4.data = {}, _temp4)
 	};
 	
 	exports.default = _extends({}, MyStoreContext);
@@ -3416,66 +3207,7 @@
 
 /***/ }),
 
-/***/ 202:
-/***/ (function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	/*
-	 * Copyright (c)  2017 Caipi Labs .
-	 *
-	 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-	 *
-	 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-	 *
-	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	 */
-	
-	/**
-	 * @author Nathanael BRAUN
-	 *
-	 * Date: 25/01/2017
-	 * Time: 09:16
-	 */
-	exports.default = {
-	    "MrNice": [{
-	        type: "event",
-	        text: "nice event"
-	    }, {
-	        type: "news",
-	        text: "nice news"
-	    }, {
-	        type: "poke",
-	        text: "some poke"
-	    }, {
-	        type: "event",
-	        text: "another event"
-	    }, {
-	        type: "comment",
-	        text: "another comment"
-	    }],
-	    "MissTick": [{
-	        type: "event",
-	        text: "some events"
-	    }, {
-	        type: "news",
-	        text: "some news"
-	    }, {
-	        type: "poke",
-	        text: "some poke"
-	    }, {
-	        type: "event",
-	        text: "another event"
-	    }]
-	};
-	module.exports = exports["default"];
-
-/***/ }),
-
-/***/ 204:
+/***/ 203:
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3532,7 +3264,7 @@
 
 /***/ }),
 
-/***/ 205:
+/***/ 204:
 /***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "example/vanilla/index.html";

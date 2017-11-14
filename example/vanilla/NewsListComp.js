@@ -1806,7 +1806,6 @@
 	        _classCallCheck(this, Emitter);
 	
 	        this._events = {};
-	        this.__retains = {};
 	    }
 	
 	    _createClass(Emitter, [{

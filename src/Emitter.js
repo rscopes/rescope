@@ -13,7 +13,6 @@
 var is = require('is');
 export default class Emitter {
     _events   = {};
-    __retains = {};
     
     on( evt, cb ) {
         if ( !is.string(evt) && evt )

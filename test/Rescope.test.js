@@ -32,19 +32,19 @@ describe('Rescope', function () {
     let Rescope,
         StaticContext,
         TestContext;
-    //it('should build well', function ( done ) {
-    //    this.timeout(Infinity);
-    //
-    //    child_process.exec(
-    //        'npm run build',
-    //        {
-    //            //cwd: "/"
-    //        },
-    //        function ( error, stdout, stderr ) {
-    //            done(error)
-    //        });
-    //
-    //});
+    it('should build well', function ( done ) {
+        this.timeout(Infinity);
+
+        child_process.exec(
+            'npm run build',
+            {
+                //cwd: "/"
+            },
+            function ( error, stdout, stderr ) {
+                done(error)
+            });
+
+    });
     it('should require well', function ( done ) {
         Rescope = require('../dist/Rescope');
         //console.log(Rescope)

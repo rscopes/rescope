@@ -21,17 +21,11 @@ var is           = require('is'),
     Context      = require('./Context'),
     EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
-    objProto     = Object.getPrototypeOf({}),
-    openContexts = {},
-    walk         = function walk( obj, path, i = 0 ) {
-        return !obj ? obj : path.length == i + 1 ? obj[path[i]] : walk(obj[path[i]], path, i + 1);
-    }
-;
+    objProto     = Object.getPrototypeOf({});
 
 
 export default class Store extends EventEmitter {
     
-    static import;
     static use                        = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
@@ -65,7 +59,12 @@ export default class Store extends EventEmitter {
         super();
         var argz         = [...arguments],
             _static      = this.constructor,
-            context      = !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : _static.staticContext,
+            context      = argz[0] instanceof Context
+                ? argz.shift()
+                : _static.context ? Context.getContext(_static.context)
+                               : is.string(argz[0])
+                      ? Context.getContext(argz.shift())
+                      : _static.staticContext,
             cfg          = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
             name         = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = is.array(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the
@@ -112,18 +111,27 @@ export default class Store extends EventEmitter {
         this._require = [];
         
         if ( is.array(_static.use) ) {
-            this._use = [...watchs, ...(_static.use || [])];
+            this._use = [...watchs, ...(_static.use || []).map(
+                key => {
+                    let ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
+                    if ( ref[1] ) {
+                        let ref2 = ref[2].split('.');
+                        this._require.push(ref[3] || ref2[ref2.length - 1]);
+                    }
+                    return ref[2];
+                }
+            )];
         }
         else {
             this._use = [...watchs, ...(
-                Object.keys(_static.use)
-                      .map(
-                          key => {
-                              let ref = key.match(/^(\!?)(.*)$/);
-                              ref[1] && this._require.push(ref[2]);
-                              return ref[2] + ':' + _static.use[key];
-                          }
-                      )
+                _static.use ? Object.keys(_static.use)
+                                    .map(
+                                        key => {
+                                            let ref = key.match(/^(\!?)(.*)$/);
+                                            ref[1] && this._require.push(_static.use[key]);
+                                            return ref[2] + ':' + _static.use[key];
+                                        }
+                                    ) : []
             )];
         }
         
@@ -211,6 +219,7 @@ export default class Store extends EventEmitter {
                 }
                 
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
+                
                 if ( !store ) {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
@@ -219,9 +228,6 @@ export default class Store extends EventEmitter {
                     context._mount(name)
                     
                     context.stores[name].bind(component, alias, setInitial, path);
-                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
-                    //     context.__context[key[0]].push();
-                    // }
                 }
                 else {
                     store.bind(component, alias, setInitial, path);
@@ -379,11 +385,20 @@ export default class Store extends EventEmitter {
             ));
     }
     
-    dispatch( action, data ) {
-        this.context.dispatch(action, data);
+    retrieve( path, i = 0, obj = this.data ) {
+        path = is.string(path) ? path.split('.') : path;
+        return !obj || !path || !path.length
+            ? obj
+            : path.length == i + 1
+                   ? obj[path[i]]
+                   : this.retrieve(path, i + 1, obj[path[i]]);
     }
     
-    applyAction( action, data ) {
+    dispatch( action, data ) {
+        this.contextObj.dispatch(action, data);
+    }
+    
+    trigger( action, data ) {
         let { actions } = this.constructor,
             ns;
         if ( actions && actions[action] ) {
@@ -595,7 +610,7 @@ export default class Store extends EventEmitter {
     bind( obj, key, setInitial = true, path ) {
         this._followers.push([obj, key, path]);
         if ( setInitial && this.data && this._stable ) {
-            let data = path ? walk(this.data, path) : this.data;
+            let data = path ? this.retrieve(path) : this.data;
             if ( typeof obj != "function" ) {
                 if ( key ) obj.setState({ [key]: data });
                 else obj.setState(data);
@@ -674,9 +689,8 @@ export default class Store extends EventEmitter {
             this._rev    = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
-                    let data = follower[2] ? walk(this.data, follower[2]) : this.data;
+                    let data = follower[2] ? this.retrieve(follower[2]) : this.data;
                     if ( !data ) return;
-                    
                     if ( typeof follower[0] == "function" ) {
                         follower[0](data);
                     }
@@ -696,7 +710,6 @@ export default class Store extends EventEmitter {
             !wasStable && this.emit('stable', this.data);
             this.emit('update', this.data);
             cb && cb()
-            //
         }
         else cb && this.then(cb);
         return this;

@@ -34,7 +34,7 @@ describe('Rescope', function () {
         TestContext;
     it('should build well', function ( done ) {
         this.timeout(Infinity);
-
+        
         child_process.exec(
             'npm run build',
             {
@@ -43,11 +43,10 @@ describe('Rescope', function () {
             function ( error, stdout, stderr ) {
                 done(error)
             });
-
+        
     });
     it('should require well', function ( done ) {
-        Rescope = require('../dist/Rescope');
-        //console.log(Rescope)
+        Rescope = require('../dist/Rescope.min');
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
@@ -92,8 +91,7 @@ describe('Rescope', function () {
         TestContext   = new Rescope.Context(
             {
                 local_1: class local_1 extends Rescope.Store {
-                    static use = ["global_1"];
-                    static require = ["global_1"];
+                    static use = ["!global_1"];
                     static state = { ok: true };
                 },
                 local_2: class local_2 extends Rescope.Store {
@@ -104,7 +102,7 @@ describe('Rescope', function () {
                     static state = { ok: true };
                 },
                 local_4: class local_4 extends Rescope.Store {
-                    static use = { "local_3.global_2.ok": "test1" };
+                    static use = { "local_3.global_2.ok": "remapTest" };
                 }
             },
             {
@@ -161,9 +159,9 @@ describe('Rescope', function () {
         this.timeout(4000);
         TestContext.once(
             'update',
-            ( e, _data ) => {
+            ( e, _data ) => {// 1st is local_1
                 
-                TestContext.once(
+                TestContext.once(// later get global_2
                     'update',
                     ( e, _data ) => {
                         let data = TestContext.data,
@@ -186,11 +184,12 @@ describe('Rescope', function () {
     it('should remap well', function ( done ) {
         this.timeout(4000);
         TestContext.mount("local_4");
-        TestContext.stores.local_4.then(
-                ( e, _data ) => {
-                    console.log(TestContext.data.local_4);
-                }
-            );// should trigger global 1 wich will push in 1000ms
+        TestContext.then(
+            ( e, _data ) => {
+                if ( _data.local_4.remapTest ) done();
+                else done(new Error("fail"))
+            }
+        );// should trigger global 1 wich will push in 1000ms
         
     });
     //it('should resync setState well', function ( done ) {

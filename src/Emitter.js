@@ -39,6 +39,10 @@ export default class Emitter {
         }
     }
     
+    addListener() {
+        this.on(...arguments);
+    }
+    
     removeListener() {
         this.un(...arguments);
     }
@@ -51,8 +55,5 @@ export default class Emitter {
         });
     }
     
-    addListener() {
-        this.on(...arguments);
-    }
     
 }

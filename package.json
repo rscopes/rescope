@@ -7,7 +7,7 @@
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack&&webpack -p",
     "test": "mocha --compilers js:babel-core/register ./test/*.test.js -b",
     "dev": "webpack -w"
   },

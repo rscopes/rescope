@@ -16,22 +16,19 @@ var is              = require('is'),
     EventEmitter    = require('./Emitter'),
     shortid         = require('shortid')
     , __proto__push = ( target, id, parent ) => {
-        let here           = {
-            [id]: function () {
-            }
+        let fn           = function () {
         };
-        here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
-        target[id]         = new here[id]();
-        target['_' + id]   = here[id];
+        fn.prototype     = parent ? new parent["_" + id]() : target[id] || {};
+        target[id]       = new fn();
+        target['_' + id] = fn;
     },
     openContexts    = {};
 
 
 export default class Context extends EventEmitter {
-    static defaultMaxListeners = 100;
-    static persistenceTm       = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-    static Store               = null;
-    static contexts            = openContexts;// all active contexts
+    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static Store         = null;
+    static contexts      = openContexts;// all active contexts
     
     static getContext( contexts ) {
         let skey = is.array(contexts) ? contexts.sort(( a, b ) => {
@@ -155,9 +152,7 @@ export default class Context extends EventEmitter {
                 return;
             return this.parent._mount(...arguments);
         }
-        //this.constructor.Store.mountStore(id, this, null, state, data);
         let store = this.__context[id], ctx;
-        //console.warn("mount on ", this._id, ' ', id, is.fn(store));
         if ( is.fn(store) ) {
             this.__context[id] = new store(this, { state, data });
         }
@@ -172,7 +167,6 @@ export default class Context extends EventEmitter {
         }
         
         
-        //console.warn("mount on ", this.stores[id]);
         this._watchStore(id);
         
         return this.__context[id];
@@ -410,7 +404,18 @@ export default class Context extends EventEmitter {
             }
             
         }
-        return storesList.reduce(( data, id ) => (data[id] = this.stores[id] && this.stores[id].data, data), {});
+        return storesList.reduce(( data, id ) => {
+            id                                     = id.split(':');
+            id[0]                                  = id[0].split('.');
+            data[id[1] || id[0][id[0].length - 1]] = this.stores[id[0][0]] && this.stores[id[0][0]].retrieve(id[0].splice(1));
+            return data;
+        }, {});
+    }
+    
+    retrieve( path="" ) {
+        path = is.string(path) ? path.split('.') : path;
+        return path && this.stores[path[0]] &&
+            this.stores[path[0]].retrieve(path.splice(1));
     }
     
     /**
@@ -515,7 +520,7 @@ export default class Context extends EventEmitter {
               .forEach(
                   id => {
                       if ( !is.fn(this.__context[id]) )
-                          this.__context[id].applyAction(action, data)
+                          this.__context[id].trigger(action, data)
                   }
               );
         
@@ -694,9 +699,7 @@ export default class Context extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
                         this.then(s => {
-                            //console.log("wtf ctx then", this._id, reason, this.__locks);
                             !this.__retains.all && this.destroy()
                         });
                     },

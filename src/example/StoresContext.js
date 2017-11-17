@@ -16,21 +16,24 @@
  */
 import {Store} from "../Rescope";
 
-let stubs = require("./_stubs/data");
+var stubs = require("./_stubs/data");
+
+
+let status = new (class  extends Store {
+    static context = 'static';
+    static state   = {};
+    static actions = {
+        userEvents( msg ) {
+            return { userEvents: msg };
+        },
+        currentUser( msg ) {
+            return { currentUser: msg };
+        }
+    }
+})()
 
 let MyStoreContext = {
-    status     : class status extends Store {
-        static singleton = true;
-        static use = ["appState"];
-        static actions = {
-            userEvents( msg ) {
-                return { userEvents: msg };
-            },
-            currentUser( msg ) {
-                return { currentUser: msg };
-            }
-        }
-    },
+    status,
     appState   : class appState extends Store {
         static state = {
             currentUserId: "MrNice"
@@ -67,7 +70,7 @@ let MyStoreContext = {
                                 login: NewUserId
                             },
                             () => {
-                                this.context.status.setState({ currentUser: JSON.stringify(this.data) });
+                                status.trigger("currentUser", JSON.stringify(this.data));
                             }
                         );
                         
@@ -75,7 +78,8 @@ let MyStoreContext = {
                     },
                     500
                 );
-                this.context.status.setState({ currentUser: "user id change ! doing some async..." });
+                status.trigger("currentUser", "user id change ! doing some async...");
+                
             }
             
             
@@ -84,16 +88,15 @@ let MyStoreContext = {
     },
     userEvents : class userEvents extends Store {
         static use = {
-            "!currentUser.currentUserId": "myUserId"
+            "!currentUser._id": "myUserId"
         };
-        static data = {};
         
         apply( data, { myUserId }, changes ) {
-            let { cUserId = void 0 } = data;
+            let { cUserId = void 0 } = data||{};
             
             
             if ( myUserId != cUserId ) {
-                this.wait();// do some async whithout pushing
+                this.wait();// do some async without pushing
                 setTimeout(
                     () => {
                         // get somme user events or whatever...
@@ -112,13 +115,13 @@ let MyStoreContext = {
                                 )
                             },
                             () => {
-                                this.dispatch("userEvents", stubs[myUserId].length + " events");
+                                status.trigger("userEvents", stubs[myUserId].length + " events");
                             });
                         this.release();
                     },
                     500
                 );
-                this.dispatch("userEvents", "user data change ! doing some async...");
+                status.trigger("userEvents", "user data change ! doing some async...");
                 
             }
             

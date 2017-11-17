@@ -47,7 +47,7 @@ export default class Emitter {
         this.un(...arguments);
     }
     
-    removeAllListener() {
+    removeAllListeners() {
         this._events = {};
     }
     

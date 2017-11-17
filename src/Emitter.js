@@ -47,6 +47,10 @@ export default class Emitter {
         this.un(...arguments);
     }
     
+    removeAllListener() {
+        this._events = {};
+    }
+    
     once( evt, cb ) {
         let fn;
         this.on(evt, fn = ( ...argz ) => {

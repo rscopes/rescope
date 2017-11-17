@@ -121,6 +121,13 @@ export default class Context extends EventEmitter {
     }
     
     /**
+     * @deprecated
+     * @returns {*}
+     */
+    get datas(){
+        return this.data;
+    }
+    /**
      *
      * Mount the stores in storesList, in this context or in its parents or mixed contexts
      *

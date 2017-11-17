@@ -281,6 +281,13 @@ export default class Store extends EventEmitter {
         return initialOutputs;
     }
     
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    get datas(){
+        return this.data;
+    }
     
     /**
      * Overridable method to know if a state change should be propag to the listening stores & components

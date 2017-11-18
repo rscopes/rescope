@@ -1,4 +1,4 @@
-# Rescope 2
+# Rescope
 
 [![Build Status](https://travis-ci.org/CaipiLabs/Rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
@@ -43,12 +43,12 @@ Because :
 ### What else ?
 
 - Easy stores & deps injections
-- Semaphores API (wait, release, retain, dispose, etc... fns )
+- Semaphores API ( wait, release, retain, dispose )
 - Promise like APIs
-- Inheritable ES6/7 class
+- Inheritable ES6 class
 - Inheritable & mixable Store Contexts
 - Easy, partial or complete contexts serialization
-- Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
+- Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
 - Flexible Async management
 - Lazy store instantiation
 - Compatible webpack & nodejs
@@ -56,10 +56,6 @@ Because :
 - Library agnostic
 - Another alternative to Redux & co
 - etc..
-
-## Actions ?
-
-DIY or push mutations (setState) on the right store
 
 ## Doc ?
 
@@ -71,7 +67,7 @@ Just code for now, check :
 
 ### And the [tests](test/Rescope.test.js)
 
-## Example app stores struture  :
+## Theoretical examples  :
 
 ``` jsx
 
@@ -81,51 +77,46 @@ import {Context, Store} from "rescope";
 let MyStaticContext = new Context({
     AppConfig : class AppConfig extend Store{
         data = {
-
+            // initial config datas
         }
     }
 }); // stores are lazy instanciated on the context hashmap
 let MyPageContext = new Context({
 
     AppState : class AppState extend Store{
-        static use     = ["AppConfig"];
-        static require = ["AppConfig"];
+        static use     = ["!AppConfig"];
+        static actions = {
+            activateSalt(arg){
+                return {some:'mutations'};
+            }
+        }
 
-
-        switchTodoList(todoListId){
-             this.setState({todoListId})
+        switchTodoList(todoUrl){
+             this.setState({todoUrl})
         }
     }
     MyTodoList : class MyTodoList extend Store{
-        static use     = ["AppState"];
-        static require = ["AppState"];
+        static use     = ["!AppState"];// do not apply MyTodoList if AppState isn't here
         static state   = {items:[]};
-        apply(currentDatas, {items, selected}, {AppState:{todoListId}}){
+        apply(currentDatas, {items, AppState:{todoUrl}}, {AppState:{todoListId}}){
+            // get todoUrl then push it ( this.push({items:newItems}) )
 
-            return {items, ;
+            return currentDatas;// or return then if the list is sync
         }
-        select(ids){
-            let {selected} = this.data;
-        }
-        complete(ids, done){
-            let {selected} = this.data;
-        }
-        add(ids, done){
-            let {selected} = this.data;
+    }
+    MyCompData : class MyCompData extend Store{
+        static use     = {
+            "!MyTodoList.items"     : "MyTodoItems", // remap sources
+            "!AppConfig.using.salt" : "withSalt"
+        };
+        apply(currentDatas, {MyTodoItems, withSalt}){
+           /*...*/
+           return {data:"ready",_for:'render'}
         }
     }
 
 }, {parent:MyStaticContext});
 
-
-// you can preload using default / restored key values
-MyPageContext.mount(["someStores"], {/*states by id*/}, {/*data by id*/})
-.then(
-    (err, data)=>{
-        // here all the store data are in store
-
-    }
-);
 
 let MyMixableContext = new Context({...stores_instancied_or_not});
 let MyLocalContext = new Context({...stores_instancied_or_not});
@@ -141,54 +132,13 @@ this.state = {
 // ....
 
 ```
-
-
-## Theoric example :
-
-``` jsx
-
-import {Context, Store} from "rescope";
-
-
-let MyStaticContext = new Context({...stores_instancied_or_not}); // stores are lazy instanciated on the context hashmap
-let MyPageContext = new Context({
-...stores,
-example : class example extends Store{/*...*/}
-}, {parent:MyStaticContext});
-
-
-// you can preload using default / restored key values
-MyPageContext.mount(["someStores"], {/*states by id*/}, {/*data by id*/})
-.then(
-    (err, data)=>{
-        // here all the store data are in store
-
-    }
-);
-
-let MyMixableContext = new Context({...stores_instancied_or_not});
-let MyLocalContext = new Context({...stores_instancied_or_not});
-MyLocalContext.mixin(MyMixableContext);
-
-// Or inject them with synchrone initial output state :
-// .... ( say we are in a react comp constructor )
-this.state = {
-   someKey : true,
-   // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyLocalContext.map(this, ["AppState", "AnotherStore"])
-}
-// ....
-
-```
-
 
 
 ## What's next ?
 
 - Optimize
-- Better deps definition
+- Better stabilisation / propagation sequencer
 - Possibly some semantic/normalisation updates
-- add error catching
-
+- Even better deps definition
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

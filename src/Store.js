@@ -285,8 +285,20 @@ export default class Store extends EventEmitter {
      * @deprecated
      * @returns {*}
      */
-    get datas(){
+    get datas() {
         return this.data;
+    }
+    
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    set datas( v ) {
+        console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
+        console.log((new Error()).stack);
+        console.groupEnd();
+        
+        this.data = v;
     }
     
     /**

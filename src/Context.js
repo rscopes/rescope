@@ -412,6 +412,8 @@ export default class Context extends EventEmitter {
             
         }
         return storesList.reduce(( data, id ) => {
+            if (!is.string(id))
+                id = id.name;
             id                                     = id.split(':');
             id[0]                                  = id[0].split('.');
             data[id[1] || id[0][id[0].length - 1]] = this.stores[id[0][0]] && this.stores[id[0][0]].retrieve(id[0].splice(1));

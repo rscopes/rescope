@@ -34,8 +34,9 @@ export default class Emitter {
     
     emit( evt, ...argz ) {
         if ( !this._events[evt] ) return;
-        for ( var i = 0; i < this._events[evt].length; i++ ) {
-            this._events[evt][i](...argz);
+        let lists = [...this._events[evt]];
+        for ( var i = 0; i < lists.length; i++ ) {
+            lists[i](...argz);
         }
     }
     

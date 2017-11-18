@@ -11,34 +11,24 @@
  * @contact : caipilabs@gmail.com
  */
 
-/**
- * @author Nathanael BRAUN
- *
- * Date: 13/08/2017
- * Time: 17:15
- */
-
 
 var is              = require('is'),
-    EventEmitter    = require('events'),
+    EventEmitter    = require('./Emitter'),
     shortid         = require('shortid')
     , __proto__push = ( target, id, parent ) => {
-    let here           = {
-        [id]: function () {
-        }
-    };
-    here[id].prototype = parent ? new parent["_" + id]() : target[id] || {};
-    target[id]         = new here[id]();
-    target['_' + id]   = here[id];
-},
+        let fn           = function () {
+        };
+        fn.prototype     = parent ? new parent["_" + id]() : target[id] || {};
+        target[id]       = new fn();
+        target['_' + id] = fn;
+    },
     openContexts    = {};
 
 
 export default class Context extends EventEmitter {
-    static defaultMaxListeners = 100;
-    static persistenceTm       = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-    static Store               = null;
-    static contexts            = openContexts;// all active contexts
+    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static Store         = null;
+    static contexts      = openContexts;// all active contexts
     
     static getContext( contexts ) {
         let skey = is.array(contexts) ? contexts.sort(( a, b ) => {
@@ -56,14 +46,14 @@ export default class Context extends EventEmitter {
      * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' context)
      * @param parent
      * @param state
-     * @param datas
+     * @param data
      * @param name
      * @param defaultMaxListeners
      * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
      * @param autoDestroy  {bool} will trigger retain & dispose after start
      * @returns {Context}
      */
-    constructor( storesMap, { id, parent, state, datas, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
+    constructor( storesMap, { id, parent, state, data, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
@@ -80,14 +70,14 @@ export default class Context extends EventEmitter {
         
         this.stores = {};
         this.state  = {};
-        this.datas  = {};
+        this.data   = {};
         
         if ( parent && parent.dead )
             throw new Error("Can't use a dead context as parent !");
         
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
-        __proto__push(this, 'datas', parent);
+        __proto__push(this, 'data', parent);
         this.parent = parent;
         
         if ( parent ) {
@@ -113,11 +103,11 @@ export default class Context extends EventEmitter {
                 'unstable': s => this.wait("waitingParent"),
                 'update'  : s => this._propag()
             });
-            // this.register(parent.__context, state, datas);
+            // this.register(parent.__context, state, data);
         }
         
         
-        this.register(storesMap, state, datas);
+        this.register(storesMap, state, data);
         this.__locks.all--;
         this._stable = !this.__locks.all;
         
@@ -131,18 +121,25 @@ export default class Context extends EventEmitter {
     }
     
     /**
+     * @deprecated
+     * @returns {*}
+     */
+    get datas(){
+        return this.data;
+    }
+    /**
      *
      * Mount the stores in storesList, in this context or in its parents or mixed contexts
      *
      * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
      *     Store:as
      * @param state
-     * @param datas
+     * @param data
      * @returns {Context}
      */
-    mount( storesList, state, datas ) {
+    mount( storesList, state, data ) {
         if ( is.array(storesList) ) {
-            storesList.forEach(k => this._mount(k, state && state[k], datas && datas[k]));
+            storesList.forEach(k => this._mount(k, state && state[k], data && data[k]));
         }
         else {
             this._mount(...arguments);
@@ -150,44 +147,41 @@ export default class Context extends EventEmitter {
         return this;
     }
     
-    _mount( id, state, datas ) {
+    _mount( id, state, data ) {
         if ( typeof id !== 'string' ) {
             this.register({ [id.name]: id.store });
             id = id.name;
         }
         
         if ( !this.__context[id] ) {//ask mixed || parent
-            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, datas)), false) ||
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._mount(...arguments);
         }
-        //this.constructor.Store.mountStore(id, this, null, state, datas);
         let store = this.__context[id], ctx;
-        //console.warn("mount on ", this._id, ' ', id, is.fn(store));
         if ( is.fn(store) ) {
-            this.__context[id] = new store(this, { state, datas });
+            this.__context[id] = new store(this, { state, data });
         }
         else {
-            if ( state !== undefined && datas === undefined )
+            if ( state !== undefined && data === undefined )
                 store.setState(state);
             else if ( state !== undefined )
                 store.state = state;
             
-            if ( datas !== undefined )
-                store.push(datas);
+            if ( data !== undefined )
+                store.push(data);
         }
         
         
-        //console.warn("mount on ", this.stores[id]);
         this._watchStore(id);
         
         return this.__context[id];
     }
     
-    _watchStore( id, state, datas ) {
+    _watchStore( id, state, data ) {
         if ( !this.__context[id] ) {//ask mixed || parent
-            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, datas)), false) ||
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._watchStore(...arguments);
@@ -228,18 +222,18 @@ export default class Context extends EventEmitter {
         
         this.stores = {};
         this.state  = {};
-        this.datas  = {};
+        this.data   = {};
         targetCtx.on(lists);
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
-        __proto__push(this, 'datas', parent);
+        __proto__push(this, 'data', parent);
         
         this.relink(this.__context, this, false, true);
         this.__mixed.forEach(
             ctx => {
                 __proto__push(this, 'stores');
                 __proto__push(this, 'state');
-                __proto__push(this, 'datas');
+                __proto__push(this, 'data');
                 ctx.relink(ctx.__context, this, true, true)
             }
         )
@@ -249,14 +243,14 @@ export default class Context extends EventEmitter {
      * Register stores in storesMap & link them in the protos
      * @param storesMap
      * @param state
-     * @param datas
+     * @param data
      */
-    register( storesMap, state = {}, datas = {} ) {
-        this.relink(storesMap, this, false, false, state, datas);
+    register( storesMap, state = {}, data = {} ) {
+        this.relink(storesMap, this, false, false, state, data);
         Object.keys(storesMap).forEach(
             id => {
                 if ( is.fn(storesMap[id]) ) {
-                    storesMap[id].singleton && this._mount(id, state[id], datas[id])
+                    storesMap[id].singleton && this._mount(id, state[id], data[id])
                 }
                 else {
                     this._watchStore(id);
@@ -271,9 +265,9 @@ export default class Context extends EventEmitter {
      * @param srcCtx
      * @param targetCtx
      * @param state
-     * @param datas
+     * @param data
      */
-    relink( srcCtx, targetCtx = this, external, force, state = {}, datas = {} ) {
+    relink( srcCtx, targetCtx = this, external, force, state = {}, data = {} ) {
         let lctx = targetCtx._stores.prototype;
         Object.keys(srcCtx)
               .forEach(
@@ -312,10 +306,10 @@ export default class Context extends EventEmitter {
                           }
                       );
                       Object.defineProperty(
-                          targetCtx._datas.prototype,
+                          targetCtx._data.prototype,
                           id,
                           {
-                              get: () => (this.__context[id] && this.__context[id].datas),
+                              get: () => (this.__context[id] && this.__context[id].data),
                               set: ( v ) => (this._mount(id, undefined, v))
                           }
                       );
@@ -332,7 +326,7 @@ export default class Context extends EventEmitter {
      * @param setInitial=true {bool} false to not propag initial value
      */
     bind( obj, key, as, setInitial = true ) {
-        let lastRevs, datas, reKey;
+        let lastRevs, data, reKey;
         if ( key && !is.array(key) )
             key = [key];
         
@@ -354,14 +348,14 @@ export default class Context extends EventEmitter {
         this.mount(key);
         
         if ( setInitial && this._stable ) {
-            datas = this.getUpdates(lastRevs);
-            if ( !datas ) return;
+            data = this.getUpdates(lastRevs);
+            if ( !data ) return;
             if ( typeof obj != "function" ) {
-                if ( as ) obj.setState({ [as]: datas });
-                else obj.setState(datas);
+                if ( as ) obj.setState({ [as]: data });
+                else obj.setState(data);
             }
             else {
-                obj(datas);
+                obj(data);
             }
         }
     }
@@ -417,7 +411,20 @@ export default class Context extends EventEmitter {
             }
             
         }
-        return storesList.reduce(( datas, id ) => (datas[id] = this.stores[id] && this.stores[id].datas, datas), {});
+        return storesList.reduce(( data, id ) => {
+            if (!is.string(id))
+                id = id.name;
+            id                                     = id.split(':');
+            id[0]                                  = id[0].split('.');
+            data[id[1] || id[0][id[0].length - 1]] = this.stores[id[0][0]] && this.stores[id[0][0]].retrieve(id[0].splice(1));
+            return data;
+        }, {});
+    }
+    
+    retrieve( path="" ) {
+        path = is.string(path) ? path.split('.') : path;
+        return path && this.stores[path[0]] &&
+            this.stores[path[0]].retrieve(path.splice(1));
     }
     
     /**
@@ -469,7 +476,7 @@ export default class Context extends EventEmitter {
                 ) {
                     
                     updated    = true;
-                    output[id] = this.datas[id];
+                    output[id] = this.data[id];
                     if ( storesRevMap && storesRevMap[id] !== undefined )
                         storesRevMap[id] = ctx[id]._rev;
                     
@@ -484,20 +491,20 @@ export default class Context extends EventEmitter {
     /**
      *
      * @param flags_states
-     * @param flags_datas
-     * @returns {{state: {}, datas: {}}}
+     * @param flags_data
+     * @returns {{state: {}, data: {}}}
      */
-    serialize( flags_states = /.*/, flags_datas = /.*/ ) {
-        let ctx = this.__context, output = { state: {}, datas: {} },
+    serialize( flags_states = /.*/, flags_data = /.*/ ) {
+        let ctx = this.__context, output = { state: {}, data: {} },
             _flags_states,
-            _flags_datas;
+            _flags_data;
         if ( is.array(flags_states) )
             flags_states.forEach(id => (output.state[id] = this.state[id]));
         
-        if ( is.array(flags_datas) )
-            flags_datas.forEach(id => (output.datas[id] = this.datas[id]));
+        if ( is.array(flags_data) )
+            flags_data.forEach(id => (output.data[id] = this.data[id]));
         
-        if ( !is.array(flags_datas) && !is.array(flags_states) )
+        if ( !is.array(flags_data) && !is.array(flags_states) )
             Object.keys(ctx).forEach(
                 id => {
                     if ( is.fn(ctx[id]) )
@@ -510,23 +517,25 @@ export default class Context extends EventEmitter {
                     if ( flags.reduce(( r, flag ) => (r || _flags_states.test(flag)), false) )
                         output.state[id] = this.state[id];
                     
-                    if ( flags.reduce(( r, flag ) => (r || _flags_datas.test(flag)), false) )
-                        output.datas[id] = this.datas[id];
+                    if ( flags.reduce(( r, flag ) => (r || _flags_data.test(flag)), false) )
+                        output.data[id] = this.data[id];
                 }
             )
         return output;
     }
     
-    on( lists ) {
-        if ( !is.string(lists) && lists )
-            Object.keys(lists).forEach(k => super.on(k, lists[k]));
-        else super.on(...arguments);
-    }
-    
-    removeListener( lists ) {
-        if ( !is.string(lists) && lists )
-            Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
-        else super.removeListener(...arguments);
+    dispatch( action, data ) {
+        Object.keys(this.__context)
+              .forEach(
+                  id => {
+                      if ( !is.fn(this.__context[id]) )
+                          this.__context[id].trigger(action, data)
+                  }
+              );
+        
+        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
+        this.parent && this.parent.dispatch(action, data);
+        return this;
     }
     
     /**
@@ -536,16 +545,16 @@ export default class Context extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(null, this.datas);
-        this.once('stable', e => cb(null, this.datas));
+            return cb(null, this.data);
+        this.once('stable', e => cb(null, this.data));
     }
     
-    restore( { state, datas }, quiet ) {
+    restore( { state, data }, quiet ) {
         let ctx = this.__context;
-        Object.keys(datas).forEach(
+        Object.keys(data).forEach(
             id => {
-                quiet ? ctx.datas = datas[id]
-                    : ctx.push(datas[id]);
+                quiet ? ctx.data = data[id]
+                    : ctx.push(data[id]);
             }
         );
         Object.keys(state).forEach(
@@ -625,14 +634,14 @@ export default class Context extends EventEmitter {
     _propag() {
         if ( this._followers.length )
             this._followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs } ) => {
-                let datas = this.getUpdates(lastRevs);
-                if ( !datas ) return;
+                let data = this.getUpdates(lastRevs);
+                if ( !data ) return;
                 if ( typeof obj != "function" ) {
-                    if ( as ) obj.setState({ [as]: datas });
-                    else obj.setState(datas);
+                    if ( as ) obj.setState({ [as]: data });
+                    else obj.setState(data);
                 }
                 else {
-                    obj(datas, lastRevs && [...lastRevs] || "no revs");
+                    obj(data, lastRevs && [...lastRevs] || "no revs");
                 }
                 // lastRevs &&
                 // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
@@ -699,9 +708,7 @@ export default class Context extends EventEmitter {
                 this._destroyTM && clearTimeout(this._destroyTM);
                 this._destroyTM = setTimeout(
                     e => {
-                        //console.log("wtf ctx", this._id, reason, this.__locks, this._stable);
                         this.then(s => {
-                            //console.log("wtf ctx then", this._id, reason, this.__locks);
                             !this.__retains.all && this.destroy()
                         });
                     },
@@ -753,8 +760,8 @@ export default class Context extends EventEmitter {
         //
         //        ctx[key] = ctx[key].constructor;
         //    }
-        this.__mixed = this.datas = this.state = this.context = this.stores = null;
-        this._datas = this._state = this._stores = null;
+        this.__mixed = this.data = this.state = this.context = this.stores = null;
+        this._data = this._state = this._stores = null;
         
         
     }

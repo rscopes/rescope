@@ -25,14 +25,14 @@ Rescope Contexts manages a pool of stores and provide :
 
 ## How ?
 
-### Store propagation :
+### Store basics :
 
-1 - A Store have it's state updated
-2 - If this state have the required & followed value
-3 - The apply function is called
-4 - The apply function push the new store data in an async or sync way
-5 - The store is stabilized and (if there is new data) propagated
-6 - listening stores update theirs state and we go to step 1 until the context is updated
+- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
+- If this state have the required & followed value
+- The apply function is called
+- The apply function push the new store data in an async or sync way
+- The store is stabilized and (if there is new data) propagated
+- listening stores update theirs state and we go to step 1 until the context is updated
 
 ### Context propagation :
 
@@ -130,6 +130,13 @@ let MyPageContext = new Context({
             "!MyTodoList.items"     : "MyTodoItems", // remap sources
             "!AppConfig.using.salt" : "withSalt"
         };
+        static follow  = {
+            "MyTodoItems":v=>is.array(v)
+        }
+
+        shouldApply(state){
+            return super.shouldApply(state);//check required & followed
+        }
         apply(currentDatas, {MyTodoItems, withSalt}){
            /*...*/
            return {data:"ready",_for:'render'}

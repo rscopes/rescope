@@ -36,9 +36,9 @@ Rescope Contexts manages a pool of stores and provide :
 
 ### Context propagation :
 
-A Context became unstable when one of its stores, parent or mixed context became unstable (state propagation or wait fn called)
-It propag store updates to the listening Components / listeners
-It go stable when all his store are stable
+- A Context became unstable when one of its stores, parent or mixed context became unstable (state propagation or wait fn called)
+- It propag store updates to the listening Components / listeners
+- It go stable when all his store are stable
 
 ## Why ?
 

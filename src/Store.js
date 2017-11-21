@@ -30,7 +30,6 @@ export default class Store extends EventEmitter {
     static follow;// overridable list of store that will allow push if updated
     static require;
     static staticContext              = new Context({}, { id: "static" });
-    static initialState               = undefined;// default state @depreciated
     static state                      = undefined;// default state
     /**
      *
@@ -73,8 +72,7 @@ export default class Store extends EventEmitter {
             apply        = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
             initialState = _static.state || _static.initialState;
         
-        this._uid          = cfg._uid || shortid.generate();
-        this._maxListeners = cfg.defaultMaxListeners || Store.defaultMaxListeners;
+        this._uid = cfg._uid || shortid.generate();
         
         this.__retains    = { all: 0 };
         this.__locks      = { all: 0 };
@@ -337,19 +335,18 @@ export default class Store extends EventEmitter {
         var _static = this.constructor;
         
         return (
-                   this.isComplete(state)
-               )
-               &&
-               is.array(_static.follow)
-            ? _static.follow
-                     .reduce(( r, i ) => (r || state && state[i]), false)
-            : _static.follow
-                   ? Object.keys(_static.follow)
-                           .reduce(( r, i ) => (
-                               r
-                               || state && is.fn(_static.follow[i]) && _static.follow[i].call(this, state[i])
-                               || _static.follow[i] && state[i] !== this.state[i]
-                           ), false) : true;
+            !!this.isComplete(state)
+        ) && (is.array(_static.follow)
+                ? _static.follow
+                         .reduce(( r, i ) => (r || state && state[i]), false)
+                : _static.follow
+                  ? Object.keys(_static.follow)
+                          .reduce(( r, i ) => (
+                              r
+                              || state && is.fn(_static.follow[i]) && _static.follow[i].call(this, state[i])
+                              || _static.follow[i] && state[i] !== this.state[i]
+                          ), false) : true
+        );
     }
     
     /**
@@ -538,7 +535,7 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
-        this.push();
+        this.shouldApply({ ...(this.state || {}), ...changes }) && this.push();
         return this.data;
     }
     

@@ -36,7 +36,7 @@ describe('Rescope', function () {
         this.timeout(Infinity);
         
         child_process.exec(
-            'npm run build',
+            'npm run buildStaging',
             {
                 //cwd: "/"
             },
@@ -47,7 +47,6 @@ describe('Rescope', function () {
     });
     it('should require well', function ( done ) {
         Rescope = require('../dist/Rescope');
-        //console.log(Rescope)
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
@@ -56,22 +55,24 @@ describe('Rescope', function () {
                 global_1: class global_1 extends Rescope.Store {
                     static state = { ok: true };
                     
-                    apply( datas, state ) {
+                    apply( data, state ) {
                         this.wait("async creeps");
-                        //console.log("g1")
                         setTimeout(
                             tm => {
-                                this.push({ ...datas, ...state, asyncUpdated: true });
+                                this.push({ ...data, ...state, asyncUpdated: true });
                                 this.release("async creeps");
                             },
                             1000
                         )
-                        return datas;
+                        return data;
                     }
                 },
                 global_2: class global_2 extends Rescope.Store {
                     static state = { ok: true };
-                    
+                    static actions = {
+                        makeItOk  : v => ({ ok: v }),
+                        someAction: v => ({ value: v })
+                    };
                 },
                 stats   : class stats extends Rescope.Store {
                     static state = { ok: true };
@@ -88,8 +89,7 @@ describe('Rescope', function () {
         TestContext   = new Rescope.Context(
             {
                 local_1: class local_1 extends Rescope.Store {
-                    static use = ["global_1"];
-                    static require = ["global_1"];
+                    static use = ["!global_1"];
                     static state = { ok: true };
                 },
                 local_2: class local_2 extends Rescope.Store {
@@ -98,6 +98,20 @@ describe('Rescope', function () {
                 local_3: class local_3 extends Rescope.Store {
                     static use = ["global_2", "local_2"];
                     static state = { ok: true };
+                },
+                local_4: class local_4 extends Rescope.Store {
+                    static use = { "local_3.global_2.ok": "remapTest" };
+                },
+                local_5: class local_5 extends Rescope.Store {
+                    static use = { "!local_3.global_2.ok": "remapTest" };
+                    static follow = {
+                        remapTest: v => (v === "ok")
+                    };
+                    
+                    apply( data, state ) {
+                        
+                        return { ...data, ...state };
+                    }
                 }
             },
             {
@@ -110,89 +124,114 @@ describe('Rescope', function () {
     });
     it('should synchrone init them well', function ( done ) {
         TestContext.state.local_3 = { updated: true };// should mount all the required store
-
-        let datas = TestContext.datas,
-            ok    =
-                !datas.global_1 &&
-                datas.global_2.ok &&
-                !datas.local_1 &&
-                datas.local_2.ok &&
-                datas.local_3.ok &&
-                datas.local_3.local_2.ok &&
-                datas.local_3.global_2.ok;
-
+        
+        let data = TestContext.data,
+            ok   =
+                !data.global_1 &&
+                data.global_2.ok &&
+                !data.local_1 &&
+                data.local_2.ok &&
+                data.local_3.ok &&
+                data.local_3.local_2.ok &&
+                data.local_3.global_2.ok;
+        
         if ( ok ) done();
         else done("fail")
     });
     it('should async update them well', function ( done ) {
         this.timeout(4000);
         TestContext.once('update',
-                         ( e, _datas ) => {
-
-                             let datas = TestContext.datas,
-                                 ok    =
-                                     !datas.global_1 &&
-                                     datas.global_2.ok &&
-                                     !datas.local_1 &&
-                                     datas.local_2.ok &&
-                                     datas.local_3.ok &&
-                                     datas.local_3.local_2.ok &&
-                                     datas.local_3.global_2.ok &&
-                                     datas.local_3.global_2.updated;
-
-                             !ok && console.log(datas)
-
-
+                         ( e, _data ) => {
+            
+                             let data = TestContext.data,
+                                 ok   =
+                                     !data.global_1 &&
+                                     data.global_2.ok &&
+                                     !data.local_1 &&
+                                     data.local_2.ok &&
+                                     data.local_3.ok &&
+                                     data.local_3.local_2.ok &&
+                                     data.local_3.global_2.ok &&
+                                     data.local_3.global_2.updated;
+            
+                             !ok && console.log(data)
+            
+            
                              if ( ok ) done();
                              else done(new Error("fail"))
                          }
         )
         TestContext.state.global_2 = { updated: true };
-
+        
     });
     it('should async mount them well 2', function ( done ) {
         this.timeout(4000);
         TestContext.once(
             'update',
-            ( e, _datas ) => {
-
-                TestContext.once(
-                    'update',
-                    ( e, _datas ) => {
-                        let datas = TestContext.datas,
-                            ok    =
-                                datas.global_1.asyncUpdated &&
-                                datas.local_1.ok &&
-                                datas.local_3.global_2.updated;
-
-                        //console.log(datas.local_1)
-
-                        if ( ok ) done();
-                        else done(new Error("fail"))
-                    }
+            ( e, _data ) => {// 1st is local_1
+                
+                TestContext.once(// later get global_2
+                                 'update',
+                                 ( e, _data ) => {
+                                     let data = TestContext.data,
+                                         ok   =
+                                             data.global_1.asyncUpdated &&
+                                             data.local_1.ok &&
+                                             data.local_3.global_2.updated;
+                    
+                    
+                                     if ( ok ) done();
+                                     else done(new Error("fail"))
+                                 }
                 )
             }
         )
         TestContext.mount("local_1");// should trigger global 1 wich will push in 1000ms
-
+        
     });
-    it('should resync setState well', function ( done ) {
-        var fn;
-        TestContext.bind(
-            fn = ( datas ) => {
-                TestContext.unBind(fn, ["global_2", "local_3"]);
-                let ok =
-                        datas.global_2.resync &&
-                        datas.local_3.global_2.resync;
-                !ok && console.log(datas)
-                if ( ok ) done();
-                else done(new Error("fail "))
-
-            },
-            ["global_2", "local_3"], false
+    it('should remap well', function ( done ) {
+        this.timeout(4000);
+        TestContext.mount("local_4");
+        TestContext.then(
+            ( e, _data ) => {
+                if ( _data.local_4.remapTest ) done();
+                else done(new Error("fail"))
+            }
         );
-        TestContext.state.global_2 = { resync: true };// should mount all the required store
+        
     });
+    it('should trigger action and use follow well', function ( done ) {
+        this.timeout(4000);
+        TestContext
+            .mount("local_5")
+            .bind(
+                ( _data ) => {
+                    //console.log(_data, TestContext.data.local_5);
+                    
+                    if ( _data.local_5.remapTest == 'ok' ) done();
+                    else done(new Error("fail"));
+                },
+                "local_5"
+            )
+            .dispatch("makeItOk", 'ok')
+    });
+    //it('should resync setState well', function ( done ) {
+    //    var fn;
+    //    TestContext.bind(
+    //        fn = ( data ) => {
+    //            TestContext.unBind(fn, ["global_2", "local_3"]);
+    //            let ok =
+    //                    data.global_2.resync &&
+    //                    data.local_3.global_2.resync;
+    //            !ok && console.log(data)
+    //            if ( ok ) done();
+    //            else done(new Error("fail "))
+    //
+    //        },
+    //        ["global_2", "local_3"], false
+    //    );
+    //    TestContext.state.global_2 = { resync: true };// should mount all the required store
+    //});
     it('should mixin contexts well', function ( done ) {
         this.timeout(10000);
         
@@ -229,6 +268,16 @@ describe('Rescope', function () {
             done(new Error("Not working !!!"));
         
     });
+    it('should dispatch well', function ( done ) {
+        TestContext.dispatch("someAction", 2).then(
+            ( data ) => {
+                let ok = TestContext.data.global_2.value;
+                !ok && console.log(data)
+                if ( ok ) done();
+                else done(new Error("fail "))
+            }
+        );
+    });
     it('should async auto destroy store well', function ( done ) {
         this.timeout(10000);
         
@@ -264,7 +313,7 @@ describe('Rescope', function () {
     it('should async auto destroy them well', function ( done ) {
         this.timeout(10000);
         TestContext.once('destroy',
-                         ( e, _datas ) => {
+                         ( e, _data ) => {
                              done();
                          }
         )

@@ -16,13 +16,24 @@
  */
 import {Store} from "../Rescope";
 
-let stubs = require("./_stubs/datas");
+var stubs = require("./_stubs/data");
+
+
+let status = new (class  extends Store {
+    static context = 'static';
+    static state   = {};
+    static actions = {
+        userEvents( msg ) {
+            return { userEvents: msg };
+        },
+        currentUser( msg ) {
+            return { currentUser: msg };
+        }
+    }
+})()
 
 let MyStoreContext = {
-    status     : class status extends Store {
-        static singleton = true;
-        static use = ["appState"];
-    },
+    status,
     appState   : class appState extends Store {
         static state = {
             currentUserId: "MrNice"
@@ -35,7 +46,7 @@ let MyStoreContext = {
         //     });
         // }
         
-        // apply( datas, newState, changes ) {
+        // apply( data, newState, changes ) {
         //     // do some routing (map on url)
         //     return newState;
         // }
@@ -43,8 +54,8 @@ let MyStoreContext = {
     currentUser: class currentUser extends Store {
         static use = ["appState"];// list of source stores id
         
-        apply( datas, { appState: { currentUserId: NewUserId } }, changes ) {
-            let LastUserId = datas && datas._id;
+        apply( data, { appState: { currentUserId: NewUserId } }, changes ) {
+            let LastUserId = data && data._id;
             
             console.info("currentUser state updated : ", changes);
             
@@ -59,7 +70,7 @@ let MyStoreContext = {
                                 login: NewUserId
                             },
                             () => {
-                                this.context.status.setState({ currentUser: JSON.stringify(this.datas) });
+                                status.trigger("currentUser", JSON.stringify(this.data));
                             }
                         );
                         
@@ -67,33 +78,34 @@ let MyStoreContext = {
                     },
                     500
                 );
-                this.context.status.setState({ currentUser: "user id change ! doing some async..." });
+                status.trigger("currentUser", "user id change ! doing some async...");
+                
             }
             
             
-            return datas;
+            return data;
         }
     },
     userEvents : class userEvents extends Store {
-        static use = ["currentUser"];
-        static require = ["currentUser"];
-        static datas = {};
+        static use = {
+            "!currentUser._id": "myUserId"
+        };
         
-        apply( datas, { currentUser: { _id: nUserId } }, changes ) {
-            let { cUserId = void 0 } = datas;
+        apply( data, { myUserId }, changes ) {
+            let { cUserId = void 0 } = data||{};
             
             
-            if ( nUserId != cUserId ) {
-                this.wait();// do some async whithout pushing
+            if ( myUserId != cUserId ) {
+                this.wait();// do some async without pushing
                 setTimeout(
                     () => {
                         // get somme user events or whatever...
                         this.push(
                             {
-                                userId      : nUserId,
-                                count       : stubs[nUserId].length,
-                                events      : stubs[nUserId],
-                                eventsByType: stubs[nUserId].reduce(
+                                userId      : myUserId,
+                                count       : stubs[myUserId].length,
+                                events      : stubs[myUserId],
+                                eventsByType: stubs[myUserId].reduce(
                                     ( res, item ) => {
                                         res[item.type] = res[item.type] || [res[item.type]];
                                         res[item.type].push(item);
@@ -103,16 +115,17 @@ let MyStoreContext = {
                                 )
                             },
                             () => {
-                                this.context.status.setState({ userEvents: "" + stubs[nUserId].length + " events" });
+                                status.trigger("userEvents", stubs[myUserId].length + " events");
                             });
                         this.release();
                     },
                     500
                 );
-                this.context.status.setState({ userEvents: "user datas change ! doing some async..." });
+                status.trigger("userEvents", "user data change ! doing some async...");
+                
             }
             
-            return datas;
+            return data;
         }
     }
 };

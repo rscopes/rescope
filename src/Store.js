@@ -19,10 +19,9 @@
 
 var is           = require('is'),
     Context      = require('./Context'),
-    EventEmitter = require('events'),
+    EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
-    objProto     = Object.getPrototypeOf({}),
-    openContexts = {};
+    objProto     = Object.getPrototypeOf({});
 
 
 export default class Store extends EventEmitter {
@@ -50,7 +49,7 @@ export default class Store extends EventEmitter {
     /**
      * Constructor, will build a rescope store
      *
-     * (context, {require,use,apply,state, datas})
+     * (context, {require,use,apply,state, data})
      * (context)
      *
      * @param context {object} context where to find the other stores (default : static staticContext )
@@ -60,7 +59,12 @@ export default class Store extends EventEmitter {
         super();
         var argz         = [...arguments],
             _static      = this.constructor,
-            context      = !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : _static.staticContext,
+            context      = argz[0] instanceof Context
+                ? argz.shift()
+                : _static.context ? Context.getContext(_static.context)
+                               : is.string(argz[0])
+                      ? Context.getContext(argz.shift())
+                      : _static.staticContext,
             cfg          = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
             name         = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = is.array(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the
@@ -88,7 +92,7 @@ export default class Store extends EventEmitter {
         }
         // this.state      = this.state || {};
         
-        this._use = [...watchs, ...(_static.use || [])];
+        
         this.name = name;
         
         if ( context.stores ) {
@@ -101,11 +105,35 @@ export default class Store extends EventEmitter {
         }
         
         
-        this._stable  = true;
-        this._rev     = 1;
+        this._rev     = 0;
         this._revs    = {};
         this.stores   = {};
         this._require = [];
+        
+        if ( is.array(_static.use) ) {
+            this._use = [...watchs, ...(_static.use || []).map(
+                key => {
+                    let ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
+                    if ( ref[1] ) {
+                        let ref2 = ref[2].split('.');
+                        this._require.push(ref[3] || ref2[ref2.length - 1]);
+                    }
+                    return ref[2];
+                }
+            )];
+        }
+        else {
+            this._use = [...watchs, ...(
+                _static.use ? Object.keys(_static.use)
+                                    .map(
+                                        key => {
+                                            let ref = key.match(/^(\!?)(.*)$/);
+                                            ref[1] && this._require.push(_static.use[key]);
+                                            return ref[2] + ':' + _static.use[key];
+                                        }
+                                    ) : []
+            )];
+        }
         
         if ( _static.require )
             this._require.push(..._static.require);
@@ -114,10 +142,10 @@ export default class Store extends EventEmitter {
         
         this._followers = [];
         
-        if ( _static.datas !== undefined )
-            this.datas = { ..._static.datas };
-        if ( cfg.hasOwnProperty("datas") && cfg.datas !== undefined )
-            this.datas = cfg.datas;
+        if ( _static.data !== undefined )
+            this.data = { ..._static.data };
+        if ( cfg.hasOwnProperty("data") && cfg.data !== undefined )
+            this.data = cfg.data;
         if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
             initialState = { ...initialState, ...cfg.state };
         
@@ -130,10 +158,19 @@ export default class Store extends EventEmitter {
                 ...(initialState || {}),
                 ...context.map(this, this._use)
             };
-            if ( this.isComplete() && this.datas === undefined )
-                this.datas = this.apply(this.datas, this.state, this.state);
+            if ( this.shouldApply(this.state) && this.data === undefined )
+                this.data = this.apply(this.data, this.state, this.state);
         }
-        this._stable = this.datas !== undefined;// stable if it have initial result datas
+        if ( this.data !== undefined ) {
+            this._stable = true; // stable if it have initial result data ?
+            this._rev++;
+        }
+        else {
+            this._stable = false;
+            if ( !this.state && (!this._use || !this._use.length) ) {
+                console.warn("Rescope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+            }
+        }
         !this._stable && this.emit('unstable', this.state);
     }
     
@@ -172,6 +209,7 @@ export default class Store extends EventEmitter {
                 }
                 let name,
                     alias,
+                    path,
                     store;
                 if ( key.store && key.name ) {
                     alias = name = key.name;
@@ -182,13 +220,15 @@ export default class Store extends EventEmitter {
                     store = key;
                 }
                 else {
-                    key   = key.match(/([\w_]+)(?:\:\[(\*)\])?(?:\:(\*))?/);
-                    name  = key[0];
-                    store = context.stores[key[0]];
-                    alias = key[1] == '*' ? null : key[2] || key[0];// allow binding props  ([*])
+                    key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                    name  = key[1];
+                    path  = key[2] && key[2].split('.').slice(1);
+                    store = context.stores[key[1]];
+                    alias = key[3] || path && path[path.length - 1] || key[1];
                 }
                 
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
+                
                 if ( !store ) {
                     console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
                     return false;
@@ -196,18 +236,15 @@ export default class Store extends EventEmitter {
                 else if ( is.fn(store) ) {
                     context._mount(name)
                     
-                    context.stores[name].bind(component, alias, setInitial);
-                    // if ( context.__context[key[0]].state ) {// do sync push after constructor
-                    //     context.__context[key[0]].push();
-                    // }
+                    context.stores[name].bind(component, alias, setInitial, path);
                 }
                 else {
-                    store.bind(component, alias, setInitial);
+                    store.bind(component, alias, setInitial, path);
                 }
                 targetRevs[alias] = targetRevs[alias] || true;
                 !targetContext[name] && (targetContext[name] = context.stores[name]);
-                if ( context.stores[name].hasOwnProperty('datas') )
-                    initialOutputs[name] = context.datas[name];
+                if ( context.stores[name].hasOwnProperty('data') )
+                    initialOutputs[name] = context.data[name];
                 return true;
             }
         );
@@ -226,7 +263,7 @@ export default class Store extends EventEmitter {
             keys.map(
                 ( key ) => {
                     let name,
-                        alias,
+                        alias, path,
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
@@ -237,13 +274,14 @@ export default class Store extends EventEmitter {
                         store = context.stores[name];
                     }
                     else {
-                        key   = key.split(':');
-                        name  = key[0];
-                        store = context.stores[key[0]];
-                        alias = key[1] || key[0];
+                        key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                        name  = key[1];
+                        path  = key[2] && key[2].split('.');
+                        store = context.stores[key[1]];
+                        alias = key[3] || path && path[path.length - 1] || key[1];
                     }
                     
-                    store && !is.fn(store) && store.unBind(component, alias)
+                    store && !is.fn(store) && store.unBind(component, alias, path)
                 }
             );
             return component[unMountKey] && component[unMountKey](...argz);
@@ -252,80 +290,102 @@ export default class Store extends EventEmitter {
         return initialOutputs;
     }
     
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    get datas() {
+        return this.data;
+    }
     
     /**
-     * Overridable method to know if a state change should be propag to the listening stores & components
-     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
-     * If not it will always return true
+     * @deprecated
+     * @returns {*}
+     */
+    set datas( v ) {
+        console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
+        console.log((new Error()).stack);
+        console.groupEnd();
+        
+        this.data = v;
+    }
+    
+    /**
+     * Overridable method to know if a data change should be propag to the listening stores & components
      */
     shouldPropag( nDatas ) {
         var _static = this.constructor, r,
-            cDatas  = this.datas;
-        
-        // if ( !cState )
-        //     return true;
-        if ( !cDatas && (!_static.follow || !_static.follow.length ||
-                _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
-            return true;
-        
-        if ( is.array(_static.follow) )
-            _static.follow.forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-        else if ( _static.follow === 'strict' )
-            r = nDatas === cDatas;
-        else {
-            cDatas && Object.keys(cDatas).forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-            nDatas && Object.keys(nDatas).forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-        }
-        
+            cDatas  = this.data;
+        r           = !cDatas && nDatas;
+        cDatas && Object.keys(cDatas).forEach(
+            ( key ) => {
+                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+            }
+        );
+        nDatas && Object.keys(nDatas).forEach(
+            ( key ) => {
+                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+            }
+        );
         return !!r;
     }
     
     /**
+     * Overridable method to know if a state change should be applied
+     */
+    shouldApply( state = this.state ) {
+        var _static = this.constructor;
+        
+        return (
+                   this.isComplete(state)
+               )
+               &&
+               is.array(_static.follow)
+            ? _static.follow
+                     .reduce(( r, i ) => (r || state && state[i]), false)
+            : _static.follow
+                   ? Object.keys(_static.follow)
+                           .reduce(( r, i ) => (
+                               r
+                               || state && is.fn(_static.follow[i]) && _static.follow[i].call(this, state[i])
+                               || _static.follow[i] && state[i] !== this.state[i]
+                           ), false) : true;
+    }
+    
+    /**
      * Overridable applier / remapper
-     * If state or lastPublicState are simple hash maps apply will return {...datas, ...state}
+     * If state or lastPublicState are simple hash maps apply will return {...data, ...state}
      * if not it will return the last private state
-     * @param datas
+     * @param data
      * @param state
      * @returns {*}
      */
-    apply( datas, state, changes ) {
+    apply( data, state, changes ) {
         state = state || this.state;
         
         if ( this.refine )
             return this.refine(...arguments);
         
-        if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
+        if ( !data || data.__proto__ !== objProto || state.__proto__ !== objProto )
             return state;
         else
-            return { ...datas, ...state }
+            return { ...data, ...state }
     }
     
     /**
      * @depreciated
-     * @param datas
+     * @param data
      * @param state
      * @param changes
      * @returns {*}
      */
-    refine( datas, state, changes ) {
+    refine( data, state, changes ) {
         state = state || this.state;
         
-        if ( !datas || datas.__proto__ !== objProto || state.__proto__ !== objProto )
+        if ( !data || data.__proto__ !== objProto || state.__proto__ !== objProto )
             return state;
         else
-            return { ...datas, ...state }
+            return { ...data, ...state }
     }
     
     /**
@@ -334,7 +394,7 @@ export default class Store extends EventEmitter {
      */
     stabilize( cb ) {
         cb && this.once('stable', cb);
-        this._stable && this.emit('unstable', this.state, this.datas);
+        this._stable && this.emit('unstable', this.state, this.data);
         
         this._stable = false;
         
@@ -349,15 +409,33 @@ export default class Store extends EventEmitter {
                     
                     let stable   = this._stable;
                     this._stable = true;
-                    !stable && this.emit('stable', this.state, this.datas);
+                    !stable && this.emit('stable', this.state, this.data);
                     this._stabilizer = null;
                     // this.release();
                 }
             ));
     }
     
-    dispatch( event ) {
-        return;
+    retrieve( path, i = 0, obj = this.data ) {
+        path = is.string(path) ? path.split('.') : path;
+        return !obj || !path || !path.length
+            ? obj
+            : path.length == i + 1
+                   ? obj[path[i]]
+                   : this.retrieve(path, i + 1, obj[path[i]]);
+    }
+    
+    dispatch( action, ...argz ) {
+        this.contextObj.dispatch(action, ...argz);
+    }
+    
+    trigger( action, ...argz ) {
+        let { actions } = this.constructor,
+            ns;
+        if ( actions && actions[action] ) {
+            ns = actions[action].call(this, ...argz);
+            ns && this.setState(ns);
+        }
     }
     
     /**
@@ -378,27 +456,25 @@ export default class Store extends EventEmitter {
      * Apply apply/remap on the private state & push the resulting "public" state to followers
      * @param cb
      */
-    push( datas, force, cb ) {
+    push( data, force, cb ) {
         cb            = force === true ? cb : force;
         force         = force === true;
         var i         = 0,
-            me        = this,
-            nextState = !datas && { ...this.state, ...this._changesSW } || this.state,
-            nextDatas = datas ||
-                (this.isComplete(nextState) ? this.apply(this.datas, nextState, this._changesSW) : this.datas);
-        
+            nextState = !data && { ...this.state, ...this._changesSW } || this.state,
+            nextDatas = data || this.apply(this.data, nextState, this._changesSW);
         
         this.state = nextState;
         if ( !force &&
             (
-                (!this.datas && this.datas === nextDatas) || !this.shouldPropag(nextDatas)
+                (!this.data && this.data === nextDatas) || !this.shouldPropag(nextDatas)
             )
         ) {
             cb && cb();
             return false;
         }
         
-        this.datas = nextDatas;
+        this.data       = nextDatas;
+        this._changesSW = {};
         //this.__locks.all++;
         this.wait();
         this.release(cb);
@@ -424,6 +500,10 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
+        
+        if ( !this.shouldApply({ ...this.state, ...changes }) ) {
+            return;
+        }
         
         if ( sync ) {
             this.push();
@@ -459,7 +539,7 @@ export default class Store extends EventEmitter {
                 changes[k]    = pState[k];
             }
         this.push();
-        return this.datas;
+        return this.data;
     }
     
     /**
@@ -547,11 +627,11 @@ export default class Store extends EventEmitter {
      * @param key
      * @returns {Array.<*>}
      */
-    unBind( obj, key ) {
+    unBind( obj, key, path ) {
         var followers = this._followers,
             i         = followers && followers.length;
         while ( followers && i-- )
-            if ( followers[i][0] == obj && followers[i][1] == key )
+            if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
                 return followers.splice(i, 1);
     }
     
@@ -560,15 +640,16 @@ export default class Store extends EventEmitter {
      * @param obj {React.Component|Store|function)
      * @param key {string} optional key where to map the public state
      */
-    bind( obj, key, setInitial = true ) {
-        this._followers.push([obj, key]);
-        if ( setInitial && this.datas && this._stable ) {
+    bind( obj, key, setInitial = true, path ) {
+        this._followers.push([obj, key, path]);
+        if ( setInitial && this.data && this._stable ) {
+            let data = path ? this.retrieve(path) : this.data;
             if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({ [key]: this.datas });
-                else obj.setState(this.datas);
+                if ( key ) obj.setState({ [key]: data });
+                else obj.setState(data);
             }
             else {
-                obj(this.datas);
+                obj(data);
             }
         }
     }
@@ -580,8 +661,8 @@ export default class Store extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(null, this.datas);
-        this.once('stable', e => cb(null, this.datas));
+            return cb(null, this.data);
+        this.once('stable', e => cb(null, this.data));
     }
     
     /**
@@ -595,7 +676,7 @@ export default class Store extends EventEmitter {
         if ( is.array(previous) )
             return previous.map(this.wait.bind(this));
         
-        this._stable && this.emit('unstable', this.state, this.datas);
+        this._stable && this.emit('unstable', this.state, this.data);
         this._stable = false;
         this.__locks.all++;
         
@@ -636,20 +717,21 @@ export default class Store extends EventEmitter {
         if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        if ( !--this.__locks.all && this.datas && this.isComplete() ) {
+        if ( !--this.__locks.all && this.data && this.isComplete() ) {
             this._stable = true;
             this._rev    = 1 + (this._rev + 1) % 1000000;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
-                    if ( !this.datas ) return;
+                    let data = follower[2] ? this.retrieve(follower[2]) : this.data;
+                    if ( !data ) return;
                     if ( typeof follower[0] == "function" ) {
-                        follower[0](this.datas);
+                        follower[0](data);
                     }
                     else {
                         //cb && i++;
                         follower[0].setState(
-                            (follower[1]) ? { [follower[1]]: this.datas }
-                                : this.datas
+                            (follower[1]) ? { [follower[1]]: data }
+                                : data
                             //,
                             //cb && (
                             //    () => (!(--i) && cb())
@@ -658,10 +740,9 @@ export default class Store extends EventEmitter {
                     }
                 });
             //else
-            !wasStable && this.emit('stable', this.datas);
-            this.emit('update', this.datas);
+            !wasStable && this.emit('stable', this.data);
+            this.emit('update', this.data);
             cb && cb()
-            //
         }
         else cb && this.then(cb);
         return this;
@@ -726,7 +807,7 @@ export default class Store extends EventEmitter {
             );
         this._followers.length = 0;
         this.dead              = true;
-        this._revs             = this.datas = this.state = this.context = null;
+        this._revs             = this.data = this.state = this.context = null;
         this.removeAllListeners();
     }
 }

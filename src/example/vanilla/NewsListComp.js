@@ -24,6 +24,7 @@ function NewsListComp( target = document.createElement('div') ) {
         target.innerHTML =
             (
                 state.userEvents &&
+                state.userEvents.events &&
                 state.userEvents.events
                      .map(
                          ( evt ) => `

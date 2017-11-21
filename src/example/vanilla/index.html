@@ -30,20 +30,20 @@
 <div id="events"></div>
 <script>
     var NewsList = new NewsListComp(document.getElementById("events"));
-//    window.App = new Rescope.Context(StoreContext);
-//
-//
-//    App.state.appState = { currentUserId: "MissTick" }
-//
-//    App.mount("userEvents").then(
-//        function ( err, datas ) {
-//
-//            App.bind(NewsList, 'userEvents', true);
-//            App.bind(function ( datas ) {
-//                document.getElementById("status").innerHTML = JSON.stringify(datas, true, 2)
-//            }, 'status', true);
-//        }
-//    );
+    window.App = new Rescope.Context(StoreContext);
+
+
+    App.state.appState = { currentUserId: "MissTick" }
+
+    App.mount("userEvents").then(
+        function ( err, datas ) {
+
+            App.bind(NewsList, 'userEvents', true);
+            App.bind(function ( datas ) {
+                document.getElementById("status").innerHTML = JSON.stringify(datas, true, 2)
+            }, 'status', true);
+        }
+    );
 </script>
 </body>
 </html>

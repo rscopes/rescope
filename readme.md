@@ -21,13 +21,24 @@ Rescope Contexts manages a pool of stores and provide :
 - easy serialisation, export & restore of you're Application State.
 - Contexts inheriting & mixing,
 - Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
-- Chain destroy of contexts
+- Chain destroy of contexts & stores
 
-Rescope Stores maintain server & client side :
-- Enhanced records matching some ids,
-- Processed & interpolated data, ready for render
-- Page state & status (act as router)
-- session, etc... 
+## How ?
+
+### Store propagation :
+
+1 - A Store have it's state updated
+2 - If this state have the required & followed value
+3 - The apply function is called
+4 - The apply function push the new store data in an async or sync way
+5 - The store is stabilized and (if there is new data) propagated
+6 - listening stores update theirs state and we go to step 1 until the context is updated
+
+### Context propagation :
+
+A Context became unstable when one of its stores, parent or mixed context became unstable (state propagation or wait fn called)
+It propag store updates to the listening Components / listeners
+It go stable when all his store are stable
 
 ## Why ?
 

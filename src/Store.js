@@ -165,7 +165,7 @@ export default class Store extends EventEmitter {
         }
         else {
             this._stable = false;
-            if ( !this.state && (!this._use || !this._use.length) ) {
+            if ( !_static.managed && !this.state && (!this._use || !this._use.length) ) {
                 console.warn("Rescope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
             }
         }

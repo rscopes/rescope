@@ -80,11 +80,12 @@ let MyStaticContext = new Context({
             // initial config datas
         }
     }
-}); // stores are lazy instanciated on the context hashmap
+}, {id:'static'});// add AppConfig to the 'static' context
+
 let MyPageContext = new Context({
 
     AppState : class AppState extend Store{
-        static use     = ["!AppConfig"];
+        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
         static actions = {
             activateSalt(arg){
                 return {some:'mutations'};
@@ -94,14 +95,23 @@ let MyPageContext = new Context({
         switchTodoList(todoUrl){
              this.setState({todoUrl})
         }
+
+        apply(currentDatas, newState){
+           /*... can do routing & page url sync here ...*/
+           return {/**appState**/}
+        }
     }
     MyTodoList : class MyTodoList extend Store{
         static use     = ["!AppState"];// do not apply MyTodoList if AppState isn't here
         static state   = {items:[]};
         apply(currentDatas, {items, AppState:{todoUrl}}, {AppState:{todoListId}}){
-            // get todoUrl then push it ( this.push({items:newItems}) )
+            // do some async :
+            // this.wait()
+            // API.get todoUrl then
+            //     - push it ( this.push({items:newItems}) )
+            //     - this.release() // truely propag the pushed data if the store don't wait something else
 
-            return currentDatas;// or return then if the list is sync
+            return currentDatas;// return sync store data value
         }
     }
     MyCompData : class MyCompData extend Store{
@@ -127,9 +137,11 @@ MyLocalContext.mixin(MyMixableContext);
 this.state = {
    someKey : true,
    // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyLocalContext.map(this, ["AppState", "AnotherStore"])
+   ...MyLocalContext.map(this, ["AppState", "AnotherStore"], false)
 }
 // ....
+
+MyLocalContext.dispatch("activateSalt", true)
 
 ```
 
@@ -137,7 +149,7 @@ this.state = {
 ## What's next ?
 
 - Optimize
-- Better stabilisation / propagation sequencer
+- Prioritized stabilisation / propagation sequencer
 - Possibly some semantic/normalisation updates
 - Even better deps definition
 

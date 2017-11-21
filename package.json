@@ -8,6 +8,7 @@
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
     "build": "webpack&&webpack -p",
+    "buildStaging": "webpack",
     "test": "mocha --compilers js:babel-core/register ./test/*.test.js -b",
     "dev": "webpack -w"
   },

@@ -21,13 +21,24 @@ Rescope Contexts manages a pool of stores and provide :
 - easy serialisation, export & restore of you're Application State.
 - Contexts inheriting & mixing,
 - Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
-- Chain destroy of contexts
+- Chain destroy of contexts & stores
 
-Rescope Stores maintain server & client side :
-- Enhanced records matching some ids,
-- Processed & interpolated data, ready for render
-- Page state & status (act as router)
-- session, etc... 
+## How ?
+
+### Store basics :
+
+- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
+- If this state have the required & followed value
+- The apply function is called
+- The apply function push the new store data in an async or sync way
+- The store is stabilized and (if there is new data) propagated
+- listening stores update theirs state and we go to step 1 until the context is updated
+
+### Context propagation :
+
+A Context became unstable when one of its stores, parent or mixed context became unstable (state propagation or wait fn called)
+It propag store updates to the listening Components / listeners
+It go stable when all his store are stable
 
 ## Why ?
 
@@ -80,11 +91,12 @@ let MyStaticContext = new Context({
             // initial config datas
         }
     }
-}); // stores are lazy instanciated on the context hashmap
+}, {id:'static'});// add AppConfig to the 'static' context
+
 let MyPageContext = new Context({
 
     AppState : class AppState extend Store{
-        static use     = ["!AppConfig"];
+        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
         static actions = {
             activateSalt(arg){
                 return {some:'mutations'};
@@ -94,14 +106,23 @@ let MyPageContext = new Context({
         switchTodoList(todoUrl){
              this.setState({todoUrl})
         }
+
+        apply(currentDatas, newState){
+           /*... can do routing & page url sync here ...*/
+           return {/**appState**/}
+        }
     }
     MyTodoList : class MyTodoList extend Store{
         static use     = ["!AppState"];// do not apply MyTodoList if AppState isn't here
         static state   = {items:[]};
         apply(currentDatas, {items, AppState:{todoUrl}}, {AppState:{todoListId}}){
-            // get todoUrl then push it ( this.push({items:newItems}) )
+            // do some async :
+            // this.wait()
+            // API.get todoUrl then
+            //     - push it ( this.push({items:newItems}) )
+            //     - this.release() // truely propag the pushed data if the store don't wait something else
 
-            return currentDatas;// or return then if the list is sync
+            return currentDatas;// return sync store data value
         }
     }
     MyCompData : class MyCompData extend Store{
@@ -109,6 +130,13 @@ let MyPageContext = new Context({
             "!MyTodoList.items"     : "MyTodoItems", // remap sources
             "!AppConfig.using.salt" : "withSalt"
         };
+        static follow  = {
+            "MyTodoItems":v=>is.array(v)
+        }
+
+        shouldApply(state){
+            return super.shouldApply(state);//check required & followed
+        }
         apply(currentDatas, {MyTodoItems, withSalt}){
            /*...*/
            return {data:"ready",_for:'render'}
@@ -127,9 +155,11 @@ MyLocalContext.mixin(MyMixableContext);
 this.state = {
    someKey : true,
    // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyLocalContext.map(this, ["AppState", "AnotherStore"])
+   ...MyLocalContext.map(this, ["AppState", "AnotherStore"], false)
 }
 // ....
+
+MyLocalContext.dispatch("activateSalt", true)
 
 ```
 
@@ -137,7 +167,7 @@ this.state = {
 ## What's next ?
 
 - Optimize
-- Better stabilisation / propagation sequencer
+- Prioritized stabilisation / propagation sequencer
 - Possibly some semantic/normalisation updates
 - Even better deps definition
 

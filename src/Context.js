@@ -124,9 +124,10 @@ export default class Context extends EventEmitter {
      * @deprecated
      * @returns {*}
      */
-    get datas(){
+    get datas() {
         return this.data;
     }
+    
     /**
      *
      * Mount the stores in storesList, in this context or in its parents or mixed contexts
@@ -358,6 +359,7 @@ export default class Context extends EventEmitter {
                 obj(data);
             }
         }
+        return this;
     }
     
     /**
@@ -412,7 +414,7 @@ export default class Context extends EventEmitter {
             
         }
         return storesList.reduce(( data, id ) => {
-            if (!is.string(id))
+            if ( !is.string(id) )
                 id = id.name;
             id                                     = id.split(':');
             id[0]                                  = id[0].split('.');
@@ -421,7 +423,7 @@ export default class Context extends EventEmitter {
         }, {});
     }
     
-    retrieve( path="" ) {
+    retrieve( path = "" ) {
         path = is.string(path) ? path.split('.') : path;
         return path && this.stores[path[0]] &&
             this.stores[path[0]].retrieve(path.splice(1));

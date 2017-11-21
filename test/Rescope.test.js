@@ -36,7 +36,7 @@ describe('Rescope', function () {
         this.timeout(Infinity);
         
         child_process.exec(
-            'npm run build',
+            'npm run buildStaging',
             {
                 //cwd: "/"
             },
@@ -46,7 +46,7 @@ describe('Rescope', function () {
         
     });
     it('should require well', function ( done ) {
-        Rescope = require('../dist/Rescope.min');
+        Rescope = require('../dist/Rescope');
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
@@ -69,11 +69,9 @@ describe('Rescope', function () {
                 },
                 global_2: class global_2 extends Rescope.Store {
                     static state = { ok: true };
-                    
                     static actions = {
-                        someAction( value ) {
-                            return { value }
-                        }
+                        makeItOk  : v => ({ ok: v }),
+                        someAction: v => ({ value: v })
                     };
                 },
                 stats   : class stats extends Rescope.Store {
@@ -103,6 +101,17 @@ describe('Rescope', function () {
                 },
                 local_4: class local_4 extends Rescope.Store {
                     static use = { "local_3.global_2.ok": "remapTest" };
+                },
+                local_5: class local_5 extends Rescope.Store {
+                    static use = { "!local_3.global_2.ok": "remapTest" };
+                    static follow = {
+                        remapTest: v => (v === "ok")
+                    };
+                    
+                    apply( data, state ) {
+                        
+                        return { ...data, ...state };
+                    }
                 }
             },
             {
@@ -162,19 +171,18 @@ describe('Rescope', function () {
             ( e, _data ) => {// 1st is local_1
                 
                 TestContext.once(// later get global_2
-                    'update',
-                    ( e, _data ) => {
-                        let data = TestContext.data,
-                            ok   =
-                                data.global_1.asyncUpdated &&
-                                data.local_1.ok &&
-                                data.local_3.global_2.updated;
-                        
-                        //console.log(data.local_1)
-                        
-                        if ( ok ) done();
-                        else done(new Error("fail"))
-                    }
+                                 'update',
+                                 ( e, _data ) => {
+                                     let data = TestContext.data,
+                                         ok   =
+                                             data.global_1.asyncUpdated &&
+                                             data.local_1.ok &&
+                                             data.local_3.global_2.updated;
+                    
+                    
+                                     if ( ok ) done();
+                                     else done(new Error("fail"))
+                                 }
                 )
             }
         )
@@ -189,8 +197,23 @@ describe('Rescope', function () {
                 if ( _data.local_4.remapTest ) done();
                 else done(new Error("fail"))
             }
-        );// should trigger global 1 wich will push in 1000ms
+        );
         
+    });
+    it('should trigger action and use follow well', function ( done ) {
+        this.timeout(4000);
+        TestContext
+            .mount("local_5")
+            .bind(
+                ( _data ) => {
+                    //console.log(_data, TestContext.data.local_5);
+                    
+                    if ( _data.local_5.remapTest == 'ok' ) done();
+                    else done(new Error("fail"));
+                },
+                "local_5"
+            )
+            .dispatch("makeItOk", 'ok')
     });
     //it('should resync setState well', function ( done ) {
     //    var fn;
@@ -253,7 +276,7 @@ describe('Rescope', function () {
                 if ( ok ) done();
                 else done(new Error("fail "))
             }
-        );// should mount all the required store
+        );
     });
     it('should async auto destroy store well', function ( done ) {
         this.timeout(10000);

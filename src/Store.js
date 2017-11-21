@@ -105,7 +105,7 @@ export default class Store extends EventEmitter {
         }
         
         
-        this._rev     = 1;
+        this._rev     = 0;
         this._revs    = {};
         this.stores   = {};
         this._require = [];
@@ -158,10 +158,19 @@ export default class Store extends EventEmitter {
                 ...(initialState || {}),
                 ...context.map(this, this._use)
             };
-            if ( this.isComplete() && this.data === undefined )
+            if ( this.shouldApply(this.state) && this.data === undefined )
                 this.data = this.apply(this.data, this.state, this.state);
         }
-        this._stable = this.data !== undefined;// stable if it have initial result data
+        if ( this.data !== undefined ) {
+            this._stable = true; // stable if it have initial result data ?
+            this._rev++;
+        }
+        else {
+            this._stable = false;
+            if ( !this.state && (!this._use || !this._use.length) ) {
+                console.warn("Rescope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+            }
+        }
         !this._stable && this.emit('unstable', this.state);
     }
     
@@ -302,42 +311,45 @@ export default class Store extends EventEmitter {
     }
     
     /**
-     * Overridable method to know if a state change should be propag to the listening stores & components
-     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
-     * If not it will always return true
+     * Overridable method to know if a data change should be propag to the listening stores & components
      */
     shouldPropag( nDatas ) {
         var _static = this.constructor, r,
             cDatas  = this.data;
-        
-        // if ( !cState )
-        //     return true;
-        if ( !cDatas && (!_static.follow || !_static.follow.length ||
-                _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
-            return true;
-        
-        if ( is.array(_static.follow) )
-            _static.follow.forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-        else if ( _static.follow === 'strict' )
-            r = nDatas === cDatas;
-        else {
-            cDatas && Object.keys(cDatas).forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-            nDatas && Object.keys(nDatas).forEach(
-                ( key ) => {
-                    r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-                }
-            );
-        }
-        
+        r           = !cDatas && nDatas;
+        cDatas && Object.keys(cDatas).forEach(
+            ( key ) => {
+                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+            }
+        );
+        nDatas && Object.keys(nDatas).forEach(
+            ( key ) => {
+                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+            }
+        );
         return !!r;
+    }
+    
+    /**
+     * Overridable method to know if a state change should be applied
+     */
+    shouldApply( state = this.state ) {
+        var _static = this.constructor;
+        
+        return (
+                   this.isComplete(state)
+               )
+               &&
+               is.array(_static.follow)
+            ? _static.follow
+                     .reduce(( r, i ) => (r || state && state[i]), false)
+            : _static.follow
+                   ? Object.keys(_static.follow)
+                           .reduce(( r, i ) => (
+                               r
+                               || state && is.fn(_static.follow[i]) && _static.follow[i].call(this, state[i])
+                               || _static.follow[i] && state[i] !== this.state[i]
+                           ), false) : true;
     }
     
     /**
@@ -413,15 +425,15 @@ export default class Store extends EventEmitter {
                    : this.retrieve(path, i + 1, obj[path[i]]);
     }
     
-    dispatch( action, data ) {
-        this.contextObj.dispatch(action, data);
+    dispatch( action, ...argz ) {
+        this.contextObj.dispatch(action, ...argz);
     }
     
-    trigger( action, data ) {
+    trigger( action, ...argz ) {
         let { actions } = this.constructor,
             ns;
         if ( actions && actions[action] ) {
-            ns = actions[action].call(this, data);
+            ns = actions[action].call(this, ...argz);
             ns && this.setState(ns);
         }
     }
@@ -448,11 +460,8 @@ export default class Store extends EventEmitter {
         cb            = force === true ? cb : force;
         force         = force === true;
         var i         = 0,
-            me        = this,
             nextState = !data && { ...this.state, ...this._changesSW } || this.state,
-            nextDatas = data ||
-                (this.isComplete(nextState) ? this.apply(this.data, nextState, this._changesSW) : this.data);
-        
+            nextDatas = data || this.apply(this.data, nextState, this._changesSW);
         
         this.state = nextState;
         if ( !force &&
@@ -464,7 +473,8 @@ export default class Store extends EventEmitter {
             return false;
         }
         
-        this.data = nextDatas;
+        this.data       = nextDatas;
+        this._changesSW = {};
         //this.__locks.all++;
         this.wait();
         this.release(cb);
@@ -490,6 +500,10 @@ export default class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
+        
+        if ( !this.shouldApply({ ...this.state, ...changes }) ) {
+            return;
+        }
         
         if ( sync ) {
             this.push();

@@ -303,9 +303,9 @@ export default class Store extends EventEmitter {
      * @returns {*}
      */
     set datas( v ) {
-        console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
-        console.log((new Error()).stack);
-        console.groupEnd();
+        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
+        console.log("Rescope store : Setting datas is depreciated, use data", (new Error()).stack);
+        //console.groupEnd();
         
         this.data = v;
     }
@@ -719,7 +719,7 @@ export default class Store extends EventEmitter {
         
         if ( !--this.__locks.all && this.data && this.isComplete() ) {
             this._stable = true;
-            this._rev    = 1 + (this._rev + 1) % 1000000;//
+            this._rev++;//
             if ( this._followers.length )
                 this._followers.forEach(( follower ) => {
                     let data = follower[2] ? this.retrieve(follower[2]) : this.data;

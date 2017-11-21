@@ -311,29 +311,12 @@ export default class Store extends EventEmitter {
     }
     
     /**
-     * Overridable method to know if a state change should be propag to the listening stores & components
-     * If static follow is defined, shouldPropag will return true if any of the "follow" keys was updated
-     * If not it will always return true
+     * Overridable method to know if a data change should be propag to the listening stores & components
      */
     shouldPropag( nDatas ) {
         var _static = this.constructor, r,
             cDatas  = this.data;
         r           = !cDatas && nDatas;
-        // if ( !cState )
-        //     return true;
-        //if ( !cDatas && (!_static.follow || !_static.follow.length ||
-        //        _static.follow && _static.follow.reduce(( r, i ) => (r || nDatas && nDatas[i]), false)) )
-        //    return true;
-        //
-        //if ( is.array(_static.follow) )
-        //    _static.follow.forEach(
-        //        ( key ) => {
-        //            r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
-        //        }
-        //    );
-        //else if ( _static.follow === 'strict' )
-        //    r = nDatas === cDatas;
-        //else {
         cDatas && Object.keys(cDatas).forEach(
             ( key ) => {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
@@ -344,11 +327,12 @@ export default class Store extends EventEmitter {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
             }
         );
-        //}
-        //
         return !!r;
     }
     
+    /**
+     * Overridable method to know if a state change should be applied
+     */
     shouldApply( state = this.state ) {
         var _static = this.constructor;
         
@@ -476,7 +460,6 @@ export default class Store extends EventEmitter {
         cb            = force === true ? cb : force;
         force         = force === true;
         var i         = 0,
-            me        = this,
             nextState = !data && { ...this.state, ...this._changesSW } || this.state,
             nextDatas = data || this.apply(this.data, nextState, this._changesSW);
         

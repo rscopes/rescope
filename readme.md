@@ -168,6 +168,6 @@ MyLocalContext.dispatch("activateSalt", true)
 - Detect dead locks & dependencies loop ( Prioritized sequencer will help )
 - Possibly some semantic/normalisation updates
 - Even better deps definition
-
+- Many more tests
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

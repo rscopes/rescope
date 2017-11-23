@@ -9,34 +9,28 @@
 
 ReScope is a simple, **flexible**, predictable \& effective Store system inspired by ReactJS methods.
 
-## What ?
-
-Rescope Stores read an entry state (kind of "key" that can be anything) and maintain the corresponding output data in a deterministic way.<br>
-These outputs are then, used as partial "key" in other stores states, or "predictible" data in dumb components.<br>
-
-By " a deterministic way ", i mean : <br/>
-All state-making values should come from a limited number of key "seeds" stores; so "final" store's output data will remain determined by theses key values.
-
-Rescope Contexts manages a pool of stores and provide :
-- easy serialisation, export & restore of you're Application State.
-- Contexts inheriting & mixing,
-- Automatic, synchrone and/or Async stores injection, init, lazy load & sleep
-- Chain destroy of contexts & stores
-
 ## How ?
 
-### Store basics :
+ReScope Stores read an entry state and maintain the corresponding output data in a deterministic way.<br>
+These outputs are then, used as partial state in other stores, or "predictible" data in dumb components.<br>
+
+ReScope Stores are grouped by contexts, and these contexts allow :
+- Contexts inheriting & mixing,
+- Synchronized (or not) init of the stores
+- Easy serialisation, export & restore of theirs states.
+- Chain destroy ( retain / dispose )
+
+### Store basic workflow :
 
 - A Store have it's state updated ( action has pushed state update or a source store had its data updated )
 - If this state have the required & followed value
-- The apply function is called
-- The apply function push the new store data in an async or sync way
+- The apply function is called push new data in an async or sync way
 - The store is stabilized and (if there is new data) propagated
-- listening stores update theirs state and we go to step 1 until the context is updated
+- listening stores have theirs state updated and we go to step 1 until the whole context is stable
 
 ### Context propagation :
 
-- A Context became unstable when one of its stores, parent or mixed context became unstable (state propagation or wait fn called)
+- A Context became unstable when one of its stores, parent or mixed context became unstable
 - It propag store updates to the listening Components / listeners
 - It go stable when all his store are stable
 
@@ -54,7 +48,7 @@ Because :
 ### What else ?
 
 - Easy stores & deps injections
-- Semaphores API ( wait, release, retain, dispose )
+- Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
 - Inheritable ES6 class
 - Inheritable & mixable Store Contexts
@@ -117,10 +111,10 @@ let MyPageContext = new Context({
         static state   = {items:[]};
         apply(currentDatas, {items, AppState:{todoUrl}}, {AppState:{todoListId}}){
             // do some async :
-            // this.wait()
+            // this.wait("downloading") // wait 1 task nammed "downloading", do not propag until "downloading" is released (so you always know whats going on)
             // API.get todoUrl then
             //     - push it ( this.push({items:newItems}) )
-            //     - this.release() // truely propag the pushed data if the store don't wait something else
+            //     - this.release("downloading") // truely propag the pushed data if the store don't wait something else
 
             return currentDatas;// return sync store data value
         }
@@ -131,7 +125,8 @@ let MyPageContext = new Context({
             "!AppConfig.using.salt" : "withSalt"
         };
         static follow  = {
-            "MyTodoItems":v=>is.array(v)
+            "MyTodoItems":v=>is.array(v),// only apply if MyTodoItems is an array or if withSalt has change
+            "withSalt":true
         }
 
         shouldApply(state){
@@ -140,6 +135,9 @@ let MyPageContext = new Context({
         apply(currentDatas, {MyTodoItems, withSalt}){
            /*...*/
            return {data:"ready",_for:'render'}
+        }
+        shouldPropag(state){
+            return super.shouldPropag(state);
         }
     }
 
@@ -155,7 +153,7 @@ MyLocalContext.mixin(MyMixableContext);
 this.state = {
    someKey : true,
    // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyLocalContext.map(this, ["AppState", "AnotherStore"], false)
+   ...MyLocalContext.map(this, ["AppState", "MyCompData"])
 }
 // ....
 
@@ -163,12 +161,13 @@ MyLocalContext.dispatch("activateSalt", true)
 
 ```
 
-
 ## What's next ?
 
 - Optimize
 - Prioritized stabilisation / propagation sequencer
+- Detect dead locks & dependencies loop ( Prioritized sequencer will help )
 - Possibly some semantic/normalisation updates
 - Even better deps definition
+
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

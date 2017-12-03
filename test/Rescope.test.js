@@ -268,6 +268,53 @@ describe('Rescope', function () {
             done(new Error("Not working !!!"));
         
     });
+    it('should emit stableTree well', function ( done ) {
+        this.timeout(3000);
+        
+        let
+            TestContext0 = new Rescope.Context(
+                {
+                    test0: class local_2 extends Rescope.Store {
+                        static state = { ok: true };
+                    }
+                },
+                {
+                    parent       : StaticContext,
+                    persistenceTm: 3000,
+                    autoDestroy  : true
+                }
+            );
+        let
+            TestContext2 = new Rescope.Context(
+                {
+                    local_2: class local_2 extends Rescope.Store {
+                        static use = ["test0"];
+                        
+                        static state = { ok: true };
+                    }
+                },
+                {
+                    parent       : TestContext0,
+                    persistenceTm: 3000,
+                    autoDestroy  : true
+                }
+            );
+        StaticContext.once(
+            "stableTree",
+            () => {
+                
+                if ( TestContext2.data.local_2.yiha )
+                    done();
+                else done(new Error("fail "))
+                
+            }
+        );
+        TestContext2.mount("local_2")
+        TestContext2.stores.local_2.setState({ yiha: true });
+        
+        //TestContext2.mixin(StaticContext);
+        
+    });
     it('should dispatch well', function ( done ) {
         TestContext.dispatch("someAction", 2).then(
             ( data ) => {

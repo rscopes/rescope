@@ -53,17 +53,23 @@ export default class Context extends EventEmitter {
      * @param autoDestroy  {bool} will trigger retain & dispose after start
      * @returns {Context}
      */
-    constructor( storesMap, { id, parent, state, data, name, defaultMaxListeners, persistenceTm, autoDestroy } = {} ) {
+    constructor( storesMap, { id, parent, state, data, name, incrementId, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
-        this._id           = id = id || ("_____" + shortid.generate());
-        
-        if ( openContexts[id] ) {
+        id                 = id || ("_____" + shortid.generate());
+        if ( openContexts[id] && !incrementId ) {
+            this._id = id;
             openContexts[id].register(storesMap);
             return openContexts[id]
         }
+        else if ( openContexts[id] && incrementId ) {
+            let i = -1;
+            while ( openContexts[id + '/' + (++i)] ) ;
+            id = id + '/' + i;
+        }
         
+        this._id            = id;
         openContexts[id]    = this;
         this._isLocalId     = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
@@ -80,13 +86,11 @@ export default class Context extends EventEmitter {
         __proto__push(this, 'data', parent);
         this.parent = parent;
         
-        if ( parent ) {
-            parent._addChild(this);
-            
-        }
         
-        this.sources        = [];
-        this._childContexts = [];
+        this.sources            = [];
+        this._childContexts     = [];
+        this._childContextsList = [];
+        this._unStableChilds    = 0;
         
         this.__retains   = { all: 0 };
         this.__locks     = { all: 1 };
@@ -97,12 +101,19 @@ export default class Context extends EventEmitter {
         this._followers  = [];
         if ( parent ) {
             parent.retain("isMyParent");
-            !parent._stable && this.wait("waitingParent");
-            parent.on(this.__parentList = {
-                'stable'  : s => this.release("waitingParent"),
-                'unstable': s => this.wait("waitingParent"),
-                'update'  : s => this._propag()
-            });
+            if ( !rootEmitter ) {
+                !parent._stable && this.wait("waitingParent");
+                parent.on(this.__parentList = {
+                    'stable'  : s => this.release("waitingParent"),
+                    'unstable': s => this.wait("waitingParent"),
+                    'update'  : s => this._propag()
+                });
+            }
+            else {
+                parent.on(this.__parentList = {
+                    'update': s => this._propag()
+                });
+            }
             // this.register(parent.__context, state, data);
         }
         
@@ -111,6 +122,10 @@ export default class Context extends EventEmitter {
         this.__locks.all--;
         this._stable = !this.__locks.all;
         
+        if ( parent ) {
+            parent._addChild(this);
+            
+        }
         if ( autoDestroy )
             setTimeout(
                 tm => {
@@ -247,11 +262,21 @@ export default class Context extends EventEmitter {
      * @param data
      */
     register( storesMap, state = {}, data = {} ) {
-        this.relink(storesMap, this, false, false, state, data);
+        this.relink(storesMap, this, false, false);
         Object.keys(storesMap).forEach(
             id => {
-                if ( is.fn(storesMap[id]) ) {
-                    storesMap[id].singleton && this._mount(id, state[id], data[id])
+                if ( storesMap[id].singleton || (is.fn(storesMap[id]) && (state[id] || data[id])) ) {
+                    this._mount(id, state[id], data[id])
+                }
+                else if ( state[id] || data[id] ) {
+                    if ( data[id] ) {
+                        if ( state[id] )
+                            this.stores[id].state = state[id];
+                        this.stores[id].push(data[id]);
+                    }
+                    else if ( state[id] ) {
+                        this.stores[id].setState(state[id]);
+                    }
                 }
                 else {
                     this._watchStore(id);
@@ -268,7 +293,7 @@ export default class Context extends EventEmitter {
      * @param state
      * @param data
      */
-    relink( srcCtx, targetCtx = this, external, force, state = {}, data = {} ) {
+    relink( srcCtx, targetCtx = this, external, force ) {
         let lctx = targetCtx._stores.prototype;
         Object.keys(srcCtx)
               .forEach(
@@ -416,9 +441,9 @@ export default class Context extends EventEmitter {
         return storesList.reduce(( data, id ) => {
             if ( !is.string(id) )
                 id = id.name;
-            id                                     = id.split(':');
+            id                                     = id.split(':');//@todo
             id[0]                                  = id[0].split('.');
-            data[id[1] || id[0][id[0].length - 1]] = this.stores[id[0][0]] && this.stores[id[0][0]].retrieve(id[0].splice(1));
+            data[id[1] || id[0][id[0].length - 1]] = this.stores[id[0][0]] && this.stores[id[0][0]].retrieve && this.stores[id[0][0]].retrieve(id[0].splice(1));
             return data;
         }, {});
     }
@@ -516,10 +541,10 @@ export default class Context extends EventEmitter {
                     
                     flags = is.array(flags) ? flags : [flags || ""];
                     
-                    if ( flags.reduce(( r, flag ) => (r || _flags_states.test(flag)), false) )
+                    if ( flags.reduce(( r, flag ) => (r || flags_states.test(flag)), false) )
                         output.state[id] = this.state[id];
                     
-                    if ( flags.reduce(( r, flag ) => (r || _flags_data.test(flag)), false) )
+                    if ( flags.reduce(( r, flag ) => (r || flags_data.test(flag)), false) )
                         output.data[id] = this.data[id];
                 }
             )
@@ -659,24 +684,64 @@ export default class Context extends EventEmitter {
         return this._stable;
     }
     
-    _getAllChilds( childs = [] ) {
-        childs.push(...this._childContexts)
-        this._childContexts.forEach(
-            ctx => {
-                ctx._getAllChilds(childs);
-            }
-        );
-        return childs;
-    }
+    //serializeChilds( childs = [] ) {
+    //
+    //}
     
     _addChild( ctx ) {
         this._childContexts.push(ctx);
+        let lists     = {
+                'stable'      : s => {
+                    this._unStableChilds--;
+                    if ( !this._unStableChilds )
+                        this.emit("stableTree", this)
+                },
+                'unstable'    : s => {
+                    this._unStableChilds++;
+                    if ( 1 == this._unStableChilds )
+                        this.emit("unstableTree", this)
+                },
+                'stableTree'  : s => {
+                    this._unStableChilds--;
+                    if ( !this._unStableChilds )
+                        this.emit("stableTree", this)
+                },
+                'unstableTree': s => {
+                    this._unStableChilds++;
+                    if ( 1 == this._unStableChilds )
+                        this.emit("unstableTree", this)
+                },
+                'destroy'     : ctx => {
+                    if ( ctx._unStableChilds )
+                        this._unStableChilds--;
+                    if ( !ctx.isStable() )
+                        this._unStableChilds--;
+                
+                    if ( !this._unStableChilds )
+                        this.emit("stableTree", this)
+                }
+            },
+            wasStable = this._unStableChilds;
+        //!ctx.isStable() && console.warn('add unstable child');
+        !ctx.isStable() && this._unStableChilds++;
+        ctx._unStableChilds && this._unStableChilds++;
+        this._childContextsList.push(lists);
+        if ( !wasStable && this._unStableChilds )
+            this.emit("unstableTree", this)
+        ctx.on(lists);
     }
     
     _rmChild( ctx ) {
-        let i = this._childContexts.indexOf(ctx);
-        if ( i != -1 )
+        let i         = this._childContexts.indexOf(ctx),
+            wasStable = this._unStableChilds;
+        if ( i != -1 ) {
             this._childContexts.splice(i, 1);
+            !ctx.isStable() && this._unStableChilds--;
+            ctx._unStableChilds && this._unStableChilds--;
+            ctx.un(this._childContextsList.splice(i, 1)[0]);
+            if ( wasStable && !this._unStableChilds )
+                this.emit("stableTree")
+        }
     }
     
     retain( reason ) {
@@ -730,7 +795,7 @@ export default class Context extends EventEmitter {
         let ctx   = this.__context;
         //console.warn("destroy", this._id);
         this.dead = true;
-        this.emit("destroy");
+        this.emit("destroy", this);
         Object.keys(
             this.__listening
         ).forEach(

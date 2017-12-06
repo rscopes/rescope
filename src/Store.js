@@ -156,10 +156,15 @@ export default class Store extends EventEmitter {
                 ...(initialState || {}),
                 ...context.map(this, this._use)
             };
-            if ( this.shouldApply(this.state) && this.data === undefined )
-                this.data = this.apply(this.data, this.state, this.state);
+            if ( this.shouldApply(this.state) && this.data === undefined ) {
+                this.data    = this.apply(this.data, this.state, this.state);
+                this._stable = !this.__locks.all; // stable if it have initial result data ?
+                !this.__locks.all && this._rev++;
+            }
+            else
+                this._stable = false;
         }
-        if ( this.data !== undefined ) {
+        else if ( this.data !== undefined ) {
             this._stable = true; // stable if it have initial result data ?
             this._rev++;
         }
@@ -757,9 +762,8 @@ export default class Store extends EventEmitter {
         //console.warn("dispose", reason, this.__retains);
         if ( reason ) {
             if ( !this.__retains[reason] )
-                throw new Error("Dispose more than retaining !");
+                throw new Error("Dispose more than retaining : " + reason);
             
-            this.__retains[reason] = this.__retains[reason] || 0;
             this.__retains[reason]--;
         }
         if ( this.__retains.all == 0 )

@@ -756,15 +756,12 @@ export default class Context extends EventEmitter {
     dispose( reason ) {
         //console.log("dispose", this._id, reason);
         if ( reason ) {
-            
-            if ( this.__retains[reason] == 0 )
-                throw new Error("Dispose more than retaining !");
-            
-            this.__retains[reason] = this.__retains[reason] || 0;
+            if ( !this.__retains[reason] )
+                throw new Error("Dispose more than retaining : "+ reason);
             this.__retains[reason]--;
         }
         
-        if ( this.__retains.all == 0 )
+        if ( !this.__retains.all )
             throw new Error("Dispose more than retaining !");
         
         this.__retains.all--;

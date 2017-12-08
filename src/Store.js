@@ -26,16 +26,11 @@ var is           = require('is'),
 
 export default class Store extends EventEmitter {
     
-    static use                        = [];// overridable list of source stores
+    static use                  = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext              = new Context({}, { id: "static" });
-    static state                      = undefined;// default state
-    /**
-     *
-     * @type {number}
-     */
-           static defaultMaxListeners = 100;
+    static staticContext        = new Context({}, { id: "static" });
+    static state                = undefined;// default state
     /**
      * if retain goes to 0 :
      * false to not destroy,
@@ -43,7 +38,7 @@ export default class Store extends EventEmitter {
      * Ms to autodestroy after tm ms if no retain has been called
      * @type {boolean|Int}
      */
-           static persistenceTm       = false;
+           static persistenceTm = false;
     
     /**
      * Constructor, will build a rescope store
@@ -164,7 +159,7 @@ export default class Store extends EventEmitter {
             else
                 this._stable = false;
         }
-        else if ( this.data !== undefined ) {
+        if ( this.data !== undefined && !this._stable ) {
             this._stable = true; // stable if it have initial result data ?
             this._rev++;
         }

@@ -65,7 +65,8 @@ export default class Store extends EventEmitter {
                                                                             // store are registered : so we can't deal
                                                                             // with any "static use" automaticly
             apply        = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
-            initialState = _static.state || _static.initialState;
+            initialState = _static.state || _static.initialState,
+            applied;
         
         this._uid = cfg._uid || shortid.generate();
         
@@ -152,14 +153,12 @@ export default class Store extends EventEmitter {
                 ...context.map(this, this._use)
             };
             if ( this.shouldApply(this.state) && this.data === undefined ) {
-                this.data    = this.apply(this.data, this.state, this.state);
-                this._stable = !this.__locks.all; // stable if it have initial result data ?
-                !this.__locks.all && this._rev++;
+                this.data = this.apply(this.data, this.state, this.state);
+                applied   = true;
             }
-            else
-                this._stable = false;
         }
-        if ( this.data !== undefined && !this._stable && !this.__locks.all ) {
+        
+        if ( (this.data !== undefined || applied) && !this.__locks.all ) {
             this._stable = true;
             this._rev++;
         }
@@ -714,7 +713,7 @@ export default class Store extends EventEmitter {
         if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        if ( !--this.__locks.all && this.data && this.isComplete() ) {
+        if ( !--this.__locks.all && this.isComplete() ) {
             this._stable = true;
             this._rev++;//
             if ( this._followers.length )

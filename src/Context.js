@@ -124,7 +124,6 @@ export default class Context extends EventEmitter {
         
         if ( parent ) {
             parent._addChild(this);
-            
         }
         if ( autoDestroy )
             setTimeout(

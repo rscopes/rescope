@@ -34,7 +34,7 @@ describe('Rescope', function () {
         TestContext;
     it('should build well', function ( done ) {
         this.timeout(Infinity);
-        
+
         child_process.exec(
             'npm run buildStaging',
             {
@@ -43,7 +43,7 @@ describe('Rescope', function () {
             function ( error, stdout, stderr ) {
                 done(error)
             });
-        
+
     });
     it('should require well', function ( done ) {
         Rescope = require('../dist/Rescope');
@@ -191,8 +191,7 @@ describe('Rescope', function () {
     });
     it('should remap well', function ( done ) {
         this.timeout(4000);
-        TestContext.mount("local_4");
-        TestContext.then(
+        TestContext.mount("local_4").then(
             ( e, _data ) => {
                 if ( _data.local_4.remapTest ) done();
                 else done(new Error("fail"))

@@ -159,8 +159,8 @@ export default class Store extends EventEmitter {
             else
                 this._stable = false;
         }
-        if ( this.data !== undefined && !this._stable ) {
-            this._stable = true; // stable if it have initial result data ?
+        if ( this.data !== undefined && !this._stable && !this.__locks.all ) {
+            this._stable = true;
             this._rev++;
         }
         else {

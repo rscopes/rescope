@@ -713,7 +713,7 @@ export default class Store extends EventEmitter {
         if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        if ( !--this.__locks.all && this.isComplete() ) {
+        if ( !--this.__locks.all && this.data && this.isComplete() ) {
             this._stable = true;
             this._rev++;//
             if ( this._followers.length )

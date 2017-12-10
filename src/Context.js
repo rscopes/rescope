@@ -124,7 +124,6 @@ export default class Context extends EventEmitter {
         
         if ( parent ) {
             parent._addChild(this);
-            
         }
         if ( autoDestroy )
             setTimeout(
@@ -757,7 +756,7 @@ export default class Context extends EventEmitter {
         //console.log("dispose", this._id, reason);
         if ( reason ) {
             if ( !this.__retains[reason] )
-                throw new Error("Dispose more than retaining : "+ reason);
+                throw new Error("Dispose more than retaining : " + reason);
             this.__retains[reason]--;
         }
         

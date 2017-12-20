@@ -20,20 +20,6 @@ ReScope Stores are grouped by contexts, and these contexts allow :
 - Easy serialisation, export & restore of theirs states.
 - Chain destroy ( retain / dispose )
 
-### Store basic workflow :
-
-- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
-- If this state have the required & followed value
-- The apply function is called push new data in an async or sync way
-- The store is stabilized and (if there is new data) propagated
-- listening stores have theirs state updated and we go to step 1 until the whole context is stable
-
-### Context propagation :
-
-- A Context became unstable when one of its stores, parent or mixed context became unstable
-- It propag store updates to the listening Components / listeners
-- It go stable when all his store are stable
-
 ## Why ?
 
 Because :
@@ -45,33 +31,6 @@ Because :
 - 1 stem super class to rule all the async process
 - Do all the jobs and really don't care witch kind of templates/whatever receive the data
  
-### What else ?
-
-- Easy stores & deps injections
-- Semaphores like API ( wait, release, retain, dispose )
-- Promise like APIs
-- Inheritable ES6 class
-- Inheritable & mixable Store Contexts
-- Easy, partial or complete contexts serialization
-- Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
-- Flexible Async management
-- Lazy store instantiation
-- Compatible webpack & nodejs
-- Easy pairing of remote / webworker based stores
-- Library agnostic
-- Another alternative to Redux & co
-- etc..
-
-## Doc ?
-
-Just code for now, check :
-
-### (Dumb) Simple \& working examples [here](src/example)
-
-\*: The Store's context is common to the vanilla & react example
-
-### And the [tests](test/Rescope.test.js)
-
 ## Theoretical examples  :
 
 ``` jsx
@@ -161,13 +120,57 @@ MyLocalContext.dispatch("activateSalt", true)
 
 ```
 
+### What else ?
+
+- Easy stores & deps injections
+- Semaphores like API ( wait, release, retain, dispose )
+- Promise like APIs
+- Inheritable ES6 class
+- Inheritable & mixable Store Contexts
+- Easy, partial or complete contexts serialization
+- Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
+- Flexible Async management
+- Lazy store instantiation
+- Compatible webpack & nodejs
+- Easy pairing of remote / webworker based stores
+- Library agnostic
+- Another alternative to Redux & co
+- etc..
+### Store basic workflow :
+
+- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
+- If this state have the required & followed value
+- The apply function is called push new data in an async or sync way
+- The store is stabilized and (if there is new data) propagated
+- listening stores have theirs state updated and we go to step 1 until the whole context is stable
+
+### Context propagation :
+
+- A Context became unstable when one of its stores, parent or mixed context became unstable
+- It propag store updates to the listening Components / listeners
+- It go stable when all his store are stable
+
+
+## Doc ?
+
+Just code for now, check :
+
+### (Dumb) Simple \& working examples [here](src/example)
+
+\*: The Store's context is common to the vanilla & react example
+
+### And the [tests](test/Rescope.test.js)
+
+
 ## What's next ?
 
 - Optimize
-- Prioritized stabilisation / propagation sequencer
+- Synchrone & Prioritized stabilisation / propagation sequencer
 - Detect dead locks & dependencies loop ( Prioritized sequencer will help )
 - Possibly some semantic/normalisation updates
 - Even better deps definition
 - Many more tests
+- Cosmetics rewrites & more comments
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
+

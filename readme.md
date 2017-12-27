@@ -9,8 +9,7 @@
 
 ReScope is a simple to use, **flexible** \& effective Store system inspired by ReactJS methods.
 
-Rescope stores look like "reverse React components for data", they use the results of other data components as input, plus some key values;<br>
-and maintains the corresponding "rendered" data as a result.
+Rescope stores look like "reverse React components for data", they use the results of other data components as input, plus some key values; and maintains the corresponding "rendered" data as a result.
 
 ReScope Stores are grouped by contexts, and these contexts allow :
 - Contexts inheriting & mixing,
@@ -175,3 +174,5 @@ Just code for now, check :
 - Cosmetics rewrites & more comments
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
+<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
+

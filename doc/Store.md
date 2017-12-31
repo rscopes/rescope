@@ -86,5 +86,32 @@ When store or context became stable unstable they emit "stable" & "unstable" eve
 When all child contexts of a context became stable, including itself; a context emit a "stableTree" event<br>
 
 ## How to add dependencies in a store
+
+```jsx
+export default class currentUser extends Store {
+        static use = ["appState", "session"];// here the source store that should be in the store context
+
+        apply( data, { appState, session }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```
+
 ## How to "remap" dependencies value & sub-values in the state/data
-## How to extract & restore the app state
+
+```jsx
+export default class myInterpolatedDataStore extends Store {
+        static use = {
+                "someSource.someValue"          : "mySwitchValue",
+                "someSource2.someStuff.value"   : "mySwitchValue2",
+                "someSource3.someValue"         : "mySwitchValue3",
+                "someSource4.someValue"         : "mySwitchValue4"
+        };
+
+        apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```

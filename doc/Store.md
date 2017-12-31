@@ -83,6 +83,89 @@ When a context became unstable, its parent became unstable too unless it have "r
 When store or context became stable unstable they emit "stable" & "unstable" events<br>
 When all child contexts of a context became stable, including itself; a context emit a "stableTree" event<br>
 
+## Stores initial state
+
+A store initialized with data will be stable synchronously when instantiated. <br>
+If it only have a state but no data, the apply function will be called at by the constructor synchronously. (this imply that the Store object may not be fully initialized) <br>
+
+## Actions & mutations
+
+As the store stay independents, they deal with theirs own perimeters. <br>
+The app state could be mutated using different methods depending the needs.
+
+### Using setState
+
+All stores inherit the setState method. <br>
+Once a store state is updated, the changes are automatically propagated to the concerned stores, updating the whole app.
+
+### Using stores functions
+
+The stores could be enhanced with functions & setters, that will ultimately update theirs state-data pairing.
+
+```jsx
+class AppState extend Store{
+        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
+        static data    = {};
+        switchTodoList(todoUrl){
+             this.setState({todoUrl})
+             // or
+             this.wait();
+             doSomeAsync(()=>{
+                this.state.stateChange = "stand"
+                this.data.
+             })
+        }
+
+    }
+```
+
+### Using actions
+
+Actions could be dispatched from contexts or directly on the stores.
+* dispatching actions on contexts will trigger store's actions starting from the top parent store
+
+```jsx
+class AppState extend Store{
+        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
+        static actions = {
+            activateSalt(arg){// binded on the store instance
+                // return some state updates
+                return {some:'mutations'};
+                // or
+                return; // to not change the state
+                // wait, release, setState & push stays callable
+            }
+        }
+    }
+```
+
+### push
+
+Using push will update & propag the data of a store.
+* This should be used with cautious as it could break the state-data coherence. (that said not all the stores needs to be predictable)
+
+## Stores state & data serialization / restoration
+
+Serialization & restoration is managed by the Contexts objects.<br>
+Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :.<br>
+
+
+```jsx
+class MyStore extends Store {
+        static state = {};// initial state
+        static data = {};// initial data (soft cloned)
+};
+
+let MyStoreInstance = new MyStore(
+        BaseContext,
+        {
+            state : {}, // take static defined state/data precedence
+            data  : {}
+        }
+)
+
+```
+
 ## How to add dependencies in a store
 
 ```jsx
@@ -106,6 +189,48 @@ export default class myInterpolatedDataStore extends Store {
                 "someSource3.someValue"         : "mySwitchValue3",
                 "someSource4.someValue"         : "mySwitchValue4"
         };
+
+        apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```
+
+## How to keep a store unstable until some stores / value is initialized
+
+```jsx
+export default class myInterpolatedDataStore extends Store {
+
+        static use = {
+                "!someSource.someValue"  : "mySwitchValue",// require someSource.someValue != false
+                "!someRequieredSource"   : true,
+                "someSource2"            : "someSource2"
+        };
+
+        apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```
+
+## How to only call apply & update the store if specific changes occurs in the sources store
+
+```jsx
+export default class myInterpolatedDataStore extends Store {
+
+        static use = {
+                "!someSource.someValue"  : "mySwitchValue",// require someSource.someValue != false
+                "!someRequieredSource"   : true,
+                "someSource2"            : "someSource2"
+        };
+
+        static follow = {// only call "apply" if one of these state keys has change
+            "someSource2":(newData)=>returnTrueIfApplicable(newdata),
+            "mySwitchValue":true, // just change
+
+        }
 
         apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
             /*...*/

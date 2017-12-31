@@ -123,7 +123,9 @@ export default class Store extends EventEmitter {
                                         key => {
                                             let ref = key.match(/^(\!?)(.*)$/);
                                             ref[1] && this._require.push(_static.use[key]);
-                                            return ref[2] + ':' + _static.use[key];
+                                            return ref[2] + ((_static.use[key] === true)
+                                                ? ''
+                                                : ':' + _static.use[key]);
                                         }
                                     ) : []
             )];

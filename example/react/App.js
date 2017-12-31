@@ -24712,7 +24712,7 @@
 	            _this._use = [].concat(_toConsumableArray(watchs), _toConsumableArray(_static.use ? Object.keys(_static.use).map(function (key) {
 	                var ref = key.match(/^(\!?)(.*)$/);
 	                ref[1] && _this._require.push(_static.use[key]);
-	                return ref[2] + ':' + _static.use[key];
+	                return ref[2] + (_static.use[key] === true ? '' : ':' + _static.use[key]);
 	            }) : []));
 	        }
 	

@@ -137,31 +137,15 @@ Because :
 - Another alternative to Redux & co
 - etc..
 
-### Store basic workflow :
-
-- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
-- If this state have the required & followed value
-- The apply function is called push new data in an async or sync way
-- The store is stabilized and (if there is new data) propagated
-- listening stores have theirs state updated and we go to step 1 until the whole context is stable
-
-### Context stabilisation :
-
-- A Context became unstable when one of its stores, parent or mixed context became unstable
-- It propag store updates to the listening Components / listeners
-- It go stable when all his store are stable
-
-
 ## Doc ?
 
-Just code for now, check :
+### Work in progress doc [here](doc)
 
 ### (Dumb) Simple \& working examples [here](src/example)
 
 \*: The Store's context is common to the vanilla & react example
 
 ### And the [tests](test/Rescope.test.js)
-
 
 ## What's next ?
 

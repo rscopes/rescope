@@ -6,7 +6,7 @@ Rescope use the concept of "Stability", so there only 4 events :
 
  - "stable"     (when the store current state is sync with the store data)
  - "unstable"   (see "Stability" below)
- - "stableTree" (when all child contexte are stable)
+ - "stableTree" (when all child contexts are stable)
  - "update"     (when a store propag his data)
 
 ## Stability
@@ -52,8 +52,6 @@ This is done in 2 way :
     }
 /*...*/
     apply(data={}, new_state, changes_in_state){
-        let {async1={}, async2={}, async3={}} = data;
-        /* do synchrone interpolation & remaps in newData here */
         this.wait('anAsyncRabbit')
         doSomeAsync(
             (err,res)=>{
@@ -115,3 +113,4 @@ export default class myInterpolatedDataStore extends Store {
         }
 };
 ```
+

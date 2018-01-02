@@ -6,8 +6,8 @@ Rescope use the concept of "Stability", so there only 4 events :
 
  - "stable"     (when the store current state is sync with the store data)
  - "unstable"   (see "Stability" below)
- - "stableTree" (when all child contexts are stable)
  - "update"     (when a store propag his data)
+ - _"stableTree" (context only : when all child contexts are stable)_
 
 ## Stability
 

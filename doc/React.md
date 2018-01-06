@@ -25,7 +25,7 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescope(NewsListComp);
+export default rescope(MyComp);
 ```
 
 Using specific scope :
@@ -50,7 +50,7 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescope(NewsListComp, scopeFromSomewhere);
+export default rescope(MyComp, scopeFromSomewhere);
 ```
 
 ### rescopeProps
@@ -76,7 +76,7 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescopeProps(NewsListComp);
+export default rescopeProps(MyComp);
 ```
 
 Using specific scope :
@@ -101,11 +101,33 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescopeProps(NewsListComp, scopeFromSomewhere);
+export default rescopeProps(MyComp, scopeFromSomewhere);
 ```
 
 ### Inheriting Rescope React component
 
+```
+
+import React from "react";
+import {Component} from "rescope/dist/ReactTools";
+
+class MyComp extends Component {
+    static use = ["appState"];
+    render() {
+        return (
+            <div>
+                <h1>MyComp</h1>
+                {
+                    this.state.appState.someValues
+                }
+
+            </div>
+        );
+    }
+};
+
+export default rescopeProps(MyComp);
+```
 ## Inject stores
 
 

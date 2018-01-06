@@ -7,7 +7,7 @@ Rescope use the concept of "Stability", so there only 4 events :
  - "stable"     (when the store current state is sync with the store data)
  - "unstable"   (see "Stability" below)
  - "update"     (when a store propag his data)
- - _"stableTree" (context only : when all child contexts are stable)_
+ - _"stableTree" (scope only : when all child scopes are stable)_
 
 ## Stability
 
@@ -73,15 +73,15 @@ This is done in 2 way :
 - If this state have the required & followed value
 - The apply function is called push new data in an async or sync way
 - The store is stabilized and (if there is new data) propagated
-- listening stores have theirs state updated and we go to step 1 until the whole context is stable
+- listening stores have theirs state updated and we go to step 1 until the whole scope is stable
 
-## Contexts
+## Scopes
 
-Rescope stores find theirs source stores in a context object, its parents and/or its mixed contexts.<br>
-When a store became unstable, its context became unstable too.<br>
-When a context became unstable, its parent became unstable too unless it have "rootEmitter:true" in its conf.<br>
-When store or context became stable unstable they emit "stable" & "unstable" events<br>
-When all child contexts of a context became stable, including itself; a context emit a "stableTree" event<br>
+Rescope stores find theirs source stores in a scope object, its parents and/or its mixed scopes.<br>
+When a store became unstable, its scope became unstable too.<br>
+When a scope became unstable, its parent became unstable too unless it have "rootEmitter:true" in its conf.<br>
+When store or scope became stable unstable they emit "stable" & "unstable" events<br>
+When all child scopes of a scope became stable, including itself; a scope emit a "stableTree" event<br>
 
 ## Stores initial state
 
@@ -121,8 +121,8 @@ class AppState extend Store{
 
 ### Using actions
 
-Actions could be dispatched from contexts or directly on the stores.
-* dispatching actions on contexts will trigger store's actions starting from the top parent store
+Actions could be dispatched from scopes or directly on the stores.
+* dispatching actions on scopes will trigger store's actions starting from the top parent store
 
 ```jsx
 class AppState extend Store{
@@ -146,7 +146,7 @@ Using push will update & propag the data of a store.
 
 ## Stores state & data serialization / restoration
 
-Serialization & restoration is managed by the Contexts objects.<br>
+Serialization & restoration is managed by the Scopes objects.<br>
 Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :.<br>
 
 
@@ -157,7 +157,7 @@ class MyStore extends Store {
 };
 
 let MyStoreInstance = new MyStore(
-        BaseContext,
+        BaseScope,
         {
             state : {}, // take static defined state/data precedence
             data  : {}
@@ -170,7 +170,7 @@ let MyStoreInstance = new MyStore(
 
 ```jsx
 export default class currentUser extends Store {
-        static use = ["appState", "session"];// here the source store that should be in the store context
+        static use = ["appState", "session"];// here the source store that should be in the store scope
 
         apply( data, { appState, session }, changes ) {
             /*...*/

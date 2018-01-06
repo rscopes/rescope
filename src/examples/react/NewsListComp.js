@@ -11,28 +11,18 @@
 'use strict';
 
 import React from "react";
-import {Context} from "../../Rescope";
+import {Scope} from "../../Rescope";
+import {rescopeProps} from "../../ReactTools";
 
-export default class NewsListComp extends React.Component {
-    
-    static contextTypes = {
-        rescope: React.PropTypes.object
-    };
-    constructor( props, context ) {
-        super(...arguments);
-        this.state = {
-            ...context.rescope.map(this, ["userEvents"])
-        };
-
-    }
-
+class NewsListComp extends React.Component {
+    static use = ["userEvents"];
     render() {
         return (
             <div className="NewsListComp container" style={{minHeight : "100%"}}>
                 <h1>Mes events</h1>
                 {
-                    this.state.userEvents &&
-                    this.state.userEvents.events.map(
+                    this.props.userEvents &&
+                    this.props.userEvents.events.map(
                         ( evt, i ) =>
                             <div style={{border : "solid 1px lightgrey", borderRadius : "3px"}} key={i}>
                                 <b><u>
@@ -47,3 +37,5 @@ export default class NewsListComp extends React.Component {
         );
     }
 };
+
+export default rescopeProps(NewsListComp);

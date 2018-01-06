@@ -1,11 +1,17 @@
 /*
- * Copyright (c)  2017 Caipi Labs .
+ * Copyright (c) 2018.  Caipi Labs.  All rights reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * This File is part of Caipi. You can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *  This project is dual licensed under AGPL and Commercial Licence.
  *
  * @author : Nathanael Braun
  * @contact : caipilabs@gmail.com
@@ -22,28 +28,28 @@ var is              = require('is'),
         target[id]       = new fn();
         target['_' + id] = fn;
     },
-    openContexts    = {};
+    openScopes    = {};
 
 
-export default class Context extends EventEmitter {
+export default class Scope extends EventEmitter {
     static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
     static Store         = null;
-    static contexts      = openContexts;// all active contexts
+    static scopes      = openScopes;// all active scopes
     
-    static getContext( contexts ) {
-        let skey = is.array(contexts) ? contexts.sort(( a, b ) => {
+    static getScope( scopes ) {
+        let skey = is.array(scopes) ? scopes.sort(( a, b ) => {
             if ( a.firstname < b.firstname ) return -1;
             if ( a.firstname > b.firstname ) return 1;
             return 0;
-        }).join('::') : contexts;
-        return openContexts[skey] = openContexts[skey] || new Context({}, { id: skey });
+        }).join('::') : scopes;
+        return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
     };
     
     /**
-     * Init a Rescope context
+     * Init a Rescope scope
      *
      * @param storesMap {Object} Object with the origin stores
-     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' context)
+     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
      * @param parent
      * @param state
      * @param data
@@ -51,26 +57,26 @@ export default class Context extends EventEmitter {
      * @param defaultMaxListeners
      * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
      * @param autoDestroy  {bool} will trigger retain & dispose after start
-     * @returns {Context}
+     * @returns {Scope}
      */
     constructor( storesMap, { id, parent, state, data, name, incrementId, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         id                 = id || ("_____" + shortid.generate());
-        if ( openContexts[id] && !incrementId ) {
+        if ( openScopes[id] && !incrementId ) {
             this._id = id;
-            openContexts[id].register(storesMap);
-            return openContexts[id]
+            openScopes[id].register(storesMap);
+            return openScopes[id]
         }
-        else if ( openContexts[id] && incrementId ) {
+        else if ( openScopes[id] && incrementId ) {
             let i = -1;
-            while ( openContexts[id + '/' + (++i)] ) ;
+            while ( openScopes[id + '/' + (++i)] ) ;
             id = id + '/' + i;
         }
         
         this._id            = id;
-        openContexts[id]    = this;
+        openScopes[id]    = this;
         this._isLocalId     = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
@@ -79,7 +85,7 @@ export default class Context extends EventEmitter {
         this.data   = {};
         
         if ( parent && parent.dead )
-            throw new Error("Can't use a dead context as parent !");
+            throw new Error("Can't use a dead scope as parent !");
         
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
@@ -88,14 +94,14 @@ export default class Context extends EventEmitter {
         
         
         this.sources            = [];
-        this._childContexts     = [];
-        this._childContextsList = [];
+        this._childScopes     = [];
+        this._childScopesList = [];
         this._unStableChilds    = 0;
         
         this.__retains   = { all: 0 };
         this.__locks     = { all: 1 };
         this.__listening = {};
-        this.__context   = {};
+        this.__scope   = {};
         this.__mixed     = [];
         this.__mixedList = [];
         this._followers  = [];
@@ -114,7 +120,7 @@ export default class Context extends EventEmitter {
                     'update': s => this._propag()
                 });
             }
-            // this.register(parent.__context, state, data);
+            // this.register(parent.__scope, state, data);
         }
         
         
@@ -144,13 +150,13 @@ export default class Context extends EventEmitter {
     
     /**
      *
-     * Mount the stores in storesList, in this context or in its parents or mixed contexts
+     * Mount the stores in storesList, in this scope or in its parents or mixed scopes
      *
      * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
      *     Store:as
      * @param state
      * @param data
-     * @returns {Context}
+     * @returns {Scope}
      */
     mount( storesList, state, data ) {
         if ( is.array(storesList) ) {
@@ -168,15 +174,15 @@ export default class Context extends EventEmitter {
             id = id.name;
         }
         
-        if ( !this.__context[id] ) {//ask mixed || parent
+        if ( !this.__scope[id] ) {//ask mixed || parent
             if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._mount(...arguments);
         }
-        let store = this.__context[id], ctx;
+        let store = this.__scope[id], ctx;
         if ( is.fn(store) ) {
-            this.__context[id] = new store(this, { state, data });
+            this.__scope[id] = new store(this, { state, data });
         }
         else {
             if ( state !== undefined && data === undefined )
@@ -191,23 +197,23 @@ export default class Context extends EventEmitter {
         
         this._watchStore(id);
         
-        return this.__context[id];
+        return this.__scope[id];
     }
     
     _watchStore( id, state, data ) {
-        if ( !this.__context[id] ) {//ask mixed || parent
+        if ( !this.__scope[id] ) {//ask mixed || parent
             if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._watchStore(...arguments);
         }
-        if ( !this.__listening[id] && !is.fn(this.__context[id]) ) {
-            !this.__context[id].isStable() && this.wait(id);
-            this.__context[id].on(
+        if ( !this.__listening[id] && !is.fn(this.__scope[id]) ) {
+            !this.__scope[id].isStable() && this.wait(id);
+            this.__scope[id].on(
                 this.__listening[id] = {
                     'destroy' : s => {
                         delete this.__listening[id];
-                        this.__context[id] = this.__context[id].constructor;
+                        this.__scope[id] = this.__scope[id].constructor;
                     },
                     'update'  : s => this.propag(),
                     'stable'  : s => this.release(id),
@@ -218,8 +224,8 @@ export default class Context extends EventEmitter {
     }
     
     /**
-     * Mix targetCtx on this context
-     * Mixed context parents are NOT mapped
+     * Mix targetCtx on this scope
+     * Mixed scope parents are NOT mapped
      * @param targetCtx
      */
     mixin( targetCtx ) {
@@ -243,13 +249,13 @@ export default class Context extends EventEmitter {
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
         
-        this.relink(this.__context, this, false, true);
+        this.relink(this.__scope, this, false, true);
         this.__mixed.forEach(
             ctx => {
                 __proto__push(this, 'stores');
                 __proto__push(this, 'state');
                 __proto__push(this, 'data');
-                ctx.relink(ctx.__context, this, true, true)
+                ctx.relink(ctx.__scope, this, true, true)
             }
         )
     }
@@ -297,36 +303,36 @@ export default class Context extends EventEmitter {
         Object.keys(srcCtx)
               .forEach(
                   id => {
-                      if ( !force && targetCtx.__context[id] === srcCtx[id] ||
-                          targetCtx.__context[id] && (targetCtx.__context[id].constructor === srcCtx[id] ) )
+                      if ( !force && targetCtx.__scope[id] === srcCtx[id] ||
+                          targetCtx.__scope[id] && (targetCtx.__scope[id].constructor === srcCtx[id] ) )
                           return;
                 
-                      if ( !force && targetCtx.__context[id] ) {
-                          if ( !external && !is.fn(targetCtx.__context[id]) ) {
-                              console.info("Rescope Store : ", id, " already exist in this context ! ( try __proto__ hot patch )");
-                              targetCtx.__context[id].__proto__ = srcCtx[id].prototype;
+                      if ( !force && targetCtx.__scope[id] ) {
+                          if ( !external && !is.fn(targetCtx.__scope[id]) ) {
+                              console.info("Rescope Store : ", id, " already exist in this scope ! ( try __proto__ hot patch )");
+                              targetCtx.__scope[id].__proto__ = srcCtx[id].prototype;
                         
                           }
-                          if ( !external && is.fn(targetCtx.__context[id]) )
-                              targetCtx.__context[id] = srcCtx[id];
+                          if ( !external && is.fn(targetCtx.__scope[id]) )
+                              targetCtx.__scope[id] = srcCtx[id];
                     
                           return;
                       }
                       else if ( !force && !external )
-                          this.__context[id] = srcCtx[id];
+                          this.__scope[id] = srcCtx[id];
                 
                       Object.defineProperty(
                           lctx,
                           id,
                           {
-                              get: () => this.__context[id]
+                              get: () => this.__scope[id]
                           }
                       );
                       Object.defineProperty(
                           targetCtx._state.prototype,
                           id,
                           {
-                              get: () => (this.__context[id] && this.__context[id].state),
+                              get: () => (this.__scope[id] && this.__scope[id].state),
                               set: ( v ) => (this._mount(id, v))
                           }
                       );
@@ -334,7 +340,7 @@ export default class Context extends EventEmitter {
                           targetCtx._data.prototype,
                           id,
                           {
-                              get: () => (this.__context[id] && this.__context[id].data),
+                              get: () => (this.__scope[id] && this.__scope[id].data),
                               set: ( v ) => (this._mount(id, undefined, v))
                           }
                       );
@@ -343,12 +349,12 @@ export default class Context extends EventEmitter {
     }
     
     /**
-     * Bind stores from this context, his parents and mixed context
+     * Bind stores from this scope, his parents and mixed scope
      *
      * @param obj {React.Component|Store|function}
-     * @param key {string*} stores keys to bind updates
+     * @param key {string} stores keys to bind updates
      * @param as
-     * @param setInitial=true {bool} false to not propag initial value
+     * @param setInitial {bool} false to not propag initial value (default : true)
      */
     bind( obj, key, as, setInitial = true ) {
         let lastRevs, data, reKey;
@@ -387,7 +393,7 @@ export default class Context extends EventEmitter {
     }
     
     /**
-     * Un bind this context off the given component-keys
+     * Un bind this scope off the given component-keys
      * @param obj
      * @param key
      * @returns {Array.<*>}
@@ -402,7 +408,7 @@ export default class Context extends EventEmitter {
     }
     
     /**
-     * Mount the stores in storesList from this context, its parents and mixed context
+     * Mount the stores in storesList from this scope, its parents and mixed scope
      * Bind them to 'to'
      * Hook 'to' so it will auto unbind on 'destroy' or 'componentWillUnmount'
      * @param to
@@ -460,7 +466,7 @@ export default class Context extends EventEmitter {
      * @returns {{}}
      */
     getStoresRevs( storesRevMap = {}, local ) {
-        let ctx = this.__context;
+        let ctx = this.__scope;
         if ( !storesRevMap ) {
             storesRevMap = {};
         }
@@ -490,7 +496,7 @@ export default class Context extends EventEmitter {
      * @returns {*|{}}
      */
     getUpdates( storesRevMap, output, updated ) {
-        let ctx = this.__context;
+        let ctx = this.__scope;
         
         output = output || {};
         Object.keys(ctx).forEach(
@@ -521,7 +527,7 @@ export default class Context extends EventEmitter {
      * @returns {{state: {}, data: {}}}
      */
     serialize( flags_states = /.*/, flags_data = /.*/ ) {
-        let ctx = this.__context, output = { state: {}, data: {} },
+        let ctx = this.__scope, output = { state: {}, data: {} },
             _flags_states,
             _flags_data;
         if ( is.array(flags_states) )
@@ -551,11 +557,11 @@ export default class Context extends EventEmitter {
     }
     
     dispatch( action, data ) {
-        Object.keys(this.__context)
+        Object.keys(this.__scope)
               .forEach(
                   id => {
-                      if ( !is.fn(this.__context[id]) )
-                          this.__context[id].trigger(action, data)
+                      if ( !is.fn(this.__scope[id]) )
+                          this.__scope[id].trigger(action, data)
                   }
               );
         
@@ -576,7 +582,7 @@ export default class Context extends EventEmitter {
     }
     
     restore( { state, data }, quiet ) {
-        let ctx = this.__context;
+        let ctx = this.__scope;
         Object.keys(data).forEach(
             id => {
                 quiet ? ctx.data = data[id]
@@ -688,7 +694,7 @@ export default class Context extends EventEmitter {
     //}
     
     _addChild( ctx ) {
-        this._childContexts.push(ctx);
+        this._childScopes.push(ctx);
         let lists     = {
                 'stable'      : s => {
                     this._unStableChilds--;
@@ -724,20 +730,20 @@ export default class Context extends EventEmitter {
         //!ctx.isStable() && console.warn('add unstable child');
         !ctx.isStable() && this._unStableChilds++;
         ctx._unStableChilds && this._unStableChilds++;
-        this._childContextsList.push(lists);
+        this._childScopesList.push(lists);
         if ( !wasStable && this._unStableChilds )
             this.emit("unstableTree", this)
         ctx.on(lists);
     }
     
     _rmChild( ctx ) {
-        let i         = this._childContexts.indexOf(ctx),
+        let i         = this._childScopes.indexOf(ctx),
             wasStable = this._unStableChilds;
         if ( i != -1 ) {
-            this._childContexts.splice(i, 1);
+            this._childScopes.splice(i, 1);
             !ctx.isStable() && this._unStableChilds--;
             ctx._unStableChilds && this._unStableChilds--;
-            ctx.un(this._childContextsList.splice(i, 1)[0]);
+            ctx.un(this._childScopesList.splice(i, 1)[0]);
             if ( wasStable && !this._unStableChilds )
                 this.emit("stableTree")
         }
@@ -788,14 +794,14 @@ export default class Context extends EventEmitter {
      * order destroy of local stores
      */
     destroy() {
-        let ctx   = this.__context;
+        let ctx   = this.__scope;
         //console.warn("destroy", this._id);
         this.dead = true;
         this.emit("destroy", this);
         Object.keys(
             this.__listening
         ).forEach(
-            id => this.__context[id].removeListener(this.__listening[id])
+            id => this.__scope[id].removeListener(this.__listening[id])
         );
         
         this._stabilizerTM && clearTimeout(this._stabilizerTM);
@@ -803,7 +809,7 @@ export default class Context extends EventEmitter {
         this.__listening = {};
         
         if ( this._isLocalId )
-            delete openContexts[this._id];
+            delete openScopes[this._id];
         this._followers.length = 0;
         
         while ( this.__mixedList.length ) {
@@ -818,12 +824,12 @@ export default class Context extends EventEmitter {
         }
         //for ( let key in ctx )
         //    if ( !is.fn(ctx[key]) ) {
-        //        if ( ctx[key].contextObj === this )
+        //        if ( ctx[key].scopeObj === this )
         //            ctx[key].dispose();
         //
         //        ctx[key] = ctx[key].constructor;
         //    }
-        this.__mixed = this.data = this.state = this.context = this.stores = null;
+        this.__mixed = this.data = this.state = this.scope = this.stores = null;
         this._data = this._state = this._stores = null;
         
         

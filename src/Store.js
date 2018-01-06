@@ -18,18 +18,19 @@
  */
 
 var is           = require('is'),
-    Context      = require('./Context'),
+    Scope        = require('./Scope'),
     EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({});
-
-
+/**
+ * @class Store
+ */
 export default class Store extends EventEmitter {
     
     static use                  = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
-    static staticContext        = new Context({}, { id: "static" });
+    static staticScope          = new Scope({}, { id: "static" });
     static state                = undefined;// default state
     /**
      * if retain goes to 0 :
@@ -43,22 +44,22 @@ export default class Store extends EventEmitter {
     /**
      * Constructor, will build a rescope store
      *
-     * (context, {require,use,apply,state, data})
-     * (context)
+     * (scope, {require,use,apply,state, data})
+     * (scope)
      *
-     * @param context {object} context where to find the other stores (default : static staticContext )
+     * @param scope {object} scope where to find the other stores (default : static staticScope )
      * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     constructor() {
         super();
         var argz         = [...arguments],
             _static      = this.constructor,
-            context      = argz[0] instanceof Context
+            scope      = argz[0] instanceof Scope
                 ? argz.shift()
-                : _static.context ? Context.getContext(_static.context)
+                : _static.scope ? Scope.getScope(_static.scope)
                                : is.string(argz[0])
-                      ? Context.getContext(argz.shift())
-                      : _static.staticContext,
+                      ? Scope.getScope(argz.shift())
+                      : _static.staticScope,
             cfg          = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
             name         = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
             watchs       = is.array(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the
@@ -76,9 +77,9 @@ export default class Store extends EventEmitter {
         
         this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
         if ( is.string(argz[0]) ) {
-            if ( context.__context[name] )
+            if ( scope.__scope[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-            context.__context[name] = this;
+            scope.__scope[name] = this;
         }
         
         if ( cfg && cfg.on ) {
@@ -89,17 +90,17 @@ export default class Store extends EventEmitter {
         
         this.name = name;
         
-        if ( context.stores ) {
-            this.contextObj = context;
-            this.context    = context.stores;
+        if ( scope.stores ) {
+            this.scopeObj = scope;
+            this.scope    = scope.stores;
         }
         else {
-            this.contextObj = new Context(context);
-            this.context    = context.stores;
+            this.scopeObj = new Scope(scope);
+            this.scope    = scope.stores;
         }
         
         
-        this._rev     = 0;
+        this._rev     = this.constructor._rev || 0;
         this._revs    = {};
         this.stores   = {};
         this._require = [];
@@ -152,7 +153,7 @@ export default class Store extends EventEmitter {
         if ( initialState || this._use.length ) {// sync apply
             this.state = {
                 ...(initialState || {}),
-                ...context.map(this, this._use)
+                ...scope.map(this, this._use)
             };
             if ( this.shouldApply(this.state) && this.data === undefined ) {
                 this.data = this.apply(this.data, this.state, this.state);
@@ -186,17 +187,17 @@ export default class Store extends EventEmitter {
      * Map all named stores in {keys} to the {object}'s state
      * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
      * @static
-     * @param object {React.Component|Store|...} target state aware object
+     * @param object {Object} target state aware object (React.Component|Store|...)
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
-    static map( component, keys, context, origin, setInitial = false ) {
+    static map( component, keys, scope, origin, setInitial = false ) {
         var targetRevs     = component._revs || {};
-        var targetContext  = component.stores || (component.stores = {});
+        var targetScope    = component.stores || (component.stores = {});
         var initialOutputs = {};
         keys               = is.array(keys) ? [...keys] : [keys];
         
         
-        context = context || Store.staticContext;
+        scope = scope || Store.staticScope;
         
         keys           = keys.filter(
             // @todo : use query refs
@@ -222,7 +223,7 @@ export default class Store extends EventEmitter {
                     key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                     name  = key[1];
                     path  = key[2] && key[2].split('.').slice(1);
-                    store = context.stores[key[1]];
+                    store = scope.stores[key[1]];
                     alias = key[3] || path && path[path.length - 1] || key[1];
                 }
                 
@@ -233,17 +234,17 @@ export default class Store extends EventEmitter {
                     return false;
                 }
                 else if ( is.fn(store) ) {
-                    context._mount(name)
+                    scope._mount(name)
                     
-                    context.stores[name].bind(component, alias, setInitial, path);
+                    scope.stores[name].bind(component, alias, setInitial, path);
                 }
                 else {
                     store.bind(component, alias, setInitial, path);
                 }
                 targetRevs[alias] = targetRevs[alias] || true;
-                !targetContext[name] && (targetContext[name] = context.stores[name]);
-                if ( context.stores[name].hasOwnProperty('data') )
-                    initialOutputs[name] = context.data[name];
+                !targetScope[name] && (targetScope[name] = scope.stores[name]);
+                if ( scope.stores[name].hasOwnProperty('data') )
+                    initialOutputs[name] = scope.data[name];
                 return true;
             }
         );
@@ -270,13 +271,13 @@ export default class Store extends EventEmitter {
                     }
                     else if ( is.fn(key) ) {
                         name = alias = key.name || key.defaultName;
-                        store = context.stores[name];
+                        store = scope.stores[name];
                     }
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                         name  = key[1];
                         path  = key[2] && key[2].split('.');
-                        store = context.stores[key[1]];
+                        store = scope.stores[key[1]];
                         alias = key[3] || path && path[path.length - 1] || key[1];
                     }
                     
@@ -424,7 +425,7 @@ export default class Store extends EventEmitter {
     }
     
     dispatch( action, ...argz ) {
-        this.contextObj.dispatch(action, ...argz);
+        this.scopeObj.dispatch(action, ...argz);
     }
     
     trigger( action, ...argz ) {
@@ -441,10 +442,10 @@ export default class Store extends EventEmitter {
      * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
-        let initialOutputs = this.contextObj.map(this, stores);
+        let initialOutputs = this.scopeObj.map(this, stores);
         if ( doWait ) {
             this.wait();
-            stores.forEach(( s ) => this.context[s] && this.wait(this.context[s]));
+            stores.forEach(( s ) => this.scope[s] && this.wait(this.scope[s]));
             this.release();
         }
         return initialOutputs;
@@ -579,7 +580,7 @@ export default class Store extends EventEmitter {
      * @returns {{store: Store, name: *}}
      */
     relink( from ) {
-        let context = this.contextObj,
+        let scope = this.scopeObj,
             _static = this.constructor;
         if ( _static.use ) {
             //todo unlink
@@ -589,7 +590,7 @@ export default class Store extends EventEmitter {
         if ( this._require ) {
             this._require.forEach(
                 store => (
-                    this.wait(context.__context[store])
+                    this.wait(scope.__scope[store])
                 )
             );
         }
@@ -803,8 +804,9 @@ export default class Store extends EventEmitter {
                 }
             );
         this._followers.length = 0;
+        this.constructor._rev  = this.rev;
         this.dead              = true;
-        this._revs             = this.data = this.state = this.context = null;
+        this._revs             = this.data = this.state = this.scope = null;
         this.removeAllListeners();
     }
 }

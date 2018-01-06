@@ -1,4 +1,4 @@
-# Rescope
+# ReScope
 
 [![Build Status](https://travis-ci.org/CaipiLabs/Rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
@@ -7,107 +7,18 @@
 
 ## What ?
 
-ReScope is a simple to use, **flexible** \& effective Store system inspired by ReactJS methods.
+ReScope is a simple to use, **flexible** & effective Store system inspired by ReactJS methods.
 
-Rescope stores look like "reverse React components for data", they use the results of other data components as input, plus some key values; and maintains the corresponding "rendered" data as a result.
+ReScope stores look like "React components for data", they use the results of other data components as input, plus some key values;
+and maintains the corresponding "rendered" data as a result.
 
-ReScope Stores are grouped by contexts, and these contexts allow :
-- Contexts inheriting & mixing,
+ReScope Stores are grouped by scopes, and these scopes allow :
+- Scopes inheriting & mixing,
 - Synchronized (or not) init of the stores
 - Easy serialisation, export & restore of theirs states.
 - Chain destroy ( retain / dispose )
 - Easy async management
 
-## Theoretical examples  :
-
-``` jsx
-
-import {Context, Store} from "rescope";
-
-// create a "global parent" context with an AppConfig Store
-let MyStaticContext = new Context({
-    AppConfig : class AppConfig extend Store{
-        data = {
-            // initial config datas
-        }
-    }
-}, {id:'static'});
-
-// Create another context which inherit the "global context"
-let MyAppContext = new Context({
-
-    AppState : class AppState extend Store{
-        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
-        static actions = {
-            activateSalt(arg){
-                return {some:'mutations'};
-            }
-        }
-
-        switchTodoList(todoUrl){
-             this.setState({todoUrl})
-        }
-
-        apply(currentDatas, newState){
-           /*... can do routing & page url sync here ...*/
-           return {/**appState**/}
-        }
-    }
-    MyTodoList : class MyTodoList extend Store{
-        static use     = ["!AppState"];// do not apply MyTodoList if AppState isn't here
-        static state   = {items:[]};
-
-        apply(currentDatas, {items, AppState:{todoUrl}}/*new state*/, changesInState){
-            // do some async :
-            // this.wait("downloading") // wait 1 task nammed "downloading", do not propag until "downloading" is released (so you always know whats going on)
-            // API.get todoUrl then
-            //     - push it ( this.push({items:newItems}) )
-            //     - this.release("downloading") // truely propag the pushed data if the store don't wait something else
-
-            return currentDatas;// return sync store data value
-        }
-    }
-    MyCompData : class MyCompData extend Store{
-        static use     = {
-            "!MyTodoList.items"     : "MyTodoItems", // remap sources
-            "!AppConfig.using.salt" : "withSalt"
-        };
-        static follow  = {
-            "MyTodoItems":v=>is.array(v),// only apply if MyTodoItems is an array or if withSalt has change
-            "withSalt":true
-        }
-
-        shouldApply(state){
-            return super.shouldApply(state);//check required & followed
-        }
-        apply(currentDatas, {MyTodoItems, withSalt}){
-           /*...*/
-           return {data:"ready",_for:'render'}
-        }
-        shouldPropag(state){
-            return super.shouldPropag(state);
-        }
-    }
-
-}, {parent:MyStaticContext});
-
-
-let MyMixableContext = new Context({...stores_instancied_or_not});
-let MyLocalContext = new Context({...stores_instancied_or_not});
-MyLocalContext.mixin(MyMixableContext);
-
-// Or inject them with synchrone initial output state :
-// .... ( say we are in a react comp constructor )
-this.state = {
-   someKey : true,
-   // inject & maintain AppState & AnotherStore outputs in the state
-   ...MyLocalContext.map(this, ["AppState", "MyCompData"])
-}
-// ....
-
-MyLocalContext.dispatch("activateSalt", true)
-
-```
 
 ## Why ?
 
@@ -126,8 +37,8 @@ Because :
 - Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
 - Inheritable ES6 class
-- Inheritable & mixable Store Contexts
-- Easy, partial or complete contexts serialization
+- Inheritable & mixable Scopes
+- Easy, partial or complete scopes serialization
 - Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
 - Flexible Async management
 - Lazy store instantiation
@@ -143,7 +54,7 @@ Because :
 
 ### (Dumb) Simple \& working examples [here](src/example)
 
-\*: The Store's context is common to the vanilla & react example
+\*: The Store's scope is common to the vanilla & react example
 
 ### And the [tests](test/Rescope.test.js)
 

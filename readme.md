@@ -3,14 +3,13 @@
 [![Build Status](https://travis-ci.org/CaipiLabs/Rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/Rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
-<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
 
 
 ## What ?
 
 ReScope is a simple to use, **flexible** \& effective Store system inspired by ReactJS methods.
 
-Rescope stores look like "reverse React components for data", they use the results of other data components as input, plus some key values;<br>
+Rescope stores look like "React components for data", they use the results of other data components as input, plus some key values;
 and maintains the corresponding "rendered" data as a result.
 
 ReScope Stores are grouped by contexts, and these contexts allow :
@@ -139,31 +138,15 @@ Because :
 - Another alternative to Redux & co
 - etc..
 
-### Store basic workflow :
-
-- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
-- If this state have the required & followed value
-- The apply function is called push new data in an async or sync way
-- The store is stabilized and (if there is new data) propagated
-- listening stores have theirs state updated and we go to step 1 until the whole context is stable
-
-### Context stabilisation :
-
-- A Context became unstable when one of its stores, parent or mixed context became unstable
-- It propag store updates to the listening Components / listeners
-- It go stable when all his store are stable
-
-
 ## Doc ?
 
-Just code for now, check :
+### Work in progress doc [here](doc)
 
 ### (Dumb) Simple \& working examples [here](src/example)
 
 \*: The Store's context is common to the vanilla & react example
 
 ### And the [tests](test/Rescope.test.js)
-
 
 ## What's next ?
 
@@ -176,3 +159,5 @@ Just code for now, check :
 - Cosmetics rewrites & more comments
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
+<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
+

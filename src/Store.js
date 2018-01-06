@@ -22,8 +22,9 @@ var is           = require('is'),
     EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({});
-
-
+/**
+ * @class Store
+ */
 export default class Store extends EventEmitter {
     
     static use                  = [];// overridable list of source stores
@@ -99,7 +100,7 @@ export default class Store extends EventEmitter {
         }
         
         
-        this._rev     = 0;
+        this._rev     = this.constructor._rev || 0;
         this._revs    = {};
         this.stores   = {};
         this._require = [];
@@ -123,7 +124,9 @@ export default class Store extends EventEmitter {
                                         key => {
                                             let ref = key.match(/^(\!?)(.*)$/);
                                             ref[1] && this._require.push(_static.use[key]);
-                                            return ref[2] + ':' + _static.use[key];
+                                            return ref[2] + ((_static.use[key] === true)
+                                                ? ''
+                                                : ':' + _static.use[key]);
                                         }
                                     ) : []
             )];
@@ -184,7 +187,7 @@ export default class Store extends EventEmitter {
      * Map all named stores in {keys} to the {object}'s state
      * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
      * @static
-     * @param object {React.Component|Store|...} target state aware object
+     * @param object {Object} target state aware object (React.Component|Store|...)
      * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
      */
     static map( component, keys, context, origin, setInitial = false ) {
@@ -801,6 +804,7 @@ export default class Store extends EventEmitter {
                 }
             );
         this._followers.length = 0;
+        this.constructor._rev  = this.rev;
         this.dead              = true;
         this._revs             = this.data = this.state = this.context = null;
         this.removeAllListeners();

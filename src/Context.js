@@ -346,9 +346,9 @@ export default class Context extends EventEmitter {
      * Bind stores from this context, his parents and mixed context
      *
      * @param obj {React.Component|Store|function}
-     * @param key {string*} stores keys to bind updates
+     * @param key {string} stores keys to bind updates
      * @param as
-     * @param setInitial=true {bool} false to not propag initial value
+     * @param setInitial {bool} false to not propag initial value (default : true)
      */
     bind( obj, key, as, setInitial = true ) {
         let lastRevs, data, reKey;

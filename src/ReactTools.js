@@ -146,8 +146,20 @@ function withScope( baseComp, _context ) {
  */
 function withScopeToProps( BaseComp, _context ) {
     return withScope(class ReScopePropsProvider extends React.Component {
-        static use = BaseComp.use
-        
+        static use               = BaseComp.use
+        static childContextTypes = {
+            ...(BaseComp.contextTypes || {}),
+            rescope: PropTypes.object,
+            $stores: PropTypes.object
+        }
+        static contextTypes      = {
+            ...(BaseComp.contextTypes || {}),
+            rescope: PropTypes.object,
+            $stores: PropTypes.object
+        }
+        getChildContext() {
+            return this.context;
+        }
         render() {
             let context = _context || this.context.rescope;
             return <BaseComp { ...this.props } { ...this.state } dispatch={ context.dispatch.bind(context) }

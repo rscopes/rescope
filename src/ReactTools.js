@@ -78,7 +78,7 @@ class Component extends React.Component {
  * @param context
  * @returns {ScopeProvider}
  */
-function withScope( baseComp, _context ) {
+function rescope( baseComp, _context ) {
     let context = _context;
     return class ScopeProvider extends baseComp {
         static childContextTypes = {
@@ -144,8 +144,8 @@ function withScope( baseComp, _context ) {
  * @param context
  * @returns {ScopeProvider}}
  */
-function withScopeToProps( BaseComp, _context ) {
-    return withScope(class ReScopePropsProvider extends React.Component {
+function rescopeProps( BaseComp, _context ) {
+    return rescope(class ReScopePropsProvider extends React.Component {
         static use               = BaseComp.use
         static childContextTypes = {
             ...(BaseComp.contextTypes || {}),
@@ -171,6 +171,6 @@ function withScopeToProps( BaseComp, _context ) {
 export {
     Component as default,
     Component,
-    withScopeToProps,
-    withScope
+    rescopeProps,
+    rescope
 };

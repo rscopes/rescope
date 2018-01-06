@@ -52,7 +52,7 @@ Because :
 
 ### Work in progress doc [here](doc)
 
-### (Dumb) Simple \& working examples [here](src/example)
+### (Dumb) Simple \& working examples [here](src/examples)
 
 \*: The Store's scope is common to the vanilla & react example
 

@@ -50,7 +50,7 @@ describe('Rescope', function () {
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
-        StaticContext = new Rescope.Context(
+        StaticContext = new Rescope.Scope(
             {
                 globalAsyncStore: class globalAsyncStore extends Rescope.Store {
                     static state = { ok: true };
@@ -86,7 +86,7 @@ describe('Rescope', function () {
                 //autoDestroy  : true
             }
         );
-        TestContext   = new Rescope.Context(
+        TestContext   = new Rescope.Scope(
             {
                 local_1: class local_1 extends Rescope.Store {
                     static use = ["!globalAsyncStore"];
@@ -231,11 +231,11 @@ describe('Rescope', function () {
     //    );
     //    TestContext.state.globalStoreWithActions = { resync: true };// should mount all the required store
     //});
-    it('should mixin contexts well', function ( done ) {
+    it('should mixin scopes well', function ( done ) {
         this.timeout(10000);
         
         let
-            TestContext0 = new Rescope.Context(
+            TestContext0 = new Rescope.Scope(
                 {
                     test0: class local_2 extends Rescope.Store {
                         static state = { ok: true };
@@ -248,7 +248,7 @@ describe('Rescope', function () {
                 }
             );
         let
-            TestContext2 = new Rescope.Context(
+            TestContext2 = new Rescope.Scope(
                 {
                     local_2: class local_2 extends Rescope.Store {
                         static state = { ok: true };
@@ -271,7 +271,7 @@ describe('Rescope', function () {
         this.timeout(3000);
         
         let
-            TestContext0 = new Rescope.Context(
+            TestContext0 = new Rescope.Scope(
                 {
                     test0: class local_2 extends Rescope.Store {
                         static state = { ok: true };
@@ -284,7 +284,7 @@ describe('Rescope', function () {
                 }
             );
         let
-            TestContext2 = new Rescope.Context(
+            TestContext2 = new Rescope.Scope(
                 {
                     local_2: class local_2 extends Rescope.Store {
                         static use = ["test0"];
@@ -336,7 +336,7 @@ describe('Rescope', function () {
                            setTimeout(
                                tm => {
                                    let
-                                       TestContext2 = new Rescope.Context(
+                                       TestContext2 = new Rescope.Scope(
                                            {},
                                            {
                                                parent       : StaticContext,

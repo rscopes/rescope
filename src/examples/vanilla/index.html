@@ -30,7 +30,7 @@
 <div id="events"></div>
 <script>
     var NewsList = new NewsListComp(document.getElementById("events"));
-    window.App = new Rescope.Context(StoreContext);
+    window.App = new Rescope.Scope(StoreContext);
 
 
     App.state.appState = { currentUserId: "MissTick" }

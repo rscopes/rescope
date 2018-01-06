@@ -11,7 +11,7 @@
 'use strict';
 
 import React from "react";
-import {Context} from "../../Rescope";
+import {Scope} from "../../Rescope";
 import {withScopeToProps} from "../../ReactTools";
 
 class NewsListComp extends React.Component {

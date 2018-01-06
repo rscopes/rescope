@@ -14,22 +14,22 @@ import {withScope, withScopeToProps} from "../../ReactTools";
 
 let ReactDom      = require('react-dom'),
     Rescope       = require('../../Rescope'),
-    Context       = Rescope.Context,
+    Scope       = Rescope.Scope,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
 // create empty global context for fun
-let GlobalStaticContext = new Context({}, { id: "static", defaultMaxListeners: 500 });
+let GlobalStaticContext = new Scope({}, { id: "static", defaultMaxListeners: 500 });
 
 
 // create "appContext" with the stores
-new Context(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
+new Scope(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 
 const App = withScope(
     class _App extends React.Component {
         static renderTo = ( node ) => {
             
-            Context.contexts.appContext.mount(
+            Scope.scopes.appContext.mount(
                 ["userEvents"]
             ).then(
                 ( err, state, context ) => {
@@ -70,5 +70,5 @@ const App = withScope(
             );
         }
     }
-    , Context.contexts.appContext);
+    , Scope.scopes.appContext);
 window.App              = App;

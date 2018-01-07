@@ -26,6 +26,7 @@
  */
 
 import React from 'react'
+import is from 'is'
 import PropTypes from 'prop-types';
 
 /**
@@ -89,10 +90,18 @@ class Component extends React.Component {
  *
  * @param baseComp
  * @param context
+ * @param use
  * @returns {ScopeProvider}
  */
-function rescope( baseComp, _context ) {
+function rescope( baseComp, _context, use ) {
+    if ( !use && is.array(_context) ) {
+        use      = _context;
+        _context = null;
+    }
     let context = _context;
+    
+    use = [...(baseComp.use || []), ...(use || [])];
+    
     return class ScopeProvider extends baseComp {
         static childContextTypes = {
             ...(baseComp.childContextTypes || {}),
@@ -106,16 +115,16 @@ function rescope( baseComp, _context ) {
         }
         static defaultProps      = {
             ...(baseComp.defaultProps || {}),
-            dispatch: () => context.dispatch(...arguments)
+            dispatch: ( ...argz ) => context.dispatch(...argz)
         }
         
         constructor( p, ctx, q ) {
             super(p, ctx, q);
             context = context || ctx.rescope;
-            if ( context && this.constructor.use ) {
+            if ( context && use.length ) {
                 this.state   = {
                     ...this.state,
-                    ...context.map(this, this.constructor.use || [], false)// don't bind now due to SSR
+                    ...context.map(this, use, false)// don't bind now due to SSR
                 }
                 this.$stores = context.stores;
             }
@@ -123,27 +132,25 @@ function rescope( baseComp, _context ) {
         }
         
         componentWillMount() {
-            if ( this.constructor.use ) {
-                context.bind(this, this.constructor.use || [], false)
+            if ( use.length ) {
+                context.bind(this, use, false)
             }
             super.componentWillMount && super.componentWillMount()
         }
         
         componentWillUnmount() {
             super.componentWillUnmount && super.componentWillUnmount()
-            this.constructor.use
-            && context.unBind(this, this.constructor.use || [])
+            use.length
+            && context.unBind(this, use)
             delete this.$stores;
         }
         
         componentWillReceiveProps( np, nc ) {
-            if ( !_context && nc.rescope !== this.context.rescope ) {
-                this.constructor.use
-                && this.context.rescope.unBind(this, this.constructor.use || []);
+            if ( use.length && !_context && nc.rescope !== this.context.rescope ) {
+                this.context.rescope.unBind(this, use);
                 context      = nc.rescope;
                 this.$stores = context.stores;
-                this.constructor.use
-                && nc.rescope.bind(this, this.constructor.use || []);
+                nc.rescope.bind(this, use);
             }
             super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
         }
@@ -165,9 +172,14 @@ function rescope( baseComp, _context ) {
  * @param context
  * @returns {ScopeProvider}}
  */
-function rescopeProps( BaseComp, _context ) {
+function rescopeProps( BaseComp, _context, use ) {
+    if ( !use && is.array(_context) ) {
+        use      = _context;
+        _context = null;
+    }
+    use = [...(BaseComp.use || []), ...(use || [])];
     return rescope(class ReScopePropsProvider extends React.Component {
-        static use               = BaseComp.use
+        static use               = use
         static childContextTypes = {
             ...(BaseComp.contextTypes || {}),
             rescope: PropTypes.object,
@@ -185,7 +197,9 @@ function rescopeProps( BaseComp, _context ) {
         
         render() {
             let context = _context || this.context.rescope;
-            return <BaseComp { ...this.props } { ...this.state } dispatch={ context.dispatch.bind(context) }
+            return <BaseComp { ...this.props }
+                             { ...this.state }
+                             dispatch={ context.dispatch.bind(context) }
                              $stores={ context.stores }/>
         }
     }, _context)

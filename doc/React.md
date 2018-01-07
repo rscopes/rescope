@@ -6,7 +6,6 @@
 
 Using the component parent scope :
 ```
-
 import React from "react";
 import {rescope} from "rescope/dist/ReactTools";
 

@@ -31,7 +31,7 @@ import {rescope, rescopeProps} from "../../ReactTools";
 
 let ReactDom      = require('react-dom'),
     Rescope       = require('../../Rescope'),
-    Scope       = Rescope.Scope,
+    Scope         = Rescope.Scope,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');
 
@@ -59,7 +59,8 @@ const App = rescope(
         
         
         render() {
-            let { status } = this.state;
+            let { status }   = this.state;
+            let { dispatch } = this.props;
             return (
                 <div>
                     <h1>Really basic drafty rescope + react mini app example</h1>
@@ -67,20 +68,20 @@ const App = rescope(
                     <div style={ { border: "solid 1px lightgrey", borderRadius: "3px" } }>
                         <b><u>
                             <button
-                                onClick={ () => (this.$stores.appState.setState({ currentUserId: 'MissTick' })) }>MissTick
-                                events
+                                onClick={ () => dispatch('switchUser', 'MissTick') }>
+                                MissTick events
                             </button>
                         </u></b>&nbsp;&nbsp;
                         <b><u>
                             <button
-                                onClick={ () => this.$stores.appState.setState({ currentUserId: 'MrNice' }) }>MrNice
-                                events
+                                onClick={ () => dispatch('switchUser', 'MrNice') }>
+                                MrNice events
                             </button>
                         </u></b>
                     </div>
                     <pre>
-                  { status && JSON.stringify(status, null, 2) }
-                </pre>
+                      { status && JSON.stringify(status, null, 2) }
+                    </pre>
                     <NewsListComp/>
                 
                 </div>

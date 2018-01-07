@@ -55,7 +55,11 @@ let MyStoreContext = {
         static state = {
             currentUserId: "MrNice"
         };
-        
+        static actions = {
+            switchUser(currentUserId){
+                return {currentUserId};
+            }
+        }
         // constructor() {
         //     super(...arguments);
         //     browserHistory.listen(( location, action ) => {
@@ -64,7 +68,7 @@ let MyStoreContext = {
         // }
         
         // apply( data, newState, changes ) {
-        //     // do some routing (map on url)
+        //     // can do some routing here (map on url) (or not)
         //     return newState;
         // }
     },

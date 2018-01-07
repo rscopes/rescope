@@ -1,3 +1,16 @@
+/*
+ * Copyright (c)  2018 Wise Wild Web .
+ *  
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * @author : Nathanael Braun
+ * @contact : caipilabs@gmail.com
+ */
+
 !function(t){function e(r){if(n[r])return n[r].exports;var i=n[r]={exports:{},id:r,loaded:!1};return t[r].call(i.exports,i,i.exports,e),i.loaded=!0,i.exports}var n={};return e.m=t,e.c=n,e.p="/",e(0)}({0:function(t,e,n){n(104),t.exports=n(121)},14:function(t,e,n){"use strict";function r(){f=!1}function i(t){if(!t)return void(c!==_&&(c=_,r()));if(t!==c){if(t.length!==_.length)throw new Error("Custom alphabet for shortid must be "+_.length+" unique characters. You submitted "+t.length+" characters: "+t);var e=t.split("").filter(function(t,e,n){return e!==n.lastIndexOf(t)});if(e.length)throw new Error("Custom alphabet for shortid must be "+_.length+" unique characters. These characters were not unique: "+e.join(", "));c=t,r()}}function s(t){return i(t),c}function o(t){p.seed(t),h!==t&&(r(),h=t)}function a(){c||i(_);for(var t,e=c.split(""),n=[],r=p.nextValue();e.length>0;)r=p.nextValue(),t=Math.floor(r*e.length),n.push(e.splice(t,1)[0]);return n.join("")}function u(){return f?f:f=a()}function l(t){var e=u();return e[t]}var c,h,f,p=n(67),_="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";t.exports={characters:s,seed:o,lookup:l,shuffled:u}},16:function(t,e){"use strict";/**!
 	 * is
 	 * the definitive JavaScript type testing library

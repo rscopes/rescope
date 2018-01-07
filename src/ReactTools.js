@@ -111,6 +111,7 @@ function rescope( baseComp, _context ) {
         }
         
         componentWillUnmount() {
+            super.componentWillUnmount && super.componentWillUnmount()
             this.constructor.use
             && context.unBind(this, this.constructor.use || [])
             delete this.$stores;
@@ -125,6 +126,7 @@ function rescope( baseComp, _context ) {
                 this.constructor.use
                 && nc.rescope.bind(this, this.constructor.use || []);
             }
+            super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
         }
         
         getChildContext() {
@@ -157,9 +159,11 @@ function rescopeProps( BaseComp, _context ) {
             rescope: PropTypes.object,
             $stores: PropTypes.object
         }
+        
         getChildContext() {
             return this.context;
         }
+        
         render() {
             let context = _context || this.context.rescope;
             return <BaseComp { ...this.props } { ...this.state } dispatch={ context.dispatch.bind(context) }

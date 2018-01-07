@@ -126,7 +126,7 @@ class MyComp extends Component {
     }
 };
 
-export default rescopeProps(MyComp);
+export default MyComp;
 ```
 ## Inject stores
 

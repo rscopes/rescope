@@ -41,9 +41,14 @@ class Component extends React.Component {
                 ...this.state,
                 ...ctx.rescope.map(this, this.constructor.use || [], false)// don't bind
             }
-            ctx.rescope.bind(this, this.constructor.use || [], false)
         }
         else this.render = () => <div>No Rescope context here { baseComp.name }</div>
+    }
+    
+    componentWillMount() {
+        if ( this.constructor.use ) {
+            this.context.rescope.bind(this, this.constructor.use || [], false)
+        }
     }
     
     componentWillUnmount() {
@@ -100,14 +105,20 @@ function rescope( baseComp, _context ) {
             super(p, ctx, q);
             context = context || ctx.rescope;
             if ( context && this.constructor.use ) {
-                this.state = {
+                this.state   = {
                     ...this.state,
-                    ...context.map(this, this.constructor.use || [], false)// don't bind
+                    ...context.map(this, this.constructor.use || [], false)// don't bind now due to SSR
                 }
-                context.bind(this, this.constructor.use || [], false)
                 this.$stores = context.stores;
             }
             else this.render = () => <div>No Rescope context here { baseComp.name }</div>
+        }
+        
+        componentWillMount() {
+            if ( this.constructor.use ) {
+                context.bind(this, this.constructor.use || [], false)
+            }
+            super.componentWillMount && super.componentWillMount()
         }
         
         componentWillUnmount() {

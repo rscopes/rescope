@@ -117,7 +117,7 @@ function rescope( baseComp, _context, use ) {
             ...(baseComp.defaultProps || {}),
             dispatch: ( ...argz ) => context.dispatch(...argz)
         }
-        
+    
         constructor( p, ctx, q ) {
             super(p, ctx, q);
             context = context || ctx.rescope;
@@ -130,21 +130,21 @@ function rescope( baseComp, _context, use ) {
             }
             else this.render = () => <div>No Rescope context here { baseComp.name }</div>
         }
-        
+    
         componentWillMount() {
             if ( use.length ) {
                 context.bind(this, use, false)
             }
             super.componentWillMount && super.componentWillMount()
         }
-        
+    
         componentWillUnmount() {
             super.componentWillUnmount && super.componentWillUnmount()
             use.length
             && context.unBind(this, use)
             delete this.$stores;
         }
-        
+    
         componentWillReceiveProps( np, nc ) {
             if ( use.length && !_context && nc.rescope !== this.context.rescope ) {
                 this.context.rescope.unBind(this, use);
@@ -154,7 +154,7 @@ function rescope( baseComp, _context, use ) {
             }
             super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
         }
-        
+    
         getChildContext() {
             let ctx = super.getChildContext && super.getChildContext() || {};
             return {

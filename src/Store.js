@@ -68,7 +68,7 @@ export default class Store extends EventEmitter {
         super();
         var argz         = [...arguments],
             _static      = this.constructor,
-            scope      = argz[0] instanceof Scope
+            scope        = argz[0] instanceof Scope
                 ? argz.shift()
                 : _static.scope ? Scope.getScope(_static.scope)
                                : is.string(argz[0])
@@ -105,12 +105,12 @@ export default class Store extends EventEmitter {
         this.name = name;
         
         if ( scope.stores ) {
-            this.scopeObj = scope;
-            this.scope    = scope.stores;
+                this.scopeObj = scope;
+            this.scope = scope.stores;
         }
         else {
-            this.scopeObj = new Scope(scope);
-            this.scope    = scope.stores;
+                this.scopeObj = new Scope(scope);
+            this.scope = scope.stores;
         }
         
         
@@ -308,6 +308,13 @@ export default class Store extends EventEmitter {
      * @deprecated
      * @returns {*}
      */
+    get contextObj() {
+        return this.scopeObj;
+    }
+    /**
+     * @deprecated
+     * @returns {*}
+     */
     get datas() {
         return this.data;
     }
@@ -318,7 +325,7 @@ export default class Store extends EventEmitter {
      */
     set datas( v ) {
         //console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
-        console.log("Rescope store : Setting datas is depreciated, use data", (new Error()).stack);
+        //console.log("Rescope store : Setting datas is depreciated, use data", (new Error()).stack);
         //console.groupEnd();
         
         this.data = v;
@@ -594,7 +601,7 @@ export default class Store extends EventEmitter {
      * @returns {{store: Store, name: *}}
      */
     relink( from ) {
-        let scope = this.scopeObj,
+        let scope   = this.scopeObj,
             _static = this.constructor;
         if ( _static.use ) {
             //todo unlink

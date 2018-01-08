@@ -150,6 +150,7 @@ function rescope( baseComp, _context, use ) {
             is.fn(_context)
             && this.$scope.dispose();
             delete this.$stores;
+            delete this.$scope;
         }
         
         componentWillReceiveProps( np, nc ) {

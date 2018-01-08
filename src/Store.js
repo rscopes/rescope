@@ -315,6 +315,13 @@ export default class Store extends EventEmitter {
      * @deprecated
      * @returns {*}
      */
+    get context() {
+        return this.scope;
+    }
+    /**
+     * @deprecated
+     * @returns {*}
+     */
     get datas() {
         return this.data;
     }

@@ -98,7 +98,6 @@ function rescope( baseComp, _context, use ) {
         use      = _context;
         _context = null;
     }
-    let context = _context;
     
     use = [...(baseComp.use || []), ...(use || [])];
     
@@ -115,27 +114,30 @@ function rescope( baseComp, _context, use ) {
         }
         static defaultProps      = {
             ...(baseComp.defaultProps || {}),
-            dispatch: ( ...argz ) => context.dispatch(...argz)
         }
         
         constructor( p, ctx, q ) {
             super(p, ctx, q);
-            context = is.fn(context) && context(this) || context || ctx.rescope;
+            this.$scope = is.fn(_context) && _context(this) || _context || ctx.rescope;
             is.fn(_context)
-            && context.retain()
-            if ( context && use.length ) {
+            && this.$scope.retain()
+            if ( this.$scope && use.length ) {
                 this.state   = {
                     ...this.state,
-                    ...context.map(this, use, false)// don't bind now due to SSR
+                    ...this.$scope.map(this, use, false)// don't bind now due to SSR
                 }
-                this.$stores = context.stores;
+                this.$stores = this.$scope.stores;
             }
             else this.render = () => <div>No Rescope context here { baseComp.name }</div>
+        }
+    
+        dispatch ( ...argz ){
+            this.$scope.dispatch(...argz)
         }
         
         componentWillMount() {
             if ( use.length ) {
-                context.bind(this, use, false)
+                this.$scope.bind(this, use, false)
                 
             }
             super.componentWillMount && super.componentWillMount()
@@ -144,17 +146,17 @@ function rescope( baseComp, _context, use ) {
         componentWillUnmount() {
             super.componentWillUnmount && super.componentWillUnmount()
             use.length
-            && context.unBind(this, use);
+            && this.$scope.unBind(this, use);
             is.fn(_context)
-            && context.dispose();
+            && this.$scope.dispose();
             delete this.$stores;
         }
         
         componentWillReceiveProps( np, nc ) {
             if ( use.length && !_context && nc.rescope !== this.context.rescope ) {
                 this.context.rescope.unBind(this, use);
-                context      = nc.rescope;
-                this.$stores = context.stores;
+                this.$scope      = nc.rescope;
+                this.$stores = this.$scope.stores;
                 nc.rescope.bind(this, use);
             }
             super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
@@ -164,8 +166,8 @@ function rescope( baseComp, _context, use ) {
             let ctx = super.getChildContext && super.getChildContext() || {};
             return {
                 ...ctx,
-                rescope: context,
-                $stores: context.stores
+                rescope: this.$scope,
+                $stores: this.$scope.stores
             };
         }
     }

@@ -29,7 +29,7 @@
 
 import React from "react";
 import {Scope} from "../../Rescope";
-import {rescopeProps} from "../../ReactTools";
+import {reScopeProps} from "../../ReactTools";
 
 class NewsListComp extends React.Component {
     static use = ["userEvents"];
@@ -55,4 +55,4 @@ class NewsListComp extends React.Component {
     }
 };
 
-export default rescopeProps(NewsListComp);
+export default reScopeProps(NewsListComp);

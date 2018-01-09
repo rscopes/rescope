@@ -28,8 +28,11 @@
 import React from 'react'
 import is from 'is'
 import PropTypes from 'prop-types';
+import Scope from './Scope';
 
 /**
+ * Inheritable ReScope "HOC" (High Order Component)
+ *
  * @class Component
  * @desc Parent React Component with store injection in its state
  */
@@ -51,7 +54,7 @@ class Component extends React.Component {
                 ...ctx.rescope.map(this, this.constructor.use || [], false)// don't bind
             }
         }
-        else this.render = () => <div>No Rescope context here { baseComp.name }</div>
+        else this.render = () => <div>No Rescope here { super.name }</div>
     }
     
     componentWillMount() {
@@ -87,39 +90,52 @@ class Component extends React.Component {
 };
 
 /**
+ * Return a React "HOC" (High Order Component) that :
+ *  - Inherit BaseComponent,
+ *  - Inject & maintain the stores in BaseComponent::use and/or (use) in the instances state.
+ *  - Propag (scope) in the returned React Component context
  *
- * @param baseComp
- * @param context
- * @param use
- * @returns {ScopeProvider}
+ *
+ * @param BaseComponent {React.Component} Base React Component ( default : React.Component )
+ * @param scope {ReScope.Scope|function} the propagated Scope where the stores will be searched
+ * @param use {array} the list of stores injected from the current scope
+ * @returns {ReScopeProvider}
  */
-function rescope( baseComp, _context, use ) {
-    if ( !use && is.array(_context) ) {
-        use      = _context;
-        _context = null;
+function reScopeState( BaseComponent = React.Component, scope, use ) {
+    if ( is.array(BaseComponent) ) {
+        use           = BaseComponent;
+        BaseComponent = React.Component;
+    }
+    if ( BaseComponent instanceof Scope ) {
+        scope         = BaseComponent;
+        BaseComponent = React.Component;
+    }
+    if ( !use && is.array(scope) ) {
+        use   = scope;
+        scope = null;
     }
     
-    use = [...(baseComp.use || []), ...(use || [])];
+    use = [...(BaseComponent.use || []), ...(use || [])];
     
-    return class ScopeProvider extends baseComp {
+    return class ReScopeProvider extends BaseComponent {
         static childContextTypes = {
-            ...(baseComp.childContextTypes || {}),
+            ...(BaseComponent.childContextTypes || {}),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         }
         static contextTypes      = {
-            ...(baseComp.contextTypes || {}),
+            ...(BaseComponent.contextTypes || {}),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         }
         static defaultProps      = {
-            ...(baseComp.defaultProps || {}),
+            ...(BaseComponent.defaultProps || {}),
         }
         
         constructor( p, ctx, q ) {
             super(p, ctx, q);
-            this.$scope = is.fn(_context) && _context(this) || _context || ctx.rescope;
-            is.fn(_context)
+            this.$scope = is.fn(scope) && scope(this) || scope || ctx.rescope;
+            is.fn(scope)
             && this.$scope.retain()
             if ( this.$scope && use.length ) {
                 this.state   = {
@@ -128,10 +144,10 @@ function rescope( baseComp, _context, use ) {
                 }
                 this.$stores = this.$scope.stores;
             }
-            else this.render = () => <div>No Rescope context here { baseComp.name }</div>
+            else this.render = () => <div>No Rescope here { BaseComponent.name }</div>
         }
-    
-        dispatch ( ...argz ){
+        
+        dispatch( ...argz ) {
             this.$scope.dispatch(...argz)
         }
         
@@ -147,16 +163,16 @@ function rescope( baseComp, _context, use ) {
             super.componentWillUnmount && super.componentWillUnmount()
             use.length
             && this.$scope.unBind(this, use);
-            is.fn(_context)
+            is.fn(scope)
             && this.$scope.dispose();
             delete this.$stores;
             delete this.$scope;
         }
         
         componentWillReceiveProps( np, nc ) {
-            if ( use.length && !_context && nc.rescope !== this.context.rescope ) {
+            if ( use.length && !scope && nc.rescope !== this.context.rescope ) {
                 this.context.rescope.unBind(this, use);
-                this.$scope      = nc.rescope;
+                this.$scope  = nc.rescope;
                 this.$stores = this.$scope.stores;
                 nc.rescope.bind(this, use);
             }
@@ -175,26 +191,31 @@ function rescope( baseComp, _context, use ) {
 }
 
 /**
+ * Return a React "HOC" (High Order Component) that :
+ *  - Inject & maintain the stores listed baseComponent::use and/or (use) in the instances props.
+ *  - Propag (scope) in the returned React Component context
  *
- * @param BaseComp
- * @param context
- * @returns {ScopeProvider}}
+ * @param BaseComponent {React.Component} Base React Component ( default : React.Component )
+ * @param scope {ReScope.Scope|function} the propagated Scope where the stores will be searched ( default : the default
+ *     ReScope::Scope::scopes.static scope )
+ * @param use {array} the list of stores to inject from the current scope
+ * @returns {ReScopeProvider}
  */
-function rescopeProps( BaseComp, _context, use ) {
-    if ( !use && is.array(_context) ) {
-        use      = _context;
-        _context = null;
+function reScopeProps( BaseComponent, scope, use ) {
+    if ( !use && is.array(scope) ) {
+        use   = scope;
+        scope = null;
     }
-    use = [...(BaseComp.use || []), ...(use || [])];
-    return rescope(class ReScopePropsProvider extends React.Component {
+    use = [...(BaseComponent.use || []), ...(use || [])];
+    return reScopeState(class ReScopePropsProvider extends React.Component {
         static use               = use;
         static childContextTypes = {
-            ...(BaseComp.contextTypes || {}),
+            ...(BaseComponent.contextTypes || {}),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         };
         static contextTypes      = {
-            ...(BaseComp.contextTypes || {}),
+            ...(BaseComponent.contextTypes || {}),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         };
@@ -204,17 +225,19 @@ function rescopeProps( BaseComp, _context, use ) {
         }
         
         render() {
-            return <BaseComp { ...this.props }
-                             { ...this.state }
-                             dispatch={ this.props.dispatch }
-                             $stores={ this.$stores }/>
+            return <BaseComponent { ...this.props }
+                                  { ...this.state }
+                                  dispatch={ this.props.dispatch }
+                                  $stores={ this.$stores }/>
         }
-    }, _context)
+    }, scope);
 }
 
 export {
     Component as default,
     Component,
-    rescopeProps,
-    rescope
+    reScopeProps,
+    reScopeProps as rescopeProps,
+    reScopeState,
+    reScopeState as rescopeState
 };

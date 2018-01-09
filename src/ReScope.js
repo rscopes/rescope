@@ -27,8 +27,9 @@
 
 import Scope from "./Scope";
 import Store from "./Store";
+import ReactTools from "./ReactTools";
 
 Scope.Store = Store;
 
-export default { Store, Context: Scope, Scope };
+export default { Store, Context: Scope, Scope, ...ReactTools };
 

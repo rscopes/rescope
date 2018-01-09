@@ -27,7 +27,7 @@
 
 import React from "react";
 
-import {rescope, rescopeProps} from "../../ReactTools";
+import {reScopeState, reScopeProps} from "../../ReactTools";
 
 let ReactDom      = require('react-dom'),
     Rescope       = require('../../Rescope'),
@@ -42,7 +42,7 @@ let GlobalStaticContext = new Scope({}, { id: "static", defaultMaxListeners: 500
 // create "appContext" with the stores
 new Scope(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 
-const App = rescope(
+const App = reScopeState(
     class _App extends React.Component {
         static renderTo = ( node ) => {
             

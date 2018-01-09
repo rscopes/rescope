@@ -35,13 +35,13 @@ var nodeExternals = require('webpack-node-externals');
 module.exports    = [
     {
         entry    : {
-            "Rescope": "./src/Rescope.js",
+            "ReScope": "./src/ReScope.js",
             
         },
         devtool  : !production ? 'inline-source-map' : 'source-map',
         output   : {
             path         : __dirname,
-            filename     : production ? "dist/[name].nodeps.min.js" : "dist/[name].nodeps.js",
+            filename     : production ? "dist/[name].min.js" : "dist/[name].js",
             publicPath   : "/",
             libraryTarget: 'commonjs2'
         },
@@ -115,175 +115,17 @@ module.exports    = [
     },
     {
         entry    : {
-            "ReactTools": "./src/ReactTools.js",
-            
+            "ReScope": "./src/ReScope.js",
         },
         devtool  : !production ? 'inline-source-map' : 'source-map',
         output   : {
-            path         : __dirname,
-            filename     : production ? "dist/[name].min.js" : "dist/[name].js",
-            publicPath   : "/",
-            libraryTarget: 'commonjs2'
-        },
-        target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [nodeExternals()],
-        resolve  : {
-            extensions: [
-                "",
-                ".js",
-                ".json",
-            ],
-        },
-        
-        module : {
-            loaders: [
-                {
-                    test   : /\.js$/,
-                    exclude: /node_modules/,
-                    loader : 'babel-loader',
-                    query  : {
-                        
-                        presets: [
-                            'babel-preset-react',
-                            'babel-preset-es2015',
-                            'babel-preset-stage-0'
-                        ].map(require.resolve),
-                        plugins: [
-                            "babel-plugin-add-module-exports",
-                        ].map(require.resolve)
-                    }
-                },
-                {
-                    test   : /\.json$/,
-                    loaders: [
-                        "json",
-                    ],
-                },
-                {
-                    test   : /\.(html|txt)$/,
-                    loaders: [
-                        "file-loader?name=[path][name].[ext]&context=./src",
-                    ],
-                },
-            ],
-        },
-        plugins: (
-            [
-                new webpack.BannerPlugin(fs.readFileSync("./LICENCE.HEAD.MD").toString()),
-                
-                new webpack.DefinePlugin({
-                                             __PROD__     : production,
-                                             'process.env': {
-                                                 NODE_ENV: JSON.stringify(production ? 'production' : 'development'),
-                                             }
-                                         }),
-                production ? new webpack.optimize.UglifyJsPlugin(
-                    {
-                        compress: {
-                            screw_ie8   : true, // React doesn't support IE8
-                            warnings    : false,
-                            drop_console: true
-                        },
-                        mangle  : {
-                            screw_ie8: true
-                        },
-                        output  : {
-                            comments : false,
-                            screw_ie8: true
-                        }
-                    }) : p => false,
-            
-            ]
-        ),
-        
-    },
-    {
-        entry  : {
-            "Rescope": "./src/Rescope.js",
-        },
-        devtool: !production ? 'inline-source-map' : 'source-map',
-        output : {
-            path         : __dirname,
-            filename     : production ? "dist/[name].min.js" : "dist/[name].js",
-            publicPath   : "/",
-            libraryTarget: 'commonjs2'
-        },
-        resolve: {
-            extensions: [
-                "",
-                ".js",
-                ".json",
-            ],
-        },
-        
-        module : {
-            loaders: [
-                {
-                    test   : /\.js$/,
-                    exclude: /node_modules/,
-                    loader : 'babel-loader',
-                    query  : {
-                        
-                        presets: [
-                            'babel-preset-react',
-                            'babel-preset-es2015',
-                            'babel-preset-stage-0'
-                        ].map(require.resolve),
-                        plugins: [
-                            "babel-plugin-add-module-exports",
-                        ].map(require.resolve)
-                    }
-                },
-                {
-                    test   : /\.json$/,
-                    loaders: [
-                        "json",
-                    ],
-                },
-                {
-                    test   : /\.(html|txt)$/,
-                    loaders: [
-                        "file-loader?name=[path][name].[ext]&context=./src",
-                    ],
-                },
-            ],
-        },
-        plugins: (
-            [
-                new webpack.DefinePlugin({
-                                             __PROD__: production
-                                         }),
-                production ? new webpack.optimize.UglifyJsPlugin(
-                    {
-                        compress: {
-                            screw_ie8   : true, // React doesn't support IE8
-                            warnings    : false,
-                            drop_console: true
-                        },
-                        mangle  : {
-                            screw_ie8: true
-                        },
-                        output  : {
-                            comments : false,
-                            screw_ie8: true
-                        }
-                    }) : p => false,
-            
-            ]
-        ),
-        
-    },
-    {
-        entry  : {
-            "Rescope": "./src/Rescope.js",
-        },
-        devtool: !production ? 'inline-source-map' : 'source-map',
-        output : {
             path         : __dirname,
             filename     : production ? "dist/[name].browser.min.js" : "dist/[name].browser.js",
             publicPath   : "/",
             libraryTarget: 'var'
         },
+        externals: ['react'],
+        
         resolve: {
             extensions: [
                 "",

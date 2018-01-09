@@ -1,13 +1,37 @@
 # ReScope React Tools
 
-## React integration
+## React HOCs
 
-### rescope
+### reScopeState
 
 Using the component parent scope :
 ```
 import React from "react";
-import {rescope} from "rescope/dist/ReactTools";
+import {reScopeState} from "rescope/dist/ReactTools";
+
+class MyComp extends React.Component {
+    static use = ["appState"];
+    render() {
+        return (
+            <div>
+                <h1>MyComp</h1>
+                {
+                    this.state.appState.someValues
+                }
+            </div>
+        );
+    }
+};
+
+export default reScopeState(MyComp);
+```
+
+Using specific scope :
+```
+
+import React from "react";
+import scopeFromSomewhere from "./scope";
+import {scopeState} from "rescope/dist/ReactTools";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -24,41 +48,17 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescope(MyComp);
+export default reScopeState(MyComp, scopeFromSomewhere /*, ["appState"]*/);
+//export default reScopeState(MyComp, ()=>scopeFromSomewhere);
 ```
 
-Using specific scope :
-```
-
-import React from "react";
-import scopeFromSomewhere from "./scope";
-import {rescope} from "rescope/dist/ReactTools";
-
-class MyComp extends React.Component {
-    static use = ["appState"];
-    render() {
-        return (
-            <div>
-                <h1>MyComp</h1>
-                {
-                    this.state.appState.someValues
-                }
-
-            </div>
-        );
-    }
-};
-
-export default rescope(MyComp, scopeFromSomewhere);
-```
-
-### rescopeProps
+### scopeProps
 
 Using the component parent scope :
 ```
 
 import React from "react";
-import {rescopeProps} from "rescope/dist/ReactTools";
+import {reScopeProps} from "rescope/dist/ReactTools";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -75,7 +75,7 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescopeProps(MyComp);
+export default reScopeProps(MyComp);
 ```
 
 Using specific scope :
@@ -83,7 +83,7 @@ Using specific scope :
 
 import React from "react";
 import scopeFromSomewhere from "./scope";
-import {rescopeProps} from "rescope/dist/ReactTools";
+import {reScopeProps} from "rescope/dist/ReactTools";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -100,7 +100,7 @@ class MyComp extends React.Component {
     }
 };
 
-export default rescopeProps(MyComp, scopeFromSomewhere);
+export default reScopeProps(MyComp, scopeFromSomewhere);
 ```
 
 ### Inheriting Rescope React component

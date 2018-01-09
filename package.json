@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Predictable, multi-scope, multi-stores, state management system",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/ReScope.js",
@@ -18,8 +18,7 @@
     "is": "^3.2.1",
     "shortid": "^2.2.8"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "babel-core": "^6.3.17",

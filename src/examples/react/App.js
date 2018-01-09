@@ -59,8 +59,7 @@ const App = reScopeState(
         
         
         render() {
-            let { status }   = this.state;
-            let { dispatch } = this;
+            let { status } = this.state;
             return (
                 <div>
                     <h1>Really basic drafty rescope + react mini app example</h1>
@@ -68,13 +67,13 @@ const App = reScopeState(
                     <div style={ { border: "solid 1px lightgrey", borderRadius: "3px" } }>
                         <b><u>
                             <button
-                                onClick={ () => dispatch('switchUser', 'MissTick') }>
+                                onClick={ () => this.dispatch('switchUser', 'MissTick') }>
                                 MissTick events
                             </button>
                         </u></b>&nbsp;&nbsp;
                         <b><u>
                             <button
-                                onClick={ () => dispatch('switchUser', 'MrNice') }>
+                                onClick={ () => this.dispatch('switchUser', 'MrNice') }>
                                 MrNice events
                             </button>
                         </u></b>

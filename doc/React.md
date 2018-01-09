@@ -52,7 +52,7 @@ export default reScopeState(MyComp, scopeFromSomewhere /*, ["appState"]*/);
 //export default reScopeState(MyComp, ()=>scopeFromSomewhere);
 ```
 
-### scopeProps
+### reScopeProps
 
 Using the component parent scope :
 ```
@@ -127,6 +127,7 @@ class MyComp extends Component {
 
 export default MyComp;
 ```
+
 ## Inject stores
 
 

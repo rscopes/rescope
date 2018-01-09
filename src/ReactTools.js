@@ -106,7 +106,7 @@ function reScopeState( BaseComponent = React.Component, scope, use ) {
         use           = BaseComponent;
         BaseComponent = React.Component;
     }
-    if ( BaseComponent instanceof Scope || BaseComponent instanceof Function ) {
+    if ( BaseComponent instanceof Scope || is.fn(BaseComponent) && !BaseComponent.prototype.isReactComponent ) {
         scope         = BaseComponent;
         BaseComponent = React.Component;
     }

@@ -27,9 +27,15 @@
 
 import Scope from "./Scope";
 import Store from "./Store";
-import ReactTools from "./ReactTools";
+import ReactTools, * as RTools from "./ReactTools";
 
 Scope.Store = Store;
-
-export default { Store, Context: Scope, Scope, ...ReactTools };
+export default {
+    Store,
+    Context     : Scope,
+    Scope,
+    Component   : RTools.Component,
+    reScopeProps: RTools.reScopeProps,
+    reScopeState: RTools.reScopeState
+};
 

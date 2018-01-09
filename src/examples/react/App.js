@@ -60,7 +60,7 @@ const App = reScopeState(
         
         render() {
             let { status }   = this.state;
-            let { dispatch } = this.props;
+            let { dispatch } = this;
             return (
                 <div>
                     <h1>Really basic drafty rescope + react mini app example</h1>

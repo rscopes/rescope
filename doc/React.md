@@ -7,7 +7,7 @@
 Using the component parent scope :
 ```
 import React from "react";
-import {reScopeState} from "rescope/dist/ReactTools";
+import {reScopeState} from "rescope";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -31,7 +31,7 @@ Using specific scope :
 
 import React from "react";
 import scopeFromSomewhere from "./scope";
-import {scopeState} from "rescope/dist/ReactTools";
+import {reScopeState} from "rescope";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -58,7 +58,7 @@ Using the component parent scope :
 ```
 
 import React from "react";
-import {reScopeProps} from "rescope/dist/ReactTools";
+import {reScopeProps} from "rescope";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -83,7 +83,7 @@ Using specific scope :
 
 import React from "react";
 import scopeFromSomewhere from "./scope";
-import {reScopeProps} from "rescope/dist/ReactTools";
+import {reScopeProps} from "rescope";
 
 class MyComp extends React.Component {
     static use = ["appState"];
@@ -108,7 +108,7 @@ export default reScopeProps(MyComp, scopeFromSomewhere);
 ```
 
 import React from "react";
-import {Component} from "rescope/dist/ReactTools";
+import {Component} from "rescope";
 
 class MyComp extends Component {
     static use = ["appState"];

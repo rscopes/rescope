@@ -106,7 +106,7 @@ function reScopeState( BaseComponent = React.Component, scope, use ) {
         use           = BaseComponent;
         BaseComponent = React.Component;
     }
-    if ( BaseComponent instanceof Scope ) {
+    if ( BaseComponent instanceof Scope || BaseComponent instanceof Function ) {
         scope         = BaseComponent;
         BaseComponent = React.Component;
     }

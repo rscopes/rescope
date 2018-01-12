@@ -105,12 +105,12 @@ export default class Store extends EventEmitter {
         this.name = name;
         
         if ( scope.stores ) {
-                this.scopeObj = scope;
-            this.scope = scope.stores;
+            this.scopeObj = scope;
+            this.scope    = scope.stores;
         }
         else {
-                this.scopeObj = new Scope(scope);
-            this.scope = scope.stores;
+            this.scopeObj = new Scope(scope);
+            this.scope    = scope.stores;
         }
         
         
@@ -311,6 +311,7 @@ export default class Store extends EventEmitter {
     get contextObj() {
         return this.scopeObj;
     }
+    
     /**
      * @deprecated
      * @returns {*}
@@ -318,6 +319,7 @@ export default class Store extends EventEmitter {
     get context() {
         return this.scope;
     }
+    
     /**
      * @deprecated
      * @returns {*}
@@ -355,7 +357,7 @@ export default class Store extends EventEmitter {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
             }
         );
-        return !!r;
+        return true;
     }
     
     /**
@@ -490,19 +492,18 @@ export default class Store extends EventEmitter {
             nextState = !data && { ...this.state, ...this._changesSW } || this.state,
             nextDatas = data || this.apply(this.data, nextState, this._changesSW);
         
-        this.state = nextState;
-        if ( !force &&
-            (
-                (!this.data && this.data === nextDatas) || !this.shouldPropag(nextDatas)
-            )
-        ) {
-            cb && cb();
-            return false;
-        }
-        
-        this.data       = nextDatas;
+        this.state      = nextState;
         this._changesSW = {};
-        //this.__locks.all++;
+        //if ( !force &&
+        //    (
+        //        (this.data === nextDatas) || !this.shouldPropag(nextDatas)
+        //    )
+        //) {
+        //    cb && cb();
+        //    return false;
+        //}
+        
+        this.data = nextDatas;
         this.wait();
         this.release(cb);
         
@@ -745,9 +746,10 @@ export default class Store extends EventEmitter {
             console.error("Release more than locking !");
         
         if ( !--this.__locks.all && this.data && this.isComplete() ) {
+            let propag   = this.shouldPropag(this.data);
             this._stable = true;
-            this._rev++;//
-            if ( this._followers.length )
+            propag && this._rev++;//
+            if ( propag && this._followers.length )
                 this._followers.forEach(( follower ) => {
                     let data = follower[2] ? this.retrieve(follower[2]) : this.data;
                     if ( !data ) return;
@@ -768,7 +770,7 @@ export default class Store extends EventEmitter {
                 });
             //else
             !wasStable && this.emit('stable', this.data);
-            this.emit('update', this.data);
+            propag && this.emit('update', this.data);
             cb && cb()
         }
         else cb && this.then(cb);

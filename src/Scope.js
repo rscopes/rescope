@@ -36,13 +36,13 @@ var is              = require('is'),
         target[id]       = new fn();
         target['_' + id] = fn;
     },
-    openScopes    = {};
+    openScopes      = {};
 
 
 export default class Scope extends EventEmitter {
     static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
     static Store         = null;
-    static scopes      = openScopes;// all active scopes
+    static scopes        = openScopes;// all active scopes
     
     static getScope( scopes ) {
         let skey = is.array(scopes) ? scopes.sort(( a, b ) => {
@@ -84,7 +84,7 @@ export default class Scope extends EventEmitter {
         }
         
         this._id            = id;
-        openScopes[id]    = this;
+        openScopes[id]      = this;
         this._isLocalId     = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
@@ -101,15 +101,15 @@ export default class Scope extends EventEmitter {
         this.parent = parent;
         
         
-        this.sources            = [];
+        this.sources          = [];
         this._childScopes     = [];
         this._childScopesList = [];
-        this._unStableChilds    = 0;
+        this._unStableChilds  = 0;
         
         this.__retains   = { all: 0 };
         this.__locks     = { all: 1 };
         this.__listening = {};
-        this.__scope   = {};
+        this.__scope     = {};
         this.__mixed     = [];
         this.__mixedList = [];
         this._followers  = [];
@@ -312,7 +312,7 @@ export default class Scope extends EventEmitter {
               .forEach(
                   id => {
                       if ( !force && targetCtx.__scope[id] === srcCtx[id] ||
-                          targetCtx.__scope[id] && (targetCtx.__scope[id].constructor === srcCtx[id] ) )
+                          targetCtx.__scope[id] && (targetCtx.__scope[id].constructor === srcCtx[id]) )
                           return;
                 
                       if ( !force && targetCtx.__scope[id] ) {
@@ -509,15 +509,15 @@ export default class Scope extends EventEmitter {
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
-                if ( !output[id]
-                    && ( !storesRevMap
+                if ( !output.hasOwnProperty(id) && !is.fn(ctx[id])
+                    && (!storesRevMap
                         || (storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined)
-                        || !( !storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id] ))
+                        || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))
                 ) {
                     
                     updated    = true;
                     output[id] = this.data[id];
-                    if ( storesRevMap && storesRevMap[id] !== undefined )
+                    if ( storesRevMap && storesRevMap.hasOwnProperty(id) )
                         storesRevMap[id] = ctx[id]._rev;
                     
                 }

@@ -42,7 +42,7 @@ describe('Rescope', function () {
         TestContext;
     it('should build well', function ( done ) {
         this.timeout(Infinity);
-
+        
         child_process.exec(
             'npm run buildStaging',
             {
@@ -51,16 +51,17 @@ describe('Rescope', function () {
             function ( error, stdout, stderr ) {
                 done(error)
             });
-
+        
     });
     it('should require well', function ( done ) {
+        this.timeout(Infinity);
         Rescope = require('../dist/Rescope');
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
         StaticContext = new Rescope.Scope(
             {
-                globalAsyncStore: class globalAsyncStore extends Rescope.Store {
+                globalAsyncStore      : class globalAsyncStore extends Rescope.Store {
                     static state = { ok: true };
                     
                     apply( data, state ) {
@@ -82,7 +83,7 @@ describe('Rescope', function () {
                         someAction: v => ({ value: v })
                     };
                 },
-                stats   : class stats extends Rescope.Store {
+                stats                 : class stats extends Rescope.Store {
                     static state = { ok: true };
                     static context = "static";
                     static persistenceTm = 1000 * 5;
@@ -212,9 +213,10 @@ describe('Rescope', function () {
         TestContext
             .mount("local_5")
             .bind(
-                ( _data ) => {
+                function fn( _data ) {
                     //console.log(_data, TestContext.data.local_5);
-                    
+                    TestContext.unBind(fn,
+                                       "local_5");
                     if ( _data.local_5.remapTest == 'ok' ) done();
                     else done(new Error("fail"));
                 },

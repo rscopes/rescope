@@ -31,9 +31,8 @@ import React from "react";
 import {Scope} from "../../Rescope";
 import {reScopeProps} from "../../ReactTools";
 
+@reScopeProps(["userEvents"])
 class NewsListComp extends React.Component {
-    static use = ["userEvents"];
-    
     render() {
         return (
             <div className="NewsListComp container" style={ { minHeight: "100%" } }>
@@ -56,4 +55,4 @@ class NewsListComp extends React.Component {
     }
 };
 
-export default reScopeProps(NewsListComp);
+export default NewsListComp;

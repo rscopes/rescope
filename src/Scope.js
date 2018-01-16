@@ -565,7 +565,7 @@ export default class Scope extends EventEmitter {
         return output;
     }
     
-    toString(){
+    get displayName(){
         return "Scope::"+this._id;
     }
     

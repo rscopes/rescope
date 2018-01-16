@@ -344,20 +344,25 @@ export default class Store extends EventEmitter {
      * Overridable method to know if a data change should be propag to the listening stores & components
      */
     shouldPropag( nDatas ) {
+        
+        return true;
+    }
+    
+    hasDataChange( nDatas ) {
         var _static = this.constructor, r,
             cDatas  = this.data;
-        r           = !cDatas && nDatas;
-        cDatas && Object.keys(cDatas).forEach(
+        r           = !cDatas && nDatas || cDatas !== nDatas;
+        !r && cDatas && Object.keys(cDatas).forEach(
             ( key ) => {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
             }
         );
-        nDatas && Object.keys(nDatas).forEach(
+        !r && nDatas && Object.keys(nDatas).forEach(
             ( key ) => {
                 r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
             }
         );
-        return true;
+        return r;
     }
     
     /**
@@ -494,14 +499,14 @@ export default class Store extends EventEmitter {
         
         this.state      = nextState;
         this._changesSW = {};
-        //if ( !force &&
-        //    (
-        //        (this.data === nextDatas) || !this.shouldPropag(nextDatas)
-        //    )
-        //) {
-        //    cb && cb();
-        //    return false;
-        //}
+        if ( !force &&
+            (
+                !this.hasDataChange(nextDatas)
+            )
+        ) {
+            cb && cb();
+            return false;
+        }
         
         this.data = nextDatas;
         this.wait();

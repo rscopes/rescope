@@ -2,66 +2,21 @@
 
 ## React HOCs
 
-### reScopeState
-
-Using the component parent scope :
-```
-import React from "react";
-import {reScopeState} from "rescope";
-
-class MyComp extends React.Component {
-    static use = ["appState"];
-    render() {
-        return (
-            <div>
-                <h1>MyComp</h1>
-                {
-                    this.state.appState.someValues
-                }
-            </div>
-        );
-    }
-};
-
-export default reScopeState(MyComp);
-```
-
-Using specific scope :
-```
-
-import React from "react";
-import scopeFromSomewhere from "./scope";
-import {reScopeState} from "rescope";
-
-class MyComp extends React.Component {
-    static use = ["appState"];
-    render() {
-        return (
-            <div>
-                <h1>MyComp</h1>
-                {
-                    this.state.appState.someValues
-                }
-
-            </div>
-        );
-    }
-};
-
-export default reScopeState(MyComp, scopeFromSomewhere /*, ["appState"]*/);
-//export default reScopeState(MyComp, ()=>scopeFromSomewhere);
-```
-
 ### reScopeProps
 
-Using the component parent scope :
+Will replace the defined component with a ReScope Component that will render the defined Component with the desired stores data as props.
+
 ```
 
 import React from "react";
 import {reScopeProps} from "rescope";
 
+
+@reScopeProps(["appState"]) // inheriting the scope
+// or @reScopeProps(scopeFromSomewhere, ["appState"])
+// or @reScopeProps((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
-    static use = ["appState"];
+    // or static use = ["appState"];
     render() {
         return (
             <div>
@@ -75,24 +30,28 @@ class MyComp extends React.Component {
     }
 };
 
-export default reScopeProps(MyComp);
+export default MyComp;
 ```
 
-Using specific scope :
-```
+### reScopeState
 
+Will create & return a ReScope Component that inherit the defined Component.
+The component will inject the desired stores data as state values
+
+```
 import React from "react";
-import scopeFromSomewhere from "./scope";
-import {reScopeProps} from "rescope";
+import {reScopeState} from "rescope";
 
+@reScopeState(["appState"])
+// or @reScopeState(scopeFromSomewhere, ["appState"])
+// or @reScopeState((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
-    static use = ["appState"];
     render() {
         return (
             <div>
                 <h1>MyComp</h1>
                 {
-                    this.props.appState.someValues
+                    this.state.appState.someValues
                 }
 
             </div>
@@ -100,8 +59,9 @@ class MyComp extends React.Component {
     }
 };
 
-export default reScopeProps(MyComp, scopeFromSomewhere);
+export default MyComp;
 ```
+
 
 ### Inheriting Rescope React component
 

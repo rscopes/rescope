@@ -111,7 +111,15 @@ class Component extends React.Component {
  * @param use {array} the list of stores injected from the current scope
  * @returns {ReScopeProvider}
  */
-function reScopeState( BaseComponent = React.Component, scope, use ) {
+function reScopeState( ...argz ) {
+    let [BaseComponent, scope, use] = argz;
+    
+    if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
+        return function ( BaseComponent ) {
+            return reScopeState(BaseComponent, ...argz)
+        }
+    }
+    
     if ( is.array(BaseComponent) ) {
         use           = BaseComponent;
         BaseComponent = React.Component;
@@ -211,12 +219,22 @@ function reScopeState( BaseComponent = React.Component, scope, use ) {
  * @param use {array} the list of stores to inject from the current scope
  * @returns {ReScopeProvider}
  */
-function reScopeProps( BaseComponent, scope, use ) {
+function reScopeProps( ...argz ) {
+    let [BaseComponent, scope, use] = argz;
     if ( !use && is.array(scope) ) {
         use   = scope;
         scope = null;
     }
+    
+    if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
+        return function ( BaseComponent ) {
+            return reScopeProps(BaseComponent, ...argz)
+        }
+    }
+    
     use = [...(BaseComponent.use || []), ...(use || [])];
+    
+    
     return reScopeState(class ReScopePropsProvider extends React.Component {
         static use               = use;
         static childContextTypes = {

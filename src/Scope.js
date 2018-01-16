@@ -565,6 +565,10 @@ export default class Scope extends EventEmitter {
         return output;
     }
     
+    toString(){
+        return "Scope::"+this._id;
+    }
+    
     dispatch( action, data ) {
         Object.keys(this.__scope)
               .forEach(

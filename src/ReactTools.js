@@ -49,12 +49,18 @@ class Component extends React.Component {
     constructor( p, ctx, q ) {
         super(p, ctx, q);
         if ( this.constructor.use ) {
-            this.state = {
+            this.state   = {
                 ...this.state,
                 ...ctx.rescope.map(this, this.constructor.use || [], false)// don't bind
             }
+            this.$scope  = ctx.rescope;
+            this.$stores = this.$scope.stores;
         }
         else this.render = () => <div>No Rescope here { super.name }</div>
+    }
+    
+    dispatch( ...argz ) {
+        this.$scope.dispatch(...argz)
     }
     
     componentWillMount() {
@@ -72,6 +78,10 @@ class Component extends React.Component {
         if ( nc.rescope !== this.context.rescope ) {
             this.constructor.use
             && this.context.rescope.unBind(this, this.constructor.use || []);
+            
+            this.$scope  = nc.rescope;
+            this.$stores = this.$scope.stores;
+            
             this.constructor.use
             && nc.rescope.bind(this, this.constructor.use || []);
         }

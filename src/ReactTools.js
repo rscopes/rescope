@@ -146,6 +146,7 @@ function reScopeState( ...argz ) {
         static defaultProps      = {
             ...(BaseComponent.defaultProps || {}),
         }
+        static displayName       = "stateScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")";
         
         constructor( p, ctx, q ) {
             super(p, ctx, q);
@@ -168,7 +169,7 @@ function reScopeState( ...argz ) {
                 this.render = () => <div>No Rescope here { BaseComponent.name }</div>
         }
         
-        dispatch( ...argz ) {
+        $dispatch( ...argz ) {
             this.$scope.dispatch(...argz)
         }
         
@@ -210,7 +211,6 @@ function reScopeState( ...argz ) {
                 ...ctx,
                 rescope: this.$scope || this.context.rescope,
                 $stores: this.$scope.stores || this.context.$stores
-                
             };
         }
     }
@@ -256,6 +256,7 @@ function reScopeProps( ...argz ) {
             rescope: PropTypes.object,
             $stores: PropTypes.object
         };
+        static displayName       = "propsScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")";
         
         getChildContext() {
             return this.context;
@@ -264,7 +265,7 @@ function reScopeProps( ...argz ) {
         render() {
             return <BaseComponent { ...this.props }
                                   { ...this.state }
-                                  dispatch={ this.props.dispatch }
+                                  $dispatch={ ( ...argz ) => this.$dispatch(...argz) }
                                   $stores={ this.$stores }/>
         }
     }, scope, use);

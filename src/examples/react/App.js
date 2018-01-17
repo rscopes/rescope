@@ -43,9 +43,12 @@ let GlobalStaticContext = new Scope({}, { id: "static", defaultMaxListeners: 500
 new Scope(StoresContext, { id: "appContext", parent: GlobalStaticContext, defaultMaxListeners: 500 });
 
 const App = reScopeState(
+    Scope.scopes.appContext,
+    ["status", "appState"]
+      )(
     class _App extends React.Component {
+        
         static renderTo = ( node ) => {
-            
             Scope.scopes.appContext.mount(
                 ["userEvents"]
             ).then(
@@ -53,13 +56,13 @@ const App = reScopeState(
                     ReactDom.render(<App/>, node);
                 }
             )
-            
         }
-        static use      = ["status", "appState"]
         
         
         render() {
-            let { status } = this.state;
+            let {
+                    status
+                } = this.state;
             return (
                 <div>
                     <h1>Really basic drafty rescope + react mini app example</h1>
@@ -67,13 +70,13 @@ const App = reScopeState(
                     <div style={ { border: "solid 1px lightgrey", borderRadius: "3px" } }>
                         <b><u>
                             <button
-                                onClick={ () => this.dispatch('switchUser', 'MissTick') }>
+                                onClick={ () => this.$dispatch('switchUser', 'MissTick') }>
                                 MissTick events
                             </button>
                         </u></b>&nbsp;&nbsp;
                         <b><u>
                             <button
-                                onClick={ () => this.dispatch('switchUser', 'MrNice') }>
+                                onClick={ () => this.$dispatch('switchUser', 'MrNice') }>
                                 MrNice events
                             </button>
                         </u></b>
@@ -86,6 +89,6 @@ const App = reScopeState(
                 </div>
             );
         }
-    }
-    , Scope.scopes.appContext);
+    })
+;
 window.App              = App;

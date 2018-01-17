@@ -62,14 +62,17 @@ module.exports    = [
                     exclude: /node_modules/,
                     loader : 'babel-loader',
                     query  : {
-                        
-                        presets: [
+    
+                        cacheDirectory: true, //important for performance
+                        presets       : [
                             'babel-preset-react',
                             'babel-preset-es2015',
                             'babel-preset-stage-0'
+    
                         ].map(require.resolve),
-                        plugins: [
+                        plugins       : [
                             "babel-plugin-add-module-exports",
+                            'babel-plugin-transform-decorators-legacy'
                         ].map(require.resolve)
                     }
                 },
@@ -227,6 +230,7 @@ module.exports    = [
                         ].map(require.resolve),
                         plugins: [
                             "babel-plugin-add-module-exports",
+                            'babel-plugin-transform-decorators-legacy'
                         ].map(require.resolve)
                     }
                 },

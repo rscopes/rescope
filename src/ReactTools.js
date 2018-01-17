@@ -48,49 +48,53 @@ class Component extends React.Component {
     
     constructor( p, ctx, q ) {
         super(p, ctx, q);
+        let scope    =
+                p.__scope
+                || ctx.rescope;
+        this.$scope  = scope;
+        this.$stores = this.$scope.stores;
         if ( this.constructor.use ) {
-            this.state   = {
+            this.state = {
                 ...this.state,
-                ...ctx.rescope.map(this, this.constructor.use || [], false)// don't bind
+                ...scope.map(this, this.constructor.use || [], false)// don't bind
             }
-            this.$scope  = ctx.rescope;
-            this.$stores = this.$scope.stores;
         }
-        else this.render = () => <div>No Rescope here { super.name }</div>
+        else if ( !this.$scope )
+            this.render = () => <div>No Rescope here { super.name }</div>
     }
     
     dispatch( ...argz ) {
-        this.$scope.dispatch(...argz)
+        this.$scope && this.$scope.dispatch(...argz)
     }
     
     componentWillMount() {
         if ( this.constructor.use ) {
-            this.context.rescope.bind(this, this.constructor.use || [], false)
+            this.$scope.bind(this, this.constructor.use || [], false)
         }
     }
     
     componentWillUnmount() {
         this.constructor.use
-        && this.context.rescope.unBind(this, this.constructor.use || [])
+        && this.$scope.unBind(this, this.constructor.use || []);
+        this.$scope = null;
     }
     
     componentWillReceiveProps( np, nc ) {
-        if ( nc.rescope !== this.context.rescope ) {
-            this.constructor.use
-            && this.context.rescope.unBind(this, this.constructor.use || []);
-            
-            this.$scope  = nc.rescope;
+        let nScope = np.__scope
+            || nc.rescope || this.$scope;
+        
+        if ( nScope != this.$scope ) {
+            this.constructor.use && this.$scope.unBind(this, this.constructor.use);
+            this.$scope  = nScope;
             this.$stores = this.$scope.stores;
-            
-            this.constructor.use
-            && nc.rescope.bind(this, this.constructor.use || []);
+            this.constructor.use && nScope.bind(this, this.constructor.use);
         }
     }
     
     getChildContext() {
         return {
-            rescope: this.context.rescope,
-            $stores: this.context.$stores
+            rescope: this.$scope || this.context.rescope,
+            $stores: this.$scope.stores || this.context.$stores
         };
     }
     
@@ -114,20 +118,13 @@ class Component extends React.Component {
 function reScopeState( ...argz ) {
     let [BaseComponent, scope, use] = argz;
     
+    
     if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
         return function ( BaseComponent ) {
             return reScopeState(BaseComponent, ...argz)
         }
     }
     
-    if ( is.array(BaseComponent) ) {
-        use           = BaseComponent;
-        BaseComponent = React.Component;
-    }
-    if ( BaseComponent instanceof Scope || is.fn(BaseComponent) && !BaseComponent.prototype.isReactComponent ) {
-        scope         = BaseComponent;
-        BaseComponent = React.Component;
-    }
     if ( !use && is.array(scope) ) {
         use   = scope;
         scope = null;
@@ -135,7 +132,7 @@ function reScopeState( ...argz ) {
     
     use = [...(BaseComponent.use || []), ...(use || [])];
     
-    return class ReScopeProvider extends BaseComponent {
+    class ReScopeProvider extends BaseComponent {
         static childContextTypes = {
             ...(BaseComponent.childContextTypes || {}),
             rescope: PropTypes.object,
@@ -152,17 +149,23 @@ function reScopeState( ...argz ) {
         
         constructor( p, ctx, q ) {
             super(p, ctx, q);
-            this.$scope = is.fn(scope) && scope(this) || scope || ctx.rescope;
+            this.$scope =
+                p.__scope
+                || is.fn(scope) && scope(this, p, ctx) || scope
+                || ctx.rescope;
+            
             is.fn(scope)
             && this.$scope.retain()
+            
+            this.$stores = this.$scope.stores;
             if ( this.$scope && use.length ) {
-                this.state   = {
+                this.state = {
                     ...this.state,
                     ...this.$scope.map(this, use, false)// don't bind now due to SSR
                 }
-                this.$stores = this.$scope.stores;
             }
-            else this.render = () => <div>No Rescope here { BaseComponent.name }</div>
+            else if ( !this.$scope )
+                this.render = () => <div>No Rescope here { BaseComponent.name }</div>
         }
         
         dispatch( ...argz ) {
@@ -172,7 +175,6 @@ function reScopeState( ...argz ) {
         componentWillMount() {
             if ( use.length ) {
                 this.$scope.bind(this, use, false)
-                
             }
             super.componentWillMount && super.componentWillMount()
         }
@@ -188,11 +190,16 @@ function reScopeState( ...argz ) {
         }
         
         componentWillReceiveProps( np, nc ) {
-            if ( use.length && !scope && nc.rescope !== this.context.rescope ) {
-                this.context.rescope.unBind(this, use);
-                this.$scope  = nc.rescope;
+            let nScope = np.__scope
+                || scope && this.$scope
+                || nc.rescope
+                || this.$scope;
+            
+            if ( nScope != this.$scope ) {
+                use.length && this.$scope.unBind(this, use);
+                this.$scope  = nScope;
                 this.$stores = this.$scope.stores;
-                nc.rescope.bind(this, use);
+                use.length && nScope.bind(this, use);
             }
             super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
         }
@@ -201,11 +208,14 @@ function reScopeState( ...argz ) {
             let ctx = super.getChildContext && super.getChildContext() || {};
             return {
                 ...ctx,
-                rescope: this.$scope,
-                $stores: this.$scope.stores
+                rescope: this.$scope || this.context.rescope,
+                $stores: this.$scope.stores || this.context.$stores
+                
             };
         }
     }
+    
+    return ReScopeProvider;
 }
 
 /**
@@ -221,22 +231,21 @@ function reScopeState( ...argz ) {
  */
 function reScopeProps( ...argz ) {
     let [BaseComponent, scope, use] = argz;
-    if ( !use && is.array(scope) ) {
-        use   = scope;
-        scope = null;
-    }
     
     if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
         return function ( BaseComponent ) {
             return reScopeProps(BaseComponent, ...argz)
         }
     }
+    if ( !use && is.array(scope) ) {
+        use   = scope;
+        scope = null;
+    }
     
     use = [...(BaseComponent.use || []), ...(use || [])];
     
     
     return reScopeState(class ReScopePropsProvider extends React.Component {
-        static use               = use;
         static childContextTypes = {
             ...(BaseComponent.contextTypes || {}),
             rescope: PropTypes.object,
@@ -258,7 +267,7 @@ function reScopeProps( ...argz ) {
                                   dispatch={ this.props.dispatch }
                                   $stores={ this.$stores }/>
         }
-    }, scope);
+    }, scope, use);
 }
 
 export {

@@ -36,7 +36,8 @@ var is              = require('is'),
         target[id]       = new fn();
         target['_' + id] = fn;
     },
-    openScopes      = {};
+    openScopes      = {}
+;
 
 
 export default class Scope extends EventEmitter {
@@ -366,7 +367,7 @@ export default class Scope extends EventEmitter {
      * @param setInitial {bool} false to not propag initial value (default : true)
      */
     bind( obj, key, as, setInitial = true ) {
-        let lastRevs, data, reKey;
+        let lastRevs, data, refKeys;
         if ( key && !is.array(key) )
             key = [key];
         
@@ -375,16 +376,25 @@ export default class Scope extends EventEmitter {
             as         = null;
         }
         
-        reKey = key.map(id => (is.string(id) ? id : id.name));
+        refKeys = key
+            .map(id => (is.string(id) ? id : id.name))
+            .map(id => (this.parseRef(id)));
+        
         
         this._followers.push(
             [
                 obj,
                 key,
                 as || undefined,
-                lastRevs = reKey && reKey.reduce(( revs, id ) => (revs[id] = 0, revs), {})
+                lastRevs = refKeys.reduce(( revs, ref ) => {
+                    revs[ref.storeId] = revs[ref.storeId] || {
+                        rev : 0,
+                        refs: []
+                    };
+                    revs[ref.storeId].refs.push(ref);
+                    return revs;
+                }, {})
             ]);
-        
         this.mount(key);
         
         if ( setInitial && this._stable ) {
@@ -513,13 +523,26 @@ export default class Scope extends EventEmitter {
                 if ( !output.hasOwnProperty(id) && !is.fn(ctx[id])
                     && (!storesRevMap
                         || (storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined)
-                        || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id]))
+                        || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id].rev))
                 ) {
                     
                     updated    = true;
                     output[id] = this.data[id];
-                    if ( storesRevMap && storesRevMap.hasOwnProperty(id) )
-                        storesRevMap[id] = ctx[id]._rev;
+                    
+                    if ( storesRevMap && storesRevMap.hasOwnProperty(id) ) {
+                        storesRevMap[id].rev = ctx[id]._rev;
+                        storesRevMap[id].refs.forEach(
+                            ref => {
+                                //console.warn("update ref ", ref.ref, this.retrieve(ref.path));
+                                output[ref.alias] = this.retrieve(ref.path)
+                                
+                            }
+                        )
+                    }
+                    else {
+                        //console.warn("update ", id, this.data[id]);
+                        output[id] = this.data[id];
+                    }
                     
                 }
             }
@@ -565,8 +588,15 @@ export default class Scope extends EventEmitter {
         return output;
     }
     
-    get displayName(){
-        return "Scope::"+this._id;
+    parseRef( _ref ) {
+        let ref = _ref.split(':');
+        ref[0]  = ref[0].split('.');
+        return {
+            storeId: ref[0][0],
+            path   : ref[0],
+            alias  : ref[1] || ref[0][ref[0].length - 1],
+            ref    : _ref
+        };
     }
     
     dispatch( action, data ) {
@@ -678,7 +708,7 @@ export default class Scope extends EventEmitter {
     
     _propag() {
         if ( this._followers.length )
-            this._followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs } ) => {
+            this._followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs, 3: remaps } ) => {
                 let data = this.getUpdates(lastRevs);
                 if ( !data ) return;
                 if ( typeof obj != "function" ) {
@@ -838,8 +868,8 @@ export default class Scope extends EventEmitter {
         for ( let key in ctx )
             if ( !is.fn(ctx[key]) ) {
                 //if ( ctx[key].scopeObj === this )
-                    ctx[key].dispose("scoped");
-
+                ctx[key].dispose("scoped");
+                
                 //ctx[key] = ctx[key].constructor;
             }
         this.__mixed = this.data = this.state = this.scope = this.stores = null;

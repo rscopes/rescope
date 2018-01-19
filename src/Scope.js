@@ -475,7 +475,7 @@ export default class Scope extends EventEmitter {
     retrieve( path = "" ) {
         path = is.string(path) ? path.split('.') : path;
         return path && this.stores[path[0]] &&
-            this.stores[path[0]].retrieve(path.splice(1));
+            this.stores[path[0]].retrieve(path.slice(1));
     }
     
     /**

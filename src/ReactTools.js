@@ -169,7 +169,7 @@ function reScopeState( ...argz ) {
                 }
             }
             else if ( !this.$scope )
-                this.render = () => <div>No Rescope here { BaseComponent.name }</div>
+                this.render = () => <div>No ReScope context in { BaseComponent.name }</div>
         }
         
         $dispatch( ...argz ) {
@@ -184,11 +184,12 @@ function reScopeState( ...argz ) {
         }
         
         componentWillUnmount() {
-            super.componentWillUnmount && super.componentWillUnmount()
-            use.length
-            && this.$scope.unBind(this, use);
-            is.fn(scope)
-            && this.$scope.dispose();
+            super.componentWillUnmount && super.componentWillUnmount();
+            
+            use.length && this.$scope.unBind(this, use);
+            
+            is.fn(scope) && this.$scope.dispose();
+            
             delete this.$stores;
             delete this.$scope;
         }

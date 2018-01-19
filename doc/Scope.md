@@ -66,6 +66,9 @@ let MyAppScope = new Scope({
            /*...*/
            return {data:"ready",_for:'render'}
         }
+        hasDataChange( newDatas ) {
+            return super.hasDataChange(state);// default : check == of data & data.*
+        }
         shouldPropag(state){
             return super.shouldPropag(state);
         }
@@ -92,7 +95,7 @@ MyLocalScope.dispatch("activateSalt", true)
 ```
 ## Events
 
-Rescope use the concept of "Stability", so there only 4 events :
+ReScope use the concept of "Stability", so there only 4 events :
 
  - "stable"     (when the store current state is sync with the store data)
  - "unstable"   (see "Stability" below)
@@ -181,6 +184,7 @@ let MyScope = new Scope({...stores_map}, {/* config */});
 
 ## Serialize & restore app state & data
 
+###
 
 ## Auto destroy scopes
 

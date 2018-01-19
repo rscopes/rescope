@@ -52,7 +52,7 @@ class Component extends React.Component {
                 p.__scope
                 || ctx.rescope;
         this.$scope  = scope;
-        this.$stores = this.$scope.stores;
+        this.$stores = this.$scope && this.$scope.stores;
         if ( this.constructor.use ) {
             this.state = {
                 ...this.state,
@@ -158,7 +158,7 @@ function reScopeState( ...argz ) {
             is.fn(scope)
             && this.$scope.retain()
             
-            this.$stores = this.$scope.stores;
+            this.$stores = this.$scope && this.$scope.stores;
             if ( this.$scope && use.length ) {
                 this.state = {
                     ...this.state,

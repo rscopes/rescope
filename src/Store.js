@@ -236,9 +236,9 @@ export default class Store extends EventEmitter {
                 else {
                     key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                     name  = key[1];
-                    path  = key[2] && key[2].split('.').slice(1);
+                    path  = key[2] && key[2].substr(1);
                     store = scope.stores[key[1]];
-                    alias = key[3] || path && path[path.length - 1] || key[1];
+                    alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
                 }
                 
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
@@ -290,9 +290,9 @@ export default class Store extends EventEmitter {
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                         name  = key[1];
-                        path  = key[2] && key[2].split('.');
+                        path  = key[2] && key[2].substr(1);
                         store = scope.stores[key[1]];
-                        alias = key[3] || path && path[path.length - 1] || key[1];
+                        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
                     }
                     
                     store && !is.fn(store) && store.unBind(component, alias, path)

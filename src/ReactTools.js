@@ -30,6 +30,8 @@ import is from 'is'
 import PropTypes from 'prop-types';
 import Scope from './Scope';
 
+const SimpleObjectProto = ({}).constructor;
+
 /**
  * Inheritable ReScope "HOC" (High Order Component)
  *
@@ -113,33 +115,34 @@ class Component extends React.Component {
  * @param BaseComponent {React.Component} Base React Component ( default : React.Component )
  * @param scope {ReScope.Scope|function} the propagated Scope where the stores will be searched
  * @param use {array} the list of stores injected from the current scope
+ * @param additionalContext {Object} context to be propagated
  * @returns {ReScopeProvider}
  */
 function reScopeState( ...argz ) {
-    let [BaseComponent, scope, use] = argz;
-    
+    let BaseComponent     = (!argz[0] || argz[0].prototype && argz[0].prototype.isReactComponent) && argz.shift(),
+        scope             = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
+        use               = (!argz[0] || is.array(argz[0])) && argz.shift(),
+        additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift();
     
     if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
         return function ( BaseComponent ) {
-            return reScopeState(BaseComponent, ...argz)
+            return reScopeState(BaseComponent, scope, use, additionalContext)
         }
     }
     
-    if ( !use && is.array(scope) ) {
-        use   = scope;
-        scope = null;
-    }
-    
-    use = [...(BaseComponent.use || []), ...(use || [])];
+    use               = [...(BaseComponent.use || []), ...(use || [])];
+    additionalContext = additionalContext && Object.keys(additionalContext).reduce(( h, k ) => (h[k] = PropTypes.any, h), {}) || {};
     
     class ReScopeProvider extends BaseComponent {
         static childContextTypes = {
             ...(BaseComponent.childContextTypes || {}),
+            ...(additionalContext),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         }
         static contextTypes      = {
             ...(BaseComponent.contextTypes || {}),
+            ...(additionalContext),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         }
@@ -227,32 +230,34 @@ function reScopeState( ...argz ) {
  * @param scope {ReScope.Scope|function} the propagated Scope where the stores will be searched ( default : the default
  *     ReScope::Scope::scopes.static scope )
  * @param use {array} the list of stores to inject from the current scope
+ * @param additionalContext {Object} context to be propagated
  * @returns {ReScopeProvider}
  */
 function reScopeProps( ...argz ) {
-    let [BaseComponent, scope, use] = argz;
+    let BaseComponent     = (!argz[0] || argz[0].prototype && argz[0].prototype.isReactComponent) && argz.shift(),
+        scope             = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
+        use               = (!argz[0] || is.array(argz[0])) && argz.shift(),
+        additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift();
     
     if ( !(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent) ) {
         return function ( BaseComponent ) {
-            return reScopeProps(BaseComponent, ...argz)
+            return reScopeProps(BaseComponent, scope, use, additionalContext)
         }
     }
-    if ( !use && is.array(scope) ) {
-        use   = scope;
-        scope = null;
-    }
     
-    use = [...(BaseComponent.use || []), ...(use || [])];
-    
+    use               = [...(BaseComponent.use || []), ...(use || [])];
+    additionalContext = additionalContext && Object.keys(additionalContext).reduce(( h, k ) => (h[k] = PropTypes.any, h), {}) || {};
     
     return reScopeState(class ReScopePropsProvider extends React.Component {
         static childContextTypes = {
             ...(BaseComponent.contextTypes || {}),
+            ...(additionalContext),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         };
         static contextTypes      = {
             ...(BaseComponent.contextTypes || {}),
+            ...(additionalContext),
             rescope: PropTypes.object,
             $stores: PropTypes.object
         };

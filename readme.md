@@ -24,7 +24,7 @@ And/or maintain "ready-made" / "final" data for external use. <br>
 Stores data can be propagated to React Components state / props, or simple watchers. <br>
 ReScope will give synchronized results data (if possible), by instantiating theirs dependencies, or update them as soon as they are ready<br>
 
-When a store receives state mutations, <br>
+Next, when a store receives state mutations, <br>
 the resulting data update is propagated to the dependent stores, components and watchers.
 
 ### And with Scopes

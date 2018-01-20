@@ -133,7 +133,7 @@ class AppState extend Store{
                 return {some:'mutations'};
                 // or
                 return; // to not change the state
-                // wait, release, setState & push stays callable
+                // wait, release, setState & push remain callable
             }
         }
     }
@@ -232,7 +232,51 @@ export default class myInterpolatedDataStore extends Store {
 
         }
 
-        apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
+        apply( data, { mySwitchValue, someSource2 }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```
+
+## How to choose if data changes should be applied
+
+```jsx
+export default class myInterpolatedDataStore extends Store {
+
+        static use = {
+                "!someSource.someValue"  : "mySwitchValue",// require someSource.someValue != false
+                "!someRequieredSource"   : true,
+                "someSource2"            : "someSource2"
+        };
+
+        hasDataChange( newDatas ) {
+            return super.hasDataChange(state);// default : compare old and new data & data.*
+        }
+
+        apply( data, { mySwitchValue, someSource2 }, changes ) {
+            /*...*/
+            return data;
+        }
+};
+```
+
+## How to choose if data changes should be propagated
+
+```jsx
+export default class myInterpolatedDataStore extends Store {
+
+        static use = {
+                "!someSource.someValue"  : "mySwitchValue",// require someSource.someValue != false
+                "!someRequieredSource"   : true,
+                "someSource2"            : "someSource2"
+        };
+
+        shouldPropag(data){
+            return true;
+        }
+
+        apply( data, { mySwitchValue, someSource2 }, changes ) {
             /*...*/
             return data;
         }

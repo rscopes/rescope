@@ -36,13 +36,13 @@ export default MyComp;
 ### reScopeState
 
 Will create & return a ReScope Component that inherit the defined Component.
-The component will inject the desired stores data as state values
+ReScope will inject the desired stores data as state values, and provide a given Scope via the React Context if present
 
 ```
 import React from "react";
 import {reScopeState} from "rescope";
 
-@reScopeState(["appState"])
+@reScopeState(["appState", "appState.someSubValue:asAnyAlias"])
 // or @reScopeState(scopeFromSomewhere, ["appState"])
 // or @reScopeState((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
@@ -53,7 +53,9 @@ class MyComp extends React.Component {
                 {
                     this.state.appState.someValues
                 }
-
+                {
+                    this.state.asAnyAlias
+                }
             </div>
         );
     }
@@ -88,7 +90,31 @@ class MyComp extends Component {
 export default MyComp;
 ```
 
-## Inject stores
+## Providing Scope via react contexts
 
 
-## Propag stores
+```
+
+import React from "react";
+import scopeFromSomewhere from "./MyApplicationContext";
+import {reScopeState, Scope} from "rescope";
+
+class MyCompWithoutRescope extends React.Component {
+    render() {
+        return (
+            <div>
+                <h1>MyComp</h1>
+
+               All childs will use "scopeFromSomewhere"
+
+            </div>
+        );
+    }
+};
+
+const MyCompWithReScopeContext = reScopeState(MyCompWithoutRescope, scopeFromSomewhere);
+// or const MyCompWithReScopeContext = reScopeState(MyCompWithoutRescope, (element, context)=>scopeFromSomewhere);
+
+export default MyCompWithReScopeContext;
+```
+

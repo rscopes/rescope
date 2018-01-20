@@ -1,6 +1,6 @@
 # Scopes
 
-## Theoretical examples  :
+## General & theoretical Scope definition example  :
 
 ``` jsx
 
@@ -99,13 +99,12 @@ ReScope use the concept of "Stability", so there only 4 events :
 
  - "stable"     (when the store current state is sync with the store data)
  - "unstable"   (see "Stability" below)
- - "stableTree" (when all child scopes are stable)
- - _"update"    (Store only : when a store propag his data)_
+ - "stableTree" (when all child scopes are stable, for serialization, etc)
+ - "update"     (When the scopes stores data are updated)
 
 ## Stability
 
-The scopes have the wait & release API, but they are note used directly.<br>
-Theirs stability is triggered from theirs stores; When a store go unstable, his base scope & parents does the same.
+The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.
 
 ## Structuring Scopes
 
@@ -177,14 +176,12 @@ let MyScope = new Scope({...stores_map}, {/* config */});
 
 ```
 
-## Bind Scoped stores updates
+## Bind Scoped stores updates without React HOCs
 
 - Using Scope:map()
 - Using Scope:bind()
 
 ## Serialize & restore app state & data
-
-###
 
 ## Auto destroy scopes
 

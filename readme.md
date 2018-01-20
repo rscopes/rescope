@@ -17,15 +17,15 @@ ReScope stores look like "React components for data". <br>
 Based on key values and the results of other available stores; <br>
 They keep the corresponding data accordingly. <br>
 
-Some stores manage part of or the entire "App state", <br>
-Others maintain intermediate and / or asynchronous resources, <br>
-And others maintain "ready-made" or "final" data for external use. <br>
+Stores can manage part of, or the entire "App state", <br>
+maintain intermediate and / or asynchronous resources, <br>
+And/or maintain "ready-made" / "final" data for external use. <br>
 
-When a React component injects one of the available stores into its context / scope, <br>
-ReScope instantiates synchronously (if possible) the dependencies of the injected stores. <br>
+Stores data can be propagated to React Components state / props, or simple watchers. <br>
+ReScope will give synchronized results data (if possible), by instantiating theirs dependencies, or update them as soon as they are ready<br>
 
-Finally, when a store receives a state mutation, <br>
-the resulting data update is propagated to the dependent stores, components and listeners.
+When a store receives state mutations, <br>
+the resulting data update is propagated to the dependent stores, components and watchers.
 
 ### And with Scopes
 

@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "Predictable, multi-scopes, multi-stores, state management system",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/ReScope.js",

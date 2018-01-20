@@ -7,42 +7,47 @@
 
 ## What ?
 
-ReScope is a simple to use, **flexible** & effective Store system inspired by ReactJS methods.
+ReScope is a flexible, effective and easy to use State management system inspired by ReactJS methods.
 
-ReScope stores look like "React components for data", they use the results of other data components as input, plus some key values;
-and maintains the corresponding "rendered" data as a result.
+## How ?
 
-ReScope Stores are grouped by scopes, and these scopes allow :
-- Scopes inheriting & mixing,
-- Synchronized (or not) init of the stores
-- Easy serialisation, export & restore of theirs states.
-- Chain destroy ( retain / dispose )
-- Easy async management
+### With Stores
 
+ReScope stores look like "React components for data". <br>
+Based on key values and the results of other available stores; <br>
+They keep the corresponding data accordingly. <br>
 
-## Why ?
+Some stores manage part of or the entire "App state", <br>
+Others maintain intermediate and / or asynchronous resources, <br>
+And others maintain "ready-made" or "final" data for external use. <br>
 
-Because :
+When a React component injects one of the available stores into its context / scope, <br>
+ReScope instantiates synchronously (if possible) the dependencies of the injected stores. <br>
 
-- This is simple, flexible & effective,
-- Seems like "reversed React Components" for data,
-- As Rescope stores are highly specialised and serializable, they could easly be moved in webworkers & node backends,
-- This allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores,
+Finally, when a store receives a state mutation, <br>
+the resulting data update is propagated to the dependent stores, components and listeners.
+
+### And with Scopes
+
+Simple application only need 1 global context/scope.
+When we need more & to remain flexible and scalable,<br>
+The stores scopes/contexts can :
+- be inherited & mixed,
+- use automatic & chained destroy
+- synchronously serialize / restore theirs state & data
+
+## What else ?
+
+- React "high order components" factories
+- Allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores,
 - 1 stem super class to rule all the async process
-- Do all the jobs and really don't care witch kind of templates/whatever receive the data
-
-### What else ?
-
-- Easy stores & deps injections
+- Easy remapping & aliasing of dependencies data,
 - Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
 - Inheritable ES6 class
-- Inheritable & mixable Scopes
 - Easy, partial or complete scopes serialization
 - Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
-- Flexible Async management
 - Lazy store instantiation
-- Compatible webpack & nodejs
 - Easy pairing of remote / webworker based stores
 - Library agnostic
 - Another alternative to Redux & co
@@ -50,7 +55,11 @@ Because :
 
 ## Doc ?
 
-### Work in progress doc [here](doc)
+### Work in progress doc
+
+#### [About Stores](doc/Store.md)
+#### [About Scopes](doc/Scope.md)
+#### [About React HOCs](doc/React.md)
 
 ### (Dumb) Simple \& working examples [here](src/examples)
 

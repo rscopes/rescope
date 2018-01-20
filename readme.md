@@ -27,7 +27,7 @@ ReScope will give synchronized results data (if possible), by instantiating thei
 Next, when a store receives state mutations, <br>
 the resulting data update is propagated to the dependent stores, components and watchers.
 
-### And with Scopes
+### And Scopes
 
 Simple application only need 1 global context/scope.<br>
 When we need more & to remain flexible and scalable,

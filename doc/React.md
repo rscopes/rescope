@@ -4,7 +4,7 @@
 
 ### reScopeProps
 
-Will replace the defined component with a ReScope Component that will render the defined Component with the desired stores data as props.
+Will replace the defined component with a ReScope Component that will render it with the desired stores data as props.
 
 ```
 
@@ -36,7 +36,7 @@ export default MyComp;
 ### reScopeState
 
 Will create & return a ReScope Component that inherit the defined Component.
-ReScope will inject the desired stores data as state values, and provide a given Scope via the React Context if present
+ReScope will inject & update the desired stores data as state values, and provide the given Scope via the React Context if provided
 
 ```
 import React from "react";

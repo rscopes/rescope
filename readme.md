@@ -13,14 +13,15 @@ ReScope is a flexible, effective and easy to use State management system inspire
 
 By using specialized & serializable "Data Stores" in a Flux oriented architecture.
 
-### Data Stores ?
+### Stores ?
 
 ReScope stores look like "React components for data". <br>
-They use determining values and / or others the stores data as state and maintains the corresponding data accordingly.
+They use determining values and / or others stores data as state,<br>
+and maintains the corresponding data accordingly.
 
-Stores can manage part of, or the entire "App state", <br>
-maintain intermediate and / or asynchronous resources, <br>
-And/or maintain "ready-made" / "final" data for external use. <br>
+Stores can manage part of, or the entire App state's determining values, <br>
+maintain intermediate, possibly asynchronous resources, <br>
+And/or finals or ready-to-render data. <br>
 
 Theirs data can be propagated to React Components state / props, stores or simple watchers; <br>
 ReScope will give synchronized results data (if possible), by instantiating theirs dependencies, or update them as soon as they are ready<br>

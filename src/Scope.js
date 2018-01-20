@@ -217,7 +217,7 @@ export default class Scope extends EventEmitter {
             return this.parent._watchStore(...arguments);
         }
         if ( !this.__listening[id] && !is.fn(this.__scope[id]) ) {
-            this.__scope[id].retain("scoped");
+            !this.__scope[id]._autoDestroy && this.__scope[id].retain("scoped");
             !this.__scope[id].isStable() && this.wait(id);
             this.__scope[id].on(
                 this.__listening[id] = {
@@ -867,10 +867,7 @@ export default class Scope extends EventEmitter {
         }
         for ( let key in ctx )
             if ( !is.fn(ctx[key]) ) {
-                //if ( ctx[key].scopeObj === this )
-                ctx[key].dispose("scoped");
-                
-                //ctx[key] = ctx[key].constructor;
+                !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
             }
         this.__mixed = this.data = this.state = this.scope = this.stores = null;
         this._data = this._state = this._stores = null;

@@ -214,7 +214,7 @@ describe('Rescope', function () {
             .mount("local_5")
             .bind(
                 function fn( _data ) {
-                    console.log("!!!!", _data, TestContext.data.local_5);
+                    //console.log("!!!!", _data, TestContext.data.local_5);
                     TestContext.unBind(fn,
                                        "local_5");
                     if ( _data.local_5.remapTest == 'ok' ) done();

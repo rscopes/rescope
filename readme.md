@@ -29,9 +29,9 @@ the resulting data update is propagated to the dependent stores, components and 
 
 ### And with Scopes
 
-Simple application only need 1 global context/scope.
-When we need more & to remain flexible and scalable,<br>
-The stores scopes/contexts can :
+Simple application only need 1 global context/scope.<br>
+When we need more & to remain flexible and scalable,
+the stores scopes/contexts can :
 - be inherited & mixed,
 - use automatic & chained destroy
 - synchronously serialize / restore theirs state & data
@@ -40,15 +40,15 @@ The stores scopes/contexts can :
 
 - React "high order components" factories
 - Allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores,
-- 1 stem super class to rule all the async process
+- Easy pairing of remote / webworker based stores
 - Easy remapping & aliasing of dependencies data,
+- 1 stem super class to rule all the async process
 - Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
 - Inheritable ES6 class
 - Easy, partial or complete scopes serialization
 - Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
-- Lazy store instantiation
-- Easy pairing of remote / webworker based stores
+- Lazy stores instantiation & active stores auto destroy
 - Library agnostic
 - Another alternative to Redux & co
 - etc..

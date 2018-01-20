@@ -89,7 +89,10 @@ export default class Store extends EventEmitter {
         this.__locks      = { all: 0 };
         this._onStabilize = [];
         
-        this._persistenceTm = cfg.persistenceTm || this.constructor.persistenceTm;
+        // autoDestroyTm
+        this._autoDestroy   = !!this._persistenceTm;
+        this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
+        
         if ( is.string(argz[0]) ) {
             if ( scope.__scope[name] )
                 console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
@@ -99,8 +102,6 @@ export default class Store extends EventEmitter {
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
         }
-        // this.state      = this.state || {};
-        
         
         this.name = name;
         

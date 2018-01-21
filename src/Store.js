@@ -36,10 +36,11 @@ var is           = require('is'),
     EventEmitter = require('./Emitter'),
     shortid      = require('shortid'),
     objProto     = Object.getPrototypeOf({});
+
 /**
  * @class Store
  */
-export default class Store extends EventEmitter {
+class Store extends EventEmitter {
     
     static use                  = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
@@ -92,12 +93,12 @@ export default class Store extends EventEmitter {
         // autoDestroyTm
         this._autoDestroy   = !!this._persistenceTm;
         this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
-        
-        if ( is.string(argz[0]) ) {
-            if ( scope.__scope[name] )
-                console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-            scope.__scope[name] = this;
-        }
+        //
+        //if ( is.string(argz[0]) ) {
+        //    if ( scope.__scope[name] )
+        //        console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
+        //    scope.__scope[name] = this;
+        //}
         
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
@@ -154,28 +155,35 @@ export default class Store extends EventEmitter {
         
         this._followers = [];
         
-        if ( _static.data !== undefined )
-            this.data = { ..._static.data };
-        if ( cfg.hasOwnProperty("data") && cfg.data !== undefined )
-            this.data = cfg.data;
-        if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-            initialState = { ...initialState, ...cfg.state };
-        
         if ( apply )
             this.apply = apply;
         
-        
-        if ( initialState || this._use.length ) {// sync apply
-            this.state = {
-                ...(initialState || {}),
-                ...scope.map(this, this._use)
-            };
-            if ( this.shouldApply(this.state) && this.data === undefined ) {
-                this.data = this.apply(this.data, this.state, this.state);
-                applied   = true;
+        if ( cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + name] ) {
+            this.restore(cfg.snapshot);
+            this._stable = true;
+            scope.bind(this, this._use, false);
+        }
+        else {
+            
+            if ( _static.data !== undefined )
+                this.data = { ..._static.data };
+            if ( cfg.hasOwnProperty("data") && cfg.data !== undefined )
+                this.data = cfg.data;
+            if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
+                initialState = { ...initialState, ...cfg.state };
+            
+            
+            if ( initialState || this._use.length ) {// sync apply
+                this.state = {
+                    ...(initialState || {}),
+                    ...scope.map(this, this._use)
+                };
+                if ( this.shouldApply(this.state) && this.data === undefined ) {
+                    this.data = this.apply(this.data, this.state, this.state);
+                    applied   = true;
+                }
             }
         }
-        
         if ( (this.data !== undefined || applied) && !this.__locks.all ) {
             this._stable = true;
             this._rev++;
@@ -656,6 +664,67 @@ export default class Store extends EventEmitter {
     }
     
     /**
+     * is stable
+     * @returns bool
+     */
+    serialize( output = {}, completeState ) {
+        let refs                                    =
+                this._use.reduce(
+                    ( map, key ) => {//todo
+                        let name,
+                            alias, path,
+                            store;
+                        if ( key.store && key.name ) {
+                            alias = name = key.name;
+                        }
+                        else if ( is.fn(key) ) {
+                            name = alias = key.name || key.defaultName;
+                        }
+                        else {
+                            key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                            name  = key[1];
+                            path  = key[2] && key[2].substr(1);
+                            alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+                        }
+                    
+                        if ( !this.scopeObj.stores[name].scopeObj._isLocalId )
+                            map[alias] = this.scopeObj.stores[name].scopeObj._id + '/' + name;
+                    
+                        return map;
+                    }, {}
+                ) || {};
+        output[this.scopeObj._id + '/' + this.name] = {
+            state: completeState
+                ? { ...this.state }
+                : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {}),
+            data : this.data,
+            refs
+        };
+        return output;
+    }
+    
+    /**
+     * is stable
+     * @returns bool
+     */
+    restore( snapshot ) {
+        let snap = snapshot[this.scopeObj._id + '/' + this.name];
+        if ( snap ) {
+            this.state = snap.state;
+            Object.keys(snap.refs).forEach(
+                ( key ) => {//todo
+                    if ( snapshot[snap.refs[key]] )
+                        snap.state[key] = snapshot[snap.refs[key]].data;
+                    else
+                        console.warn('not found : ', key, snap.refs[key])
+                }
+            )
+            
+            this.data = snap.data;
+        }
+    }
+    
+    /**
      * Un bind this store off the given component-key
      * @param obj
      * @param key
@@ -846,3 +915,10 @@ export default class Store extends EventEmitter {
         this.removeAllListeners();
     }
 }
+
+
+Store.Seed = class SeedStore extends Store {
+    static SEED = true;
+}
+
+export default Store;

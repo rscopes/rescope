@@ -55,7 +55,7 @@ describe('Rescope', function () {
     });
     it('should require well', function ( done ) {
         this.timeout(Infinity);
-        Rescope = require('../dist/Rescope');
+        Rescope = require('../dist/ReScope');
         done(!Rescope)
     });
     it('should create basic Contexts well', function ( done ) {
@@ -91,6 +91,7 @@ describe('Rescope', function () {
                 }
             },
             {
+                id: 'static'
                 //persistenceTm: 5000,
                 //autoDestroy  : true
             }
@@ -124,6 +125,7 @@ describe('Rescope', function () {
                 }
             },
             {
+                key          : 'TestContext',
                 parent       : StaticContext,
                 persistenceTm: 3000,
                 autoDestroy  : true
@@ -163,7 +165,7 @@ describe('Rescope', function () {
                                      data.local_3.globalStoreWithActions.ok &&
                                      data.local_3.globalStoreWithActions.updated;
             
-                             !ok && console.log(data)
+                             !ok && console.log("!!!!!!!!!", data)
             
             
                              if ( ok ) done();
@@ -277,7 +279,8 @@ describe('Rescope', function () {
             done(new Error("Not working !!!"));
         
     });
-    it('should emit stableTree well', function ( done ) {
+    let serializeTest, FlyingContext;
+    it('should emit stableTree & serialize well', function ( done ) {
         this.timeout(3000);
         
         let
@@ -288,13 +291,14 @@ describe('Rescope', function () {
                     }
                 },
                 {
+                    key          : 'TestContext',
                     parent       : StaticContext,
                     persistenceTm: 3000,
                     autoDestroy  : true
                 }
             );
         let
-            TestContext2 = new Rescope.Scope(
+            TestContext2 = FlyingContext = new Rescope.Scope(
                 {
                     local_2: class local_2 extends Rescope.Store {
                         static use = ["test0"];
@@ -303,6 +307,7 @@ describe('Rescope', function () {
                     }
                 },
                 {
+                    id          : 'FlyingContext',
                     parent       : TestContext0,
                     persistenceTm: 3000,
                     autoDestroy  : true
@@ -312,19 +317,41 @@ describe('Rescope', function () {
             "stableTree",
             () => {
                 
-                if ( TestContext2.data.local_2.yiha )
+                if ( TestContext2.data.local_2.yiha ) {
+                    serializeTest = StaticContext.serialize();
+                    //console.warn(serializeTest);
                     done();
+                }
                 else done(new Error("fail "))
                 
             }
         );
-        TestContext2.mount("local_2")
-        TestContext2.stores.local_2.setState({ yiha: true });
+        FlyingContext.mount("local_2")
+        FlyingContext.stores.local_2.setState({ yiha: true });
         
         //TestContext2.mixin(StaticContext);
         
     });
     it('should dispatch well', function ( done ) {
+        TestContext.dispatch("someAction", 2).then(
+            ( data ) => {
+                let ok = TestContext.data.globalStoreWithActions.value;
+                !ok && console.log(data)
+                if ( ok ) done();
+                else done(new Error("fail "))
+            }
+        );
+    });
+    it('should restore with force (reset) well (fast test)', function ( done ) {
+        StaticContext.restore(serializeTest, true);
+        let ok = !TestContext.data.globalStoreWithActions.value &&
+            FlyingContext.data.local_2.yiha;
+        !ok && console.log("!!!!!!!!!!!!!", TestContext.data.globalStoreWithActions)
+        if ( ok ) done();
+        else done(new Error("fail "))
+    });
+    
+    it('same action should dispatch same result well', function ( done ) {
         TestContext.dispatch("someAction", 2).then(
             ( data ) => {
                 let ok = TestContext.data.globalStoreWithActions.value;

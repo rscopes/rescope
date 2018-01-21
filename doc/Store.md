@@ -12,7 +12,7 @@ Rescope use the concept of "Stability", so there only 4 events :
 ## Stability
 
 When state updates occurs, a store state stop being coherent with its results data.<br>
-In Rescope stores, the role of the "apply" function is to make the store data predictable basing on its state.
+In ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
 
 This is done in 2 way :
  - In a synchronized way, by returning a new data hashmap from the "apply" fn

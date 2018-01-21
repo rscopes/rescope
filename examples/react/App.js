@@ -6137,12 +6137,14 @@
 	     */
 	    function Scope(storesMap) {
 	        var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-	            id = _ref2.id,
 	            parent = _ref2.parent,
+	            key = _ref2.key,
+	            id = _ref2.id,
 	            state = _ref2.state,
 	            data = _ref2.data,
 	            name = _ref2.name,
-	            incrementId = _ref2.incrementId,
+	            _ref2$incrementId = _ref2.incrementId,
+	            incrementId = _ref2$incrementId === undefined ? !!key : _ref2$incrementId,
 	            defaultMaxListeners = _ref2.defaultMaxListeners,
 	            persistenceTm = _ref2.persistenceTm,
 	            autoDestroy = _ref2.autoDestroy,
@@ -6153,7 +6155,13 @@
 	        var _this = _possibleConstructorReturn(this, (Scope.__proto__ || Object.getPrototypeOf(Scope)).call(this));
 	
 	        _this._maxListeners = defaultMaxListeners || _this.constructor.defaultMaxListeners;
+	
+	        id = id || key && (parent && parent._id || '') + '::' + key;
+	
+	        _this._isLocalId = !id;
+	
 	        id = id || "_____" + shortid.generate();
+	
 	        if (openScopes[id] && !incrementId) {
 	            var _ret;
 	
@@ -6162,13 +6170,12 @@
 	            return _ret = openScopes[id], _possibleConstructorReturn(_this, _ret);
 	        } else if (openScopes[id] && incrementId) {
 	            var i = -1;
-	            while (openScopes[id + '/' + ++i]) {}
-	            id = id + '/' + i;
+	            while (openScopes[id + '[' + ++i + ']']) {}
+	            id = id + '[' + i + ']';
 	        }
 	
 	        _this._id = id;
 	        openScopes[id] = _this;
-	        _this._isLocalId = true;
 	        _this._persistenceTm = persistenceTm || _this.constructor.persistenceTm;
 	
 	        _this.stores = {};
@@ -6253,12 +6260,12 @@
 	         * @param data
 	         * @returns {Scope}
 	         */
-	        value: function mount(storesList, state, data) {
+	        value: function mount(storesList, snapshot, state, data) {
 	            var _this2 = this;
 	
 	            if (is.array(storesList)) {
 	                storesList.forEach(function (k) {
-	                    return _this2._mount(k, state && state[k], data && data[k]);
+	                    return _this2._mount(k, snapshot, state, data);
 	                });
 	            } else {
 	                this._mount.apply(this, arguments);
@@ -6267,7 +6274,7 @@
 	        }
 	    }, {
 	        key: '_mount',
-	        value: function _mount(id, state, data) {
+	        value: function _mount(id, snapshot, state, data) {
 	            if (typeof id !== 'string') {
 	                this.register(_defineProperty({}, id.name, id.store));
 	                id = id.name;
@@ -6278,21 +6285,21 @@
 	
 	                //ask mixed || parent
 	                if (this.__mixed.reduce(function (mounted, ctx) {
-	                    return mounted || ctx._mount(id, state, data);
+	                    return mounted || ctx._mount(id, snapshot, state, data);
 	                }, false) || !this.parent) return;
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
-	            }
-	            var store = this.__scope[id],
-	                ctx = void 0;
-	            if (is.fn(store)) {
-	                this.__scope[id] = new store(this, { state: state, data: data });
 	            } else {
-	                if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+	                var store = this.__scope[id],
+	                    ctx = void 0;
+	                if (is.fn(store)) {
+	                    this.__scope[id] = new store(this, { snapshot: snapshot, name: id, state: state, data: data });
+	                } else if (snapshot) store.restore(snapshot);else {
+	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
-	                if (data !== undefined) store.push(data);
+	                    if (data !== undefined) store.push(data);
+	                }
+	                this._watchStore(id);
 	            }
-	
-	            this._watchStore(id);
 	
 	            return this.__scope[id];
 	        }
@@ -6301,15 +6308,12 @@
 	        value: function _watchStore(id, state, data) {
 	            var _this3 = this;
 	
-	            if (!this.__scope[id]) {
-	                var _parent2;
-	
-	                //ask mixed || parent
-	                if (this.__mixed.reduce(function (mounted, ctx) {
-	                    return mounted || ctx._watchStore(id, state, data);
-	                }, false) || !this.parent) return;
-	                return (_parent2 = this.parent)._watchStore.apply(_parent2, arguments);
-	            }
+	            //if ( !this.__scope[id] ) {//ask mixed || parent
+	            //    if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
+	            //        !this.parent )
+	            //        return;
+	            //    return this.parent._watchStore(...arguments);
+	            //}
 	            if (!this.__listening[id] && !is.fn(this.__scope[id])) {
 	                !this.__scope[id]._autoDestroy && this.__scope[id].retain("scoped");
 	                !this.__scope[id].isStable() && this.wait(id);
@@ -6452,7 +6456,7 @@
 	                        return _this6.__scope[id] && _this6.__scope[id].state;
 	                    },
 	                    set: function set(v) {
-	                        return _this6._mount(id, v);
+	                        return _this6._mount(id, null, v);
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._data.prototype, id, {
@@ -6666,50 +6670,76 @@
 	            updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
 	            return updated && output;
 	        }
+	    }, {
+	        key: '_getAllChilds',
+	        value: function _getAllChilds() {
+	            var childs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	
+	            childs.push.apply(childs, _toConsumableArray(this._childScopes));
+	            this._childScopes.forEach(function (ctx) {
+	                ctx._getAllChilds(childs);
+	            });
+	            return childs;
+	        }
 	
 	        /**
 	         *
-	         * @param flags_states
-	         * @param flags_data
-	         * @returns {{state: {}, data: {}}}
+	         * @param withChilds
+	         * @param __withMixed
+	         * @param _output
+	         * @returns {*|{state: {}, data: {}}}
 	         */
 	
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var _this10 = this;
+	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
-	            var flags_states = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : /.*/;
-	            var flags_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /.*/;
+	            var ctx = this.__scope;
+	            output[this._id] = {};
 	
-	            var ctx = this.__scope,
-	                output = { state: {}, data: {} },
-	                _flags_states = void 0,
-	                _flags_data = void 0;
-	            if (is.array(flags_states)) flags_states.forEach(function (id) {
-	                return output.state[id] = _this10.state[id];
-	            });
-	
-	            if (is.array(flags_data)) flags_data.forEach(function (id) {
-	                return output.data[id] = _this10.data[id];
-	            });
-	
-	            if (!is.array(flags_data) && !is.array(flags_states)) Object.keys(ctx).forEach(function (id) {
+	            Object.keys(ctx).forEach(function (id) {
 	                if (is.fn(ctx[id])) return;
 	
-	                var flags = ctx[id].constructor.flags;
-	
-	                flags = is.array(flags) ? flags : [flags || ""];
-	
-	                if (flags.reduce(function (r, flag) {
-	                    return r || flags_states.test(flag);
-	                }, false)) output.state[id] = _this10.state[id];
-	
-	                if (flags.reduce(function (r, flag) {
-	                    return r || flags_data.test(flag);
-	                }, false)) output.data[id] = _this10.data[id];
+	                ctx[id].serialize(output);
 	            });
+	
+	            this._childScopes.forEach(function (ctx) {
+	                !ctx._isLocalId && ctx.serialize(output);
+	            });
+	
+	            this.__mixed.forEach(function (ctx) {
+	                !ctx._isLocalId && ctx.serialize(output);
+	            });
+	
 	            return output;
+	        }
+	    }, {
+	        key: 'restore',
+	        value: function restore(snapshot, force) {
+	            var _this10 = this;
+	
+	            var ctx = this.__scope;
+	
+	            if (!snapshot[this._id]) return;
+	
+	            snapshot && Object.keys(ctx).forEach(function (name) {
+	                var snap = snapshot[_this10._id + '/' + name];
+	
+	                if (snap) {
+	
+	                    if (force && !is.fn(ctx[name])) ctx[name].destroy();
+	                    _this10.mount(name, snapshot); // quiet
+	                }
+	            });
+	
+	            this.__mixed.forEach(function (ctx) {
+	                !ctx._isLocalId && ctx.restore(snapshot, force);
+	            });
+	
+	            this._childScopes.forEach(function (ctx) {
+	                !ctx._isLocalId && ctx.restore(snapshot, force);
+	            });
 	        }
 	    }, {
 	        key: 'parseRef',
@@ -6753,20 +6783,6 @@
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
 	                return cb(null, _this12.data);
-	            });
-	        }
-	    }, {
-	        key: 'restore',
-	        value: function restore(_ref3, quiet) {
-	            var state = _ref3.state,
-	                data = _ref3.data;
-	
-	            var ctx = this.__scope;
-	            Object.keys(data).forEach(function (id) {
-	                quiet ? ctx.data = data[id] : ctx.push(data[id]);
-	            });
-	            Object.keys(state).forEach(function (id) {
-	                quiet ? ctx.state = state[id] : ctx.setState(state[id]);
 	            });
 	        }
 	    }, {
@@ -6850,12 +6866,12 @@
 	        value: function _propag() {
 	            var _this17 = this;
 	
-	            if (this._followers.length) this._followers.forEach(function (_ref4) {
-	                var obj = _ref4[0],
-	                    key = _ref4[1],
-	                    as = _ref4[2],
-	                    lastRevs = _ref4[3],
-	                    remaps = _ref4[3];
+	            if (this._followers.length) this._followers.forEach(function (_ref3) {
+	                var obj = _ref3[0],
+	                    key = _ref3[1],
+	                    as = _ref3[2],
+	                    lastRevs = _ref3[3],
+	                    remaps = _ref3[3];
 	
 	                var data = _this17.getUpdates(lastRevs);
 	                if (!data) return;
@@ -24838,7 +24854,7 @@
 	
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 	
-	var _class, _temp;
+	var _class, _temp, _class2, _temp2;
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
@@ -24888,6 +24904,7 @@
 	    EventEmitter = __webpack_require__(44),
 	    shortid = __webpack_require__(45),
 	    objProto = Object.getPrototypeOf({});
+	
 	/**
 	 * @class Store
 	 */
@@ -24933,11 +24950,12 @@
 	        // autoDestroyTm
 	        _this._autoDestroy = !!_this._persistenceTm;
 	        _this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
-	
-	        if (is.string(argz[0])) {
-	            if (scope.__scope[name]) console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-	            scope.__scope[name] = _this;
-	        }
+	        //
+	        //if ( is.string(argz[0]) ) {
+	        //    if ( scope.__scope[name] )
+	        //        console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
+	        //    scope.__scope[name] = this;
+	        //}
 	
 	        if (cfg && cfg.on) {
 	            _this.on(cfg.on);
@@ -24980,21 +24998,27 @@
 	
 	        _this._followers = [];
 	
-	        if (_static.data !== undefined) _this.data = _extends({}, _static.data);
-	        if (cfg.hasOwnProperty("data") && cfg.data !== undefined) _this.data = cfg.data;
-	        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
-	
 	        if (apply) _this.apply = apply;
 	
-	        if (initialState || _this._use.length) {
-	            // sync apply
-	            _this.state = _extends({}, initialState || {}, scope.map(_this, _this._use));
-	            if (_this.shouldApply(_this.state) && _this.data === undefined) {
-	                _this.data = _this.apply(_this.data, _this.state, _this.state);
-	                applied = true;
+	        if (cfg.snapshot && cfg.snapshot[_this.scopeObj._id + '/' + name]) {
+	            _this.restore(cfg.snapshot);
+	            _this._stable = true;
+	            scope.bind(_this, _this._use, false);
+	        } else {
+	
+	            if (_static.data !== undefined) _this.data = _extends({}, _static.data);
+	            if (cfg.hasOwnProperty("data") && cfg.data !== undefined) _this.data = cfg.data;
+	            if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
+	
+	            if (initialState || _this._use.length) {
+	                // sync apply
+	                _this.state = _extends({}, initialState || {}, scope.map(_this, _this._use));
+	                if (_this.shouldApply(_this.state) && _this.data === undefined) {
+	                    _this.data = _this.apply(_this.data, _this.state, _this.state);
+	                    applied = true;
+	                }
 	            }
 	        }
-	
 	        if ((_this.data !== undefined || applied) && !_this.__locks.all) {
 	            _this._stable = true;
 	            _this._rev++;
@@ -25374,6 +25398,70 @@
 	        }
 	
 	        /**
+	         * is stable
+	         * @returns bool
+	         */
+	
+	    }, {
+	        key: 'serialize',
+	        value: function serialize() {
+	            var _this8 = this;
+	
+	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var completeState = arguments[1];
+	
+	            var refs = this._use.reduce(function (map, key) {
+	                //todo
+	                var name = void 0,
+	                    alias = void 0,
+	                    path = void 0,
+	                    store = void 0;
+	                if (key.store && key.name) {
+	                    alias = name = key.name;
+	                } else if (is.fn(key)) {
+	                    name = alias = key.name || key.defaultName;
+	                } else {
+	                    key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	                    name = key[1];
+	                    path = key[2] && key[2].substr(1);
+	                    alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+	                }
+	
+	                if (!_this8.scopeObj.stores[name].scopeObj._isLocalId) map[alias] = _this8.scopeObj.stores[name].scopeObj._id + '/' + name;
+	
+	                return map;
+	            }, {}) || {};
+	            output[this.scopeObj._id + '/' + this.name] = {
+	                state: completeState ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
+	                    return !refs[k] && (h[k] = _this8.state[k]), h;
+	                }, {}),
+	                data: this.data,
+	                refs: refs
+	            };
+	            return output;
+	        }
+	
+	        /**
+	         * is stable
+	         * @returns bool
+	         */
+	
+	    }, {
+	        key: 'restore',
+	        value: function restore(snapshot) {
+	            var snap = snapshot[this.scopeObj._id + '/' + this.name];
+	            if (snap) {
+	                this.state = snap.state;
+	                Object.keys(snap.refs).forEach(function (key) {
+	                    //todo
+	                    if (snapshot[snap.refs[key]]) snap.state[key] = snapshot[snap.refs[key]].data;else console.warn('not found : ', key, snap.refs[key]);
+	                });
+	
+	                this.data = snap.data;
+	            }
+	        }
+	
+	        /**
 	         * Un bind this store off the given component-key
 	         * @param obj
 	         * @param key
@@ -25422,11 +25510,11 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this8 = this;
+	            var _this9 = this;
 	
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this8.data);
+	                return cb(null, _this9.data);
 	            });
 	        }
 	
@@ -25468,7 +25556,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason, cb) {
-	            var _this9 = this;
+	            var _this10 = this;
 	
 	            var _static = this.constructor;
 	            var i = 0,
@@ -25492,7 +25580,7 @@
 	                this._stable = true;
 	                propag && this._rev++; //
 	                if (propag && this._followers.length) this._followers.forEach(function (follower) {
-	                    var data = follower[2] ? _this9.retrieve(follower[2]) : _this9.data;
+	                    var data = follower[2] ? _this10.retrieve(follower[2]) : _this10.data;
 	                    if (!data) return;
 	                    if (typeof follower[0] == "function") {
 	                        follower[0](data);
@@ -25525,7 +25613,7 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this10 = this;
+	            var _this11 = this;
 	
 	            //console.warn("dispose", reason, this.__retains);
 	            if (reason) {
@@ -25541,14 +25629,14 @@
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        _this10._destroyTM = null;
-	                        _this10.then(function (s) {
-	                            !_this10.__retains.all && _this10.destroy();
+	                        _this11._destroyTM = null;
+	                        _this11.then(function (s) {
+	                            !_this11.__retains.all && _this11.destroy();
 	                        });
 	                    }, this._persistenceTm);
 	                } else {
 	                    this.then(function (s) {
-	                        return !_this10.__retains.all && _this10.destroy();
+	                        return !_this11.__retains.all && _this11.destroy();
 	                    });
 	                }
 	            }
@@ -25728,6 +25816,20 @@
 	
 	    return Store;
 	}(EventEmitter), _class.use = [], _class.staticScope = new Scope({}, { id: "static" }), _class.state = undefined, _class.persistenceTm = false, _temp);
+	
+	
+	Store.Seed = (_temp2 = _class2 = function (_Store) {
+	    _inherits(SeedStore, _Store);
+	
+	    function SeedStore() {
+	        _classCallCheck(this, SeedStore);
+	
+	        return _possibleConstructorReturn(this, (SeedStore.__proto__ || Object.getPrototypeOf(SeedStore)).apply(this, arguments));
+	    }
+	
+	    return SeedStore;
+	}(Store), _class2.SEED = true, _temp2);
+	
 	exports.default = Store;
 	module.exports = exports['default'];
 

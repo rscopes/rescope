@@ -609,10 +609,7 @@ export default class Scope extends EventEmitter {
     restore( snapshot, force ) {
         let ctx = this.__scope;
         
-        if ( !snapshot[this._id] )
-            return;
-        
-        snapshot && Object.keys(ctx).forEach(
+        snapshot[this._id] && Object.keys(ctx).forEach(
             name => {
                 let snap = snapshot[this._id + '/' + name];
                 
@@ -620,6 +617,7 @@ export default class Scope extends EventEmitter {
                     
                     if ( force && !is.fn(ctx[name]) )
                         ctx[name].destroy();
+                    
                     this.mount(name, snapshot);// quiet
                 }
                 

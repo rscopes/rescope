@@ -11,32 +11,31 @@ ReScope is a flexible, effective and easy to use State management system inspire
 
 ## How ?
 
-By using specialized & serializable "Data Stores" in a Flux oriented architecture.
+By using independent, specialized & serializable "Data Stores" in a Flux oriented architecture.
 
 ### Stores ?
 
-ReScope stores look like "React components for data". <br>
-They use determining values and / or others stores data as state,<br>
+ReScope stores look like "React components for data".
+They use determining values and the others store data as state,
 and maintains the corresponding data accordingly.
 
-Stores can manage part of, or the entire App state's determining values, <br>
-maintain intermediate, possibly asynchronous resources, <br>
-And/or finals or ready-to-render data. <br>
+Stores can manage part of, or the entire App state's determining values,
+maintain intermediate, possibly asynchronous resources,
+And/or finals or ready-to-render data.
 
-Theirs data can be propagated to React Components state / props, stores or simple watchers; <br>
-ReScope will give synchronized results data (if possible), by instantiating theirs dependencies, or update them as soon as they are ready<br>
+When a component injects one of the stores available in its Scope, <br>
+ReScope instantiates synchronously (if possible) theirs dependencies. <br>
 
-Next, when a store receives actions / state mutations, <br>
-the same process update the application state.
+Next, when a store receives a state mutation, <br>
+the resulting data update is propagated to the stores and listening components.
 
 ### Scopes ?
 
-Simple application only need 1 global scope for its stores .<br>
-When we need more & to remain flexible and scalable,
-the stores scopes/contexts can :
-- be inherited & mixed,
-- use automatic & chained destroy
-- synchronously serialize / restore theirs state & data
+To deal with complex architectures the Scopes allow :
+- normalized contexts for modules & views
+- to inherit & mix other Scopes,
+- automatic & chained destroy
+- ...
 
 ## What else ?
 
@@ -80,5 +79,4 @@ the stores scopes/contexts can :
 - better refs management
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
-<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
 

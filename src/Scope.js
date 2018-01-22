@@ -68,11 +68,18 @@ export default class Scope extends EventEmitter {
      * @param autoDestroy  {bool} will trigger retain & dispose after start
      * @returns {Scope}
      */
-    constructor( storesMap, { id, parent, state, data, name, incrementId, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
+    constructor( storesMap, { parent, key, id, state, data, name, incrementId = !!key, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
         super();
         
         this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
-        id                 = id || ("_____" + shortid.generate());
+        
+        id = id
+            || key && ((parent && parent._id || '') + '::' + key);
+        
+        this._isLocalId = !id;
+        
+        id = id || ("_____" + shortid.generate());
+        
         if ( openScopes[id] && !incrementId ) {
             this._id = id;
             openScopes[id].register(storesMap);
@@ -80,13 +87,12 @@ export default class Scope extends EventEmitter {
         }
         else if ( openScopes[id] && incrementId ) {
             let i = -1;
-            while ( openScopes[id + '/' + (++i)] ) ;
-            id = id + '/' + i;
+            while ( openScopes[id + '[' + (++i) + ']'] ) ;
+            id = id + '[' + i + ']';
         }
         
         this._id            = id;
         openScopes[id]      = this;
-        this._isLocalId     = true;
         this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
         this.stores = {};
@@ -167,9 +173,9 @@ export default class Scope extends EventEmitter {
      * @param data
      * @returns {Scope}
      */
-    mount( storesList, state, data ) {
+    mount( storesList, snapshot, state, data ) {
         if ( is.array(storesList) ) {
-            storesList.forEach(k => this._mount(k, state && state[k], data && data[k]));
+            storesList.forEach(k => this._mount(k, snapshot, state, data));
         }
         else {
             this._mount(...arguments);
@@ -177,45 +183,48 @@ export default class Scope extends EventEmitter {
         return this;
     }
     
-    _mount( id, state, data ) {
+    _mount( id, snapshot, state, data ) {
         if ( typeof id !== 'string' ) {
             this.register({ [id.name]: id.store });
             id = id.name;
         }
         
         if ( !this.__scope[id] ) {//ask mixed || parent
-            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, state, data)), false) ||
+            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, snapshot, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._mount(...arguments);
         }
-        let store = this.__scope[id], ctx;
-        if ( is.fn(store) ) {
-            this.__scope[id] = new store(this, { state, data });
-        }
         else {
-            if ( state !== undefined && data === undefined )
-                store.setState(state);
-            else if ( state !== undefined )
-                store.state = state;
-            
-            if ( data !== undefined )
-                store.push(data);
+            let store = this.__scope[id], ctx;
+            if ( is.fn(store) ) {
+                this.__scope[id] = new store(this, { snapshot, name: id, state, data });
+            }
+            else if ( snapshot )
+                store.restore(snapshot);
+            else {
+                if ( state !== undefined && data === undefined )
+                    store.setState(state);
+                else if ( state !== undefined )
+                    store.state = state;
+                
+                if ( data !== undefined )
+                    store.push(data);
+            }
+            this._watchStore(id);
         }
         
-        
-        this._watchStore(id);
         
         return this.__scope[id];
     }
     
     _watchStore( id, state, data ) {
-        if ( !this.__scope[id] ) {//ask mixed || parent
-            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
-                !this.parent )
-                return;
-            return this.parent._watchStore(...arguments);
-        }
+        //if ( !this.__scope[id] ) {//ask mixed || parent
+        //    if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
+        //        !this.parent )
+        //        return;
+        //    return this.parent._watchStore(...arguments);
+        //}
         if ( !this.__listening[id] && !is.fn(this.__scope[id]) ) {
             !this.__scope[id]._autoDestroy && this.__scope[id].retain("scoped");
             !this.__scope[id].isStable() && this.wait(id);
@@ -343,7 +352,7 @@ export default class Scope extends EventEmitter {
                           id,
                           {
                               get: () => (this.__scope[id] && this.__scope[id].state),
-                              set: ( v ) => (this._mount(id, v))
+                              set: ( v ) => (this._mount(id, null, v))
                           }
                       );
                       Object.defineProperty(
@@ -552,40 +561,81 @@ export default class Scope extends EventEmitter {
         return updated && output;
     }
     
+    _getAllChilds( childs = [] ) {
+        childs.push(...this._childScopes);
+        this._childScopes.forEach(
+            ctx => {
+                ctx._getAllChilds(childs);
+            }
+        );
+        return childs;
+    }
+    
     /**
      *
-     * @param flags_states
-     * @param flags_data
-     * @returns {{state: {}, data: {}}}
+     * @param withChilds
+     * @param __withMixed
+     * @param _output
+     * @returns {*|{state: {}, data: {}}}
      */
-    serialize( flags_states = /.*/, flags_data = /.*/ ) {
-        let ctx = this.__scope, output = { state: {}, data: {} },
-            _flags_states,
-            _flags_data;
-        if ( is.array(flags_states) )
-            flags_states.forEach(id => (output.state[id] = this.state[id]));
+    serialize( output = {} ) {
+        let ctx          = this.__scope;
+        output[this._id] = {};
         
-        if ( is.array(flags_data) )
-            flags_data.forEach(id => (output.data[id] = this.data[id]));
+        Object.keys(ctx).forEach(
+            id => {
+                if ( is.fn(ctx[id]) )
+                    return;
+                
+                ctx[id].serialize(output);
+            }
+        )
         
-        if ( !is.array(flags_data) && !is.array(flags_states) )
-            Object.keys(ctx).forEach(
-                id => {
-                    if ( is.fn(ctx[id]) )
-                        return;
-                    
-                    let flags = ctx[id].constructor.flags;
-                    
-                    flags = is.array(flags) ? flags : [flags || ""];
-                    
-                    if ( flags.reduce(( r, flag ) => (r || flags_states.test(flag)), false) )
-                        output.state[id] = this.state[id];
-                    
-                    if ( flags.reduce(( r, flag ) => (r || flags_data.test(flag)), false) )
-                        output.data[id] = this.data[id];
-                }
-            )
+        this._childScopes.forEach(
+            ctx => {
+                !ctx._isLocalId && ctx.serialize(output);
+            }
+        );
+        
+        this.__mixed.forEach(
+            ctx => {
+                !ctx._isLocalId && ctx.serialize(output);
+            }
+        );
+        
         return output;
+    }
+    
+    restore( snapshot, force ) {
+        let ctx = this.__scope;
+        
+        snapshot[this._id] && Object.keys(ctx).forEach(
+            name => {
+                let snap = snapshot[this._id + '/' + name];
+                
+                if ( snap ) {
+                    
+                    if ( force && !is.fn(ctx[name]) )
+                        ctx[name].destroy();
+                    
+                    this.mount(name, snapshot);// quiet
+                }
+                
+            }
+        )
+        
+        this.__mixed.forEach(
+            ctx => {
+                !ctx._isLocalId && ctx.restore(snapshot, force);
+            }
+        );
+        
+        this._childScopes.forEach(
+            ctx => {
+                !ctx._isLocalId && ctx.restore(snapshot, force);
+            }
+        );
+        
     }
     
     parseRef( _ref ) {
@@ -624,21 +674,6 @@ export default class Scope extends EventEmitter {
         this.once('stable', e => cb(null, this.data));
     }
     
-    restore( { state, data }, quiet ) {
-        let ctx = this.__scope;
-        Object.keys(data).forEach(
-            id => {
-                quiet ? ctx.data = data[id]
-                    : ctx.push(data[id]);
-            }
-        );
-        Object.keys(state).forEach(
-            id => {
-                quiet ? ctx.state = state[id]
-                    : ctx.setState(state[id]);
-            }
-        );
-    }
     
     retainStores( stores = [], reason ) {
         stores.forEach(

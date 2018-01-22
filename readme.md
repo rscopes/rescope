@@ -15,24 +15,23 @@ By using independent, specialized & serializable "Data Stores" in a Flux oriente
 
 ### Stores ?
 
-ReScope stores look like "React components for data". <br>
-They use determining values and / or others stores data as state,<br>
+ReScope stores look like "React components for data".
+They use determining values and the others store data as state,
 and maintains the corresponding data accordingly.
 
-Stores can manage part of, or the entire App state's determining values, <br>
-maintain intermediate, possibly asynchronous resources, <br>
-And/or finals or ready-to-render data. <br>
+Stores can manage part of, or the entire App state's determining values,
+maintain intermediate, possibly asynchronous resources,
+And/or finals or ready-to-render data.
 
-Theirs data can be propagated to React Components state / props, stores or simple watchers; <br>
-ReScope will give synchronized results data (if possible), by instantiating theirs dependencies, or update them as soon as they are ready<br>
+When a component injects one of the stores available in its Scope, <br>
+ReScope instantiates synchronously (if possible) theirs dependencies. <br>
 
-Next, when a store receives actions / state mutations, <br>
-the same process update the application state.
+Next, when a store receives a state mutation, <br>
+the resulting data update is propagated to the stores and listening components.
 
 ### Scopes ?
 
-Simple application only need 1 global Scope for its stores .<br>
-When we need more, the Scopes allow :
+To deal with complex architectures the Scopes allow :
 - normalized contexts for modules & views
 - to inherit & mix other Scopes,
 - automatic & chained destroy

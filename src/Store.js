@@ -473,11 +473,14 @@ class Store extends EventEmitter {
     }
     
     trigger( action, ...argz ) {
-        let { actions } = this.constructor,
-            ns;
+        let { actions } = this.constructor;
         if ( actions && actions[action] ) {
-            ns = actions[action].call(this, ...argz);
-            ns && this.setState(ns);
+            setTimeout(
+                tm => {
+                    let ns = actions[action].call(this, ...argz);
+                    ns && this.setState(ns);
+                }
+            )
         }
     }
     
@@ -802,7 +805,7 @@ class Store extends EventEmitter {
      * @returns {*}
      */
     release( reason, cb ) {
-        var _static = this.constructor;
+        var _static = this.constructor, me = this;
         let i       = 0, wasStable = this._stable;
         
         if ( is.fn(reason) ) {
@@ -825,9 +828,13 @@ class Store extends EventEmitter {
             this._stable = true;
             propag && this._rev++;//
             if ( propag && this._followers.length )
-                this._followers.forEach(( follower ) => {
-                    let data = follower[2] ? this.retrieve(follower[2]) : this.data;
+                this._followers.forEach(function propag( follower ) {
+                    let data = follower[2] ? me.retrieve(follower[2]) : me.data;
                     if ( !data ) return;
+                    
+                    if ( !(follower[0] instanceof Store) ) // @todo use taskQueue with store priority heuristic
+                        return setTimeout(propag.bind(this, follower));
+                    
                     if ( typeof follower[0] == "function" ) {
                         follower[0](data);
                     }

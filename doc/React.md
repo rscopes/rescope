@@ -18,6 +18,8 @@ import {reScopeProps} from "rescope";
 class MyComp extends React.Component {
     // or static use = ["appState"];
     render() {
+        let {appState, $stores, $dispatch} = this.props;
+
         return (
             <div>
                 <h1>MyComp</h1>
@@ -47,14 +49,17 @@ import {reScopeState} from "rescope";
 // or @reScopeState((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
     render() {
+        let {appState, asAnyAlias} = this.state,
+            {$stores, $dispatch}   = this;
+
         return (
             <div>
                 <h1>MyComp</h1>
                 {
-                    this.state.appState.someValues
+                    appState.someValues
                 }
                 {
-                    this.state.asAnyAlias
+                    asAnyAlias
                 }
             </div>
         );
@@ -75,13 +80,14 @@ import {Component} from "rescope";
 class MyComp extends Component {
     static use = ["appState"];
     render() {
+        let {appState} = this.state,
+            {$stores, $dispatch}   = this;
         return (
             <div>
                 <h1>MyComp</h1>
                 {
-                    this.state.appState.someValues
+                    appState.someValues
                 }
-
             </div>
         );
     }
@@ -91,7 +97,6 @@ export default MyComp;
 ```
 
 ## Providing Scope via react contexts
-
 
 ```
 
@@ -118,3 +123,51 @@ const MyCompWithReScopeContext = reScopeState(MyCompWithoutRescope, scopeFromSom
 export default MyCompWithReScopeContext;
 ```
 
+## Dispatching actions, mutations & calling stores functions
+
+### Using $dispatch
+
+The $dispatch function is located :
+- in the props for components using reScopeProps
+- in the instance object (this) for components using reScopeState
+
+Calling $dispatch will trigger the specified action on every stores accessible in the current scope.
+
+```jsx
+import React from "react";
+import {reScopeProps, Scope, Store} from "rescope";
+
+let myScope = new Scope(
+    {
+        appState: class appState extends Store{
+            static actions = {
+                incAction(){
+                    return { someValues : this.state.someValues + 1 };
+                }
+            }
+            static state = {
+                someValues : 0
+            }
+        }
+    }
+)
+
+@reScopeProps(myScope, ["appState"]) // inheriting the scope
+class MyComp extends React.Component {
+    render() {
+        let {appState, $stores, $dispatch} = this.props;
+
+        return (
+            <div onClick={()=>$dispatch("incAction")}>
+                <h1>MyComp</h1>
+                {
+                    appState.someValues
+                }
+
+            </div>
+        );
+    }
+};
+
+export default MyComp;
+```

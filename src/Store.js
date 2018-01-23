@@ -469,18 +469,18 @@ class Store extends EventEmitter {
     }
     
     dispatch( action, ...argz ) {
-        this.scopeObj.dispatch(action, ...argz);
+        setTimeout(
+            tm => {
+                this.scopeObj.dispatch(action, ...argz);
+            }
+        )
     }
     
     trigger( action, ...argz ) {
         let { actions } = this.constructor;
         if ( actions && actions[action] ) {
-            setTimeout(
-                tm => {
-                    let ns = actions[action].call(this, ...argz);
-                    ns && this.setState(ns);
-                }
-            )
+            let ns = actions[action].call(this, ...argz);
+            ns && this.setState(ns);
         }
     }
     
@@ -831,10 +831,7 @@ class Store extends EventEmitter {
                 this._followers.forEach(function propag( follower ) {
                     let data = follower[2] ? me.retrieve(follower[2]) : me.data;
                     if ( !data ) return;
-                    
-                    if ( !(follower[0] instanceof Store) ) // @todo use taskQueue with store priority heuristic
-                        return setTimeout(propag.bind(this, follower));
-                    
+
                     if ( typeof follower[0] == "function" ) {
                         follower[0](data);
                     }

@@ -99,7 +99,6 @@ describe('Rescope', function () {
         TestContext   = new Rescope.Scope(
             {
                 testErrorCatch: class testErrorCatch extends Rescope.Store {
-                    static use = ["!globalAsyncStore"];
                     static state = { ok: true };
                     
                     static actions = {

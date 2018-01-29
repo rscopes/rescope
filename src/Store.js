@@ -451,22 +451,9 @@ class Store extends EventEmitter {
         this._stable = false;
         
         if ( this._stabilizer )
-            return;//clearTimeout(this._stabilizer);
+            return;
         
         this._stabilizer = TaskSequencer.pushTask(this, 'push');
-        //this._stabilizer = setTimeout(
-        //    this.push.bind(
-        //        this,
-        //        null,
-        //        () => {//@todo
-        //
-        //            let stable   = this._stable;
-        //            this._stable = true;
-        //            !stable && this.emit('stable', this.state, this.data);
-        //            this._stabilizer = null;
-        //            // this.release();
-        //        }
-        //    ));
     }
     
     retrieve( path, i = 0, obj = this.data ) {

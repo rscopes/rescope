@@ -28,30 +28,51 @@
 /**
  * Minimal push sequencer, apply stores specific task in the right order (root stores first)
  */
-let taskQueue = [],
-    curWeight = 0,
-    maxWeight = 0,
-    minWeight = 0,
-    taskCount = 0,
+let taskQueue    = [],
+    curWeight    = 0,
+    maxWeight    = 0,
+    minWeight    = 0,
+    taskCount    = 0,
     //deSyncSteps = 1000,
+    task,
     isRunning,
-    runningTm;
+    errorCatcher = {
+        lastError: null,
+        dispatch : function ( error ) {
+            errorCatcher.disable();
+            if ( task && task[0].handleError ) {
+                task[0].handleError(error, task);
+            }
+            else if ( task )
+                console.error("ReScope : A task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name)
+    
+            task=null;
+            run();
+        },
+        enable   : (typeof window !== 'undefined')
+            ? () => {
+                window.addEventListener('error', errorCatcher.dispatch)
+            } : () => {
+                process.on('uncaughtException', errorCatcher.dispatch);
+            },
+        disable  : (typeof window !== 'undefined')
+            ? () => {
+                window.removeEventListener('error', errorCatcher.dispatch)
+            } : () => {
+                process.removeListener('uncaughtException', errorCatcher.dispatch);
+            }
+    }
+;
 
 function runNow() {
-    if ( !runningTm ) {
+    if ( !isRunning ) {
         run();
     }
 }
 
-function run( hazFail, failedTask ) {
-    let task, fail = true;
-    
-    if ( hazFail ) {
-        console.error("ReScope : A task has failed !!", failedTask)
-    }
-    
-    runningTm = setTimeout(() => run(fail, task));
-    
+function run() {
+    isRunning = true;
+    errorCatcher.enable();
     while ( taskCount ) {
         
         // try for the current weight
@@ -63,13 +84,15 @@ function run( hazFail, failedTask ) {
         //console.log("Task : ", task[1], " on ", task[0].name);
         task[0][task[1]].apply(task[0], task[2]);
     }
-    fail = task = undefined;
+    task = undefined;
+    errorCatcher.disable();
     
     if ( !taskCount ) {
-        clearTimeout(runningTm);
-        runningTm = null;
+        isRunning = false;
+        setTimeout(run);
     }
 }
+
 
 export default {
     pushTask( obj, fn, argz ) {
@@ -80,7 +103,7 @@ export default {
         maxWeight = Math.max(maxWeight, weight);
         curWeight = Math.min(curWeight, weight);
         taskCount++;
-    
+        
         //console.log("Push Task : ", fn, " on ", obj.name, weight);
         stack.push([obj, fn, argz]);
         setTimeout(runNow);

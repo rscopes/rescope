@@ -58,7 +58,7 @@ describe('Rescope', function () {
         Rescope = require('../dist/ReScope');
         done(!Rescope)
     });
-    it('should create basic Contexts well', function ( done ) {
+    it('should create basic Scopes well', function ( done ) {
         StaticContext = new Rescope.Scope(
             {
                 globalAsyncStore      : class globalAsyncStore extends Rescope.Store {
@@ -98,21 +98,39 @@ describe('Rescope', function () {
         );
         TestContext   = new Rescope.Scope(
             {
-                local_1: class local_1 extends Rescope.Store {
+                testErrorCatch: class testErrorCatch extends Rescope.Store {
+                    static use = ["!globalAsyncStore"];
+                    static state = { ok: true };
+                    
+                    static actions = {
+                        makeError: v => ({ failNow: true })
+                    };
+                    
+                    apply( data, state ) {
+                        if ( state.failNow )
+                            throw new Error("oups")
+                        return state;
+                    }
+                    
+                    handleError() {
+                        this.push({ failNow: false, catched: true })
+                    }
+                },
+                local_1       : class local_1 extends Rescope.Store {
                     static use = ["!globalAsyncStore"];
                     static state = { ok: true };
                 },
-                local_2: class local_2 extends Rescope.Store {
+                local_2       : class local_2 extends Rescope.Store {
                     static state = { ok: true };
                 },
-                local_3: class local_3 extends Rescope.Store {
+                local_3       : class local_3 extends Rescope.Store {
                     static use = ["globalStoreWithActions", "local_2"];
                     static state = { ok: true };
                 },
-                local_4: class local_4 extends Rescope.Store {
+                local_4       : class local_4 extends Rescope.Store {
                     static use = { "local_3.globalStoreWithActions.ok": "remapTest" };
                 },
-                local_5: class local_5 extends Rescope.Store {
+                local_5       : class local_5 extends Rescope.Store {
                     static use = { "!local_3.globalStoreWithActions.ok": "remapTest" };
                     static follow = {
                         remapTest: v => (v === "ok")
@@ -133,6 +151,14 @@ describe('Rescope', function () {
         );
         done()
     });
+    
+    
+    function throwNextTick( error ) {
+        process.nextTick(function () {
+            throw error
+        })
+    }
+    
     it('should synchrone init them well', function ( done ) {
         TestContext.state.local_3 = { updated: true };// should mount all the required store
         
@@ -237,7 +263,7 @@ describe('Rescope', function () {
                 !ok && console.log(data)
                 if ( ok ) done();
                 else done(new Error("fail "))
-
+                
             },
             ["globalStoreWithActions", "local_3"], false
         );
@@ -279,6 +305,29 @@ describe('Rescope', function () {
             done(new Error("Not working !!!"));
         
     });
+    it('should catch synchrone error well', function ( done ) {
+        
+        var originalException = process.listeners('uncaughtException').pop()
+        process.removeListener('uncaughtException', originalException);
+        
+        TestContext.mount("testErrorCatch");// should mount all the required store
+        
+        TestContext.once('update',
+                         ( e, _data ) => {
+                             let data = TestContext.data,
+                                 ok   =
+                                     data.testErrorCatch.catched;
+            
+                             if ( ok ) done();
+                             else done("fail");
+                             process.nextTick(function () {
+                                 process.listeners('uncaughtException').push(originalException)
+                             })
+                         });
+        
+        TestContext.dispatch("makeError");
+        
+    });
     let serializeTest, FlyingContext;
     it('should emit stableTree & serialize well', function ( done ) {
         this.timeout(3000);
@@ -307,7 +356,7 @@ describe('Rescope', function () {
                     }
                 },
                 {
-                    id          : 'FlyingContext',
+                    id           : 'FlyingContext',
                     parent       : TestContext0,
                     persistenceTm: 3000,
                     autoDestroy  : true
@@ -361,6 +410,7 @@ describe('Rescope', function () {
             }
         );
     });
+    
     it('should async auto destroy store well', function ( done ) {
         this.timeout(10000);
         

@@ -226,23 +226,23 @@ describe('Rescope', function () {
             )
             .dispatch("makeItOk", 'ok')
     });
-    //it('should resync setState well', function ( done ) {
-    //    var fn;
-    //    TestContext.bind(
-    //        fn = ( data ) => {
-    //            TestContext.unBind(fn, ["globalStoreWithActions", "local_3"]);
-    //            let ok =
-    //                    data.globalStoreWithActions.resync &&
-    //                    data.local_3.globalStoreWithActions.resync;
-    //            !ok && console.log(data)
-    //            if ( ok ) done();
-    //            else done(new Error("fail "))
-    //
-    //        },
-    //        ["globalStoreWithActions", "local_3"], false
-    //    );
-    //    TestContext.state.globalStoreWithActions = { resync: true };// should mount all the required store
-    //});
+    it('should resync setState well', function ( done ) {
+        var fn;
+        TestContext.bind(
+            fn = ( data ) => {
+                TestContext.unBind(fn, ["globalStoreWithActions", "local_3"]);
+                let ok =
+                        data.globalStoreWithActions.resync &&
+                        data.local_3.globalStoreWithActions.resync;
+                !ok && console.log(data)
+                if ( ok ) done();
+                else done(new Error("fail "))
+
+            },
+            ["globalStoreWithActions", "local_3"], false
+        );
+        TestContext.state.globalStoreWithActions = { resync: true };// should mount all the required store
+    });
     it('should mixin scopes well', function ( done ) {
         this.timeout(10000);
         

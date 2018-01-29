@@ -1,15 +1,6 @@
-# Rescope Stores
+# ReScope Stores
 
-## Events
-
-Rescope use the concept of "Stability", so there only 4 events :
-
- - "stable"     (when the store current state is sync with the store data)
- - "unstable"   (see "Stability" below)
- - "update"     (when a store propag his data)
- - _"stableTree" (scope only : when all child scopes are stable)_
-
-## Stability
+## Stability (the Store:apply function)
 
 When state updates occurs, a store state stop being coherent with its results data.<br>
 In ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
@@ -67,57 +58,24 @@ This is done in 2 way :
 ```
 
 
-## Store's Workflow
+## A Store Workflow
 
 - A Store have it's state updated ( action has pushed state update or a source store had its data updated )
 - If this state have the required & followed value
-- The apply function is called push new data in an async or sync way
+- The apply function is called and push new data in an async or sync way
 - The store is stabilized and (if there is new data) propagated
 - listening stores have theirs state updated and we go to step 1 until the whole scope is stable
 
-## Scopes
-
-Rescope stores find theirs source stores in a scope object, its parents and/or its mixed scopes.<br>
-When a store became unstable, its scope became unstable too.<br>
-When a scope became unstable, its parent became unstable too unless it have "rootEmitter:true" in its conf.<br>
-When store or scope became stable unstable they emit "stable" & "unstable" events<br>
-When all child scopes of a scope became stable, including itself; a scope emit a "stableTree" event<br>
-
-## Stores initial state
+## Stores initial state / restore
 
 A store initialized with data will be stable synchronously when instantiated. <br>
-If it only have a state but no data, the apply function will be called at by the constructor synchronously. (this imply that the Store object may not be fully initialized) <br>
+If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
+(implying that the Store object may not be fully initialized) <br>
 
 ## Actions & mutations
 
 As the store stay independents, they deal with theirs own perimeters. <br>
 The app state could be mutated using different methods depending the needs.
-
-### Using setState
-
-All stores inherit the setState method. <br>
-Once a store state is updated, the changes are automatically propagated to the concerned stores, updating the whole app.
-
-### Using stores functions
-
-The stores could be enhanced with functions & setters, that will ultimately update theirs state-data pairing.
-
-```jsx
-class AppState extend Store{
-        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
-        static data    = {};
-        switchTodoList(todoUrl){
-             this.setState({todoUrl})
-             // or
-             this.wait();
-             doSomeAsync(()=>{
-                this.state.stateChange = "stand"
-                this.data.
-             })
-        }
-
-    }
-```
 
 ### Using actions
 
@@ -139,6 +97,33 @@ class AppState extend Store{
     }
 ```
 
+### Using setState
+
+All stores inherit the setState method. <br>
+Once a store state is updated, the resulting data changes are automatically propagated to the followers.
+
+### Using stores functions
+
+The stores could be enhanced with functions & setters, that will ultimately update theirs state-data pairing.
+
+```jsx
+class AppState extend Store{
+        static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
+        static data    = {};
+
+        switchTodoList(todoUrl){
+             this.setState({todoUrl})
+             // or
+             this.wait();
+             doSomeAsync(()=>{
+                this.state.stateChange = "stand"
+                this.data.
+             })
+        }
+
+    }
+```
+
 ### push
 
 Using push will update & propag the data of a store.
@@ -147,9 +132,9 @@ Using push will update & propag the data of a store.
 ## Stores state & data serialization / restoration
 
 Serialization & restoration is managed by the Scopes objects.<br>
-Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :.<br>
+Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :<br>
 
-
+- Using initial state & data :
 ```jsx
 class MyStore extends Store {
         static state = {};// initial state

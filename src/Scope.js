@@ -886,7 +886,7 @@ export default class Scope extends EventEmitter {
         this._propagTM && clearTimeout(this._propagTM);
         this.__listening = {};
         
-        if ( this._isLocalId )
+        if ( !this._isLocalId )
             delete openScopes[this._id];
         this._followers.length = 0;
         

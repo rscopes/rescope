@@ -80,6 +80,8 @@ export default {
         maxWeight = Math.max(maxWeight, weight);
         curWeight = Math.min(curWeight, weight);
         taskCount++;
+    
+        //console.log("Push Task : ", fn, " on ", obj.name, weight);
         stack.push([obj, fn, argz]);
         setTimeout(runNow);
         return stack.length;

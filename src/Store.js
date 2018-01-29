@@ -479,11 +479,7 @@ class Store extends EventEmitter {
     }
     
     dispatch( action, ...argz ) {
-        setTimeout(
-            tm => {
-                this.scopeObj.dispatch(action, ...argz);
-            }
-        )
+        this.scopeObj.dispatch(action, ...argz);
     }
     
     trigger( action, ...argz ) {
@@ -528,7 +524,7 @@ class Store extends EventEmitter {
             )
         ) {
             cb && cb();
-            if (!this.__locks.all) {
+            if ( !this.__locks.all ) {
                 let stable   = this._stable;
                 this._stable = true;
                 !stable && this.emit('stable', this.state, this.data);

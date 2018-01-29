@@ -650,6 +650,8 @@ export default class Scope extends EventEmitter {
     }
     
     dispatch( action, data ) {
+        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
+        this.parent && this.parent.dispatch(action, data);
         Object.keys(this.__scope)
               .forEach(
                   id => {
@@ -658,8 +660,6 @@ export default class Scope extends EventEmitter {
                   }
               );
         
-        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
-        this.parent && this.parent.dispatch(action, data);
         return this;
     }
     

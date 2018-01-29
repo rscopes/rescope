@@ -268,3 +268,25 @@ export default class myInterpolatedDataStore extends Store {
 };
 ```
 
+## How to catch synchrone errors in the apply fn
+
+```jsx
+export default class testErrorCatch extends Rescope.Store {
+   static state = { ok: true };
+
+   static actions = {
+       makeError: v => ({ failNow: true })
+   };
+
+   apply( data, state ) {
+       if ( state.failNow )
+           throw new Error("oups")
+       return state;
+   }
+
+   handleError(error) {
+       this.push({ failNow: false, catched: true })
+   }
+}
+```
+

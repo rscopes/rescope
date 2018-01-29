@@ -50,10 +50,16 @@ class Component extends React.Component {
     
     constructor( p, ctx, q ) {
         super(p, ctx, q);
-        let scope    =
+        let scope   =
                 p.__scope
                 || ctx.rescope;
-        this.$scope  = scope;
+        this.$scope = scope;
+        
+        if ( this.$scope.dead ) {
+            console.error("ReScoping using dead scope")
+            this.$scope = null;
+        }
+        
         this.$stores = this.$scope && this.$scope.stores;
         if ( this.constructor.use ) {
             this.state = {
@@ -87,9 +93,16 @@ class Component extends React.Component {
         
         if ( nScope != this.$scope ) {
             this.constructor.use && this.$scope.unBind(this, this.constructor.use);
-            this.$scope  = nScope;
-            this.$stores = this.$scope.stores;
-            this.constructor.use && nScope.bind(this, this.constructor.use);
+            this.$scope = nScope;
+            
+            if ( this.$scope.dead ) {
+                console.error("ReScoping using dead scope")
+                this.$stores = this.$scope = null;
+            }
+            else {
+                this.$stores = this.$scope.stores;
+                this.constructor.use && nScope.bind(this, this.constructor.use);
+            }
         }
     }
     
@@ -158,7 +171,12 @@ function reScopeState( ...argz ) {
                 || is.fn(scope) && scope(this, p, ctx) || scope
                 || ctx.rescope;
             
-            is.fn(scope)
+            if ( this.$scope.dead ) {
+                console.error("ReScoping using dead scope")
+                this.$scope = null;
+            }
+            
+            this.$scope && is.fn(scope)
             && this.$scope.retain()
             
             this.$stores = this.$scope && this.$scope.stores;
@@ -202,9 +220,16 @@ function reScopeState( ...argz ) {
             
             if ( nScope != this.$scope ) {
                 use.length && this.$scope.unBind(this, use);
-                this.$scope  = nScope;
-                this.$stores = this.$scope.stores;
-                use.length && nScope.bind(this, use);
+                this.$scope = nScope;
+                
+                if ( this.$scope.dead ) {
+                    console.error("ReScoping using dead scope")
+                    this.$stores = this.$scope = null;
+                }
+                else {
+                    this.$stores = this.$scope.stores;
+                    use.length && nScope.bind(this, use);
+                }
             }
             super.componentWillReceiveProps && super.componentWillReceiveProps(np, nc);
         }

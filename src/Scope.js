@@ -650,6 +650,8 @@ export default class Scope extends EventEmitter {
     }
     
     dispatch( action, data ) {
+        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
+        this.parent && this.parent.dispatch(action, data);
         Object.keys(this.__scope)
               .forEach(
                   id => {
@@ -658,8 +660,6 @@ export default class Scope extends EventEmitter {
                   }
               );
         
-        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
-        this.parent && this.parent.dispatch(action, data);
         return this;
     }
     
@@ -747,6 +747,7 @@ export default class Scope extends EventEmitter {
                 let data = this.getUpdates(lastRevs);
                 if ( !data ) return;
                 if ( typeof obj != "function" ) {
+                    //console.log("setState ",obj, Object.keys(data))
                     if ( as ) obj.setState({ [as]: data });
                     else obj.setState(data);
                 }

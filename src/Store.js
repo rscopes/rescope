@@ -451,22 +451,9 @@ class Store extends EventEmitter {
         this._stable = false;
         
         if ( this._stabilizer )
-            return;//clearTimeout(this._stabilizer);
+            return;
         
         this._stabilizer = TaskSequencer.pushTask(this, 'push');
-        //this._stabilizer = setTimeout(
-        //    this.push.bind(
-        //        this,
-        //        null,
-        //        () => {//@todo
-        //
-        //            let stable   = this._stable;
-        //            this._stable = true;
-        //            !stable && this.emit('stable', this.state, this.data);
-        //            this._stabilizer = null;
-        //            // this.release();
-        //        }
-        //    ));
     }
     
     retrieve( path, i = 0, obj = this.data ) {
@@ -479,11 +466,7 @@ class Store extends EventEmitter {
     }
     
     dispatch( action, ...argz ) {
-        setTimeout(
-            tm => {
-                this.scopeObj.dispatch(action, ...argz);
-            }
-        )
+        this.scopeObj.dispatch(action, ...argz);
     }
     
     trigger( action, ...argz ) {
@@ -528,7 +511,7 @@ class Store extends EventEmitter {
             )
         ) {
             cb && cb();
-            if (!this.__locks.all) {
+            if ( !this.__locks.all ) {
                 let stable   = this._stable;
                 this._stable = true;
                 !stable && this.emit('stable', this.state, this.data);
@@ -840,14 +823,14 @@ class Store extends EventEmitter {
         if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        if ( !--this.__locks.all && this.data && this.isComplete() ) {
+        if ( !--this.__locks.all && this.isComplete() ) {
             let propag   = this.shouldPropag(this.data);
             this._stable = true;
             propag && this._rev++;//
             if ( propag && this._followers.length )
                 this._followers.forEach(function propag( follower ) {
                     let data = follower[2] ? me.retrieve(follower[2]) : me.data;
-                    if ( !data ) return;
+                    //if ( !data ) return;
                     
                     if ( typeof follower[0] == "function" ) {
                         follower[0](data);

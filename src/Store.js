@@ -836,14 +836,14 @@ class Store extends EventEmitter {
         if ( !reason && this.__locks.all == 0 )
             console.error("Release more than locking !");
         
-        if ( !--this.__locks.all && this.data && this.isComplete() ) {
+        if ( !--this.__locks.all && this.isComplete() ) {
             let propag   = this.shouldPropag(this.data);
             this._stable = true;
             propag && this._rev++;//
             if ( propag && this._followers.length )
                 this._followers.forEach(function propag( follower ) {
                     let data = follower[2] ? me.retrieve(follower[2]) : me.data;
-                    if ( !data ) return;
+                    //if ( !data ) return;
                     
                     if ( typeof follower[0] == "function" ) {
                         follower[0](data);

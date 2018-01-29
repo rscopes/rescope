@@ -747,6 +747,7 @@ export default class Scope extends EventEmitter {
                 let data = this.getUpdates(lastRevs);
                 if ( !data ) return;
                 if ( typeof obj != "function" ) {
+                    //console.log("setState ",obj, Object.keys(data))
                     if ( as ) obj.setState({ [as]: data });
                     else obj.setState(data);
                 }

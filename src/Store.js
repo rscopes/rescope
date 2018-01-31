@@ -691,7 +691,7 @@ class Store extends EventEmitter {
                             alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
                         }
                     
-                        if ( !this.scopeObj.stores[name].scopeObj._isLocalId )
+                        if ( !this.scopeObj.stores[name].scopeObj._.isLocalId )
                             map[alias] = this.scopeObj.stores[name].scopeObj._id + '/' + name;
                     
                         return map;

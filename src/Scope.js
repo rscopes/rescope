@@ -153,6 +153,7 @@ export default class Scope extends EventEmitter {
                     this.dispose("autoDestroy");
                 }
             )
+        
     }
     
     /**

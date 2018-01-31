@@ -71,7 +71,6 @@ To deal with complex architectures the Scopes allow :
 ## What's next ?
 
 - Optimize
-- Synchrone & Prioritized stabilisation / propagation sequencer
 - Possibly some semantic/normalisation updates
 - Even better deps definition
 - Many more tests
@@ -79,4 +78,5 @@ To deal with complex architectures the Scopes allow :
 - better refs management
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
+<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
 

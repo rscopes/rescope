@@ -320,6 +320,7 @@ class Store extends EventEmitter {
             }
         }
         !this._stable && this.emit('unstable', this.state);
+        
     }
     
     /**

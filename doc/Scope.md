@@ -91,6 +91,13 @@ let MyScope = new Scope({...stores_map}, {/* config */});
 
 ## Serialize & restore app state & data
 
+The method :
+```
+
+
+```
+
+
 ## Auto destroy scopes
 
 ## Auto destroy/unload stores

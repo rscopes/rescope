@@ -30,11 +30,11 @@ var is              = require('is'),
     EventEmitter    = require('./Emitter'),
     shortid         = require('shortid')
     , __proto__push = ( target, id, parent ) => {
-        let fn           = function () {
+        let fn       = function () {
         };
-        fn.prototype     = parent ? new parent["_" + id]() : target[id] || {};
-        target[id]       = new fn();
-        target['_' + id] = fn;
+        fn.prototype = parent ? new parent._[id]() : target[id] || {};
+        target[id]   = new fn();
+        target._[id] = fn;
     },
     openScopes      = {}
 ;
@@ -70,13 +70,14 @@ export default class Scope extends EventEmitter {
      */
     constructor( storesMap, { parent, key, id, state, data, name, incrementId = !!key, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
         super();
+        var _ = {};
         
-        this._maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
+        _.maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         
         id = id
             || key && ((parent && parent._id || '') + '::' + key);
         
-        this._isLocalId = !id;
+        _.isLocalId = !id;
         
         id = id || ("_____" + shortid.generate());
         
@@ -91,47 +92,47 @@ export default class Scope extends EventEmitter {
             id = id + '[' + i + ']';
         }
         
-        this._id            = id;
-        openScopes[id]      = this;
-        this._persistenceTm = persistenceTm || this.constructor.persistenceTm;
+        this._id        = id;
+        openScopes[id]  = this;
+        _.persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
         this.stores = {};
         this.state  = {};
         this.data   = {};
         
+        this.parent = parent;
+        this._      = _;
         if ( parent && parent.dead )
             throw new Error("Can't use a dead scope as parent !");
         
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
-        this.parent = parent;
         
+        this.sources      = [];
+        _.childScopes     = [];
+        _.childScopesList = [];
+        _.unStableChilds  = 0;
         
-        this.sources          = [];
-        this._childScopes     = [];
-        this._childScopesList = [];
-        this._unStableChilds  = 0;
-        
-        this.__retains   = { all: 0 };
-        this.__locks     = { all: 1 };
-        this.__listening = {};
-        this.__scope     = {};
-        this.__mixed     = [];
-        this.__mixedList = [];
-        this._followers  = [];
+        this.__retains = { all: 0 };
+        this.__locks   = { all: 1 };
+        _._listening   = {};
+        _._scope       = {};
+        _._mixed       = [];
+        _._mixedList   = [];
+        _.followers    = [];
         if ( parent ) {
             parent.retain("isMyParent");
             if ( !rootEmitter ) {
                 !parent._stable && this.wait("waitingParent");
-                parent.on(this.__parentList = {
+                parent.on(_._parentList = {
                     'stable'  : s => this.release("waitingParent"),
                     'unstable': s => this.wait("waitingParent"),
                     'update'  : s => this._propag()
                 });
             }
             else {
-                parent.on(this.__parentList = {
+                parent.on(_._parentList = {
                     'update': s => this._propag()
                 });
             }
@@ -190,16 +191,16 @@ export default class Scope extends EventEmitter {
             id = id.name;
         }
         
-        if ( !this.__scope[id] ) {//ask mixed || parent
-            if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, snapshot, state, data)), false) ||
+        if ( !this._._scope[id] ) {//ask mixed || parent
+            if ( this._._mixed.reduce(( mounted, ctx ) => (mounted || ctx._mount(id, snapshot, state, data)), false) ||
                 !this.parent )
                 return;
             return this.parent._mount(...arguments);
         }
         else {
-            let store = this.__scope[id], ctx;
+            let store = this._._scope[id], ctx;
             if ( is.fn(store) ) {
-                this.__scope[id] = new store(this, { snapshot, name: id, state, data });
+                this._._scope[id] = new store(this, { snapshot, name: id, state, data });
             }
             else if ( snapshot )
                 store.restore(snapshot);
@@ -216,7 +217,7 @@ export default class Scope extends EventEmitter {
         }
         
         
-        return this.__scope[id];
+        return this._._scope[id];
     }
     
     _watchStore( id, state, data ) {
@@ -226,14 +227,14 @@ export default class Scope extends EventEmitter {
         //        return;
         //    return this.parent._watchStore(...arguments);
         //}
-        if ( !this.__listening[id] && !is.fn(this.__scope[id]) ) {
-            !this.__scope[id]._autoDestroy && this.__scope[id].retain("scoped");
-            !this.__scope[id].isStable() && this.wait(id);
-            this.__scope[id].on(
-                this.__listening[id] = {
+        if ( !this._._listening[id] && !is.fn(this._._scope[id]) ) {
+            !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
+            !this._._scope[id].isStable() && this.wait(id);
+            this._._scope[id].on(
+                this._._listening[id] = {
                     'destroy' : s => {
-                        delete this.__listening[id];
-                        this.__scope[id] = this.__scope[id].constructor;
+                        delete this._._listening[id];
+                        this._._scope[id] = this._._scope[id].constructor;
                     },
                     'update'  : s => this.propag(),
                     'stable'  : s => this.release(id),
@@ -250,12 +251,12 @@ export default class Scope extends EventEmitter {
      */
     mixin( targetCtx ) {
         let parent = this.parent, lists;
-        this.__mixed.push(targetCtx)
+        this._._mixed.push(targetCtx)
         targetCtx.retain("mixedTo");
         if ( !targetCtx._stable )
             this.wait(targetCtx._id);
         
-        this.__mixedList.push(lists = {
+        this._._mixedList.push(lists = {
             'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
             'update'  : s => this._propag()
@@ -269,13 +270,13 @@ export default class Scope extends EventEmitter {
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
         
-        this.relink(this.__scope, this, false, true);
-        this.__mixed.forEach(
+        this.relink(this._._scope, this, false, true);
+        this._._mixed.forEach(
             ctx => {
                 __proto__push(this, 'stores');
                 __proto__push(this, 'state');
                 __proto__push(this, 'data');
-                ctx.relink(ctx.__scope, this, true, true)
+                ctx.relink(ctx._._scope, this, true, true)
             }
         )
     }
@@ -319,48 +320,48 @@ export default class Scope extends EventEmitter {
      * @param data
      */
     relink( srcCtx, targetCtx = this, external, force ) {
-        let lctx = targetCtx._stores.prototype;
+        let lctx = targetCtx._.stores.prototype;
         Object.keys(srcCtx)
               .forEach(
                   id => {
-                      if ( !force && targetCtx.__scope[id] === srcCtx[id] ||
-                          targetCtx.__scope[id] && (targetCtx.__scope[id].constructor === srcCtx[id]) )
+                      if ( !force && targetCtx._._scope[id] === srcCtx[id] ||
+                          targetCtx._._scope[id] && (targetCtx._._scope[id].constructor === srcCtx[id]) )
                           return;
                 
-                      if ( !force && targetCtx.__scope[id] ) {
-                          if ( !external && !is.fn(targetCtx.__scope[id]) ) {
+                      if ( !force && targetCtx._._scope[id] ) {
+                          if ( !external && !is.fn(targetCtx._._scope[id]) ) {
                               console.info("Rescope Store : ", id, " already exist in this scope ! ( try __proto__ hot patch )");
-                              targetCtx.__scope[id].__proto__ = srcCtx[id].prototype;
+                              targetCtx._._scope[id].__proto__ = srcCtx[id].prototype;
                         
                           }
-                          if ( !external && is.fn(targetCtx.__scope[id]) )
-                              targetCtx.__scope[id] = srcCtx[id];
+                          if ( !external && is.fn(targetCtx._._scope[id]) )
+                              targetCtx._._scope[id] = srcCtx[id];
                     
                           return;
                       }
                       else if ( !force && !external )
-                          this.__scope[id] = srcCtx[id];
+                          this._._scope[id] = srcCtx[id];
                 
                       Object.defineProperty(
                           lctx,
                           id,
                           {
-                              get: () => this.__scope[id]
+                              get: () => this._._scope[id]
                           }
                       );
                       Object.defineProperty(
-                          targetCtx._state.prototype,
+                          targetCtx._.state.prototype,
                           id,
                           {
-                              get: () => (this.__scope[id] && this.__scope[id].state),
+                              get: () => (this._._scope[id] && this._._scope[id].state),
                               set: ( v ) => (this._mount(id, null, v))
                           }
                       );
                       Object.defineProperty(
-                          targetCtx._data.prototype,
+                          targetCtx._.data.prototype,
                           id,
                           {
-                              get: () => (this.__scope[id] && this.__scope[id].data),
+                              get: () => (this._._scope[id] && this._._scope[id].data),
                               set: ( v ) => (this._mount(id, undefined, v))
                           }
                       );
@@ -391,7 +392,7 @@ export default class Scope extends EventEmitter {
             .map(id => (this.parseRef(id)));
         
         
-        this._followers.push(
+        this._.followers.push(
             [
                 obj,
                 key,
@@ -428,7 +429,7 @@ export default class Scope extends EventEmitter {
      * @returns {Array.<*>}
      */
     unBind( obj, key, as ) {
-        var followers = this._followers,
+        var followers = this._.followers,
             i         = followers && followers.length;
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
@@ -495,7 +496,7 @@ export default class Scope extends EventEmitter {
      * @returns {{}}
      */
     getStoresRevs( storesRevMap = {}, local ) {
-        let ctx = this.__scope;
+        let ctx = this._._scope;
         if ( !storesRevMap ) {
             storesRevMap = {};
         }
@@ -510,7 +511,7 @@ export default class Scope extends EventEmitter {
             }
         );
         if ( !local ) {
-            this.__mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(storesRevMap), storesRevMap), storesRevMap);
+            this._._mixed.reduce(( updated, ctx ) => (ctx.getStoresRevs(storesRevMap), storesRevMap), storesRevMap);
             this.parent && this.parent.getStoresRevs(storesRevMap);
         }
         return storesRevMap;
@@ -525,7 +526,7 @@ export default class Scope extends EventEmitter {
      * @returns {*|{}}
      */
     getUpdates( storesRevMap, output, updated ) {
-        let ctx = this.__scope;
+        let ctx = this._._scope;
         
         output = output || {};
         Object.keys(ctx).forEach(
@@ -557,14 +558,14 @@ export default class Scope extends EventEmitter {
                 }
             }
         );
-        updated = this.__mixed.reduce(( updated, ctx ) => (ctx.getUpdates(storesRevMap, output, updated) || updated), updated);
+        updated = this._._mixed.reduce(( updated, ctx ) => (ctx.getUpdates(storesRevMap, output, updated) || updated), updated);
         updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
         return updated && output;
     }
     
     _getAllChilds( childs = [] ) {
-        childs.push(...this._childScopes);
-        this._childScopes.forEach(
+        childs.push(...this._.childScopes);
+        this._.childScopes.forEach(
             ctx => {
                 ctx._getAllChilds(childs);
             }
@@ -580,7 +581,7 @@ export default class Scope extends EventEmitter {
      * @returns {*|{state: {}, data: {}}}
      */
     serialize( output = {} ) {
-        let ctx          = this.__scope;
+        let ctx          = this._._scope;
         output[this._id] = {};
         
         Object.keys(ctx).forEach(
@@ -592,15 +593,15 @@ export default class Scope extends EventEmitter {
             }
         )
         
-        this._childScopes.forEach(
+        this._.childScopes.forEach(
             ctx => {
-                !ctx._isLocalId && ctx.serialize(output);
+                !ctx._.isLocalId && ctx.serialize(output);
             }
         );
         
-        this.__mixed.forEach(
+        this._._mixed.forEach(
             ctx => {
-                !ctx._isLocalId && ctx.serialize(output);
+                !ctx._.isLocalId && ctx.serialize(output);
             }
         );
         
@@ -608,7 +609,7 @@ export default class Scope extends EventEmitter {
     }
     
     restore( snapshot, force ) {
-        let ctx = this.__scope;
+        let ctx = this._._scope;
         
         snapshot[this._id] && Object.keys(ctx).forEach(
             name => {
@@ -625,15 +626,15 @@ export default class Scope extends EventEmitter {
             }
         )
         
-        this.__mixed.forEach(
+        this._._mixed.forEach(
             ctx => {
-                !ctx._isLocalId && ctx.restore(snapshot, force);
+                !ctx._.isLocalId && ctx.restore(snapshot, force);
             }
         );
         
-        this._childScopes.forEach(
+        this._.childScopes.forEach(
             ctx => {
-                !ctx._isLocalId && ctx.restore(snapshot, force);
+                !ctx._.isLocalId && ctx.restore(snapshot, force);
             }
         );
         
@@ -651,13 +652,13 @@ export default class Scope extends EventEmitter {
     }
     
     dispatch( action, data ) {
-        this.__mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
+        this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
         this.parent && this.parent.dispatch(action, data);
-        Object.keys(this.__scope)
+        Object.keys(this._._scope)
               .forEach(
                   id => {
-                      if ( !is.fn(this.__scope[id]) )
-                          this.__scope[id].trigger(action, data)
+                      if ( !is.fn(this._._scope[id]) )
+                          this._._scope[id].trigger(action, data)
                   }
               );
         
@@ -712,15 +713,15 @@ export default class Scope extends EventEmitter {
         
         this.__locks.all--;
         if ( !this.__locks.all ) {
-            this._stabilizerTM && clearTimeout(this._stabilizerTM);
+            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
             
-            this._stabilizerTM = setTimeout(
+            this._.stabilizerTM = setTimeout(
                 e => {
-                    this._stabilizerTM = null;
+                    this._.stabilizerTM = null;
                     if ( this.__locks.all )
                         return;
                     
-                    this._propagTM && clearTimeout(this._propagTM);
+                    this._.propagTM && clearTimeout(this._.propagTM);
                     
                     this._stable = true;
                     this.emit("stable", this);
@@ -733,18 +734,18 @@ export default class Scope extends EventEmitter {
     }
     
     propag() {
-        this._propagTM && clearTimeout(this._propagTM);
-        this._propagTM = setTimeout(
+        this._.propagTM && clearTimeout(this._.propagTM);
+        this._.propagTM = setTimeout(
             e => {
-                this._propagTM = null;
+                this._.propagTM = null;
                 this._propag()
             }, 2
         );
     }
     
     _propag() {
-        if ( this._followers.length )
-            this._followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs, 3: remaps } ) => {
+        if ( this._.followers.length )
+            this._.followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs, 3: remaps } ) => {
                 let data = this.getUpdates(lastRevs);
                 if ( !data ) return;
                 if ( typeof obj != "function" ) {
@@ -774,57 +775,57 @@ export default class Scope extends EventEmitter {
     //}
     
     _addChild( ctx ) {
-        this._childScopes.push(ctx);
+        this._.childScopes.push(ctx);
         let lists     = {
                 'stable'      : s => {
-                    this._unStableChilds--;
-                    if ( !this._unStableChilds )
+                    this._.unStableChilds--;
+                    if ( !this._.unStableChilds )
                         this.emit("stableTree", this)
                 },
                 'unstable'    : s => {
-                    this._unStableChilds++;
-                    if ( 1 == this._unStableChilds )
+                    this._.unStableChilds++;
+                    if ( 1 == this._.unStableChilds )
                         this.emit("unstableTree", this)
                 },
                 'stableTree'  : s => {
-                    this._unStableChilds--;
-                    if ( !this._unStableChilds )
+                    this._.unStableChilds--;
+                    if ( !this._.unStableChilds )
                         this.emit("stableTree", this)
                 },
                 'unstableTree': s => {
-                    this._unStableChilds++;
-                    if ( 1 == this._unStableChilds )
+                    this._.unStableChilds++;
+                    if ( 1 == this._.unStableChilds )
                         this.emit("unstableTree", this)
                 },
                 'destroy'     : ctx => {
-                    if ( ctx._unStableChilds )
-                        this._unStableChilds--;
+                    if ( ctx._.unStableChilds )
+                        this._.unStableChilds--;
                     if ( !ctx.isStable() )
-                        this._unStableChilds--;
+                        this._.unStableChilds--;
                 
-                    if ( !this._unStableChilds )
+                    if ( !this._.unStableChilds )
                         this.emit("stableTree", this)
                 }
             },
-            wasStable = this._unStableChilds;
+            wasStable = this._.unStableChilds;
         //!ctx.isStable() && console.warn('add unstable child');
-        !ctx.isStable() && this._unStableChilds++;
-        ctx._unStableChilds && this._unStableChilds++;
-        this._childScopesList.push(lists);
-        if ( !wasStable && this._unStableChilds )
+        !ctx.isStable() && this._.unStableChilds++;
+        ctx._.unStableChilds && this._.unStableChilds++;
+        this._.childScopesList.push(lists);
+        if ( !wasStable && this._.unStableChilds )
             this.emit("unstableTree", this)
         ctx.on(lists);
     }
     
     _rmChild( ctx ) {
-        let i         = this._childScopes.indexOf(ctx),
-            wasStable = this._unStableChilds;
+        let i         = this._.childScopes.indexOf(ctx),
+            wasStable = this._.unStableChilds;
         if ( i != -1 ) {
-            this._childScopes.splice(i, 1);
-            !ctx.isStable() && this._unStableChilds--;
-            ctx._unStableChilds && this._unStableChilds--;
-            ctx.un(this._childScopesList.splice(i, 1)[0]);
-            if ( wasStable && !this._unStableChilds )
+            this._.childScopes.splice(i, 1);
+            !ctx.isStable() && this._.unStableChilds--;
+            ctx._.unStableChilds && this._.unStableChilds--;
+            ctx.un(this._.childScopesList.splice(i, 1)[0]);
+            if ( wasStable && !this._.unStableChilds )
                 this.emit("stableTree")
         }
     }
@@ -853,15 +854,15 @@ export default class Scope extends EventEmitter {
         
         if ( !this.__retains.all ) {
             //console.log("dispose do destroy ", this._id, this._persistenceTm);
-            if ( this._persistenceTm ) {
-                this._destroyTM && clearTimeout(this._destroyTM);
-                this._destroyTM = setTimeout(
+            if ( this._.persistenceTm ) {
+                this._.destroyTM && clearTimeout(this._.destroyTM);
+                this._.destroyTM = setTimeout(
                     e => {
                         this.then(s => {
                             !this.__retains.all && this.destroy()
                         });
                     },
-                    this._persistenceTm
+                    this._.persistenceTm
                 );
             }
             else {
@@ -874,40 +875,38 @@ export default class Scope extends EventEmitter {
      * order destroy of local stores
      */
     destroy() {
-        let ctx   = this.__scope;
+        let ctx   = this._._scope;
         //console.warn("destroy", this._id);
         this.dead = true;
         this.emit("destroy", this);
         Object.keys(
-            this.__listening
+            this._._listening
         ).forEach(
-            id => this.__scope[id].removeListener(this.__listening[id])
+            id => this._._scope[id].removeListener(this._._listening[id])
         );
         
-        this._stabilizerTM && clearTimeout(this._stabilizerTM);
-        this._propagTM && clearTimeout(this._propagTM);
-        this.__listening = {};
+        this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
+        this._.propagTM && clearTimeout(this._.propagTM);
         
-        if ( !this._isLocalId )
+        if ( !this._.isLocalId )
             delete openScopes[this._id];
-        this._followers.length = 0;
+        this._.followers.length = 0;
         
-        while ( this.__mixedList.length ) {
-            this.__mixed[0].removeListener(this.__mixedList.shift());
-            this.__mixed.shift().dispose("mixedTo");
+        while ( this._._mixedList.length ) {
+            this._._mixed[0].removeListener(this._._mixedList.shift());
+            this._._mixed.shift().dispose("mixedTo");
         }
-        if ( this.__parentList ) {
+        if ( this._._parentList ) {
             this.parent._rmChild(this);
-            this.parent.removeListener(this.__parentList);
+            this.parent.removeListener(this._._parentList);
             this.parent.dispose("isMyParent");
-            this.__parentList = null;
+            this._._parentList = null;
         }
         for ( let key in ctx )
             if ( !is.fn(ctx[key]) ) {
                 !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
             }
-        this.__mixed = this.data = this.state = this.scope = this.stores = null;
-        this._data = this._state = this._stores = null;
+        this._ = null;
         
         
     }

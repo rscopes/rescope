@@ -71,6 +71,7 @@ To deal with complex architectures the Scopes allow :
 ## What's next ?
 
 - Optimize
+- @reScope stores state / data ?
 - Possibly some semantic/normalisation updates
 - Even better deps definition
 - Many more tests

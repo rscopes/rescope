@@ -27,7 +27,7 @@
 
 import Scope from "./Scope";
 import Store from "./Store";
-import ReactTools, * as RTools from "./ReactTools";
+import ReactTools, * as RTools from "./ReactHocs";
 
 Scope.Store = Store;
 export default {
@@ -37,6 +37,6 @@ export default {
     Component   : RTools.Component,
     reScopeProps: RTools.reScopeProps,
     reScopeState: RTools.reScopeState,
-    withScope   : RTools.reScopeState
+    reScope     : RTools.reScopeState
 };
 

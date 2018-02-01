@@ -113,14 +113,12 @@ class Store extends EventEmitter {
                 if ( targetRevs[name] ) return false;// ignore dbl uses for now
                 
                 if ( !store ) {
-                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + origin + ' !!', store);
+                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (component.name || component) + ' !!', store);
                     return false;
                 }
                 else if ( is.fn(store) ) {
                     scope._mount(name)
-                    
                     scope.stores[name].bind(component, alias, setInitial, path);
-                    
                 }
                 else {
                     store.bind(component, alias, setInitial, path);
@@ -217,12 +215,6 @@ class Store extends EventEmitter {
         // autoDestroyTm
         this._autoDestroy   = !!this._persistenceTm;
         this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
-        //
-        //if ( is.string(argz[0]) ) {
-        //    if ( scope.__scope[name] )
-        //        console.warn("ReScope: Overwriting an existing static named store ( %s ) !!", name);
-        //    scope.__scope[name] = this;
-        //}
         
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
@@ -773,7 +765,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Add a lock so the store will not propag it state untill release() is call
+     * Add a lock so the store will not propag it data untill release() is call
      * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
      * @returns {TaskFlow}
      */
@@ -799,7 +791,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Decrease locks for this store, if it reach 0 & it have a public state,
+     * Decrease locks for this store, if it reach 0 ,
      * it will be propagated to the followers,
      * then, all stuff passed to "then" call back will be exec / released
      * @param desync

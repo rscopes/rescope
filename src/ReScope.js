@@ -37,6 +37,6 @@ export default {
     Component   : RTools.Component,
     reScopeProps: RTools.reScopeProps,
     reScopeState: RTools.reScopeState,
-    withScope   : RTools.reScopeState
+    reScope     : RTools.reScopeState
 };
 

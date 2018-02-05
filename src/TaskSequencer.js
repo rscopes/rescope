@@ -45,9 +45,10 @@ let taskQueue    = [],
             }
             else if ( task )
                 console.error("ReScope : A task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name)
-    
-            task=null;
-            run();
+        
+            isRunning = false;
+            task      = null;
+            runNow();
         },
         enable   : (typeof window !== 'undefined')
             ? () => {
@@ -87,9 +88,9 @@ function run() {
     task = undefined;
     errorCatcher.disable();
     
-    if ( !taskCount ) {
-        isRunning = false;
-        setTimeout(run);
+    isRunning = false;
+    if ( taskCount ) {
+        setTimeout(runNow);
     }
 }
 

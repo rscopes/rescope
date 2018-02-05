@@ -28,8 +28,7 @@
 'use strict';
 
 import React from "react";
-import {Scope} from "../../Rescope";
-import {reScopeProps} from "../../ReactTools";
+import {Scope, reScopeProps} from "../../Rescope";
 
 @reScopeProps(["userEvents"])
 class NewsListComp extends React.Component {

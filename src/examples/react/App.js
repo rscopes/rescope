@@ -27,10 +27,9 @@
 
 import React from "react";
 
-import {reScopeState, reScopeProps} from "../../ReactTools";
+import Rescope, {reScopeState, reScopeProps} from "../../ReScope";
 
 let ReactDom      = require('react-dom'),
-    Rescope       = require('../../Rescope'),
     Scope         = Rescope.Scope,
     NewsListComp  = require('./NewsListComp'),
     StoresContext = require('../StoresContext');

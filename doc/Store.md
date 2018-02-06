@@ -46,7 +46,7 @@ This is done in 2 way :
         this.wait('anAsyncRabbit')
         doSomeAsync(
             (err,res)=>{
-                this.push({async1:res, status:err||'ok'};
+                this.push({async1:res, status:err||'ok'};// will replace data
                 this.release('anAsyncRabbit')
             }
         )
@@ -62,7 +62,7 @@ This is done in 2 way :
 
 - A Store have it's state updated ( action has pushed state update or a source store had its data updated )
 - If this state have the required & followed value
-- The apply function is called and push new data in an async or sync way
+- The apply function push new data in an async or sync way
 - The store is stabilized and (if there is new data) propagated
 - listening stores have theirs state updated and we go to step 1 until the whole scope is stable
 
@@ -116,8 +116,8 @@ class AppState extend Store{
              // or
              this.wait();
              doSomeAsync(()=>{
-                this.state.stateChange = "stand"
-                this.data.
+                this.data.stateChange = "stand"
+                this.release()
              })
         }
 

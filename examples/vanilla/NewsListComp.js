@@ -7253,7 +7253,7 @@
 	        } else {
 	            _this._stable = false;
 	            if (!_static.managed && !_this.state && (!_this._use || !_this._use.length)) {
-	                console.warn("Rescope store '", _this.name, "' have no initial data, state or use. It can't stabilize...");
+	                console.warn("ReScope store '", _this.name, "' have no initial data, state or use. It can't stabilize...");
 	            }
 	        }
 	        !_this._stable && _this.emit('unstable', _this.state);
@@ -7364,7 +7364,7 @@
 	
 	            if (this._stabilizer) return;
 	
-	            this._stabilizer = TaskSequencer.pushTask(this, 'push');
+	            this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
 	        }
 	    }, {
 	        key: 'retrieve',
@@ -7434,14 +7434,7 @@
 	        value: function push(data, force, cb) {
 	            cb = force === true ? cb : force;
 	            force = force === true;
-	            var i = 0,
-	                nextState = !data && _extends({}, this.state, this._changesSW) || this.state,
-	                nextDatas = data || this.apply(this.data, nextState, this._changesSW);
-	
-	            this._stabilizer = null;
-	            this.state = nextState;
-	            this._changesSW = {};
-	            if (!force && !this.hasDataChange(nextDatas)) {
+	            if (!force && !this.hasDataChange(data)) {
 	                cb && cb();
 	                if (!this.__locks.all) {
 	                    var stable = this._stable;
@@ -7453,9 +7446,36 @@
 	            }
 	
 	            //
-	            this.data = nextDatas;
+	            this.data = data;
 	            this.wait();
 	            this.release(cb);
+	        }
+	    }, {
+	        key: 'pushState',
+	        value: function pushState(force) {
+	
+	            if (!force && !this._changesSW && this.data) return;
+	
+	            var nextState = _extends({}, this.state, this._changesSW || {}),
+	                nextData = this.apply(this.data, nextState, this._changesSW);
+	
+	            this._stabilizer = null;
+	            this.state = nextState;
+	            this._changesSW = null;
+	            if (!force && !this.hasDataChange(nextData)) {
+	                if (!this.__locks.all) {
+	                    var stable = this._stable;
+	                    this._stable = true;
+	                    !stable && this.emit('stable', this.state, this.data);
+	                    this._stabilizer = null;
+	                }
+	                return false;
+	            }
+	
+	            //
+	            this.data = nextData;
+	            this.wait();
+	            this.release();
 	        }
 	
 	        /**
@@ -7482,7 +7502,7 @@
 	            }
 	
 	            if (sync) {
-	                this.push();
+	                this.pushState();
 	                cb && cb();
 	            } else {
 	                if (change) {
@@ -7511,7 +7531,7 @@
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
 	                    changes[k] = pState[k];
 	                }
-	            }this.shouldApply(_extends({}, this.state || {}, changes)) && this.push();
+	            }this.shouldApply(_extends({}, this.state || {}, changes)) && this.pushState();
 	            return this.data;
 	        }
 	

@@ -308,7 +308,7 @@ class Store extends EventEmitter {
         else {
             this._stable = false;
             if ( !_static.managed && !this.state && (!this._use || !this._use.length) ) {
-                console.warn("Rescope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+                console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
             }
         }
         !this._stable && this.emit('unstable', this.state);
@@ -446,7 +446,7 @@ class Store extends EventEmitter {
         if ( this._stabilizer )
             return;
         
-        this._stabilizer = TaskSequencer.pushTask(this, 'push');
+        this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
     }
     
     retrieve( path, i = 0, obj = this.data ) {
@@ -489,18 +489,11 @@ class Store extends EventEmitter {
      * @param cb
      */
     push( data, force, cb ) {
-        cb            = force === true ? cb : force;
-        force         = force === true;
-        var i         = 0,
-            nextState = !data && { ...this.state, ...this._changesSW } || this.state,
-            nextDatas = data || this.apply(this.data, nextState, this._changesSW);
-        
-        this._stabilizer = null;
-        this.state       = nextState;
-        this._changesSW  = {};
+        cb    = force === true ? cb : force;
+        force = force === true;
         if ( !force &&
             (
-                !this.hasDataChange(nextDatas)
+                !this.hasDataChange(data)
             )
         ) {
             cb && cb();
@@ -514,9 +507,41 @@ class Store extends EventEmitter {
         }
         
         //
-        this.data = nextDatas;
+        this.data = data;
         this.wait();
         this.release(cb);
+        
+    }
+    
+    pushState( force ) {
+        
+        if ( !force && !this._changesSW && this.data )
+            return;
+        
+        var nextState = { ...this.state, ...(this._changesSW || {}) },
+            nextData  = this.apply(this.data, nextState, this._changesSW);
+        
+        this._stabilizer = null;
+        this.state       = nextState;
+        this._changesSW  = null;
+        if ( !force &&
+            (
+                !this.hasDataChange(nextData)
+            )
+        ) {
+            if ( !this.__locks.all ) {
+                let stable   = this._stable;
+                this._stable = true;
+                !stable && this.emit('stable', this.state, this.data);
+                this._stabilizer = null;
+            }
+            return false;
+        }
+        
+        //
+        this.data = nextData;
+        this.wait();
+        this.release();
         
     }
     
@@ -545,7 +570,7 @@ class Store extends EventEmitter {
         }
         
         if ( sync ) {
-            this.push();
+            this.pushState();
             cb && cb();
         }
         else {
@@ -576,7 +601,7 @@ class Store extends EventEmitter {
                 this._revs[k] = pState[k] && pState[k]._rev || true;
                 changes[k]    = pState[k];
             }
-        this.shouldApply({ ...(this.state || {}), ...changes }) && this.push();
+        this.shouldApply({ ...(this.state || {}), ...changes }) && this.pushState();
         return this.data;
     }
     

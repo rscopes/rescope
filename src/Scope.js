@@ -406,7 +406,9 @@ export default class Scope extends EventEmitter {
                     return revs;
                 }, {})
             ]);
+        
         this.mount(key);
+        this.retainStores(Object.keys(lastRevs));
         
         if ( setInitial && this._stable ) {
             data = this.getUpdates(lastRevs);
@@ -433,8 +435,10 @@ export default class Scope extends EventEmitter {
             i         = followers && followers.length;
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
-                followers[i][2] == as )
+                followers[i][2] == as ) {
+                this.disposeStores(Object.keys(followers[i][3]));
                 return followers.splice(i, 1);
+            }
     }
     
     /**
@@ -890,7 +894,7 @@ export default class Scope extends EventEmitter {
         
         if ( !this._.isLocalId )
             delete openScopes[this._id];
-        this._.followers.length = 0;
+        this._.followers.map(this.unBind.bind(this));
         
         while ( this._._mixedList.length ) {
             this._._mixed[0].removeListener(this._._mixedList.shift());

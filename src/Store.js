@@ -690,34 +690,35 @@ class Store extends EventEmitter {
      */
     serialize( output = {}, completeState ) {
         let refs                                    =
-                this._use.reduce(
-                    ( map, key ) => {//todo
-                        let name,
-                            alias, path,
-                            store;
-                        if ( key.store && key.name ) {
-                            alias = name = key.name;
-                        }
-                        else if ( is.fn(key) ) {
-                            name = alias = key.name || key.defaultName;
-                        }
-                        else {
-                            key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                            name  = key[1];
-                            path  = key[2] && key[2].substr(1);
-                            alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
-                        }
-                    
-                        if ( !this.scopeObj.stores[name].scopeObj._.isLocalId )
-                            map[alias] = this.scopeObj.stores[name].scopeObj._id + '/' + name;
-                    
-                        return map;
-                    }, {}
+                is.array(this._use) && this._use.reduce(
+                ( map, key ) => {//todo
+                    let name,
+                        alias, path,
+                        store;
+                    if ( key.store && key.name ) {
+                        alias = name = key.name;
+                    }
+                    else if ( is.fn(key) ) {
+                        name = alias = key.name || key.defaultName;
+                    }
+                    else {
+                        key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                        name  = key[1];
+                        path  = key[2] && key[2].substr(1);
+                        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+                    }
+                
+                    if ( !this.scopeObj.stores[name].scopeObj._.isLocalId )
+                        map[alias] = this.scopeObj.stores[name].scopeObj._id + '/' + name;
+                
+                    return map;
+                }, {}
                 ) || {};
         output[this.scopeObj._id + '/' + this.name] = {
-            state: completeState
+            state: this.state &&
+            (completeState
                 ? { ...this.state }
-                : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {}),
+                : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})),
             data : this.data,
             refs
         };

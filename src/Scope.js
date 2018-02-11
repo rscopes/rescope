@@ -585,7 +585,10 @@ export default class Scope extends EventEmitter {
      * @returns {*|{state: {}, data: {}}}
      */
     serialize( output = {} ) {
-        let ctx          = this._._scope;
+        let ctx = this._._scope;
+        if ( output[this._id] )
+            return;
+        
         output[this._id] = {};
         
         Object.keys(ctx).forEach(
@@ -883,6 +886,10 @@ export default class Scope extends EventEmitter {
         //console.warn("destroy", this._id);
         this.dead = true;
         this.emit("destroy", this);
+        for ( let key in ctx )
+            if ( !is.fn(ctx[key]) ) {
+                !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
+            }
         Object.keys(
             this._._listening
         ).forEach(
@@ -906,10 +913,6 @@ export default class Scope extends EventEmitter {
             this.parent.dispose("isMyParent");
             this._._parentList = null;
         }
-        for ( let key in ctx )
-            if ( !is.fn(ctx[key]) ) {
-                !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
-            }
         this._ = null;
         
         

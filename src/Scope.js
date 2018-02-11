@@ -406,7 +406,9 @@ export default class Scope extends EventEmitter {
                     return revs;
                 }, {})
             ]);
+        
         this.mount(key);
+        this.retainStores(Object.keys(lastRevs));
         
         if ( setInitial && this._stable ) {
             data = this.getUpdates(lastRevs);
@@ -433,8 +435,10 @@ export default class Scope extends EventEmitter {
             i         = followers && followers.length;
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
-                followers[i][2] == as )
+                followers[i][2] == as ) {
+                this.disposeStores(Object.keys(followers[i][3]));
                 return followers.splice(i, 1);
+            }
     }
     
     /**
@@ -581,7 +585,10 @@ export default class Scope extends EventEmitter {
      * @returns {*|{state: {}, data: {}}}
      */
     serialize( output = {} ) {
-        let ctx          = this._._scope;
+        let ctx = this._._scope;
+        if ( output[this._id] )
+            return;
+        
         output[this._id] = {};
         
         Object.keys(ctx).forEach(
@@ -879,6 +886,10 @@ export default class Scope extends EventEmitter {
         //console.warn("destroy", this._id);
         this.dead = true;
         this.emit("destroy", this);
+        for ( let key in ctx )
+            if ( !is.fn(ctx[key]) ) {
+                !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
+            }
         Object.keys(
             this._._listening
         ).forEach(
@@ -890,7 +901,7 @@ export default class Scope extends EventEmitter {
         
         if ( !this._.isLocalId )
             delete openScopes[this._id];
-        this._.followers.length = 0;
+        this._.followers.map(this.unBind.bind(this));
         
         while ( this._._mixedList.length ) {
             this._._mixed[0].removeListener(this._._mixedList.shift());
@@ -902,10 +913,6 @@ export default class Scope extends EventEmitter {
             this.parent.dispose("isMyParent");
             this._._parentList = null;
         }
-        for ( let key in ctx )
-            if ( !is.fn(ctx[key]) ) {
-                !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
-            }
         this._ = null;
         
         

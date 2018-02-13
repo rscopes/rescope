@@ -299,6 +299,8 @@ class Store extends EventEmitter {
                     this.data = this.apply(this.data, this.state, this.state);
                     applied   = true;
                 }
+                else
+                    this._changesSW = { ...this.state }
             }
         }
         if ( (this.data !== undefined || applied) && !this.__locks.all ) {

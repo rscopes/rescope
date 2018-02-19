@@ -242,8 +242,7 @@ describe('Rescope', function () {
             .bind(
                 function fn( _data ) {
                     //console.log("!!!!", _data, TestContext.data.local_5);
-                    TestContext.unBind(fn,
-                                       "local_5");
+                    TestContext.unBind(fn, "local_5");
                     if ( _data.local_5.remapTest == 'ok' ) done();
                     else done(new Error("fail"));
                 },

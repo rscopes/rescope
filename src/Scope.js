@@ -41,9 +41,9 @@ var is              = require('is'),
 
 
 export default class Scope extends EventEmitter {
-    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-    static Store         = null;
-    static scopes        = openScopes;// all active scopes
+    static persistenceTm  = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static Store          = null;
+    static scopes         = openScopes;// all active scopes
     
     static getScope( scopes ) {
         let skey = is.array(scopes) ? scopes.sort(( a, b ) => {

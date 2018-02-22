@@ -289,6 +289,8 @@ function reScopeProps( ...argz ) {
         };
         static displayName       = "propsScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")";
         
+        _$dispatch = ( ...argz ) => this.$dispatch(...argz);
+        
         getChildContext() {
             return this.context;
         }
@@ -296,7 +298,7 @@ function reScopeProps( ...argz ) {
         render() {
             return <BaseComponent { ...this.props }
                                   { ...this.state }
-                                  $dispatch={ ( ...argz ) => this.$dispatch(...argz) }
+                                  $dispatch={ this._$dispatch }
                                   $stores={ this.$stores }/>
         }
     }, scope, use);

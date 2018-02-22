@@ -1,6 +1,10 @@
 # Scopes
 
 
+## Stability
+
+The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.
+
 ## Events
 
 ReScope use the concept of "Stability", so there only 4 events :
@@ -9,10 +13,6 @@ ReScope use the concept of "Stability", so there only 4 events :
  - "unstable"   (see "Stability" below)
  - "stableTree" (when all child scopes are stable, for serialization, etc)
  - "update"     (When the scopes stores data are updated)
-
-## Stability
-
-The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.
 
 ## Structuring Scopes
 

@@ -57,7 +57,7 @@ To deal with complex architectures the Scopes allow :
 
 ## Doc ?
 
-### [Work in progress doc](doc/Store.md)
+### [Work in progress doc](doc/readme.md)
 
 #### [About Stores](doc/Store.md)
 #### [About Scopes](doc/Scope.md)

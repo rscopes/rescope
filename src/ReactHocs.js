@@ -55,7 +55,7 @@ class Component extends React.Component {
                 || ctx.rescope;
         this.$scope = scope;
         
-        if ( this.$scope.dead ) {
+        if ( this.$scope && this.$scope.dead ) {
             console.error("ReScoping using dead scope")
             this.$scope = null;
         }
@@ -171,7 +171,7 @@ function reScopeState( ...argz ) {
                 || is.fn(scope) && scope(this, p, ctx) || scope
                 || ctx.rescope;
             
-            if ( this.$scope.dead ) {
+            if ( this.$scope && this.$scope.dead ) {
                 console.error("ReScoping using dead scope")
                 this.$scope = null;
             }

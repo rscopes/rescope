@@ -31,7 +31,7 @@
  * Date: 03/12/2016
  * Time: 09:28
  */
-import {Store} from "../dist/Rescope";
+import {Store} from "../dist/ReScope";
 
 var stubs = require("./_stubs/data");
 

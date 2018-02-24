@@ -1,5 +1,20 @@
 # ReScope React Tools
 
+The react Hocs & tools are available in the rescope package if the react-rescope package is available.
+
+```
+npm i react-rescope --save
+```
+
+Then :
+```jsx
+import {reScopeProps, reScopeState} from "rescope";
+// or
+import {reScopeProps, reScopeState, Store, Scope} from "react-rescope";
+```
+
+
+
 ## React HOCs
 
 ### reScopeProps

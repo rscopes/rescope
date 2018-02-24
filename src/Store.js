@@ -487,7 +487,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Apply apply/remap on the private state & push the resulting "public" state to followers
+     * Set & Push the result data to followers if stable
      * @param cb
      */
     push( data, force, cb ) {
@@ -508,13 +508,17 @@ class Store extends EventEmitter {
             return false;
         }
         
-        //
         this.data = data;
         this.wait();
         this.release(cb);
         
     }
     
+    /**
+     * Call the apply fn using the current accumulated state update then, push the resulting data if stable
+     * @param force
+     * @returns {boolean}
+     */
     pushState( force ) {
         
         if ( !force && !this._changesSW && this.data )
@@ -540,7 +544,6 @@ class Store extends EventEmitter {
             return false;
         }
         
-        //
         this.data = nextData;
         this.wait();
         this.release();
@@ -548,7 +551,8 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Update the current private state & push it once the store is stable
+     * Add 'pState' to the current accumulated state updates
+     * & wait source stores stabilization before pushing these state updates
      * @param pState
      * @param cb
      */
@@ -585,7 +589,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Update the current private state & push it once the store is stable
+     * Update the current state & push it
      * @param pState
      * @param cb
      */
@@ -608,18 +612,6 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Replace the current private state & push it once the store is stable
-     * @param pState
-     * @param cb
-     */
-    replaceState( pState, cb ) {
-        var i      = 0, me = this;
-        this.state = pState;
-        
-        this.stabilize(cb);
-    }
-    
-    /**
      * get a store-key pair for Store::map
      * @param {string} name
      * @returns {{store: Store, name: *}}
@@ -638,28 +630,6 @@ class Store extends EventEmitter {
         if ( !is.string(lists) && lists )
             Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
         else super.removeListener(...arguments);
-    }
-    
-    /**
-     * relink bindings & requires
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    relink( from ) {
-        let scope   = this.scopeObj,
-            _static = this.constructor;
-        if ( _static.use ) {
-            //todo unlink
-            this.pull(_static.use, false, from);
-        }
-        
-        if ( this._require ) {
-            this._require.forEach(
-                store => (
-                    this.wait(scope.__scope[store])
-                )
-            );
-        }
     }
     
     /**
@@ -687,7 +657,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * is stable
+     * Serialize state & data with sources refs
      * @returns bool
      */
     serialize( output = {}, completeState ) {
@@ -728,7 +698,7 @@ class Store extends EventEmitter {
     }
     
     /**
-     * is stable
+     * restore state & data
      * @returns bool
      */
     restore( snapshot ) {
@@ -939,11 +909,6 @@ class Store extends EventEmitter {
         this._revs             = this.data = this.state = this.scope = null;
         this.removeAllListeners();
     }
-}
-
-
-Store.Seed = class SeedStore extends Store {
-    static SEED = true;
 }
 
 export default Store;

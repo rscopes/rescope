@@ -13,6 +13,7 @@
     "dev": "webpack -w"
   },
   "peerDependencies": {
+    "rescope": "^3.4.5"
   },
   "dependencies": {
     "is": "^3.2.1",

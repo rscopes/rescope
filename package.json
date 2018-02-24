@@ -1,7 +1,7 @@
 {
   "name": "rescope",
   "version": "3.4.4",
-  "description": "Predictable, multi-scopes, multi-stores, state management system",
+  "description": "Flexible & scopable state management system with flux architecture & multiples store components",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/ReScope.js",
   "license": "MIT",
@@ -13,9 +13,6 @@
     "dev": "webpack -w"
   },
   "peerDependencies": {
-    "react": "^15.4.2",
-    "prop-types": "^15.5.10",
-    "react-dom": "^15.4.2"
   },
   "dependencies": {
     "is": "^3.2.1",
@@ -34,11 +31,7 @@
     "eslint": "^3.14.1",
     "events": "^1.1.1",
     "file-loader": "^0.9.0",
-    "isarray": "0.0.1",
-    "isstring": "^1.0.7",
     "mocha": "^3.5.1",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
     "webpack": "^1.13.1",
     "webpack-closure-compiler": "^1.1.2",
     "webpack-node-externals": "^1.6.0"

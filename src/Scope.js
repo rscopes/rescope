@@ -39,7 +39,9 @@ var is              = require('is'),
     openScopes      = {}
 ;
 
-
+/**
+ * Base Scope object
+ */
 export default class Scope extends EventEmitter {
     static persistenceTm  = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
     static Store          = null;
@@ -55,9 +57,9 @@ export default class Scope extends EventEmitter {
     };
     
     /**
-     * Init a Rescope scope
+     * Init a ReScope scope
      *
-     * @param storesMap {Object} Object with the origin stores
+     * @param storesMap {Object} Object with the initial stores definition / instances
      * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
      * @param parent
      * @param state
@@ -74,8 +76,7 @@ export default class Scope extends EventEmitter {
         
         _.maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         
-        id = id
-            || key && ((parent && parent._id || '') + '::' + key);
+        id = id || key && ((parent && parent._id || '') + '::' + key);
         
         _.isLocalId = !id;
         
@@ -102,6 +103,7 @@ export default class Scope extends EventEmitter {
         
         this.parent = parent;
         this._      = _;
+        
         if ( parent && parent.dead )
             throw new Error("Can't use a dead scope as parent !");
         
@@ -487,6 +489,11 @@ export default class Scope extends EventEmitter {
         }, {});
     }
     
+    /**
+     * Get current data value from json path
+     * @param path
+     * @returns {string|*}
+     */
     retrieve( path = "" ) {
         path = is.string(path) ? path.split('.') : path;
         return path && this.stores[path[0]] &&
@@ -523,7 +530,7 @@ export default class Scope extends EventEmitter {
     
     /**
      * Get or update output basing storesRevMap's revisions.
-     * If a store in 'storesRevMap' is updated; add it to 'output'
+     * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
      * @param storesRevMap
      * @param output
      * @param updated
@@ -567,6 +574,12 @@ export default class Scope extends EventEmitter {
         return updated && output;
     }
     
+    /**
+     * Recursively get all child scopes
+     * @param childs
+     * @returns {Array}
+     * @private
+     */
     _getAllChilds( childs = [] ) {
         childs.push(...this._.childScopes);
         this._.childScopes.forEach(
@@ -578,11 +591,11 @@ export default class Scope extends EventEmitter {
     }
     
     /**
+     * Serialize all active stores state & data in every childs & mixed scopes
      *
-     * @param withChilds
-     * @param __withMixed
-     * @param _output
-     * @returns {*|{state: {}, data: {}}}
+     * Scopes without key or id are ignored
+     * @param output
+     * @returns {{}}
      */
     serialize( output = {} ) {
         let ctx = this._._scope;
@@ -615,6 +628,11 @@ export default class Scope extends EventEmitter {
         return output;
     }
     
+    /**
+     * Restore state & data from the serialize fn
+     * @param snapshot
+     * @param force
+     */
     restore( snapshot, force ) {
         let ctx = this._._scope;
         
@@ -647,6 +665,11 @@ export default class Scope extends EventEmitter {
         
     }
     
+    /**
+     * get a parsed reference
+     * @param _ref
+     * @returns {{storeId, path, alias: *, ref: *}}
+     */
     parseRef( _ref ) {
         let ref = _ref.split(':');
         ref[0]  = ref[0].split('.');
@@ -658,6 +681,13 @@ export default class Scope extends EventEmitter {
         };
     }
     
+    /**
+     * Dispatch an action starting from the top parent & mixed scopes, in all stores
+     *
+     * @param action
+     * @param data
+     * @returns {Scope}
+     */
     dispatch( action, data ) {
         this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
         this.parent && this.parent.dispatch(action, data);
@@ -683,19 +713,33 @@ export default class Scope extends EventEmitter {
         this.once('stable', e => cb(null, this.data));
     }
     
-    
+    /**
+     * Call retain on the scoped stores basing given
+     *
+     * @param stores
+     * @param reason
+     */
     retainStores( stores = [], reason ) {
         stores.forEach(
             id => (this.stores[id] && this.stores[id].retain && this.stores[id].retain(reason))
         )
     }
-    
+    /**
+     * Call retain on the scoped stores
+     *
+     * @param stores
+     * @param reason
+     */
     disposeStores( stores = [], reason ) {
         stores.forEach(
             id => (this.stores[id] && this.stores[id].dispose && this.stores[id].dispose(reason))
         )
     }
     
+    /**
+     * Keep the scope unstable until release is called
+     * @param reason
+     */
     wait( reason ) {
         //console.log("wait", reason);
         this._stable && !this.__locks.all && this.emit("unstable", this);
@@ -707,6 +751,11 @@ export default class Scope extends EventEmitter {
         }
     }
     
+    
+    /**
+     * Stabilize the scope if no more locks remain (wait fn)
+     * @param reason
+     */
     release( reason ) {
         
         if ( reason ) {
@@ -740,6 +789,9 @@ export default class Scope extends EventEmitter {
         
     }
     
+    /**
+     * Propag stores updates basing theirs last updates
+     */
     propag() {
         this._.propagTM && clearTimeout(this._.propagTM);
         this._.propagTM = setTimeout(
@@ -776,10 +828,6 @@ export default class Scope extends EventEmitter {
     isStable() {
         return this._stable;
     }
-    
-    //serializeChilds( childs = [] ) {
-    //
-    //}
     
     _addChild( ctx ) {
         this._.childScopes.push(ctx);

@@ -36,6 +36,7 @@ module.exports    = [
     {
         entry    : {
             "ReScope": "./src/ReScope.js",
+            "index": "./src/index.js",
             
         },
         devtool  : !production ? 'inline-source-map' : 'source-map',
@@ -46,7 +47,7 @@ module.exports    = [
             libraryTarget: 'commonjs2'
         },
         target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [nodeExternals()],
+        externals: [nodeExternals(), './index'],
         resolve  : {
             extensions: [
                 "",

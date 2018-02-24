@@ -25,18 +25,5 @@
  * @contact : caipilabs@gmail.com
  */
 
-import Scope from "./Scope";
-import Store from "./Store";
-import index from "./index";
-
-Scope.Store   = Store;
-index.Scope   = Scope;
-index.Context = Scope;
-index.Store   = Store;
-
-export default index;
-try {
-    require("react-rescope");
-} catch ( e ) {
-}
-
+// Common rescope modules int
+export default {};

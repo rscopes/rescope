@@ -39,7 +39,7 @@ To deal with complex architectures the Scopes allow :
 
 ## What else ?
 
-- React "high order components" factories
+- React "high order components" factories ( react-rescope )
 - Allow to keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
 - Allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores,
 - Easy pairing of remote / webworker based stores

@@ -27,7 +27,7 @@
 
 import Scope from "./Scope";
 import Store from "./Store";
-import index from "./index";
+import index from "./index";// will use as external the index in dist
 
 Scope.Store   = Store;
 index.Scope   = Scope;
@@ -35,6 +35,7 @@ index.Context = Scope;
 index.Store   = Store;
 
 export default index;
+
 try {
     require("react-rescope");
 } catch ( e ) {

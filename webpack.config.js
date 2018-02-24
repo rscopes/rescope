@@ -36,10 +36,9 @@ module.exports    = [
     {
         entry    : {
             "ReScope": "./src/ReScope.js",
-            "index": "./src/index.js",
-            
+            "index"  : "./src/index.js",
         },
-        devtool  : !production ? 'inline-source-map' : 'source-map',
+        devtool  : production ? false : 'source-map',
         output   : {
             path         : __dirname,
             filename     : production ? "dist/[name].min.js" : "dist/[name].js",
@@ -63,13 +62,13 @@ module.exports    = [
                     exclude: /node_modules/,
                     loader : 'babel-loader',
                     query  : {
-    
+                        
                         cacheDirectory: true, //important for performance
                         presets       : [
                             'babel-preset-react',
                             'babel-preset-es2015',
                             'babel-preset-stage-0'
-    
+                        
                         ].map(require.resolve),
                         plugins       : [
                             "babel-plugin-add-module-exports",
@@ -121,14 +120,13 @@ module.exports    = [
         entry    : {
             "ReScope": "./src/ReScope.js",
         },
-        devtool  : !production ? 'inline-source-map' : 'source-map',
+        devtool  : production ? false : 'source-map',
         output   : {
             path         : __dirname,
             filename     : production ? "dist/[name].browser.min.js" : "dist/[name].browser.js",
             publicPath   : "/",
             libraryTarget: 'var'
         },
-        externals: ['react'],
         
         resolve: {
             extensions: [
@@ -191,69 +189,6 @@ module.exports    = [
                         }
                     }) : p => false,
             
-            ]
-        ),
-        
-    },
-    {
-        entry  : {
-            "examples/vanilla/NewsListComp": ["./src/examples/vanilla/NewsListComp.js", './src/examples/vanilla/index.html'],
-            "examples/react/App"           : ['./src/examples/react/index.html', "./src/examples/react/App.js"],
-        },
-        devtool: 'source-map',
-        // description de nos sorties
-        output : {
-            path      : __dirname,
-            filename  : "[name].js",
-            publicPath: "/",
-        },
-        
-        resolve: {
-            extensions: [
-                "",
-                ".js",
-                ".json",
-            ],
-        },
-        
-        module : {
-            loaders: [
-                {
-                    test   : /\.js$/,
-                    exclude: /node_modules/,
-                    loader : 'babel-loader',
-                    query  : {
-                        
-                        presets: [
-                            'babel-preset-react',
-                            'babel-preset-es2015',
-                            'babel-preset-stage-0'
-                        ].map(require.resolve),
-                        plugins: [
-                            "babel-plugin-add-module-exports",
-                            'babel-plugin-transform-decorators-legacy'
-                        ].map(require.resolve)
-                    }
-                },
-                {
-                    test   : /\.json$/,
-                    loaders: [
-                        "json",
-                    ],
-                },
-                {
-                    test   : /\.(html|txt)$/,
-                    loaders: [
-                        "file-loader?name=[path][name].[ext]&context=./src",
-                    ],
-                },
-            ],
-        },
-        plugins: (
-            [
-                new webpack.DefinePlugin({
-                                             __PROD__: production
-                                         }),
             ]
         ),
         

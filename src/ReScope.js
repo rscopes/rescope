@@ -33,11 +33,11 @@ Scope.Store   = Store;
 index.Scope   = Scope;
 index.Context = Scope;
 index.Store   = Store;
-
-export default index;
-
+debugger;
 try {
     require("react-rescope");
 } catch ( e ) {
 }
+
+export default index;
 

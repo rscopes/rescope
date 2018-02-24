@@ -63,7 +63,7 @@ To deal with complex architectures the Scopes allow :
 #### [About Scopes](doc/Scope.md)
 #### [About React HOCs](doc/React.md)
 
-### (Dumb) Simple \& working examples [here](src/examples)
+### (Dumb) Simple \& working examples [here](https://github.com/CaipiLabs/rescope-samples)
 
 \*: The Store's scope is common to the vanilla & react example
 

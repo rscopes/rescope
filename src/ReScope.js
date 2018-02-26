@@ -33,7 +33,7 @@ Scope.Store   = Store;
 index.Scope   = Scope;
 index.Context = Scope;
 index.Store   = Store;
-debugger;
+
 try {
     require("react-rescope");
 } catch ( e ) {

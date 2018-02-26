@@ -560,9 +560,13 @@ class Store extends EventEmitter {
         var i       = 0, change,
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
-            if ( !this.state || pState.hasOwnProperty(k)
+            if ( !this.state
+                || changes.hasOwnProperty(k)
                 && (
-                    pState[k] != this.state[k]
+                    pState[k] !== changes[k]
+                ) || pState.hasOwnProperty(k)
+                && (
+                    pState[k] !== this.state[k]
                     ||
                     (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
                 ) ) {
@@ -845,6 +849,10 @@ class Store extends EventEmitter {
         }
         else cb && this.then(cb);
         return this;
+    }
+    
+    propag( data ) {
+        this.emit('update', data);
     }
     
     retain( reason ) {

@@ -26,4 +26,5 @@
  */
 
 // Common rescope modules int
-export default {};
+export default {
+};

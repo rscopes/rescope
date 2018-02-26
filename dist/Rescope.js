@@ -120,6 +120,7 @@ module.exports =
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
+	
 	try {
 	  __webpack_require__(8);
 	} catch (e) {}
@@ -1907,7 +1908,7 @@ module.exports =
 	                change,
 	                changes = this._changesSW = this._changesSW || {};
 	            for (var k in pState) {
-	                if (!this.state || pState.hasOwnProperty(k) && (pState[k] != this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
+	                if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this.state[k]._rev // rev/hash update
 	                )) {
 	                    change = true;
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
@@ -2211,6 +2212,11 @@ module.exports =
 	                cb && cb();
 	            } else cb && this.then(cb);
 	            return this;
+	        }
+	    }, {
+	        key: 'propag',
+	        value: function propag(data) {
+	            this.emit('update', data);
 	        }
 	    }, {
 	        key: 'retain',

@@ -120,7 +120,6 @@ module.exports =
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
-	debugger;
 	try {
 	  __webpack_require__(8);
 	} catch (e) {}

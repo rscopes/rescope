@@ -3050,7 +3050,7 @@
 	                change,
 	                changes = this._changesSW = this._changesSW || {};
 	            for (var k in pState) {
-	                if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this.state[k]._rev // rev/hash update
+	                if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
 	                )) {
 	                    change = true;
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
@@ -6478,7 +6478,7 @@
 					    change,
 					    changes = this._changesSW = this._changesSW || {};
 					for (var k in pState) {
-						if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this.state[k]._rev // rev/hash update
+						if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
 						)) {
 							change = true;
 							this._revs[k] = pState[k] && pState[k]._rev || true;

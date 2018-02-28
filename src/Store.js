@@ -664,9 +664,9 @@ class Store extends EventEmitter {
      * Serialize state & data with sources refs
      * @returns bool
      */
-    serialize( output = {}, completeState ) {
-        let refs                                    =
-                is.array(this._use) && this._use.reduce(
+    serialize( withRefs = true, output = {} ) {
+        let refs =
+                withRefs && is.array(this._use) && this._use.reduce(
                 ( map, key ) => {//todo
                     let name,
                         alias, path,
@@ -690,9 +690,10 @@ class Store extends EventEmitter {
                     return map;
                 }, {}
                 ) || {};
+        
         output[this.scopeObj._id + '/' + this.name] = {
             state: this.state &&
-            (completeState
+            (!withRefs
                 ? { ...this.state }
                 : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})),
             data : this.data,

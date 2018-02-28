@@ -162,7 +162,8 @@
 	    target[id] = new fn();
 	    target._[id] = fn;
 	},
-	    openScopes = {};
+	    openScopes = {},
+	    SimpleObjectProto = {}.constructor;
 	
 	/**
 	 * Base Scope object
@@ -175,7 +176,7 @@
 	        key: 'getScope',
 	        // all active scopes
 	
-	        // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 	        value: function getScope(scopes) {
 	            var skey = is.array(scopes) ? scopes.sort(function (a, b) {
 	                if (a.firstname < b.firstname) return -1;
@@ -183,7 +184,8 @@
 	                return 0;
 	            }).join('::') : scopes;
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
-	        }
+	        } // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 	    }]);
 	
 	    /**
@@ -783,7 +785,11 @@
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var withChilds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+	            var withParents = arguments[1];
+	            var withMixed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+	            var norefs = arguments[3];
+	            var output = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 	
 	            var ctx = this._._scope;
 	            if (output[this._id]) return;
@@ -793,15 +799,17 @@
 	            Object.keys(ctx).forEach(function (id) {
 	                if (is.fn(ctx[id])) return;
 	
-	                ctx[id].serialize(output);
+	                ctx[id].serialize(!norefs, output);
 	            });
 	
-	            this._.childScopes.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(output);
+	            withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+	
+	            withChilds && this._.childScopes.forEach(function (ctx) {
+	                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
 	            });
 	
-	            this._._mixed.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(output);
+	            withMixed && this._._mixed.forEach(function (ctx) {
+	                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
 	            });
 	
 	            return output;
@@ -860,7 +868,30 @@
 	        }
 	
 	        /**
-	         * Dispatch an action starting from the top parent & mixed scopes, in all stores
+	         * get a parsed reference list from stateMap
+	         * @param _ref
+	         * @returns {{storeId, path, alias: *, ref: *}}
+	         */
+	
+	    }, {
+	        key: 'stateMapToRefList',
+	        value: function stateMapToRefList(sm) {
+	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+	            var _this11 = this;
+	
+	            var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	
+	            var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	
+	            Object.keys(sm).forEach(function (key) {
+	                return sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path) : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key] : _this11.stateMapToRefList(sm[key], _refs, path + '.' + key);
+	            });
+	            return _refs;
+	        }
+	
+	        /**
+	         * Dispatch an action to the top parent & mixed scopes, in all stores
 	         *
 	         * @param action
 	         * @param data
@@ -870,16 +901,16 @@
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action, data) {
-	            var _this11 = this;
+	            var _this12 = this;
+	
+	            Object.keys(this._._scope).forEach(function (id) {
+	                if (!is.fn(_this12._._scope[id])) _this12._._scope[id].trigger(action, data);
+	            });
 	
 	            this._._mixed.forEach(function (ctx) {
 	                return ctx.dispatch(action, data);
 	            });
 	            this.parent && this.parent.dispatch(action, data);
-	            Object.keys(this._._scope).forEach(function (id) {
-	                if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
-	            });
-	
 	            return this;
 	        }
 	
@@ -892,11 +923,11 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this12 = this;
+	            var _this13 = this;
 	
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this12.data);
+	                return cb(null, _this13.data);
 	            });
 	        }
 	
@@ -910,15 +941,16 @@
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this13 = this;
+	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
+	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
 	            });
 	        }
+	
 	        /**
 	         * Call retain on the scoped stores
 	         *
@@ -929,13 +961,13 @@
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this14 = this;
+	            var _this15 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
+	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -965,7 +997,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this15 = this;
+	            var _this16 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -979,15 +1011,15 @@
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this15._.stabilizerTM = null;
-	                    if (_this15.__locks.all) return;
+	                    _this16._.stabilizerTM = null;
+	                    if (_this16.__locks.all) return;
 	
-	                    _this15._.propagTM && clearTimeout(_this15._.propagTM);
+	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
 	
-	                    _this15._stable = true;
-	                    _this15.emit("stable", _this15);
+	                    _this16._stable = true;
+	                    _this16.emit("stable", _this16);
 	
-	                    !_this15.dead && _this15._propag(); // stability can induce destroy
+	                    !_this16.dead && _this16._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -999,18 +1031,18 @@
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this16 = this;
+	            var _this17 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this16._.propagTM = null;
-	                _this16._propag();
+	                _this17._.propagTM = null;
+	                _this17._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this17 = this;
+	            var _this18 = this;
 	
 	            if (this._.followers.length) this._.followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -1019,7 +1051,7 @@
 	                    lastRevs = _ref3[3],
 	                    remaps = _ref3[3];
 	
-	                var data = _this17.getUpdates(lastRevs);
+	                var data = _this18.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1046,31 +1078,31 @@
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this18 = this;
+	            var _this19 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this18._.unStableChilds--;
-	                    if (!ctx.isStable()) _this18._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
+	                    if (!ctx.isStable()) _this19._.unStableChilds--;
 	
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1107,7 +1139,7 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this19 = this;
+	            var _this20 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1124,14 +1156,14 @@
 	                if (this._.persistenceTm) {
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
-	                        _this19.then(function (s) {
-	                            !_this19.__retains.all && _this19.destroy();
-	                        });
+	                        //this.then(s => {
+	                        !_this20.__retains.all && _this20.destroy();
+	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
-	                    this.then(function (s) {
-	                        return !_this19.__retains.all && _this19.destroy();
-	                    });
+	                    //this.then(s =>
+	                    !this.__retains.all && this.destroy();
+	                    //);
 	                }
 	            }
 	        }
@@ -1143,7 +1175,7 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this20 = this;
+	            var _this21 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1154,7 +1186,7 @@
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
 	            }Object.keys(this._._listening).forEach(function (id) {
-	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
+	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -1187,6 +1219,11 @@
 	
 	Scope.persistenceTm = 1;
 	Scope.Store = null;
+	
+	Scope.scopeRef = function scopeRef(path) {
+	    this.path = path;
+	};
+	
 	Scope.scopes = openScopes;
 	exports.default = Scope;
 	module.exports = exports['default'];
@@ -3161,10 +3198,10 @@
 	        value: function serialize() {
 	            var _this6 = this;
 	
-	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	            var completeState = arguments[1];
+	            var withRefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	            var refs = is.array(this._use) && this._use.reduce(function (map, key) {
+	            var refs = withRefs && is.array(this._use) && this._use.reduce(function (map, key) {
 	                //todo
 	                var name = void 0,
 	                    alias = void 0,
@@ -3185,8 +3222,9 @@
 	
 	                return map;
 	            }, {}) || {};
+	
 	            output[this.scopeObj._id + '/' + this.name] = {
-	                state: this.state && (completeState ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
+	                state: this.state && (!withRefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
 	                    return !refs[k] && (h[k] = _this6.state[k]), h;
 	                }, {})),
 	                data: this.data,
@@ -3961,6 +3999,8 @@
 	
 		_index2.default.reScopeProps = RTools.reScopeProps;
 		_index2.default.reScopeState = RTools.reScopeState;
+		_index2.default.scopeToProps = RTools.reScopeProps;
+		_index2.default.scopeToState = RTools.reScopeState;
 		_index2.default.reScope = RTools.reScope;
 		exports.default = _index2.default;
 		module.exports = exports["default"];
@@ -3989,7 +4029,7 @@
 		Object.defineProperty(exports, "__esModule", {
 			value: true
 		});
-		exports.reScope = exports.scopeState = exports.rescopeState = exports.reScopeState = exports.scopeProps = exports.rescopeProps = exports.reScopeProps = exports.Component = exports.default = undefined;
+		exports.reScope = exports.reScopeState = exports.reScopeProps = exports.Component = exports.default = undefined;
 	
 		var _extends = Object.assign || function (target) {
 			for (var i = 1; i < arguments.length; i++) {
@@ -4258,6 +4298,12 @@
 					} else if (!_this2.$scope) _this2.render = function () {
 						return _react2.default.createElement('div', null, 'No ReScope context in ', BaseComponent.name);
 					};
+	
+					_this2.$dispatch = function () {
+						var _this2$$scope;
+	
+						return (_this2$$scope = _this2.$scope).dispatch.apply(_this2$$scope, arguments);
+					};
 					return _this2;
 				}
 	
@@ -4279,7 +4325,6 @@
 				}, {
 					key: 'componentWillUnmount',
 					value: function componentWillUnmount() {
-						_get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this) && _get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 	
 						use.length && this.$scope.unBind(this, use);
 	
@@ -4287,6 +4332,7 @@
 	
 						delete this.$stores;
 						delete this.$scope;
+						_get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this) && _get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 					}
 				}, {
 					key: 'componentWillReceiveProps',
@@ -4343,7 +4389,7 @@
 	  * @returns {ReScopeProvider}
 	  */
 		function reScopeProps() {
-			var _class3, _temp4;
+			var _class3, _temp3;
 	
 			for (var _len2 = arguments.length, argz = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 				argz[_key2] = arguments[_key2];
@@ -4365,25 +4411,13 @@
 				return h[k] = _propTypes2.default.any, h;
 			}, {}) || {};
 	
-			var provider = reScopeState((_temp4 = _class3 = function (_React$Component2) {
+			var provider = reScopeState((_temp3 = _class3 = function (_React$Component2) {
 				_inherits(ReScopePropsProvider, _React$Component2);
 	
 				function ReScopePropsProvider() {
-					var _ref;
-	
-					var _temp3, _this3, _ret;
-	
 					_classCallCheck(this, ReScopePropsProvider);
 	
-					for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-						args[_key3] = arguments[_key3];
-					}
-	
-					return _ret = (_temp3 = (_this3 = _possibleConstructorReturn(this, (_ref = ReScopePropsProvider.__proto__ || Object.getPrototypeOf(ReScopePropsProvider)).call.apply(_ref, [this].concat(args))), _this3), _this3._$dispatch = function () {
-						var _this4;
-	
-						return (_this4 = _this3).$dispatch.apply(_this4, arguments);
-					}, _temp3), _possibleConstructorReturn(_this3, _ret);
+					return _possibleConstructorReturn(this, (ReScopePropsProvider.__proto__ || Object.getPrototypeOf(ReScopePropsProvider)).apply(this, arguments));
 				}
 	
 				_createClass(ReScopePropsProvider, [{
@@ -4395,7 +4429,7 @@
 					key: 'render',
 					value: function render() {
 						return _react2.default.createElement(BaseComponent, _extends({}, this.props, this.state, {
-							$dispatch: this._$dispatch,
+							$dispatch: this.$dispatch,
 							$stores: this.$stores }));
 					}
 				}]);
@@ -4407,7 +4441,7 @@
 			}), _class3.contextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
 				rescope: _propTypes2.default.object,
 				$stores: _propTypes2.default.object
-			}), _temp4), scope, use);
+			}), _temp3), scope, use);
 			provider.displayName = "propsScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")";
 			return provider;
 		}
@@ -4421,13 +4455,13 @@
 	  * @param parentScope {Scope} the propagated Scope where the stores will be searched
 	  * @param parentScopeId {string} the propagated Scope where the stores will be searched
 	  * @param additionalContext {Object} context to be propagated
-	  * @returns {ReScopeProvider}
+	  * @returns {*}
 	  */
 		function reScope() {
-			var _class4, _temp5;
+			var _class4, _temp4;
 	
-			for (var _len4 = arguments.length, argz = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-				argz[_key4] = arguments[_key4];
+			for (var _len3 = arguments.length, argz = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+				argz[_key3] = arguments[_key3];
 			}
 	
 			var BaseComponent = (!argz[0] || argz[0].prototype instanceof _react2.default.Component) && argz.shift(),
@@ -4438,51 +4472,57 @@
 	
 			if (!(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent)) {
 				return function (BaseComponent) {
-					return reScopeState(BaseComponent, scope, use, additionalContext);
+					return reScope(BaseComponent, scoped, parent, parentId, additionalContext);
 				};
 			}
+	
+			var compName = BaseComponent.displayName || BaseComponent.name;
 	
 			additionalContext = additionalContext && Object.keys(additionalContext).reduce(function (h, k) {
 				return h[k] = _propTypes2.default.any, h;
 			}, {}) || {};
 	
-			var ScopeProvider = (_temp5 = _class4 = function (_BaseComponent2) {
+			var ScopeProvider = (_temp4 = _class4 = function (_BaseComponent2) {
 				_inherits(ScopeProvider, _BaseComponent2);
 	
 				function ScopeProvider(p, ctx, q) {
 					_classCallCheck(this, ScopeProvider);
 	
-					var _this5 = _possibleConstructorReturn(this, (ScopeProvider.__proto__ || Object.getPrototypeOf(ScopeProvider)).call(this, p, ctx, q));
-	
-					if (_this5.$scope) console.error("Scoping a scoped component", BaseComponent + "");
-	
-					_this5.$scope = p.__scope || ctx.rescope;
-	
-					if (_this5.$scope && _this5.$scope.dead) {
-						console.error("ReScoping using dead scope");
-						_this5.$scope = null;
-					}
-	
-					_this5.$scope = new _index.Scope(scoped, {
+					var $scope = new _index.Scope(scoped || {}, {
 						autoDestroy: true,
-						parent: parent || parentId && _index.Scope.getScope(parentId) || _this5.$scope
+						key: compName,
+						parent: parent || parentId && _index.Scope.getScope(parentId) || p.__scope || ctx.rescope
 					});
 	
-					_this5.$scope.retain();
+					var _this4 = _possibleConstructorReturn(this, (ScopeProvider.__proto__ || Object.getPrototypeOf(ScopeProvider)).call(this, p, _extends({}, ctx, { $scope: $scope, $stores: $scope.stores }), q));
 	
-					_this5.$stores = _this5.$scope && _this5.$scope.stores;
-					return _this5;
+					if (!_this4.$scope) {
+						if (_this4.$scope && _this4.$scope.dead) {
+							console.error("Scoping using dead scope parent");
+							_this4.$scope = null;
+						}
+	
+						_this4.$scope = new _index.Scope(scoped || {}, {
+							autoDestroy: true,
+							key: compName,
+							parent: _this4.$scope
+						});
+	
+						_this4.$stores = _this4.$scope && _this4.$scope.stores;
+					}
+					_this4.$scope.retain();
+					return _this4;
 				}
 	
 				_createClass(ScopeProvider, [{
 					key: 'componentWillUnmount',
 					value: function componentWillUnmount() {
-						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 	
 						this.$scope.dispose();
 	
 						delete this.$stores;
 						delete this.$scope;
+						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 					}
 				}, {
 					key: 'getChildContext',
@@ -4502,7 +4542,7 @@
 			}), _class4.contextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
 				rescope: _propTypes2.default.object,
 				$stores: _propTypes2.default.object
-			}), _class4.defaultProps = _extends({}, BaseComponent.defaultProps || {}), _class4.displayName = "scoped(" + (BaseComponent.displayName || BaseComponent.name) + ")", _temp5);
+			}), _class4.defaultProps = _extends({}, BaseComponent.defaultProps || {}), _class4.displayName = "scoped(" + compName + ")", _temp4);
 	
 			return ScopeProvider;
 		}
@@ -4510,11 +4550,7 @@
 		exports.default = Component;
 		exports.Component = Component;
 		exports.reScopeProps = reScopeProps;
-		exports.rescopeProps = reScopeProps;
-		exports.scopeProps = reScopeProps;
 		exports.reScopeState = reScopeState;
-		exports.rescopeState = reScopeState;
-		exports.scopeState = reScopeState;
 		exports.reScope = reScope;
 	
 		/***/
@@ -4781,7 +4817,8 @@
 			target[id] = new fn();
 			target._[id] = fn;
 		},
-		    openScopes = {};
+		    openScopes = {},
+		    SimpleObjectProto = {}.constructor;
 	
 		/**
 	  * Base Scope object
@@ -4793,7 +4830,7 @@
 				key: 'getScope',
 				// all active scopes
 	
-				// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 				value: function getScope(scopes) {
 					var skey = is.array(scopes) ? scopes.sort(function (a, b) {
 						if (a.firstname < b.firstname) return -1;
@@ -4801,7 +4838,8 @@
 						return 0;
 					}).join('::') : scopes;
 					return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
-				}
+				} // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 			}]);
 	
 			/**
@@ -5399,7 +5437,11 @@
 			}, {
 				key: 'serialize',
 				value: function serialize() {
-					var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+					var withChilds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+					var withParents = arguments[1];
+					var withMixed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+					var norefs = arguments[3];
+					var output = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 	
 					var ctx = this._._scope;
 					if (output[this._id]) return;
@@ -5409,15 +5451,17 @@
 					Object.keys(ctx).forEach(function (id) {
 						if (is.fn(ctx[id])) return;
 	
-						ctx[id].serialize(output);
+						ctx[id].serialize(!norefs, output);
 					});
 	
-					this._.childScopes.forEach(function (ctx) {
-						!ctx._.isLocalId && ctx.serialize(output);
+					withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+	
+					withChilds && this._.childScopes.forEach(function (ctx) {
+						!ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
 					});
 	
-					this._._mixed.forEach(function (ctx) {
-						!ctx._.isLocalId && ctx.serialize(output);
+					withMixed && this._._mixed.forEach(function (ctx) {
+						!ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
 					});
 	
 					return output;
@@ -5476,7 +5520,30 @@
 				}
 	
 				/**
-	    * Dispatch an action starting from the top parent & mixed scopes, in all stores
+	    * get a parsed reference list from stateMap
+	    * @param _ref
+	    * @returns {{storeId, path, alias: *, ref: *}}
+	    */
+	
+			}, {
+				key: 'stateMapToRefList',
+				value: function stateMapToRefList(sm) {
+					var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+					var _this11 = this;
+	
+					var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	
+					var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	
+					Object.keys(sm).forEach(function (key) {
+						return sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path) : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key] : _this11.stateMapToRefList(sm[key], _refs, path + '.' + key);
+					});
+					return _refs;
+				}
+	
+				/**
+	    * Dispatch an action to the top parent & mixed scopes, in all stores
 	    *
 	    * @param action
 	    * @param data
@@ -5486,16 +5553,16 @@
 			}, {
 				key: 'dispatch',
 				value: function dispatch(action, data) {
-					var _this11 = this;
+					var _this12 = this;
+	
+					Object.keys(this._._scope).forEach(function (id) {
+						if (!is.fn(_this12._._scope[id])) _this12._._scope[id].trigger(action, data);
+					});
 	
 					this._._mixed.forEach(function (ctx) {
 						return ctx.dispatch(action, data);
 					});
 					this.parent && this.parent.dispatch(action, data);
-					Object.keys(this._._scope).forEach(function (id) {
-						if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
-					});
-	
 					return this;
 				}
 	
@@ -5508,11 +5575,11 @@
 			}, {
 				key: 'then',
 				value: function then(cb) {
-					var _this12 = this;
+					var _this13 = this;
 	
 					if (this._stable) return cb(null, this.data);
 					this.once('stable', function (e) {
-						return cb(null, _this12.data);
+						return cb(null, _this13.data);
 					});
 				}
 	
@@ -5526,15 +5593,16 @@
 			}, {
 				key: 'retainStores',
 				value: function retainStores() {
-					var _this13 = this;
+					var _this14 = this;
 	
 					var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 					var reason = arguments[1];
 	
 					stores.forEach(function (id) {
-						return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
+						return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
 					});
 				}
+	
 				/**
 	    * Call retain on the scoped stores
 	    *
@@ -5545,13 +5613,13 @@
 			}, {
 				key: 'disposeStores',
 				value: function disposeStores() {
-					var _this14 = this;
+					var _this15 = this;
 	
 					var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 					var reason = arguments[1];
 	
 					stores.forEach(function (id) {
-						return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
+						return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
 					});
 				}
 	
@@ -5581,7 +5649,7 @@
 			}, {
 				key: 'release',
 				value: function release(reason) {
-					var _this15 = this;
+					var _this16 = this;
 	
 					if (reason) {
 						if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -5595,15 +5663,15 @@
 						this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 						this._.stabilizerTM = setTimeout(function (e) {
-							_this15._.stabilizerTM = null;
-							if (_this15.__locks.all) return;
+							_this16._.stabilizerTM = null;
+							if (_this16.__locks.all) return;
 	
-							_this15._.propagTM && clearTimeout(_this15._.propagTM);
+							_this16._.propagTM && clearTimeout(_this16._.propagTM);
 	
-							_this15._stable = true;
-							_this15.emit("stable", _this15);
+							_this16._stable = true;
+							_this16.emit("stable", _this16);
 	
-							!_this15.dead && _this15._propag(); // stability can induce destroy
+							!_this16.dead && _this16._propag(); // stability can induce destroy
 						});
 					}
 				}
@@ -5615,18 +5683,18 @@
 			}, {
 				key: 'propag',
 				value: function propag() {
-					var _this16 = this;
+					var _this17 = this;
 	
 					this._.propagTM && clearTimeout(this._.propagTM);
 					this._.propagTM = setTimeout(function (e) {
-						_this16._.propagTM = null;
-						_this16._propag();
+						_this17._.propagTM = null;
+						_this17._propag();
 					}, 2);
 				}
 			}, {
 				key: '_propag',
 				value: function _propag() {
-					var _this17 = this;
+					var _this18 = this;
 	
 					if (this._.followers.length) this._.followers.forEach(function (_ref3) {
 						var obj = _ref3[0],
@@ -5635,7 +5703,7 @@
 						    lastRevs = _ref3[3],
 						    remaps = _ref3[3];
 	
-						var data = _this17.getUpdates(lastRevs);
+						var data = _this18.getUpdates(lastRevs);
 						if (!data) return;
 						if (typeof obj != "function") {
 							//console.log("setState ",obj, Object.keys(data))
@@ -5662,31 +5730,31 @@
 			}, {
 				key: '_addChild',
 				value: function _addChild(ctx) {
-					var _this18 = this;
+					var _this19 = this;
 	
 					this._.childScopes.push(ctx);
 					var lists = {
 						'stable': function stable(s) {
-							_this18._.unStableChilds--;
-							if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+							_this19._.unStableChilds--;
+							if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 						},
 						'unstable': function unstable(s) {
-							_this18._.unStableChilds++;
-							if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+							_this19._.unStableChilds++;
+							if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 						},
 						'stableTree': function stableTree(s) {
-							_this18._.unStableChilds--;
-							if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+							_this19._.unStableChilds--;
+							if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 						},
 						'unstableTree': function unstableTree(s) {
-							_this18._.unStableChilds++;
-							if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+							_this19._.unStableChilds++;
+							if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 						},
 						'destroy': function destroy(ctx) {
-							if (ctx._.unStableChilds) _this18._.unStableChilds--;
-							if (!ctx.isStable()) _this18._.unStableChilds--;
+							if (ctx._.unStableChilds) _this19._.unStableChilds--;
+							if (!ctx.isStable()) _this19._.unStableChilds--;
 	
-							if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+							if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 						}
 					},
 					    wasStable = this._.unStableChilds;
@@ -5723,7 +5791,7 @@
 			}, {
 				key: 'dispose',
 				value: function dispose(reason) {
-					var _this19 = this;
+					var _this20 = this;
 	
 					//console.log("dispose", this._id, reason);
 					if (reason) {
@@ -5740,14 +5808,14 @@
 						if (this._.persistenceTm) {
 							this._.destroyTM && clearTimeout(this._.destroyTM);
 							this._.destroyTM = setTimeout(function (e) {
-								_this19.then(function (s) {
-									!_this19.__retains.all && _this19.destroy();
-								});
+								//this.then(s => {
+								!_this20.__retains.all && _this20.destroy();
+								//});
 							}, this._.persistenceTm);
 						} else {
-							this.then(function (s) {
-								return !_this19.__retains.all && _this19.destroy();
-							});
+							//this.then(s =>
+							!this.__retains.all && this.destroy();
+							//);
 						}
 					}
 				}
@@ -5759,7 +5827,7 @@
 			}, {
 				key: 'destroy',
 				value: function destroy() {
-					var _this20 = this;
+					var _this21 = this;
 	
 					var ctx = this._._scope;
 					//console.warn("destroy", this._id);
@@ -5770,7 +5838,7 @@
 							!ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 						}
 					}Object.keys(this._._listening).forEach(function (id) {
-						return _this20._._scope[id].removeListener(_this20._._listening[id]);
+						return _this21._._scope[id].removeListener(_this21._._listening[id]);
 					});
 	
 					this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -5799,7 +5867,9 @@
 			}]);
 	
 			return Scope;
-		}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopes = openScopes, _temp);
+		}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopeRef = function scopeRef(path) {
+			this.path = path;
+		}, _class.scopes = openScopes, _temp);
 		exports.default = Scope;
 		module.exports = exports['default'];
 	
@@ -6688,10 +6758,10 @@
 				value: function serialize() {
 					var _this6 = this;
 	
-					var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-					var completeState = arguments[1];
+					var withRefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+					var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-					var refs = is.array(this._use) && this._use.reduce(function (map, key) {
+					var refs = withRefs && is.array(this._use) && this._use.reduce(function (map, key) {
 						//todo
 						var name = void 0,
 						    alias = void 0,
@@ -6712,8 +6782,9 @@
 	
 						return map;
 					}, {}) || {};
+	
 					output[this.scopeObj._id + '/' + this.name] = {
-						state: this.state && (completeState ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
+						state: this.state && (!withRefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
 							return !refs[k] && (h[k] = _this6.state[k]), h;
 						}, {})),
 						data: this.data,

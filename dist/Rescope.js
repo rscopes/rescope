@@ -188,7 +188,8 @@ module.exports =
 	    target[id] = new fn();
 	    target._[id] = fn;
 	},
-	    openScopes = {};
+	    openScopes = {},
+	    SimpleObjectProto = {}.constructor;
 	
 	/**
 	 * Base Scope object
@@ -200,7 +201,7 @@ module.exports =
 	        key: 'getScope',
 	        // all active scopes
 	
-	        // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 	        value: function getScope(scopes) {
 	            var skey = is.array(scopes) ? scopes.sort(function (a, b) {
 	                if (a.firstname < b.firstname) return -1;
@@ -208,7 +209,8 @@ module.exports =
 	                return 0;
 	            }).join('::') : scopes;
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
-	        }
+	        } // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	
 	    }]);
 	
 	    /**
@@ -808,7 +810,11 @@ module.exports =
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var withChilds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+	            var withParents = arguments[1];
+	            var withMixed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+	            var norefs = arguments[3];
+	            var output = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 	
 	            var ctx = this._._scope;
 	            if (output[this._id]) return;
@@ -818,15 +824,17 @@ module.exports =
 	            Object.keys(ctx).forEach(function (id) {
 	                if (is.fn(ctx[id])) return;
 	
-	                ctx[id].serialize(output);
+	                ctx[id].serialize(!norefs, output);
 	            });
 	
-	            this._.childScopes.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(output);
+	            withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+	
+	            withChilds && this._.childScopes.forEach(function (ctx) {
+	                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
 	            });
 	
-	            this._._mixed.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(output);
+	            withMixed && this._._mixed.forEach(function (ctx) {
+	                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
 	            });
 	
 	            return output;
@@ -885,7 +893,30 @@ module.exports =
 	        }
 	
 	        /**
-	         * Dispatch an action starting from the top parent & mixed scopes, in all stores
+	         * get a parsed reference list from stateMap
+	         * @param _ref
+	         * @returns {{storeId, path, alias: *, ref: *}}
+	         */
+	
+	    }, {
+	        key: 'stateMapToRefList',
+	        value: function stateMapToRefList(sm) {
+	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+	            var _this11 = this;
+	
+	            var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	
+	            var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	
+	            Object.keys(sm).forEach(function (key) {
+	                return sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path) : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key] : _this11.stateMapToRefList(sm[key], _refs, path + '.' + key);
+	            });
+	            return _refs;
+	        }
+	
+	        /**
+	         * Dispatch an action to the top parent & mixed scopes, in all stores
 	         *
 	         * @param action
 	         * @param data
@@ -895,16 +926,16 @@ module.exports =
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action, data) {
-	            var _this11 = this;
+	            var _this12 = this;
+	
+	            Object.keys(this._._scope).forEach(function (id) {
+	                if (!is.fn(_this12._._scope[id])) _this12._._scope[id].trigger(action, data);
+	            });
 	
 	            this._._mixed.forEach(function (ctx) {
 	                return ctx.dispatch(action, data);
 	            });
 	            this.parent && this.parent.dispatch(action, data);
-	            Object.keys(this._._scope).forEach(function (id) {
-	                if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
-	            });
-	
 	            return this;
 	        }
 	
@@ -917,11 +948,11 @@ module.exports =
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this12 = this;
+	            var _this13 = this;
 	
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this12.data);
+	                return cb(null, _this13.data);
 	            });
 	        }
 	
@@ -935,15 +966,16 @@ module.exports =
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this13 = this;
+	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
+	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
 	            });
 	        }
+	
 	        /**
 	         * Call retain on the scoped stores
 	         *
@@ -954,13 +986,13 @@ module.exports =
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this14 = this;
+	            var _this15 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
+	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -990,7 +1022,7 @@ module.exports =
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this15 = this;
+	            var _this16 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -1004,15 +1036,15 @@ module.exports =
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this15._.stabilizerTM = null;
-	                    if (_this15.__locks.all) return;
+	                    _this16._.stabilizerTM = null;
+	                    if (_this16.__locks.all) return;
 	
-	                    _this15._.propagTM && clearTimeout(_this15._.propagTM);
+	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
 	
-	                    _this15._stable = true;
-	                    _this15.emit("stable", _this15);
+	                    _this16._stable = true;
+	                    _this16.emit("stable", _this16);
 	
-	                    !_this15.dead && _this15._propag(); // stability can induce destroy
+	                    !_this16.dead && _this16._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -1024,18 +1056,18 @@ module.exports =
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this16 = this;
+	            var _this17 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this16._.propagTM = null;
-	                _this16._propag();
+	                _this17._.propagTM = null;
+	                _this17._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this17 = this;
+	            var _this18 = this;
 	
 	            if (this._.followers.length) this._.followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -1044,7 +1076,7 @@ module.exports =
 	                    lastRevs = _ref3[3],
 	                    remaps = _ref3[3];
 	
-	                var data = _this17.getUpdates(lastRevs);
+	                var data = _this18.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1071,31 +1103,31 @@ module.exports =
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this18 = this;
+	            var _this19 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this18._.unStableChilds--;
-	                    if (!ctx.isStable()) _this18._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
+	                    if (!ctx.isStable()) _this19._.unStableChilds--;
 	
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1132,7 +1164,7 @@ module.exports =
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this19 = this;
+	            var _this20 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1149,14 +1181,14 @@ module.exports =
 	                if (this._.persistenceTm) {
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
-	                        _this19.then(function (s) {
-	                            !_this19.__retains.all && _this19.destroy();
-	                        });
+	                        //this.then(s => {
+	                        !_this20.__retains.all && _this20.destroy();
+	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
-	                    this.then(function (s) {
-	                        return !_this19.__retains.all && _this19.destroy();
-	                    });
+	                    //this.then(s =>
+	                    !this.__retains.all && this.destroy();
+	                    //);
 	                }
 	            }
 	        }
@@ -1168,7 +1200,7 @@ module.exports =
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this20 = this;
+	            var _this21 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1179,7 +1211,7 @@ module.exports =
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
 	            }Object.keys(this._._listening).forEach(function (id) {
-	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
+	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -1208,7 +1240,9 @@ module.exports =
 	    }]);
 	
 	    return Scope;
-	}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopes = openScopes, _temp);
+	}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopeRef = function scopeRef(path) {
+	    this.path = path;
+	}, _class.scopes = openScopes, _temp);
 	exports.default = Scope;
 	module.exports = exports['default'];
 
@@ -2019,10 +2053,10 @@ module.exports =
 	        value: function serialize() {
 	            var _this6 = this;
 	
-	            var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	            var completeState = arguments[1];
+	            var withRefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	            var refs = is.array(this._use) && this._use.reduce(function (map, key) {
+	            var refs = withRefs && is.array(this._use) && this._use.reduce(function (map, key) {
 	                //todo
 	                var name = void 0,
 	                    alias = void 0,
@@ -2043,8 +2077,9 @@ module.exports =
 	
 	                return map;
 	            }, {}) || {};
+	
 	            output[this.scopeObj._id + '/' + this.name] = {
-	                state: this.state && (completeState ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
+	                state: this.state && (!withRefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
 	                    return !refs[k] && (h[k] = _this6.state[k]), h;
 	                }, {})),
 	                data: this.data,

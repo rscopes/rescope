@@ -26,26 +26,32 @@
  */
 
 
-var is              = require('is'),
-    EventEmitter    = require('./Emitter'),
-    shortid         = require('shortid')
-    , __proto__push = ( target, id, parent ) => {
+var is                = require('is'),
+    EventEmitter      = require('./Emitter'),
+    shortid           = require('shortid')
+    , __proto__push   = ( target, id, parent ) => {
         let fn       = function () {
         };
         fn.prototype = parent ? new parent._[id]() : target[id] || {};
         target[id]   = new fn();
         target._[id] = fn;
     },
-    openScopes      = {}
-;
+    openScopes        = {},
+    SimpleObjectProto = ({}).constructor;
 
 /**
  * Base Scope object
  */
 export default class Scope extends EventEmitter {
-    static persistenceTm  = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-    static Store          = null;
-    static scopes         = openScopes;// all active scopes
+    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    static Store         = null;
+    static scopeRef      = function scopeRef( path ) {
+        this.path = path;
+        
+    };
+    
+    static scopes = openScopes;// all active scopes
+    
     
     static getScope( scopes ) {
         let skey = is.array(scopes) ? scopes.sort(( a, b ) => {
@@ -597,7 +603,7 @@ export default class Scope extends EventEmitter {
      * @param output
      * @returns {{}}
      */
-    serialize( output = {} ) {
+    serialize( withChilds = true, withParents, withMixed = true, norefs, output = {} ) {
         let ctx = this._._scope;
         if ( output[this._id] )
             return;
@@ -609,19 +615,21 @@ export default class Scope extends EventEmitter {
                 if ( is.fn(ctx[id]) )
                     return;
                 
-                ctx[id].serialize(output);
+                ctx[id].serialize(!norefs, output);
             }
         )
         
-        this._.childScopes.forEach(
+        withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+        
+        withChilds && this._.childScopes.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(output);
+                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
             }
         );
         
-        this._._mixed.forEach(
+        withMixed && this._._mixed.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(output);
+                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
             }
         );
         
@@ -682,15 +690,29 @@ export default class Scope extends EventEmitter {
     }
     
     /**
-     * Dispatch an action starting from the top parent & mixed scopes, in all stores
+     * get a parsed reference list from stateMap
+     * @param _ref
+     * @returns {{storeId, path, alias: *, ref: *}}
+     */
+    stateMapToRefList( sm, state = {}, _refs = [], path = "" ) {
+        Object.keys(sm).forEach(
+            key => (
+                sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path)
+                    : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key]
+                    : this.stateMapToRefList(sm[key], _refs, path + '.' + key)
+            )
+        )
+        return _refs;
+    }
+    
+    /**
+     * Dispatch an action to the top parent & mixed scopes, in all stores
      *
      * @param action
      * @param data
      * @returns {Scope}
      */
     dispatch( action, data ) {
-        this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
-        this.parent && this.parent.dispatch(action, data);
         Object.keys(this._._scope)
               .forEach(
                   id => {
@@ -699,6 +721,8 @@ export default class Scope extends EventEmitter {
                   }
               );
         
+        this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
+        this.parent && this.parent.dispatch(action, data);
         return this;
     }
     
@@ -724,6 +748,7 @@ export default class Scope extends EventEmitter {
             id => (this.stores[id] && this.stores[id].retain && this.stores[id].retain(reason))
         )
     }
+    
     /**
      * Call retain on the scoped stores
      *
@@ -913,15 +938,17 @@ export default class Scope extends EventEmitter {
                 this._.destroyTM && clearTimeout(this._.destroyTM);
                 this._.destroyTM = setTimeout(
                     e => {
-                        this.then(s => {
-                            !this.__retains.all && this.destroy()
-                        });
+                        //this.then(s => {
+                        !this.__retains.all && this.destroy()
+                        //});
                     },
                     this._.persistenceTm
                 );
             }
             else {
-                this.then(s => (!this.__retains.all && this.destroy()));
+                //this.then(s =>
+                (!this.__retains.all && this.destroy())
+                //);
             }
         }
     }

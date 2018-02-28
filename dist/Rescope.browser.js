@@ -3961,8 +3961,7 @@
 	
 		_index2.default.reScopeProps = RTools.reScopeProps;
 		_index2.default.reScopeState = RTools.reScopeState;
-		_index2.default.reScope = RTools.reScopeState;
-		debugger;
+		_index2.default.reScope = RTools.reScope;
 		exports.default = _index2.default;
 		module.exports = exports["default"];
 	
@@ -3990,7 +3989,7 @@
 		Object.defineProperty(exports, "__esModule", {
 			value: true
 		});
-		exports.rescopeState = exports.reScopeState = exports.rescopeProps = exports.reScopeProps = exports.Component = exports.default = undefined;
+		exports.reScope = exports.scopeState = exports.rescopeState = exports.reScopeState = exports.scopeProps = exports.rescopeProps = exports.reScopeProps = exports.Component = exports.default = undefined;
 	
 		var _extends = Object.assign || function (target) {
 			for (var i = 1; i < arguments.length; i++) {
@@ -4244,7 +4243,7 @@
 	
 					var _this2 = _possibleConstructorReturn(this, (ReScopeProvider.__proto__ || Object.getPrototypeOf(ReScopeProvider)).call(this, p, ctx, q));
 	
-					_this2.$scope = p.__scope || _is2.default.fn(scope) && scope(_this2, p, ctx) || scope || ctx.rescope;
+					_this2.$scope = _this2.$scope || p.__scope || _is2.default.fn(scope) && scope(_this2, p, ctx) || scope || ctx.rescope;
 	
 					if (_this2.$scope && _this2.$scope.dead) {
 						console.error("ReScoping using dead scope");
@@ -4366,7 +4365,7 @@
 				return h[k] = _propTypes2.default.any, h;
 			}, {}) || {};
 	
-			return reScopeState((_temp4 = _class3 = function (_React$Component2) {
+			var provider = reScopeState((_temp4 = _class3 = function (_React$Component2) {
 				_inherits(ReScopePropsProvider, _React$Component2);
 	
 				function ReScopePropsProvider() {
@@ -4408,15 +4407,115 @@
 			}), _class3.contextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
 				rescope: _propTypes2.default.object,
 				$stores: _propTypes2.default.object
-			}), _class3.displayName = "propsScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")", _temp4), scope, use);
+			}), _temp4), scope, use);
+			provider.displayName = "propsScoped(" + (BaseComponent.displayName || BaseComponent.name) + ")";
+			return provider;
+		}
+	
+		/**
+	  * Return a React "HOC" (High Order Component) that :
+	  *  - Render BaseComponent with new scope that inherit the given scope or context scope
+	  *
+	  * @param BaseComponent {React.Component} Base React Component ( default : React.Component )
+	  * @param storesMap {Object} the propagated Scope where the stores will be searched
+	  * @param parentScope {Scope} the propagated Scope where the stores will be searched
+	  * @param parentScopeId {string} the propagated Scope where the stores will be searched
+	  * @param additionalContext {Object} context to be propagated
+	  * @returns {ReScopeProvider}
+	  */
+		function reScope() {
+			var _class4, _temp5;
+	
+			for (var _len4 = arguments.length, argz = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+				argz[_key4] = arguments[_key4];
+			}
+	
+			var BaseComponent = (!argz[0] || argz[0].prototype instanceof _react2.default.Component) && argz.shift(),
+			    scoped = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+			    parent = (!argz[0] || argz[0] instanceof _index.Scope) && argz.shift(),
+			    parentId = (!argz[0] || _is2.default.string(argz[0])) && argz.shift(),
+			    additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift();
+	
+			if (!(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent)) {
+				return function (BaseComponent) {
+					return reScopeState(BaseComponent, scope, use, additionalContext);
+				};
+			}
+	
+			additionalContext = additionalContext && Object.keys(additionalContext).reduce(function (h, k) {
+				return h[k] = _propTypes2.default.any, h;
+			}, {}) || {};
+	
+			var ScopeProvider = (_temp5 = _class4 = function (_BaseComponent2) {
+				_inherits(ScopeProvider, _BaseComponent2);
+	
+				function ScopeProvider(p, ctx, q) {
+					_classCallCheck(this, ScopeProvider);
+	
+					var _this5 = _possibleConstructorReturn(this, (ScopeProvider.__proto__ || Object.getPrototypeOf(ScopeProvider)).call(this, p, ctx, q));
+	
+					if (_this5.$scope) console.error("Scoping a scoped component", BaseComponent + "");
+	
+					_this5.$scope = p.__scope || ctx.rescope;
+	
+					if (_this5.$scope && _this5.$scope.dead) {
+						console.error("ReScoping using dead scope");
+						_this5.$scope = null;
+					}
+	
+					_this5.$scope = new _index.Scope(scoped, {
+						autoDestroy: true,
+						parent: parent || parentId && _index.Scope.getScope(parentId) || _this5.$scope
+					});
+	
+					_this5.$scope.retain();
+	
+					_this5.$stores = _this5.$scope && _this5.$scope.stores;
+					return _this5;
+				}
+	
+				_createClass(ScopeProvider, [{
+					key: 'componentWillUnmount',
+					value: function componentWillUnmount() {
+						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
+	
+						this.$scope.dispose();
+	
+						delete this.$stores;
+						delete this.$scope;
+					}
+				}, {
+					key: 'getChildContext',
+					value: function getChildContext() {
+						var ctx = _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'getChildContext', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'getChildContext', this).call(this) || {};
+						return _extends({}, ctx, {
+							rescope: this.$scope,
+							$stores: this.$scope.stores
+						});
+					}
+				}]);
+	
+				return ScopeProvider;
+			}(BaseComponent), _class4.childContextTypes = _extends({}, BaseComponent.childContextTypes || {}, additionalContext, {
+				rescope: _propTypes2.default.object,
+				$stores: _propTypes2.default.object
+			}), _class4.contextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
+				rescope: _propTypes2.default.object,
+				$stores: _propTypes2.default.object
+			}), _class4.defaultProps = _extends({}, BaseComponent.defaultProps || {}), _class4.displayName = "scoped(" + (BaseComponent.displayName || BaseComponent.name) + ")", _temp5);
+	
+			return ScopeProvider;
 		}
 	
 		exports.default = Component;
 		exports.Component = Component;
 		exports.reScopeProps = reScopeProps;
 		exports.rescopeProps = reScopeProps;
+		exports.scopeProps = reScopeProps;
 		exports.reScopeState = reScopeState;
 		exports.rescopeState = reScopeState;
+		exports.scopeState = reScopeState;
+		exports.reScope = reScope;
 	
 		/***/
 	},

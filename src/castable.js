@@ -24,8 +24,7 @@
  * @author : Nathanael Braun
  * @contact : caipilabs@gmail.com
  */
-import inde, {Store, Scope} from "./index";
-import {reScopeState} from "../../react-rescope/src/ReactHocs";
+import index, {Store, Scope} from "./index";
 // will use as external the index in dist
 
 index.as = {};

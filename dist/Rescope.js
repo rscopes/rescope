@@ -71,7 +71,7 @@ module.exports =
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	
 	var _Scope = __webpack_require__(1);
@@ -120,9 +120,13 @@ module.exports =
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
+	_index2.default.scopeRef = function scopeRef(map, key) {
+	    map[key] = new _Scope2.default.scopeRef(map[key]);
+	    return map;
+	};
 	
 	try {
-	  __webpack_require__(8);
+	    __webpack_require__(8);
 	} catch (e) {}
 	
 	exports.default = _index2.default;
@@ -662,7 +666,10 @@ module.exports =
 	
 	            var Store = this.constructor.Store;
 	            storesList = is.array(storesList) ? storesList : [storesList];
-	            this.mount(storesList);
+	            var refList = storesList.map(this.parseRef);
+	            this.mount(refList.map(function (ref) {
+	                return ref.storeId;
+	            }));
 	            if (bind && to instanceof Store) {
 	                Store.map(to, storesList, this, this, false);
 	            } else if (bind) {

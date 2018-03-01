@@ -47,7 +47,7 @@
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	
 	var _Scope = __webpack_require__(1);
@@ -96,9 +96,13 @@
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
+	_index2.default.scopeRef = function scopeRef(map, key) {
+	    map[key] = new _Scope2.default.scopeRef(map[key]);
+	    return map;
+	};
 	
 	try {
-	  __webpack_require__(18);
+	    __webpack_require__(18);
 	} catch (e) {}
 	
 	exports.default = _index2.default;
@@ -637,7 +641,10 @@
 	
 	            var Store = this.constructor.Store;
 	            storesList = is.array(storesList) ? storesList : [storesList];
-	            this.mount(storesList);
+	            var refList = storesList.map(this.parseRef);
+	            this.mount(refList.map(function (ref) {
+	                return ref.storeId;
+	            }));
 	            if (bind && to instanceof Store) {
 	                Store.map(to, storesList, this, this, false);
 	            } else if (bind) {
@@ -4145,6 +4152,21 @@
 	
 		var SimpleObjectProto = {}.constructor;
 	
+		function stateMapToRefList(sm) {
+			var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+			var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	
+			var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	
+			Object.keys(sm).forEach(function (key) {
+				var cpath = path ? path + '.' + key : key;
+				sm[key] instanceof _index.Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof _index.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+				//: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
+			});
+			return _refs;
+		}
+	
 		/**
 	  * Inheritable ReScope "HOC" (High Order Component)
 	  *
@@ -4259,18 +4281,22 @@
 				argz[_key] = arguments[_key];
 			}
 	
-			var BaseComponent = (!argz[0] || argz[0].prototype && argz[0].prototype.isReactComponent) && argz.shift(),
+			var BaseComponent = (!argz[0] || argz[0].prototype instanceof _react2.default.Component) && argz.shift(),
 			    scope = (!argz[0] || argz[0] instanceof _index.Scope || _is2.default.fn(argz[0])) && argz.shift(),
-			    use = (!argz[0] || _is2.default.array(argz[0])) && argz.shift(),
-			    additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift();
+			    use = _is2.default.array(argz[0]) && argz.shift(),
+			    stateMap = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+			    additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+			    initialState = {};
 	
-			if (!(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent)) {
+			if (!(BaseComponent && BaseComponent.prototype instanceof _react2.default.Component)) {
 				return function (BaseComponent) {
-					return reScopeState(BaseComponent, scope, use, additionalContext);
+					return reScopeState(BaseComponent, scope, use || stateMap, additionalContext);
 				};
 			}
 	
 			use = [].concat(_toConsumableArray(BaseComponent.use || []), _toConsumableArray(use || []));
+			stateMap && stateMapToRefList(stateMap, initialState, use);
+	
 			additionalContext = additionalContext && Object.keys(additionalContext).reduce(function (h, k) {
 				return h[k] = _propTypes2.default.any, h;
 			}, {}) || {};
@@ -4294,16 +4320,12 @@
 	
 					_this2.$stores = _this2.$scope && _this2.$scope.stores;
 					if (_this2.$scope && use.length) {
-						_this2.state = _extends({}, _this2.state, _this2.$scope.map(_this2, use, false));
+						_this2.state = _extends({}, _this2.state, initialState, _this2.$scope.map(_this2, use, false));
 					} else if (!_this2.$scope) _this2.render = function () {
 						return _react2.default.createElement('div', null, 'No ReScope context in ', BaseComponent.name);
 					};
 	
-					_this2.$dispatch = function () {
-						var _this2$$scope;
-	
-						return (_this2$$scope = _this2.$scope).dispatch.apply(_this2$$scope, arguments);
-					};
+					_this2.$dispatch = _this2.$dispatch.bind(_this2);
 					return _this2;
 				}
 	
@@ -4395,21 +4417,15 @@
 				argz[_key2] = arguments[_key2];
 			}
 	
-			var BaseComponent = (!argz[0] || argz[0].prototype && argz[0].prototype.isReactComponent) && argz.shift(),
+			var BaseComponent = (!argz[0] || argz[0].prototype instanceof _react2.default.Component) && argz.shift(),
 			    scope = (!argz[0] || argz[0] instanceof _index.Scope || _is2.default.fn(argz[0])) && argz.shift(),
-			    use = (!argz[0] || _is2.default.array(argz[0])) && argz.shift(),
-			    additionalContext = (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift();
+			    use = (!argz[0] || _is2.default.array(argz[0]) || argz[0] instanceof SimpleObjectProto) && argz.shift();
 	
-			if (!(BaseComponent && BaseComponent.prototype && BaseComponent.prototype.isReactComponent)) {
+			if (!(BaseComponent && BaseComponent.prototype instanceof _react2.default.Component)) {
 				return function (BaseComponent) {
-					return reScopeProps(BaseComponent, scope, use, additionalContext);
+					return reScopeProps(BaseComponent, scope, use);
 				};
 			}
-	
-			use = [].concat(_toConsumableArray(BaseComponent.use || []), _toConsumableArray(use || []));
-			additionalContext = additionalContext && Object.keys(additionalContext).reduce(function (h, k) {
-				return h[k] = _propTypes2.default.any, h;
-			}, {}) || {};
 	
 			var provider = reScopeState((_temp3 = _class3 = function (_React$Component2) {
 				_inherits(ReScopePropsProvider, _React$Component2);
@@ -4435,10 +4451,10 @@
 				}]);
 	
 				return ReScopePropsProvider;
-			}(_react2.default.Component), _class3.childContextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
+			}(_react2.default.Component), _class3.use = BaseComponent.use, _class3.childContextTypes = _extends({}, BaseComponent.contextTypes || {}, {
 				rescope: _propTypes2.default.object,
 				$stores: _propTypes2.default.object
-			}), _class3.contextTypes = _extends({}, BaseComponent.contextTypes || {}, additionalContext, {
+			}), _class3.contextTypes = _extends({}, BaseComponent.contextTypes || {}, {
 				rescope: _propTypes2.default.object,
 				$stores: _propTypes2.default.object
 			}), _temp3), scope, use);
@@ -4494,7 +4510,7 @@
 						parent: parent || parentId && _index.Scope.getScope(parentId) || p.__scope || ctx.rescope
 					});
 	
-					var _this4 = _possibleConstructorReturn(this, (ScopeProvider.__proto__ || Object.getPrototypeOf(ScopeProvider)).call(this, p, _extends({}, ctx, { $scope: $scope, $stores: $scope.stores }), q));
+					var _this4 = _possibleConstructorReturn(this, (ScopeProvider.__proto__ || Object.getPrototypeOf(ScopeProvider)).call(this, p, _extends({}, ctx, { rescope: $scope, $stores: $scope.stores }), q));
 	
 					if (!_this4.$scope) {
 						if (_this4.$scope && _this4.$scope.dead) {
@@ -4577,7 +4593,6 @@
 		/***/
 	}]
 	/******/);
-	//# sourceMappingURL=ReScope.js.map
 
 /***/ }),
 /* 19 */
@@ -4714,6 +4729,10 @@
 		_index2.default.Scope = _Scope2.default;
 		_index2.default.Context = _Scope2.default;
 		_index2.default.Store = _Store2.default;
+		_index2.default.scopeRef = function scopeRef(map, key) {
+			map[key] = new _Scope2.default.scopeRef(map[key]);
+			return map;
+		};
 	
 		try {
 			__webpack_require__(8);
@@ -5289,7 +5308,10 @@
 	
 					var Store = this.constructor.Store;
 					storesList = is.array(storesList) ? storesList : [storesList];
-					this.mount(storesList);
+					var refList = storesList.map(this.parseRef);
+					this.mount(refList.map(function (ref) {
+						return ref.storeId;
+					}));
 					if (bind && to instanceof Store) {
 						Store.map(to, storesList, this, this, false);
 					} else if (bind) {

@@ -47,7 +47,6 @@ export default class Scope extends EventEmitter {
     static Store         = null;
     static scopeRef      = function scopeRef( path ) {
         this.path = path;
-        
     };
     
     static scopes = openScopes;// all active scopes
@@ -459,9 +458,10 @@ export default class Scope extends EventEmitter {
      * @returns {Object} Initial outputs of the stores in 'storesList'
      */
     map( to, storesList, bind = true ) {
-        let Store  = this.constructor.Store;
-        storesList = is.array(storesList) ? storesList : [storesList];
-        this.mount(storesList);
+        let Store   = this.constructor.Store;
+        storesList  = is.array(storesList) ? storesList : [storesList];
+        let refList = storesList.map(this.parseRef);
+        this.mount(refList.map(ref => ref.storeId));
         if ( bind && to instanceof Store ) {
             Store.map(to, storesList, this, this, false)
         }

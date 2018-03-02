@@ -3563,14 +3563,14 @@
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
 	                        _this8._destroyTM = null;
-	                        _this8.then(function (s) {
-	                            !_this8.__retains.all && _this8.destroy();
-	                        });
+	                        //this.then(s => {
+	                        !_this8.__retains.all && _this8.destroy();
+	                        //});
 	                    }, this._persistenceTm);
 	                } else {
-	                    this.then(function (s) {
-	                        return !_this8.__retains.all && _this8.destroy();
-	                    });
+	                    //this.then(s =>
+	                    !this.__retains.all && this.destroy();
+	                    //);
 	                }
 	            }
 	        }
@@ -7116,7 +7116,7 @@
 					value: function $dispatch() {
 						var _$scope2;
 	
-						(_$scope2 = this.$scope).dispatch.apply(_$scope2, arguments);
+						this.$scope && (_$scope2 = this.$scope).dispatch.apply(_$scope2, arguments);
 					}
 				}, {
 					key: 'componentWillMount',
@@ -7130,11 +7130,12 @@
 					key: 'componentWillUnmount',
 					value: function componentWillUnmount() {
 	
-						use.length && this.$scope.unBind(this, use);
-	
-						_is2.default.fn(scope) && this.$scope.dispose();
-	
 						_get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this) && _get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this).call(this);
+						if (this.$scope && !this.$scope.dead) {
+							use.length && this.$scope.unBind(this, use);
+							_is2.default.fn(scope) && this.$scope.dispose();
+						}
+	
 						delete this.$stores;
 						delete this.$scope;
 					}
@@ -7179,6 +7180,7 @@
 	
 			return ReScopeProvider;
 		}
+	
 		(0, _index.addScopableType)(function (Comp) {
 			return Comp && Comp.prototype instanceof _react2.default.Component;
 		}, reScopeToState, false, true);
@@ -7254,9 +7256,8 @@
 					key: 'componentWillUnmount',
 					value: function componentWillUnmount() {
 	
-						this.$scope.dispose();
-	
 						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
+						this.$scope && this.$scope.dispose();
 						delete this.$stores;
 						delete this.$scope;
 					}
@@ -9858,14 +9859,14 @@
 							this._destroyTM && clearTimeout(this._destroyTM);
 							this._destroyTM = setTimeout(function (e) {
 								_this8._destroyTM = null;
-								_this8.then(function (s) {
-									!_this8.__retains.all && _this8.destroy();
-								});
+								//this.then(s => {
+								!_this8.__retains.all && _this8.destroy();
+								//});
 							}, this._persistenceTm);
 						} else {
-							this.then(function (s) {
-								return !_this8.__retains.all && _this8.destroy();
-							});
+							//this.then(s =>
+							!this.__retains.all && this.destroy();
+							//);
 						}
 					}
 				}

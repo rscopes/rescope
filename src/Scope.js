@@ -26,6 +26,8 @@
  */
 
 
+import {Store} from "../dist";
+
 var is                = require('is'),
     EventEmitter      = require('./Emitter'),
     shortid           = require('shortid')
@@ -60,6 +62,28 @@ export default class Scope extends EventEmitter {
         }).join('::') : scopes;
         return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
     };
+    
+    /**
+     * get a parsed reference list from stateMap
+     * @param _ref
+     * @returns {{storeId, path, alias: *, ref: *}}
+     */
+    static stateMapToRefList( sm, state = {}, _refs = [], path = "" ) {
+        Object.keys(sm).forEach(
+            key => {
+                let cpath = path ? path + '.' + key : key;
+                sm[key] instanceof Scope.scopeRef
+                    ? _refs.push(sm[key].path + ':' + cpath)
+                    : (sm[key] && sm[key] instanceof Function)
+                    ? _refs.push(sm[key]().path + ':' + cpath)
+                    : (sm[key] && sm[key].prototype instanceof Store)
+                          ? _refs.push(sm[key].as(cpath))
+                          : state[cpath] = sm[key]
+                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
+            }
+        )
+        return _refs;
+    }
     
     /**
      * Init a ReScope scope
@@ -687,22 +711,6 @@ export default class Scope extends EventEmitter {
             alias  : ref[1] || ref[0][ref[0].length - 1],
             ref    : _ref
         };
-    }
-    
-    /**
-     * get a parsed reference list from stateMap
-     * @param _ref
-     * @returns {{storeId, path, alias: *, ref: *}}
-     */
-    stateMapToRefList( sm, state = {}, _refs = [], path = "" ) {
-        Object.keys(sm).forEach(
-            key => (
-                sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path)
-                    : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key]
-                    : this.stateMapToRefList(sm[key], _refs, path + '.' + key)
-            )
-        )
-        return _refs;
     }
     
     /**

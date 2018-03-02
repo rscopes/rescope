@@ -78,83 +78,19 @@ module.exports =
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(5);
+	var _Store = __webpack_require__(6);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _index = __webpack_require__(7);
+	var _scopable = __webpack_require__(8);
+	
+	var _index = __webpack_require__(11);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	// will use as external the index in dist
-	
-	_Scope2.default.Store = _Store2.default; /*
-	                                          * Copyright (c)  2018 Wise Wild Web .
-	                                          *
-	                                          *  MIT License
-	                                          *
-	                                          *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                                          *  of this software and associated documentation files (the "Software"), to deal
-	                                          *  in the Software without restriction, including without limitation the rights
-	                                          *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                                          *  copies of the Software, and to permit persons to whom the Software is
-	                                          *  furnished to do so, subject to the following conditions:
-	                                          *
-	                                          *  The above copyright notice and this permission notice shall be included in all
-	                                          *  copies or substantial portions of the Software.
-	                                          *
-	                                          *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                                          *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                                          *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                                          *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                                          *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                                          *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                                          *  SOFTWARE.
-	                                          *
-	                                          * @author : Nathanael Braun
-	                                          * @contact : caipilabs@gmail.com
-	                                          */
-	
-	_index2.default.Scope = _Scope2.default;
-	_index2.default.Context = _Scope2.default;
-	_index2.default.Store = _Store2.default;
-	_index2.default.scopeRef = function scopeRef(map, key) {
-	    map[key] = new _Scope2.default.scopeRef(map[key]);
-	    return map;
-	};
-	
-	try {
-	    __webpack_require__(8);
-	} catch (e) {}
-	
-	exports.default = _index2.default;
-	module.exports = exports["default"];
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _class, _temp;
-	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	/*
 	 * Copyright (c)  2018 Wise Wild Web .
@@ -183,9 +119,81 @@ module.exports =
 	 * @contact : caipilabs@gmail.com
 	 */
 	
-	var is = __webpack_require__(2),
-	    EventEmitter = __webpack_require__(3),
-	    shortid = __webpack_require__(4),
+	_Scope2.default.Store = _Store2.default;
+	_index2.default.Scope = _Scope2.default;
+	_index2.default.Context = _Scope2.default;
+	_index2.default.Store = _Store2.default;
+	_index2.default.addScopableType = _scopable.addScopableType;
+	_index2.default.reScope = _scopable.reScope;
+	_index2.default.scopeToState = _scopable.scopeToState;
+	_index2.default.reScopeState = _scopable.scopeToState;
+	_index2.default.scopeRef = function scopeRef(map, key) {
+	    map[key] = new _Scope2.default.scopeRef(map[key]);
+	    return map;
+	};
+	
+	try {
+	    __webpack_require__(12);
+	} catch (e) {}
+	
+	exports.default = _index2.default;
+	module.exports = exports["default"];
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _class, _temp; /*
+	                    * Copyright (c)  2018 Wise Wild Web .
+	                    *
+	                    *  MIT License
+	                    *
+	                    *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                    *  of this software and associated documentation files (the "Software"), to deal
+	                    *  in the Software without restriction, including without limitation the rights
+	                    *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                    *  copies of the Software, and to permit persons to whom the Software is
+	                    *  furnished to do so, subject to the following conditions:
+	                    *
+	                    *  The above copyright notice and this permission notice shall be included in all
+	                    *  copies or substantial portions of the Software.
+	                    *
+	                    *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                    *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                    *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                    *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                    *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                    *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                    *  SOFTWARE.
+	                    *
+	                    * @author : Nathanael Braun
+	                    * @contact : caipilabs@gmail.com
+	                    */
+	
+	var _dist = __webpack_require__(2);
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var is = __webpack_require__(3),
+	    EventEmitter = __webpack_require__(4),
+	    shortid = __webpack_require__(5),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -215,22 +223,47 @@ module.exports =
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
 	        } // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
 	
+	    }, {
+	        key: 'stateMapToRefList',
+	
+	
+	        /**
+	         * get a parsed reference list from stateMap
+	         * @param _ref
+	         * @returns {{storeId, path, alias: *, ref: *}}
+	         */
+	        value: function stateMapToRefList(sm) {
+	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+	            var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	
+	            var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	
+	            Object.keys(sm).forEach(function (key) {
+	                var cpath = path ? path + '.' + key : key;
+	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof _dist.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
+	            });
+	            return _refs;
+	        }
+	
+	        /**
+	         * Init a ReScope scope
+	         *
+	         * @param storesMap {Object} Object with the initial stores definition / instances
+	         * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
+	         * @param parent
+	         * @param state
+	         * @param data
+	         * @param name
+	         * @param defaultMaxListeners
+	         * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	         * @param autoDestroy  {bool} will trigger retain & dispose after start
+	         * @returns {Scope}
+	         */
+	
 	    }]);
 	
-	    /**
-	     * Init a ReScope scope
-	     *
-	     * @param storesMap {Object} Object with the initial stores definition / instances
-	     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
-	     * @param parent
-	     * @param state
-	     * @param data
-	     * @param name
-	     * @param defaultMaxListeners
-	     * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-	     * @param autoDestroy  {bool} will trigger retain & dispose after start
-	     * @returns {Scope}
-	     */
 	    function Scope(storesMap) {
 	        var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
 	            parent = _ref2.parent,
@@ -900,29 +933,6 @@ module.exports =
 	        }
 	
 	        /**
-	         * get a parsed reference list from stateMap
-	         * @param _ref
-	         * @returns {{storeId, path, alias: *, ref: *}}
-	         */
-	
-	    }, {
-	        key: 'stateMapToRefList',
-	        value: function stateMapToRefList(sm) {
-	            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-	
-	            var _this11 = this;
-	
-	            var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-	
-	            var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
-	
-	            Object.keys(sm).forEach(function (key) {
-	                return sm[key] instanceof Scope.scopeRef ? _refs.push(path + (key ? '.' + key : '') + ':' + sm[key].path) : !(sm[key] instanceof SimpleObjectProto) ? state[path + '.' + key] = sm[key] : _this11.stateMapToRefList(sm[key], _refs, path + '.' + key);
-	            });
-	            return _refs;
-	        }
-	
-	        /**
 	         * Dispatch an action to the top parent & mixed scopes, in all stores
 	         *
 	         * @param action
@@ -933,10 +943,10 @@ module.exports =
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action, data) {
-	            var _this12 = this;
+	            var _this11 = this;
 	
 	            Object.keys(this._._scope).forEach(function (id) {
-	                if (!is.fn(_this12._._scope[id])) _this12._._scope[id].trigger(action, data);
+	                if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
 	            });
 	
 	            this._._mixed.forEach(function (ctx) {
@@ -955,11 +965,11 @@ module.exports =
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this13 = this;
+	            var _this12 = this;
 	
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this13.data);
+	                return cb(null, _this12.data);
 	            });
 	        }
 	
@@ -973,13 +983,13 @@ module.exports =
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this14 = this;
+	            var _this13 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
+	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
 	            });
 	        }
 	
@@ -993,13 +1003,13 @@ module.exports =
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this15 = this;
+	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
+	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -1029,7 +1039,7 @@ module.exports =
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this16 = this;
+	            var _this15 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -1043,15 +1053,15 @@ module.exports =
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this16._.stabilizerTM = null;
-	                    if (_this16.__locks.all) return;
+	                    _this15._.stabilizerTM = null;
+	                    if (_this15.__locks.all) return;
 	
-	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
+	                    _this15._.propagTM && clearTimeout(_this15._.propagTM);
 	
-	                    _this16._stable = true;
-	                    _this16.emit("stable", _this16);
+	                    _this15._stable = true;
+	                    _this15.emit("stable", _this15);
 	
-	                    !_this16.dead && _this16._propag(); // stability can induce destroy
+	                    !_this15.dead && _this15._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -1063,18 +1073,18 @@ module.exports =
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this17 = this;
+	            var _this16 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this17._.propagTM = null;
-	                _this17._propag();
+	                _this16._.propagTM = null;
+	                _this16._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this18 = this;
+	            var _this17 = this;
 	
 	            if (this._.followers.length) this._.followers.forEach(function (_ref3) {
 	                var obj = _ref3[0],
@@ -1083,7 +1093,7 @@ module.exports =
 	                    lastRevs = _ref3[3],
 	                    remaps = _ref3[3];
 	
-	                var data = _this18.getUpdates(lastRevs);
+	                var data = _this17.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1110,31 +1120,31 @@ module.exports =
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this19 = this;
+	            var _this18 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this19._.unStableChilds--;
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    _this18._.unStableChilds--;
+	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this19._.unStableChilds++;
-	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
+	                    _this18._.unStableChilds++;
+	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this19._.unStableChilds--;
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    _this18._.unStableChilds--;
+	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this19._.unStableChilds++;
-	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
+	                    _this18._.unStableChilds++;
+	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
-	                    if (!ctx.isStable()) _this19._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this18._.unStableChilds--;
+	                    if (!ctx.isStable()) _this18._.unStableChilds--;
 	
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1171,7 +1181,7 @@ module.exports =
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this20 = this;
+	            var _this19 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1189,7 +1199,7 @@ module.exports =
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
 	                        //this.then(s => {
-	                        !_this20.__retains.all && _this20.destroy();
+	                        !_this19.__retains.all && _this19.destroy();
 	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
@@ -1207,7 +1217,7 @@ module.exports =
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this21 = this;
+	            var _this20 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1218,7 +1228,7 @@ module.exports =
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
 	            }Object.keys(this._._listening).forEach(function (id) {
-	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
+	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -1257,10 +1267,130 @@ module.exports =
 /* 2 */
 /***/ (function(module, exports) {
 
-	module.exports = require("is");
+	"use strict";
+	
+	/*!
+	 * MIT License
+	 * 
+	 * Copyright (c) 2018 Wise Wild Web
+	 * 
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy
+	 * of this software and associated documentation files (the "Software"), to deal
+	 * in the Software without restriction, including without limitation the rights
+	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 * copies of the Software, and to permit persons to whom the Software is
+	 * furnished to do so, subject to the following conditions:
+	 * 
+	 * The above copyright notice and this permission notice shall be included in all
+	 * copies or substantial portions of the Software.
+	 * 
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 * SOFTWARE.
+	 */
+	module.exports =
+	/******/function (modules) {
+		// webpackBootstrap
+		/******/ // The module cache
+		/******/var installedModules = {};
+		/******/
+		/******/ // The require function
+		/******/function __webpack_require__(moduleId) {
+			/******/
+			/******/ // Check if module is in cache
+			/******/if (installedModules[moduleId])
+				/******/return installedModules[moduleId].exports;
+			/******/
+			/******/ // Create a new module (and put it into the cache)
+			/******/var module = installedModules[moduleId] = {
+				/******/exports: {},
+				/******/id: moduleId,
+				/******/loaded: false
+				/******/ };
+			/******/
+			/******/ // Execute the module function
+			/******/modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+			/******/
+			/******/ // Flag the module as loaded
+			/******/module.loaded = true;
+			/******/
+			/******/ // Return the exports of the module
+			/******/return module.exports;
+			/******/
+		}
+		/******/
+		/******/
+		/******/ // expose the modules object (__webpack_modules__)
+		/******/__webpack_require__.m = modules;
+		/******/
+		/******/ // expose the module cache
+		/******/__webpack_require__.c = installedModules;
+		/******/
+		/******/ // __webpack_public_path__
+		/******/__webpack_require__.p = "/";
+		/******/
+		/******/ // Load entry module and return exports
+		/******/return __webpack_require__(0);
+		/******/
+	}(
+	/************************************************************************/
+	/******/[
+	/* 0 */
+	/***/function (module, exports) {
+	
+		"use strict";
+	
+		Object.defineProperty(exports, "__esModule", {
+			value: true
+		});
+		/*
+	  * Copyright (c)  2018 Wise Wild Web .
+	  *
+	  *  MIT License
+	  *
+	  *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	  *  of this software and associated documentation files (the "Software"), to deal
+	  *  in the Software without restriction, including without limitation the rights
+	  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	  *  copies of the Software, and to permit persons to whom the Software is
+	  *  furnished to do so, subject to the following conditions:
+	  *
+	  *  The above copyright notice and this permission notice shall be included in all
+	  *  copies or substantial portions of the Software.
+	  *
+	  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	  *  SOFTWARE.
+	  *
+	  * @author : Nathanael Braun
+	  * @contact : caipilabs@gmail.com
+	  */
+	
+		// Common rescope modules int
+		exports.default = {};
+		module.exports = exports["default"];
+	
+		/***/
+	}]
+	/******/);
+	//# sourceMappingURL=index.js.map
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+	module.exports = require("is");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1301,7 +1431,7 @@ module.exports =
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	var is = __webpack_require__(2);
+	var is = __webpack_require__(3);
 	
 	var Emitter = function () {
 	    function Emitter() {
@@ -1384,13 +1514,13 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 	module.exports = require("shortid");
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1450,11 +1580,11 @@ module.exports =
 	 * @todo : lot of optims...
 	 */
 	
-	var is = __webpack_require__(2),
+	var is = __webpack_require__(3),
 	    Scope = __webpack_require__(1),
-	    EventEmitter = __webpack_require__(3),
-	    TaskSequencer = __webpack_require__(6),
-	    shortid = __webpack_require__(4),
+	    EventEmitter = __webpack_require__(4),
+	    TaskSequencer = __webpack_require__(7),
+	    shortid = __webpack_require__(5),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
@@ -2367,7 +2497,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2484,13 +2614,213 @@ module.exports =
 	module.exports = exports["default"];
 
 /***/ }),
-/* 7 */
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
+	
+	var _react = __webpack_require__(9);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _is = __webpack_require__(3);
+	
+	var _is2 = _interopRequireDefault(_is);
+	
+	var _propTypes = __webpack_require__(10);
+	
+	var _propTypes2 = _interopRequireDefault(_propTypes);
+	
+	var _index = __webpack_require__(11);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /*
+	                                                                                                                                                                                                     * Copyright (c)  2018 Wise Wild Web .
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  MIT License
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                                                                                                                                                                                     *  of this software and associated documentation files (the "Software"), to deal
+	                                                                                                                                                                                                     *  in the Software without restriction, including without limitation the rights
+	                                                                                                                                                                                                     *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                                                                                                                                                                                     *  copies of the Software, and to permit persons to whom the Software is
+	                                                                                                                                                                                                     *  furnished to do so, subject to the following conditions:
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  The above copyright notice and this permission notice shall be included in all
+	                                                                                                                                                                                                     *  copies or substantial portions of the Software.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                                                                                                                                                                                     *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                                                                                                                                                                                     *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                                                                                                                                                                                     *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                                                                                                                                                                                     *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                                                                                                                                                                                     *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                                                                                                                                                                                     *  SOFTWARE.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     * @author : Nathanael Braun
+	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
+	                                                                                                                                                                                                     */
+	
+	var SimpleObjectProto = {}.constructor;
+	
+	var scopables = [];
+	
+	function addScopableType(test, handle) {
+	    var member = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+	    var stateScope = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+	
+	    scopables.push({
+	        test: test,
+	        member: member,
+	        stateScope: stateScope,
+	        handle: handle
+	    });
+	}
+	
+	function isScopableType(Comp, member, stateScope) {
+	
+	    for (var i = 0; i < scopables.length; i++) {
+	        if ((member === undefined || member == scopables[i].member) && stateScope == scopables[i].stateScope && scopables[i].test(Comp)) return true;
+	    }return false;
+	}
+	
+	function applyScopableType(Comp, argz, member, stateScope) {
+	
+	    for (var i = 0; i < scopables.length; i++) {
+	        var _scopables$i;
+	
+	        if (member == scopables[i].member && stateScope == scopables[i].stateScope && scopables[i].test(Comp)) return (_scopables$i = scopables[i]).handle.apply(_scopables$i, [Comp].concat(_toConsumableArray(argz)));
+	    }console.warn("reScope : Unknown type", Comp);
+	
+	    return false;
+	}
+	
+	function reScope() {
+	    for (var _len = arguments.length, argz = Array(_len), _key = 0; _key < _len; _key++) {
+	        argz[_key] = arguments[_key];
+	    }
+	
+	    // are we decorating a member / without argz
+	    if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	        argz[2].value = applyScopableType(argz[0], [], true, false);
+	        return argz[0];
+	    } else if (!isScopableType(argz[0], undefined, false)) {
+	        return function () {
+	            for (var _len2 = arguments.length, argz2 = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	                argz2[_key2] = arguments[_key2];
+	            }
+	
+	            // are we decorating a member / with argz
+	            if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                argz2[2].value = applyScopableType(argz2[0], argz, true, false);
+	                return argz2[0];
+	            } else return reScope.apply(undefined, [argz2[0]].concat(argz));
+	        };
+	    }
+	    return applyScopableType(argz[0], argz.slice(1), false, false);
+	}
+	
+	function scopeToState() {
+	    for (var _len3 = arguments.length, argz = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	        argz[_key3] = arguments[_key3];
+	    }
+	
+	    // are we decorating a member / without argz
+	    if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	        argz[2].value = applyScopableType(argz[0], [], true, true);
+	        return argz[0];
+	    } else if (!isScopableType(argz[0], undefined, true)) {
+	        return function () {
+	            for (var _len4 = arguments.length, argz2 = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+	                argz2[_key4] = arguments[_key4];
+	            }
+	
+	            // are we decorating a member / with argz
+	            if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                argz2[2].value = applyScopableType(argz2[0], argz, true, true);
+	                return argz2[0];
+	            } else return scopeToState.apply(undefined, [argz2[0]].concat(argz));
+	        };
+	    }
+	    return applyScopableType(argz[0], argz.slice(1), false, true);
+	}
+	
+	addScopableType(function (Comp) {
+	    return Comp && Comp.prototype instanceof _index.Store;
+	}, function reScope() {
+	    var _class, _temp;
+	
+	    for (var _len5 = arguments.length, argz = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	        argz[_key5] = arguments[_key5];
+	    }
+	
+	    var BaseStore = (!argz[0] || argz[0].prototype instanceof _index.Store) && argz.shift(),
+	        scope = (!argz[0] || argz[0] instanceof _index.Scope || _is2.default.fn(argz[0])) && argz.shift(),
+	        use = _is2.default.array(argz[0]) && argz.shift(),
+	        stateMap = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+	        initialState = {};
+	
+	    var compName = BaseStore.displayName || BaseStore.name;
+	
+	    use = [].concat(_toConsumableArray(BaseStore.use || []), _toConsumableArray(use || []));
+	    stateMap && _index.Scope.stateMapToRefList(stateMap, initialState, use);
+	
+	    var StateScopedStore = (_temp = _class = function (_BaseStore) {
+	        _inherits(StateScopedStore, _BaseStore);
+	
+	        function StateScopedStore() {
+	            _classCallCheck(this, StateScopedStore);
+	
+	            for (var _len6 = arguments.length, argz = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+	                argz[_key6] = arguments[_key6];
+	            }
+	
+	            return _possibleConstructorReturn(this, (StateScopedStore.__proto__ || Object.getPrototypeOf(StateScopedStore)).call(this, scope, argz.slice(argz[0] instanceof _index.Scope ? 1 : 0)));
+	        }
+	
+	        return StateScopedStore;
+	    }(BaseStore), _class.use = use, _class.displayName = "stateScoped(" + compName + ")", _temp);
+	
+	
+	    return StateScopedStore;
+	}, false, true);
+	
+	exports.addScopableType = addScopableType;
+	exports.reScope = reScope;
+	exports.scopeToState = scopeToState;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	module.exports = require("react");
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+	module.exports = require("prop-types");
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 	module.exports = require("./index");
 
 /***/ }),
-/* 8 */
+/* 12 */
 /***/ (function(module, exports) {
 
 	module.exports = require("react-rescope");

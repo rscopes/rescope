@@ -6940,7 +6940,7 @@
 				key: 'componentWillUnmount',
 				value: function componentWillUnmount() {
 					this.constructor.use && this.$scope.unBind(this, this.constructor.use || []);
-					this.$scope = null;
+					this.$stores = this.$scope = null;
 				}
 			}, {
 				key: 'componentWillReceiveProps',
@@ -7134,9 +7134,9 @@
 	
 						_is2.default.fn(scope) && this.$scope.dispose();
 	
+						_get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this) && _get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 						delete this.$stores;
 						delete this.$scope;
-						_get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this) && _get(ReScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ReScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 					}
 				}, {
 					key: 'componentWillReceiveProps',
@@ -7256,9 +7256,9 @@
 	
 						this.$scope.dispose();
 	
+						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 						delete this.$stores;
 						delete this.$scope;
-						_get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this) && _get(ScopeProvider.prototype.__proto__ || Object.getPrototypeOf(ScopeProvider.prototype), 'componentWillUnmount', this).call(this);
 					}
 				}, {
 					key: 'getChildContext',

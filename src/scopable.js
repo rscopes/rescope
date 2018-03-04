@@ -25,7 +25,6 @@
  * @contact : caipilabs@gmail.com
  */
 
-import React from 'react'
 import is from 'is'
 import PropTypes from 'prop-types';
 import {Scope, Store} from "./index";

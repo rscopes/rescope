@@ -84,7 +84,7 @@ module.exports =
 	
 	var _scopable = __webpack_require__(8);
 	
-	var _index = __webpack_require__(11);
+	var _index = __webpack_require__(10);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -133,7 +133,7 @@ module.exports =
 	};
 	
 	try {
-	    __webpack_require__(12);
+	    __webpack_require__(11);
 	} catch (e) {}
 	
 	exports.default = _index2.default;
@@ -2624,19 +2624,15 @@ module.exports =
 	});
 	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
 	
-	var _react = __webpack_require__(9);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
 	var _is = __webpack_require__(3);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
-	var _propTypes = __webpack_require__(10);
+	var _propTypes = __webpack_require__(9);
 	
 	var _propTypes2 = _interopRequireDefault(_propTypes);
 	
-	var _index = __webpack_require__(11);
+	var _index = __webpack_require__(10);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -2805,22 +2801,16 @@ module.exports =
 /* 9 */
 /***/ (function(module, exports) {
 
-	module.exports = require("react");
+	module.exports = require("prop-types");
 
 /***/ }),
 /* 10 */
 /***/ (function(module, exports) {
 
-	module.exports = require("prop-types");
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
 	module.exports = require("./index");
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
 
 	module.exports = require("react-rescope");

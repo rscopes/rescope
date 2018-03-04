@@ -84,7 +84,7 @@ module.exports =
 	
 	var _scopable = __webpack_require__(8);
 	
-	var _index = __webpack_require__(10);
+	var _index = __webpack_require__(9);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -133,7 +133,7 @@ module.exports =
 	};
 	
 	try {
-	    __webpack_require__(11);
+	    __webpack_require__(10);
 	} catch (e) {}
 	
 	exports.default = _index2.default;
@@ -2617,7 +2617,7 @@ module.exports =
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -2628,11 +2628,7 @@ module.exports =
 	
 	var _is2 = _interopRequireDefault(_is);
 	
-	var _propTypes = __webpack_require__(9);
-	
-	var _propTypes2 = _interopRequireDefault(_propTypes);
-	
-	var _index = __webpack_require__(10);
+	var _index = __webpack_require__(9);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -2801,16 +2797,10 @@ module.exports =
 /* 9 */
 /***/ (function(module, exports) {
 
-	module.exports = require("prop-types");
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
 	module.exports = require("./index");
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 	module.exports = require("react-rescope");

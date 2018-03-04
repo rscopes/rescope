@@ -26,7 +26,6 @@
  */
 
 import is from 'is'
-import PropTypes from 'prop-types';
 import {Scope, Store} from "./index";
 
 const SimpleObjectProto = ({}).constructor;

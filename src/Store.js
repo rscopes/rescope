@@ -883,15 +883,17 @@ class Store extends EventEmitter {
                 this._destroyTM = setTimeout(
                     e => {
                         this._destroyTM = null;
-                        this.then(s => {
-                            !this.__retains.all && this.destroy()
-                        });
+                        //this.then(s => {
+                        !this.__retains.all && this.destroy()
+                        //});
                     },
                     this._persistenceTm
                 );
             }
             else {
-                this.then(s => (!this.__retains.all && this.destroy()));
+                //this.then(s =>
+                (!this.__retains.all && this.destroy())
+                //);
             }
         }
     }

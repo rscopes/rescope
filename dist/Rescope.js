@@ -2419,14 +2419,14 @@ module.exports =
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
 	                        _this8._destroyTM = null;
-	                        _this8.then(function (s) {
-	                            !_this8.__retains.all && _this8.destroy();
-	                        });
+	                        //this.then(s => {
+	                        !_this8.__retains.all && _this8.destroy();
+	                        //});
 	                    }, this._persistenceTm);
 	                } else {
-	                    this.then(function (s) {
-	                        return !_this8.__retains.all && _this8.destroy();
-	                    });
+	                    //this.then(s =>
+	                    !this.__retains.all && this.destroy();
+	                    //);
 	                }
 	            }
 	        }

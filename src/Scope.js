@@ -947,7 +947,7 @@ export default class Scope extends EventEmitter {
                 this._.destroyTM = setTimeout(
                     e => {
                         //this.then(s => {
-                        !this.__retains.all && this.destroy()
+                            !this.__retains.all && this.destroy()
                         //});
                     },
                     this._.persistenceTm
@@ -955,7 +955,7 @@ export default class Scope extends EventEmitter {
             }
             else {
                 //this.then(s =>
-                (!this.__retains.all && this.destroy())
+                              (!this.__retains.all && this.destroy())
                 //);
             }
         }

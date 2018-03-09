@@ -82,9 +82,9 @@ module.exports =
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(8);
+	var _scopable = __webpack_require__(9);
 	
-	var _index = __webpack_require__(9);
+	var _index = __webpack_require__(8);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -148,7 +148,6 @@ module.exports =
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.default = undefined;
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -277,7 +276,8 @@ module.exports =
 	            defaultMaxListeners = _ref2.defaultMaxListeners,
 	            persistenceTm = _ref2.persistenceTm,
 	            autoDestroy = _ref2.autoDestroy,
-	            rootEmitter = _ref2.rootEmitter;
+	            rootEmitter = _ref2.rootEmitter,
+	            boundedActions = _ref2.boundedActions;
 	
 	        _classCallCheck(this, Scope);
 	
@@ -309,6 +309,7 @@ module.exports =
 	        openScopes[id] = _this;
 	        _.persistenceTm = persistenceTm || _this.constructor.persistenceTm;
 	
+	        _this.actions = {};
 	        _this.stores = {};
 	        _this.state = {};
 	        _this.data = {};
@@ -318,6 +319,7 @@ module.exports =
 	
 	        if (parent && parent.dead) throw new Error("Can't use a dead scope as parent !");
 	
+	        __proto__push(_this, 'actions', parent);
 	        __proto__push(_this, 'stores', parent);
 	        __proto__push(_this, 'state', parent);
 	        __proto__push(_this, 'data', parent);
@@ -329,6 +331,7 @@ module.exports =
 	
 	        _this.__retains = { all: 0 };
 	        _this.__locks = { all: 1 };
+	        _._boundedActions = is.array(boundedActions) ? { test: boundedActions.includes.bind(boundedActions) } : boundedActions;
 	        _._listening = {};
 	        _._scope = {};
 	        _._mixed = [];
@@ -499,16 +502,19 @@ module.exports =
 	                }
 	            });
 	
+	            this.actions = {};
 	            this.stores = {};
 	            this.state = {};
 	            this.data = {};
 	            targetCtx.on(lists);
+	            __proto__push(this, 'actions', parent);
 	            __proto__push(this, 'stores', parent);
 	            __proto__push(this, 'state', parent);
 	            __proto__push(this, 'data', parent);
 	
 	            this.relink(this._._scope, this, false, true);
 	            this._._mixed.forEach(function (ctx) {
+	                __proto__push(_this4, 'actions');
 	                __proto__push(_this4, 'stores');
 	                __proto__push(_this4, 'state');
 	                __proto__push(_this4, 'data');
@@ -599,6 +605,15 @@ module.exports =
 	                    },
 	                    set: function set(v) {
 	                        return _this6._mount(id, undefined, v);
+	                    }
+	                });
+	
+	                var actions = srcCtx[id] instanceof Scope.Store ? srcCtx[id].constructor.actions : srcCtx[id].actions,
+	                    activeActions = targetCtx._.actions.prototype;
+	                actions && Object.keys(actions).forEach(function (act) {
+	                    if (activeActions.hasOwnProperty(act)) activeActions[act].__targetStores++;else {
+	                        activeActions[act] = _this6.dispatch.bind(_this6, act);
+	                        activeActions[act].__targetStores = 1;
 	                    }
 	                });
 	            });
@@ -945,9 +960,16 @@ module.exports =
 	        value: function dispatch(action, data) {
 	            var _this11 = this;
 	
+	            if (this.dead) {
+	                console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", new Error().stack);
+	                return;
+	            }
+	            var bActs = this._._boundedActions;
 	            Object.keys(this._._scope).forEach(function (id) {
 	                if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
 	            });
+	
+	            if (bActs && bActs.test(action)) return;
 	
 	            this._._mixed.forEach(function (ctx) {
 	                return ctx.dispatch(action, data);
@@ -2498,13 +2520,27 @@ module.exports =
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	
+	var _index = __webpack_require__(8);
+	
+	var _index2 = _interopRequireDefault(_index);
+	
+	var _is = __webpack_require__(3);
+	
+	var _is2 = _interopRequireDefault(_is);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * Minimal push sequencer, apply stores specific task in the right order (root stores first)
+	 */
 	/*
 	 * Copyright (c)  2018 Wise Wild Web .
 	 *
@@ -2532,17 +2568,14 @@ module.exports =
 	 * @contact : caipilabs@gmail.com
 	 */
 	
-	/**
-	 * Minimal push sequencer, apply stores specific task in the right order (root stores first)
-	 */
 	var taskQueue = [],
 	    curWeight = 0,
 	    maxWeight = 0,
 	    minWeight = 0,
 	    taskCount = 0,
-	
-	//deSyncSteps = 1000,
-	task = void 0,
+	    deSync = false,
+	    deSyncMaxTasks = 10,
+	    task = void 0,
 	    isRunning = void 0,
 	    errorCatcher = {
 	    lastError: null,
@@ -2566,7 +2599,8 @@ module.exports =
 	    } : function () {
 	        process.removeListener('uncaughtException', errorCatcher.dispatch);
 	    }
-	};
+	}; // will use as external the index in dist
+	
 	
 	function runNow() {
 	    if (!isRunning) {
@@ -2575,6 +2609,7 @@ module.exports =
 	}
 	
 	function run() {
+	    var from = Date.now();
 	    isRunning = true;
 	    errorCatcher.enable();
 	    while (taskCount) {
@@ -2596,6 +2631,21 @@ module.exports =
 	    }
 	}
 	
+	//
+	//index.setTaskDeSync = ( nb ) => {
+	//    if ( nb === false )
+	//        return deSync = false;
+	//    else if ( nb === true ) {
+	//        deSync         = true;
+	//        deSyncMaxTasks = 10;
+	//    }
+	//    else (is.int(nb))
+	//    {
+	//        deSync         = true;
+	//        deSyncMaxTasks = nb;
+	//    }
+	//};
+	
 	exports.default = {
 	    pushTask: function pushTask(obj, fn, argz) {
 	        var weight = obj._sources && obj._sources.length || 1,
@@ -2615,6 +2665,12 @@ module.exports =
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+	module.exports = require("./index");
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2628,15 +2684,9 @@ module.exports =
 	
 	var _is2 = _interopRequireDefault(_is);
 	
-	var _index = __webpack_require__(9);
+	var _index = __webpack_require__(8);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /*
 	                                                                                                                                                                                                     * Copyright (c)  2018 Wise Wild Web .
@@ -2749,55 +2799,40 @@ module.exports =
 	    return applyScopableType(argz[0], argz.slice(1), false, true);
 	}
 	
-	addScopableType(function (Comp) {
-	    return Comp && Comp.prototype instanceof _index.Store;
-	}, function reScope() {
-	    var _class, _temp;
+	//
+	//addScopableType(
+	//    ( Comp ) => (Comp && Comp.prototype instanceof Store),
+	//    function reScope( ...argz ) {
+	//        let BaseStore    = (!argz[0] || argz[0].prototype instanceof Store) && argz.shift(),
+	//            scope        = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
+	//            use          = (is.array(argz[0])) && argz.shift(),
+	//            stateMap     = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+	//            initialState = {};
+	//
+	//        let compName = BaseStore.displayName || BaseStore.name;
+	//
+	//        use = [...(BaseStore.use || []), ...(use || [])];
+	//        stateMap && Scope.stateMapToRefList(stateMap, initialState, use);
+	//
+	//        class StateScopedStore extends BaseStore {
+	//            static use         = use;
+	//            static displayName = "stateScoped(" + compName + ")";
+	//
+	//            constructor( ...argz ) {
+	//                super(scope, argz.slice(argz[0] instanceof Scope ? 1 : 0))
+	//            }
+	//        }
+	//
+	//        return StateScopedStore;
+	//    },
+	//    false,
+	//    true
+	//)
 	
-	    for (var _len5 = arguments.length, argz = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-	        argz[_key5] = arguments[_key5];
-	    }
-	
-	    var BaseStore = (!argz[0] || argz[0].prototype instanceof _index.Store) && argz.shift(),
-	        scope = (!argz[0] || argz[0] instanceof _index.Scope || _is2.default.fn(argz[0])) && argz.shift(),
-	        use = _is2.default.array(argz[0]) && argz.shift(),
-	        stateMap = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
-	        initialState = {};
-	
-	    var compName = BaseStore.displayName || BaseStore.name;
-	
-	    use = [].concat(_toConsumableArray(BaseStore.use || []), _toConsumableArray(use || []));
-	    stateMap && _index.Scope.stateMapToRefList(stateMap, initialState, use);
-	
-	    var StateScopedStore = (_temp = _class = function (_BaseStore) {
-	        _inherits(StateScopedStore, _BaseStore);
-	
-	        function StateScopedStore() {
-	            _classCallCheck(this, StateScopedStore);
-	
-	            for (var _len6 = arguments.length, argz = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-	                argz[_key6] = arguments[_key6];
-	            }
-	
-	            return _possibleConstructorReturn(this, (StateScopedStore.__proto__ || Object.getPrototypeOf(StateScopedStore)).call(this, scope, argz.slice(argz[0] instanceof _index.Scope ? 1 : 0)));
-	        }
-	
-	        return StateScopedStore;
-	    }(BaseStore), _class.use = use, _class.displayName = "stateScoped(" + compName + ")", _temp);
-	
-	
-	    return StateScopedStore;
-	}, false, true);
 	
 	exports.addScopableType = addScopableType;
 	exports.reScope = reScope;
 	exports.scopeToState = scopeToState;
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-	module.exports = require("./index");
 
 /***/ }),
 /* 10 */

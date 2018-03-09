@@ -44,7 +44,7 @@ var is                = require('is'),
 /**
  * Base Scope object
  */
-export default class Scope extends EventEmitter {
+class Scope extends EventEmitter {
     static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
     static Store         = null;
     static scopeRef      = function scopeRef( path ) {
@@ -99,7 +99,7 @@ export default class Scope extends EventEmitter {
      * @param autoDestroy  {bool} will trigger retain & dispose after start
      * @returns {Scope}
      */
-    constructor( storesMap, { parent, key, id, state, data, name, incrementId = !!key, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter } = {} ) {
+    constructor( storesMap, { parent, key, id, state, data, name, incrementId = !!key, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
         super();
         var _ = {};
         
@@ -126,9 +126,10 @@ export default class Scope extends EventEmitter {
         openScopes[id]  = this;
         _.persistenceTm = persistenceTm || this.constructor.persistenceTm;
         
-        this.stores = {};
-        this.state  = {};
-        this.data   = {};
+        this.actions = {};
+        this.stores  = {};
+        this.state   = {};
+        this.data    = {};
         
         this.parent = parent;
         this._      = _;
@@ -136,6 +137,7 @@ export default class Scope extends EventEmitter {
         if ( parent && parent.dead )
             throw new Error("Can't use a dead scope as parent !");
         
+        __proto__push(this, 'actions', parent);
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
@@ -145,13 +147,16 @@ export default class Scope extends EventEmitter {
         _.childScopesList = [];
         _.unStableChilds  = 0;
         
-        this.__retains = { all: 0 };
-        this.__locks   = { all: 1 };
-        _._listening   = {};
-        _._scope       = {};
-        _._mixed       = [];
-        _._mixedList   = [];
-        _.followers    = [];
+        this.__retains    = { all: 0 };
+        this.__locks      = { all: 1 };
+        _._boundedActions = is.array(boundedActions)
+            ? { test: boundedActions.includes.bind(boundedActions) }
+            : boundedActions;
+        _._listening      = {};
+        _._scope          = {};
+        _._mixed          = [];
+        _._mixedList      = [];
+        _.followers       = [];
         if ( parent ) {
             parent.retain("isMyParent");
             if ( !rootEmitter ) {
@@ -293,10 +298,12 @@ export default class Scope extends EventEmitter {
             'update'  : s => this._propag()
         });
         
-        this.stores = {};
-        this.state  = {};
-        this.data   = {};
+        this.actions = {};
+        this.stores  = {};
+        this.state   = {};
+        this.data    = {};
         targetCtx.on(lists);
+        __proto__push(this, 'actions', parent);
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
@@ -304,6 +311,7 @@ export default class Scope extends EventEmitter {
         this.relink(this._._scope, this, false, true);
         this._._mixed.forEach(
             ctx => {
+                __proto__push(this, 'actions');
                 __proto__push(this, 'stores');
                 __proto__push(this, 'state');
                 __proto__push(this, 'data');
@@ -396,6 +404,23 @@ export default class Scope extends EventEmitter {
                               set: ( v ) => (this._mount(id, undefined, v))
                           }
                       );
+                
+                      let actions       = srcCtx[id] instanceof Scope.Store
+                          ? srcCtx[id].constructor.actions
+                          : srcCtx[id].actions,
+                          activeActions = targetCtx._.actions.prototype;
+                      actions &&
+                      Object.keys(actions)
+                            .forEach(
+                                ( act ) => {
+                                    if ( activeActions.hasOwnProperty(act) )
+                                        activeActions[act].__targetStores++;
+                                    else {
+                                        activeActions[act]                = this.dispatch.bind(this, act);
+                                        activeActions[act].__targetStores = 1;
+                                    }
+                                }
+                            )
                   }
               )
     }
@@ -721,13 +746,21 @@ export default class Scope extends EventEmitter {
      * @returns {Scope}
      */
     dispatch( action, data ) {
+        if ( this.dead ) {
+            console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", (new Error()).stack);
+            return;
+        }
+        let bActs = this._._boundedActions;
         Object.keys(this._._scope)
               .forEach(
                   id => {
                       if ( !is.fn(this._._scope[id]) )
-                          this._._scope[id].trigger(action, data)
+                          this._._scope[id].trigger(action, data);
                   }
               );
+        
+        if ( bActs && bActs.test(action) )
+            return;
         
         this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
         this.parent && this.parent.dispatch(action, data);
@@ -947,7 +980,7 @@ export default class Scope extends EventEmitter {
                 this._.destroyTM = setTimeout(
                     e => {
                         //this.then(s => {
-                            !this.__retains.all && this.destroy()
+                        !this.__retains.all && this.destroy()
                         //});
                     },
                     this._.persistenceTm
@@ -955,7 +988,7 @@ export default class Scope extends EventEmitter {
             }
             else {
                 //this.then(s =>
-                              (!this.__retains.all && this.destroy())
+                (!this.__retains.all && this.destroy())
                 //);
             }
         }
@@ -1001,3 +1034,6 @@ export default class Scope extends EventEmitter {
         
     }
 }
+
+
+export default Scope;

@@ -8,28 +8,28 @@ npm i react-rescope --save
 
 Then :
 ```jsx
-import {reScopeProps, reScopeState} from "rescope";
+import {scopeToProps, scopeToState} from "rescope";
 // or
-import {reScopeProps, reScopeState, Store, Scope} from "react-rescope";
+import {scopeToProps, scopeToState, Store, Scope} from "react-rescope";
 ```
 
 
 
 ## React HOCs
 
-### reScopeProps
+### scopeToProps
 
 Will replace the defined component with a ReScope Component that will render it with the desired stores data as props.
 
 ```
 
 import React from "react";
-import {reScopeProps} from "rescope";
+import {scopeToProps} from "rescope";
 
 
-@reScopeProps(["appState"]) // inheriting the scope
-// or @reScopeProps(scopeFromSomewhere, ["appState"])
-// or @reScopeProps((element)=>scopeFromSomewhere, ["appState"])
+@scopeToProps(["appState"]) // inheriting the scope
+// or @scopeToProps(scopeFromSomewhere, ["appState"])
+// or @scopeToProps((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
     // or static use = ["appState"];
     render() {
@@ -50,18 +50,18 @@ class MyComp extends React.Component {
 export default MyComp;
 ```
 
-### reScopeState
+### scopeToState
 
 Will create & return a ReScope Component that inherit the defined Component.
 ReScope will inject & update the desired stores data as state values, and provide the given Scope via the React Context if provided
 
 ```
 import React from "react";
-import {reScopeState} from "rescope";
+import {scopeToState} from "rescope";
 
-@reScopeState(["appState", "appState.someSubValue:asAnyAlias"])
-// or @reScopeState(scopeFromSomewhere, ["appState"])
-// or @reScopeState((element)=>scopeFromSomewhere, ["appState"])
+@scopeToState(["appState", "appState.someSubValue:asAnyAlias"])
+// or @scopeToState(scopeFromSomewhere, ["appState"])
+// or @scopeToState((element)=>scopeFromSomewhere, ["appState"])
 class MyComp extends React.Component {
     render() {
         let {appState, asAnyAlias} = this.state,
@@ -116,26 +116,24 @@ export default MyComp;
 ```
 
 import React from "react";
-import scopeFromSomewhere from "./MyApplicationContext";
-import {reScopeState, Scope} from "rescope";
+import storesFromSomewhere from "./MyApplicationContext";
+import {reScope, Scope} from "rescope";
 
-class MyCompWithoutRescope extends React.Component {
+@reScope(new Scope(storesFromSomewhere))
+class MyCompWithScope extends React.Component {
     render() {
         return (
             <div>
                 <h1>MyComp</h1>
 
-               All childs will use "scopeFromSomewhere"
+               All childs will inherit this scope
 
             </div>
         );
     }
 };
 
-const MyCompWithReScopeContext = reScopeState(MyCompWithoutRescope, scopeFromSomewhere);
-// or const MyCompWithReScopeContext = reScopeState(MyCompWithoutRescope, (element, context)=>scopeFromSomewhere);
-
-export default MyCompWithReScopeContext;
+export default MyCompWithScope;
 ```
 
 ## Dispatching actions, mutations & calling stores functions
@@ -143,14 +141,14 @@ export default MyCompWithReScopeContext;
 ### Using $dispatch
 
 The $dispatch function is located :
-- in the props for components using reScopeProps
-- in the instance object (this) for components using reScopeState
+- in the props for components using scopeToProps
+- in the instance object (this) for components using scopeToState
 
 Calling $dispatch will trigger the specified action on every stores accessible in the current scope.
 
 ```jsx
 import React from "react";
-import {reScopeProps, Scope, Store} from "rescope";
+import {scopeToProps, Scope, Store} from "rescope";
 
 let myScope = new Scope(
     {
@@ -167,13 +165,14 @@ let myScope = new Scope(
     }
 )
 
-@reScopeProps(myScope, ["appState"]) // inheriting the scope
+@scopeToProps(myScope, ["appState"]) // inheriting the scope
 class MyComp extends React.Component {
+    click=()=>$dispatch("incAction");
     render() {
         let {appState, $stores, $dispatch} = this.props;
 
         return (
-            <div onClick={()=>$dispatch("incAction")}>
+            <div onClick={this.click}>
                 <h1>MyComp</h1>
                 {
                     appState.someValues

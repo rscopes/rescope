@@ -745,7 +745,7 @@ class Scope extends EventEmitter {
      * @param data
      * @returns {Scope}
      */
-    dispatch( action, data ) {
+    dispatch( action, ...argz ) {
         if ( this.dead ) {
             console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", (new Error()).stack);
             return;
@@ -755,15 +755,15 @@ class Scope extends EventEmitter {
               .forEach(
                   id => {
                       if ( !is.fn(this._._scope[id]) )
-                          this._._scope[id].trigger(action, data);
+                          this._._scope[id].trigger(action, ...argz);
                   }
               );
         
         if ( bActs && bActs.test(action) )
             return;
         
-        this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, data)));
-        this.parent && this.parent.dispatch(action, data);
+        this._._mixed.forEach(( ctx ) => (ctx.dispatch(action, ...argz)));
+        this.parent && this.parent.dispatch(action, ...argz);
         return this;
     }
     

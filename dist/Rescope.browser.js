@@ -932,8 +932,13 @@
 	
 	    }, {
 	        key: 'dispatch',
-	        value: function dispatch(action, data) {
-	            var _this11 = this;
+	        value: function dispatch(action) {
+	            var _this11 = this,
+	                _parent2;
+	
+	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	                argz[_key - 1] = arguments[_key];
+	            }
 	
 	            if (this.dead) {
 	                console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", new Error().stack);
@@ -941,15 +946,17 @@
 	            }
 	            var bActs = this._._boundedActions;
 	            Object.keys(this._._scope).forEach(function (id) {
-	                if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
+	                var _$_scope$id;
+	
+	                if (!is.fn(_this11._._scope[id])) (_$_scope$id = _this11._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 	            });
 	
 	            if (bActs && bActs.test(action)) return;
 	
 	            this._._mixed.forEach(function (ctx) {
-	                return ctx.dispatch(action, data);
+	                return ctx.dispatch.apply(ctx, [action].concat(argz));
 	            });
-	            this.parent && this.parent.dispatch(action, data);
+	            this.parent && (_parent2 = this.parent).dispatch.apply(_parent2, [action].concat(argz));
 	            return this;
 	        }
 	
@@ -5913,8 +5920,13 @@
 	
 			}, {
 				key: 'dispatch',
-				value: function dispatch(action, data) {
-					var _this11 = this;
+				value: function dispatch(action) {
+					var _this11 = this,
+					    _parent2;
+	
+					for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+						argz[_key - 1] = arguments[_key];
+					}
 	
 					if (this.dead) {
 						console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", new Error().stack);
@@ -5922,15 +5934,17 @@
 					}
 					var bActs = this._._boundedActions;
 					Object.keys(this._._scope).forEach(function (id) {
-						if (!is.fn(_this11._._scope[id])) _this11._._scope[id].trigger(action, data);
+						var _$_scope$id;
+	
+						if (!is.fn(_this11._._scope[id])) (_$_scope$id = _this11._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 					});
 	
 					if (bActs && bActs.test(action)) return;
 	
 					this._._mixed.forEach(function (ctx) {
-						return ctx.dispatch(action, data);
+						return ctx.dispatch.apply(ctx, [action].concat(argz));
 					});
-					this.parent && this.parent.dispatch(action, data);
+					this.parent && (_parent2 = this.parent).dispatch.apply(_parent2, [action].concat(argz));
 					return this;
 				}
 	

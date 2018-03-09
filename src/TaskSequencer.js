@@ -25,18 +25,22 @@
  * @contact : caipilabs@gmail.com
  */
 
+import index from "./index";// will use as external the index in dist
+import is from "is";
+
 /**
  * Minimal push sequencer, apply stores specific task in the right order (root stores first)
  */
-let taskQueue    = [],
-    curWeight    = 0,
-    maxWeight    = 0,
-    minWeight    = 0,
-    taskCount    = 0,
-    //deSyncSteps = 1000,
+let taskQueue      = [],
+    curWeight      = 0,
+    maxWeight      = 0,
+    minWeight      = 0,
+    taskCount      = 0,
+    deSync         = false,
+    deSyncMaxTasks = 10,
     task,
     isRunning,
-    errorCatcher = {
+    errorCatcher   = {
         lastError: null,
         dispatch : function ( error ) {
             errorCatcher.disable();
@@ -72,6 +76,7 @@ function runNow() {
 }
 
 function run() {
+    let from  = Date.now();
     isRunning = true;
     errorCatcher.enable();
     while ( taskCount ) {
@@ -94,6 +99,20 @@ function run() {
     }
 }
 
+//
+//index.setTaskDeSync = ( nb ) => {
+//    if ( nb === false )
+//        return deSync = false;
+//    else if ( nb === true ) {
+//        deSync         = true;
+//        deSyncMaxTasks = 10;
+//    }
+//    else (is.int(nb))
+//    {
+//        deSync         = true;
+//        deSyncMaxTasks = nb;
+//    }
+//};
 
 export default {
     pushTask( obj, fn, argz ) {

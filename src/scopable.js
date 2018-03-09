@@ -109,35 +109,35 @@ function scopeToState( ...argz ) {
     return applyScopableType(argz[0], argz.slice(1), false, true);
 }
 
-
-addScopableType(
-    ( Comp ) => (Comp && Comp.prototype instanceof Store),
-    function reScope( ...argz ) {
-        let BaseStore    = (!argz[0] || argz[0].prototype instanceof Store) && argz.shift(),
-            scope        = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
-            use          = (is.array(argz[0])) && argz.shift(),
-            stateMap     = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
-            initialState = {};
-        
-        let compName = BaseStore.displayName || BaseStore.name;
-        
-        use = [...(BaseStore.use || []), ...(use || [])];
-        stateMap && Scope.stateMapToRefList(stateMap, initialState, use);
-        
-        class StateScopedStore extends BaseStore {
-            static use         = use;
-            static displayName = "stateScoped(" + compName + ")";
-            
-            constructor( ...argz ) {
-                super(scope, argz.slice(argz[0] instanceof Scope ? 1 : 0))
-            }
-        }
-        
-        return StateScopedStore;
-    },
-    false,
-    true
-)
+//
+//addScopableType(
+//    ( Comp ) => (Comp && Comp.prototype instanceof Store),
+//    function reScope( ...argz ) {
+//        let BaseStore    = (!argz[0] || argz[0].prototype instanceof Store) && argz.shift(),
+//            scope        = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
+//            use          = (is.array(argz[0])) && argz.shift(),
+//            stateMap     = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+//            initialState = {};
+//
+//        let compName = BaseStore.displayName || BaseStore.name;
+//
+//        use = [...(BaseStore.use || []), ...(use || [])];
+//        stateMap && Scope.stateMapToRefList(stateMap, initialState, use);
+//
+//        class StateScopedStore extends BaseStore {
+//            static use         = use;
+//            static displayName = "stateScoped(" + compName + ")";
+//
+//            constructor( ...argz ) {
+//                super(scope, argz.slice(argz[0] instanceof Scope ? 1 : 0))
+//            }
+//        }
+//
+//        return StateScopedStore;
+//    },
+//    false,
+//    true
+//)
 
 
 export {

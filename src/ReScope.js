@@ -31,7 +31,7 @@ let $global = (typeof window !== 'undefined') ? window : global;
 import Scope from "./Scope";
 import Store from "./Store";
 import {addScopableType, reScope, scopeToState} from "./scopable";
-import "./decorators";
+//import "./decorators";
 
 export default $global.___rescope || index;
 if ( $global.___rescope ) {

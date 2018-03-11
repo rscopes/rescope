@@ -58,13 +58,13 @@
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(16);
+	var _Store = __webpack_require__(15);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(19);
+	var _scopable = __webpack_require__(18);
 	
-	__webpack_require__(20);
+	__webpack_require__(19);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -110,6 +110,7 @@
 	    _index2.default.reScope = _scopable.reScope;
 	    _index2.default.scopeToState = _scopable.scopeToState;
 	    _index2.default.reScopeState = _scopable.scopeToState;
+	    _index2.default.addScopableType = _scopable.addScopableType;
 	    _index2.default.scopeRef = function scopeRef(map, key) {
 	        map[key] = new _Scope2.default.scopeRef(map[key]);
 	        return map;
@@ -169,8 +170,6 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _dist = __webpack_require__(3);
-	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -179,36 +178,38 @@
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c)  2018 Wise Wild Web .
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  MIT License
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  of this software and associated documentation files (the "Software"), to deal
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  in the Software without restriction, including without limitation the rights
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  copies of the Software, and to permit persons to whom the Software is
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  furnished to do so, subject to the following conditions:
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  The above copyright notice and this permission notice shall be included in all
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  copies or substantial portions of the Software.
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  SOFTWARE.
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @author : Nathanael Braun
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @contact : caipilabs@gmail.com
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var is = __webpack_require__(4),
-	    EventEmitter = __webpack_require__(5),
-	    shortid = __webpack_require__(6),
+	/*
+	 * Copyright (c)  2018 Wise Wild Web .
+	 *
+	 *  MIT License
+	 *
+	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	 *  of this software and associated documentation files (the "Software"), to deal
+	 *  in the Software without restriction, including without limitation the rights
+	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 *  copies of the Software, and to permit persons to whom the Software is
+	 *  furnished to do so, subject to the following conditions:
+	 *
+	 *  The above copyright notice and this permission notice shall be included in all
+	 *  copies or substantial portions of the Software.
+	 *
+	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 *  SOFTWARE.
+	 *
+	 * @author : Nathanael Braun
+	 * @contact : caipilabs@gmail.com
+	 */
+	
+	var is = __webpack_require__(3),
+	    EventEmitter = __webpack_require__(4),
+	    shortid = __webpack_require__(5),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -257,7 +258,7 @@
 	
 	            Object.keys(sm).forEach(function (key) {
 	                var cpath = path ? path + '.' + key : key;
-	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof _dist.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;
@@ -1320,125 +1321,6 @@
 /* 3 */
 /***/ (function(module, exports) {
 
-	"use strict";
-	
-	/*!
-	 * MIT License
-	 * 
-	 * Copyright (c) 2018 Wise Wild Web
-	 * 
-	 * Permission is hereby granted, free of charge, to any person obtaining a copy
-	 * of this software and associated documentation files (the "Software"), to deal
-	 * in the Software without restriction, including without limitation the rights
-	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	 * copies of the Software, and to permit persons to whom the Software is
-	 * furnished to do so, subject to the following conditions:
-	 * 
-	 * The above copyright notice and this permission notice shall be included in all
-	 * copies or substantial portions of the Software.
-	 * 
-	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	 * SOFTWARE.
-	 */
-	module.exports =
-	/******/function (modules) {
-		// webpackBootstrap
-		/******/ // The module cache
-		/******/var installedModules = {};
-		/******/
-		/******/ // The require function
-		/******/function __webpack_require__(moduleId) {
-			/******/
-			/******/ // Check if module is in cache
-			/******/if (installedModules[moduleId])
-				/******/return installedModules[moduleId].exports;
-			/******/
-			/******/ // Create a new module (and put it into the cache)
-			/******/var module = installedModules[moduleId] = {
-				/******/exports: {},
-				/******/id: moduleId,
-				/******/loaded: false
-				/******/ };
-			/******/
-			/******/ // Execute the module function
-			/******/modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-			/******/
-			/******/ // Flag the module as loaded
-			/******/module.loaded = true;
-			/******/
-			/******/ // Return the exports of the module
-			/******/return module.exports;
-			/******/
-		}
-		/******/
-		/******/
-		/******/ // expose the modules object (__webpack_modules__)
-		/******/__webpack_require__.m = modules;
-		/******/
-		/******/ // expose the module cache
-		/******/__webpack_require__.c = installedModules;
-		/******/
-		/******/ // __webpack_public_path__
-		/******/__webpack_require__.p = "/";
-		/******/
-		/******/ // Load entry module and return exports
-		/******/return __webpack_require__(0);
-		/******/
-	}(
-	/************************************************************************/
-	/******/[
-	/* 0 */
-	/***/function (module, exports) {
-	
-		"use strict";
-	
-		Object.defineProperty(exports, "__esModule", {
-			value: true
-		});
-		/*
-	  * Copyright (c)  2018 Wise Wild Web .
-	  *
-	  *  MIT License
-	  *
-	  *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	  *  of this software and associated documentation files (the "Software"), to deal
-	  *  in the Software without restriction, including without limitation the rights
-	  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	  *  copies of the Software, and to permit persons to whom the Software is
-	  *  furnished to do so, subject to the following conditions:
-	  *
-	  *  The above copyright notice and this permission notice shall be included in all
-	  *  copies or substantial portions of the Software.
-	  *
-	  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	  *  SOFTWARE.
-	  *
-	  * @author : Nathanael Braun
-	  * @contact : caipilabs@gmail.com
-	  */
-		// Common rescope modules int
-		exports.default = {};
-		module.exports = exports["default"];
-	
-		/***/
-	}]
-	/******/);
-	//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
 	/* globals window, HTMLElement */
 	
 	'use strict';
@@ -2242,7 +2124,7 @@
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2283,7 +2165,7 @@
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	var is = __webpack_require__(4);
+	var is = __webpack_require__(3);
 	
 	var Emitter = function () {
 	    function Emitter() {
@@ -2366,30 +2248,30 @@
 	module.exports = exports['default'];
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = __webpack_require__(6);
+
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	module.exports = __webpack_require__(7);
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
 	
-	var alphabet = __webpack_require__(8);
-	var encode = __webpack_require__(10);
-	var decode = __webpack_require__(12);
-	var build = __webpack_require__(13);
-	var isValid = __webpack_require__(14);
+	var alphabet = __webpack_require__(7);
+	var encode = __webpack_require__(9);
+	var decode = __webpack_require__(11);
+	var build = __webpack_require__(12);
+	var isValid = __webpack_require__(13);
 	
 	// if you are using cluster or multiple servers use this to make each instance
 	// has a unique value for worker
 	// Note: I don't know if this is automatically set when using third
 	// party cluster solutions such as pm2.
-	var clusterWorkerId = __webpack_require__(15) || 0;
+	var clusterWorkerId = __webpack_require__(14) || 0;
 	
 	/**
 	 * Set the seed.
@@ -2445,12 +2327,12 @@
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomFromSeed = __webpack_require__(9);
+	var randomFromSeed = __webpack_require__(8);
 	
 	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
 	var alphabet;
@@ -2549,7 +2431,7 @@
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2580,12 +2462,12 @@
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomByte = __webpack_require__(11);
+	var randomByte = __webpack_require__(10);
 	
 	function encode(lookup, number) {
 	    var loopCounter = 0;
@@ -2605,7 +2487,7 @@
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2625,11 +2507,11 @@
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(8);
+	var alphabet = __webpack_require__(7);
 	
 	/**
 	 * Decode the id to get the version and worker
@@ -2648,13 +2530,13 @@
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var encode = __webpack_require__(10);
-	var alphabet = __webpack_require__(8);
+	var encode = __webpack_require__(9);
+	var alphabet = __webpack_require__(7);
 	
 	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
 	// This number should be updated every year or so to keep the generated id short.
@@ -2702,11 +2584,11 @@
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(8);
+	var alphabet = __webpack_require__(7);
 	
 	function isShortId(id) {
 	    if (!id || typeof id !== 'string' || id.length < 6 ) {
@@ -2727,7 +2609,7 @@
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2736,7 +2618,7 @@
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2794,11 +2676,11 @@
 	 * @todo : lot of optims...
 	 */
 	
-	var is = __webpack_require__(4),
+	var is = __webpack_require__(3),
 	    Scope = __webpack_require__(2),
-	    EventEmitter = __webpack_require__(5),
-	    TaskSequencer = __webpack_require__(17),
-	    shortid = __webpack_require__(6),
+	    EventEmitter = __webpack_require__(4),
+	    TaskSequencer = __webpack_require__(16),
+	    shortid = __webpack_require__(5),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
@@ -3717,7 +3599,7 @@
 	module.exports = exports['default'];
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -3730,7 +3612,7 @@
 	
 	var _index2 = _interopRequireDefault(_index);
 	
-	var _is = __webpack_require__(4);
+	var _is = __webpack_require__(3);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
@@ -3860,10 +3742,10 @@
 	    }
 	};
 	module.exports = exports["default"];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	// shim for using process in browser
@@ -4053,7 +3935,7 @@
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4063,7 +3945,7 @@
 	});
 	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
 	
-	var _is = __webpack_require__(4);
+	var _is = __webpack_require__(3);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
@@ -4219,7 +4101,7 @@
 	exports.scopeToState = scopeToState;
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4232,38 +4114,40 @@
 	
 	var _index2 = _interopRequireDefault(_index);
 	
+	var _is = __webpack_require__(3);
+	
+	var _is2 = _interopRequireDefault(_is);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /*
-	                                                                                                                                                                                                     * Copyright (c)  2018 Wise Wild Web .
-	                                                                                                                                                                                                     *
-	                                                                                                                                                                                                     *  MIT License
-	                                                                                                                                                                                                     *
-	                                                                                                                                                                                                     *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                                                                                                                                                                                                     *  of this software and associated documentation files (the "Software"), to deal
-	                                                                                                                                                                                                     *  in the Software without restriction, including without limitation the rights
-	                                                                                                                                                                                                     *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                                                                                                                                                                                                     *  copies of the Software, and to permit persons to whom the Software is
-	                                                                                                                                                                                                     *  furnished to do so, subject to the following conditions:
-	                                                                                                                                                                                                     *
-	                                                                                                                                                                                                     *  The above copyright notice and this permission notice shall be included in all
-	                                                                                                                                                                                                     *  copies or substantial portions of the Software.
-	                                                                                                                                                                                                     *
-	                                                                                                                                                                                                     *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                                                                                                                                                                                                     *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                                                                                                                                                                                                     *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                                                                                                                                                                                                     *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                                                                                                                                                                                                     *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                                                                                                                                                                                                     *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                                                                                                                                                                                                     *  SOFTWARE.
-	                                                                                                                                                                                                     *
-	                                                                                                                                                                                                     * @author : Nathanael Braun
-	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
-	                                                                                                                                                                                                     */
-	
 	
 	// will use as external the index in dist
 	
+	/*
+	 * Copyright (c)  2018 Wise Wild Web .
+	 *
+	 *  MIT License
+	 *
+	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	 *  of this software and associated documentation files (the "Software"), to deal
+	 *  in the Software without restriction, including without limitation the rights
+	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 *  copies of the Software, and to permit persons to whom the Software is
+	 *  furnished to do so, subject to the following conditions:
+	 *
+	 *  The above copyright notice and this permission notice shall be included in all
+	 *  copies or substantial portions of the Software.
+	 *
+	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 *  SOFTWARE.
+	 *
+	 * @author : Nathanael Braun
+	 * @contact : caipilabs@gmail.com
+	 */
 	var SimpleObjectProto = {}.constructor;
 	_index2.default.decorators = {};
 	
@@ -4277,9 +4161,9 @@
 	
 	    // are we decorating a member / without argz
 	    if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
-	        argz[2].value = caster(argz[0]);
+	        argz[2].value = addCaster(argz[0][argz[1]], argz);
 	        return argz[0];
-	    } else if (!is.fn(argz[0])) {
+	    } else if (!_is2.default.fn(argz[0])) {
 	        return function () {
 	            for (var _len2 = arguments.length, argz2 = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 	                argz2[_key2] = arguments[_key2];
@@ -4287,9 +4171,9 @@
 	
 	            // are we decorating a member / with argz
 	            if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
-	                argz2[2].value = addCaster(argz2[0], argz, true);
+	                argz2[2].value = addCaster.apply(undefined, [argz2[0][argz2[1]]].concat(argz, [argz2]));
 	                return argz2[0];
-	            } else return addCaster.apply(undefined, [argz2[0]].concat(argz));
+	            } else return caster.apply(undefined, [argz2[0]].concat(argz));
 	        };
 	    }
 	    return addCaster.apply(undefined, argz);
@@ -4300,12 +4184,12 @@
 	        argz[_key3] = arguments[_key3];
 	    }
 	
-	    var cast = (!argz[0] || is.fn(argz[0])) && argz.shift();
+	    var cast = (!argz[0] || _is2.default.fn(argz[0])) && argz.shift();
 	    if (!cast) throw "ReScope cast : bad decorator function";
-	    var typeName = (!argz[0] || is.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
-	        test = (!argz[0] || is.fn(argz[0])) && argz.shift(),
-	        onlyMembers = (!argz[0] || is.bool(argz[0])) && argz.shift(),
-	        prefix = (!argz[0] || is.string(argz[0])) && argz.shift() || "as",
+	    var typeName = (!argz[0] || _is2.default.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
+	        test = (!argz[0] || _is2.default.fn(argz[0])) && argz.shift(),
+	        prefix = (!argz[0] || _is2.default.string(argz[0])) && argz.shift() || "as",
+	        memberDescr = (!argz[0] || _is2.default.bool(argz[0]) || _is2.default.array(argz[0])) && argz.shift() || true,
 	        casterName = typeName && prefix + typeName[0].toUpperCase() + typeName.substr(1);
 	
 	    if (!castTypesToAppliable[typeName]) {
@@ -4318,7 +4202,7 @@
 	
 	            // are we decorating a member / without argz
 	            if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
-	                argz[2].value = applyCastableType(typeName, argz, true);
+	                argz[0][argz[1]] = applyCastableType(typeName, argz[0][argz[1]], [], argz);
 	                return argz[0];
 	            } else if (!isCastableType(typeName, argz[0])) {
 	                return function () {
@@ -4328,16 +4212,16 @@
 	
 	                    // are we decorating a member / with argz
 	                    if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
-	                        argz2[2].value = applyCastableType(typeName, argz, true);
+	                        argz2[0][argz2[1]] = applyCastableType(typeName, argz2[0][argz2[1]], argz, argz2);
 	                        return argz2[0];
 	                    } else return doCast.apply(undefined, [argz2[0]].concat(argz));
 	                };
 	            }
-	            return applyCastableType(typeName, argz, false);
+	            return applyCastableType(typeName, argz[0], argz.slice(1));
 	        };
 	    }
 	    castTypesToAppliable[typeName].unshift({
-	        typeName: typeName, test: test, onlyMembers: onlyMembers, cast: cast
+	        typeName: typeName, test: test, memberDescr: memberDescr, cast: cast
 	    });
 	    return cast;
 	}
@@ -4345,7 +4229,7 @@
 	function isCastableType(typeName, Comp, member, stateScope) {
 	    var castable = castTypesToAppliable[typeName];
 	    for (var i = 0; i < castable.length; i++) {
-	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return castable[i];
+	        if ((member === undefined || !!member == !!castable[i].memberDescr) && castable[i].test(Comp)) return castable[i];
 	    }return false;
 	}
 	
@@ -4353,9 +4237,7 @@
 	
 	    var castable = castTypesToAppliable[typeName] || [];
 	    for (var i = 0; i < castable.length; i++) {
-	        var _castable$i;
-	
-	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return (_castable$i = castable[i]).cast.apply(_castable$i, [Comp].concat(_toConsumableArray(argz)));
+	        if ((member === undefined || !!member == !!castable[i].memberDescr) && castable[i].test(Comp)) return castable[i].cast(Comp, argz, member);
 	    }console.warn("reScope cast : Unknown type", typeName, Comp);
 	    return false;
 	}

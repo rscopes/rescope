@@ -118,11 +118,11 @@ module.exports    = [
         ),
     },
     {
-        entry    : {
+        entry  : {
             "ReScope": "./src/ReScope.js",
         },
-        devtool  : production ? false : 'source-map',
-        output   : {
+        devtool: production ? false : 'source-map',
+        output : {
             path         : __dirname,
             filename     : production ? "dist/[name].browser.min.js" : "dist/[name].browser.js",
             publicPath   : "/",

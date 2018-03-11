@@ -26,7 +26,6 @@
  */
 
 
-import {Store} from "../dist";
 
 var is                = require('is'),
     EventEmitter      = require('./Emitter'),
@@ -76,7 +75,7 @@ class Scope extends EventEmitter {
                     ? _refs.push(sm[key].path + ':' + cpath)
                     : (sm[key] && sm[key] instanceof Function)
                     ? _refs.push(sm[key]().path + ':' + cpath)
-                    : (sm[key] && sm[key].prototype instanceof Store)
+                    : (sm[key] && sm[key].prototype instanceof Scope.Store)
                           ? _refs.push(sm[key].as(cpath))
                           : state[cpath] = sm[key]
                 //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)

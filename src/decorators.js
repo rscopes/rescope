@@ -25,6 +25,7 @@
  * @contact : caipilabs@gmail.com
  */
 import index from "./index";
+import is from "is";
 // will use as external the index in dist
 
 const SimpleObjectProto = ({}).constructor;
@@ -36,18 +37,18 @@ let castTypes            = {};
 index.decorator = function caster( ...argz ) {
     // are we decorating a member / without argz
     if ( argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1]) ) {
-        argz[2].value = caster(argz[0]);
+        argz[2].value = addCaster(argz[0][argz[1]], argz);
         return argz[0];
     }
     else if ( !is.fn(argz[0]) ) {
         return ( ...argz2 ) => {
             // are we decorating a member / with argz
             if ( argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1]) ) {
-                argz2[2].value = addCaster(argz2[0], argz, true);
+                argz2[2].value = addCaster(argz2[0][argz2[1]], ...argz, argz2);
                 return argz2[0];
             }
             else
-                return addCaster(argz2[0], ...argz);
+                return caster(argz2[0], ...argz);
         }
     }
     return addCaster(...argz);
@@ -59,8 +60,8 @@ function addCaster( ...argz ) {
         throw "ReScope cast : bad decorator function"
     let typeName    = (!argz[0] || is.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
         test        = (!argz[0] || is.fn(argz[0])) && argz.shift(),
-        onlyMembers = (!argz[0] || is.bool(argz[0])) && argz.shift(),
         prefix      = (!argz[0] || is.string(argz[0])) && argz.shift() || "as",
+        memberDescr = (!argz[0] || is.bool(argz[0]) || is.array(argz[0])) && argz.shift() || true,
         casterName  = typeName && (prefix + typeName[0].toUpperCase() + typeName.substr(1));
     
     
@@ -71,26 +72,26 @@ function addCaster( ...argz ) {
             function doCast( ...argz ) {
                 // are we decorating a member / without argz
                 if ( argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1]) ) {
-                    argz[2].value = applyCastableType(typeName, argz, true);
+                    argz[0][argz[1]] = applyCastableType(typeName, argz[0][argz[1]], [], argz);
                     return argz[0];
                 }
                 else if ( !isCastableType(typeName, argz[0]) ) {
                     return ( ...argz2 ) => {
                         // are we decorating a member / with argz
                         if ( argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1]) ) {
-                            argz2[2].value = applyCastableType(typeName, argz, true);
+                            argz2[0][argz2[1]] = applyCastableType(typeName, argz2[0][argz2[1]], argz, argz2);
                             return argz2[0];
                         }
                         else
                             return doCast(argz2[0], ...argz);
                     }
                 }
-                return applyCastableType(typeName, argz, false);
+                return applyCastableType(typeName, argz[0], argz.slice(1));
             };
     }
     castTypesToAppliable[typeName].unshift(
         {
-            typeName, test, onlyMembers, cast
+            typeName, test, memberDescr, cast
         }
     )
     return cast;
@@ -100,7 +101,7 @@ function isCastableType( typeName, Comp, member, stateScope ) {
     let castable = castTypesToAppliable[typeName];
     for ( let i = 0; i < castable.length; i++ )
         if (
-            (member === undefined || member == castable[i].member)
+            (member === undefined || !!member == !!castable[i].memberDescr)
             && castable[i].test(Comp)
         )
             return castable[i];
@@ -114,10 +115,11 @@ function applyCastableType( typeName, Comp, argz, member, stateScope ) {
     let castable = castTypesToAppliable[typeName] || [];
     for ( let i = 0; i < castable.length; i++ )
         if (
-            (member === undefined || member == castable[i].member)
+            (member === undefined || !!member == !!castable[i].memberDescr)
             && castable[i].test(Comp)
         )
-            return castable[i].cast(Comp, ...argz);
+            return castable[i].cast(Comp, argz, member)
+                ;
     
     console.warn("reScope cast : Unknown type", typeName, Comp)
     return false;

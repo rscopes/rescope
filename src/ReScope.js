@@ -39,15 +39,16 @@ if ( $global.___rescope ) {
 }
 else {
     
-    $global.___rescope = index;
-    Scope.Store        = Store;
-    index.Scope        = Scope;
-    index.Context      = Scope;
-    index.Store        = Store;
-    index.reScope      = reScope;
-    index.scopeToState = scopeToState;
-    index.reScopeState = scopeToState;
-    index.scopeRef     =
+    $global.___rescope    = index;
+    Scope.Store           = Store;
+    index.Scope           = Scope;
+    index.Context         = Scope;
+    index.Store           = Store;
+    index.reScope         = reScope;
+    index.scopeToState    = scopeToState;
+    index.reScopeState    = scopeToState;
+    index.addScopableType = addScopableType;
+    index.scopeRef        =
         function scopeRef( map, key ) {
             map[key] = new Scope.scopeRef(map[key]);
             return map;

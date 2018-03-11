@@ -28,13 +28,13 @@
 import Scope from "./Scope";
 import Store from "./Store";
 import {addScopableType, reScope, scopeToState} from "./scopable";
+import "./decorators";
 import index from "./index";// will use as external the index in dist
 
 Scope.Store           = Store;
 index.Scope           = Scope;
 index.Context         = Scope;
 index.Store           = Store;
-index.addScopableType = addScopableType;
 index.reScope         = reScope;
 index.scopeToState    = scopeToState;
 index.reScopeState    = scopeToState;
@@ -44,10 +44,11 @@ index.scopeRef        =
         return map;
     };
 
+
+export default index;
+
+
 try {
     require("react-rescope");
 } catch ( e ) {
 }
-
-export default index;
-

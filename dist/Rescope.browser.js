@@ -60,6 +60,8 @@
 	
 	var _scopable = __webpack_require__(19);
 	
+	__webpack_require__(20);
+	
 	var _index = __webpack_require__(18);
 	
 	var _index2 = _interopRequireDefault(_index);
@@ -68,38 +70,36 @@
 	
 	// will use as external the index in dist
 	
-	/*
-	 * Copyright (c)  2018 Wise Wild Web .
-	 *
-	 *  MIT License
-	 *
-	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	 *  of this software and associated documentation files (the "Software"), to deal
-	 *  in the Software without restriction, including without limitation the rights
-	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	 *  copies of the Software, and to permit persons to whom the Software is
-	 *  furnished to do so, subject to the following conditions:
-	 *
-	 *  The above copyright notice and this permission notice shall be included in all
-	 *  copies or substantial portions of the Software.
-	 *
-	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	 *  SOFTWARE.
-	 *
-	 * @author : Nathanael Braun
-	 * @contact : caipilabs@gmail.com
-	 */
+	_Scope2.default.Store = _Store2.default; /*
+	                                          * Copyright (c)  2018 Wise Wild Web .
+	                                          *
+	                                          *  MIT License
+	                                          *
+	                                          *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                          *  of this software and associated documentation files (the "Software"), to deal
+	                                          *  in the Software without restriction, including without limitation the rights
+	                                          *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                          *  copies of the Software, and to permit persons to whom the Software is
+	                                          *  furnished to do so, subject to the following conditions:
+	                                          *
+	                                          *  The above copyright notice and this permission notice shall be included in all
+	                                          *  copies or substantial portions of the Software.
+	                                          *
+	                                          *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                          *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                          *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                          *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                          *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                          *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                          *  SOFTWARE.
+	                                          *
+	                                          * @author : Nathanael Braun
+	                                          * @contact : caipilabs@gmail.com
+	                                          */
 	
-	_Scope2.default.Store = _Store2.default;
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
-	_index2.default.addScopableType = _scopable.addScopableType;
 	_index2.default.reScope = _scopable.reScope;
 	_index2.default.scopeToState = _scopable.scopeToState;
 	_index2.default.reScopeState = _scopable.scopeToState;
@@ -108,11 +108,12 @@
 	    return map;
 	};
 	
-	try {
-	    __webpack_require__(20);
-	} catch (e) {}
-	
 	exports.default = _index2.default;
+	
+	
+	try {
+	    __webpack_require__(21);
+	} catch (e) {}
 	module.exports = exports["default"];
 
 /***/ }),
@@ -4046,7 +4047,7 @@
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	
+	console.warn("rescope index !!");
 	// Common rescope modules int
 	exports.default = {};
 	module.exports = exports["default"];
@@ -4113,6 +4114,7 @@
 	    });
 	}
 	
+	//
 	function isScopableType(Comp, member, stateScope) {
 	
 	    for (var i = 0; i < scopables.length; i++) {
@@ -4218,6 +4220,151 @@
 
 /***/ }),
 /* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _index = __webpack_require__(18);
+	
+	var _index2 = _interopRequireDefault(_index);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /*
+	                                                                                                                                                                                                     * Copyright (c)  2018 Wise Wild Web .
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  MIT License
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                                                                                                                                                                                     *  of this software and associated documentation files (the "Software"), to deal
+	                                                                                                                                                                                                     *  in the Software without restriction, including without limitation the rights
+	                                                                                                                                                                                                     *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                                                                                                                                                                                     *  copies of the Software, and to permit persons to whom the Software is
+	                                                                                                                                                                                                     *  furnished to do so, subject to the following conditions:
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  The above copyright notice and this permission notice shall be included in all
+	                                                                                                                                                                                                     *  copies or substantial portions of the Software.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                                                                                                                                                                                     *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                                                                                                                                                                                     *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                                                                                                                                                                                     *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                                                                                                                                                                                     *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                                                                                                                                                                                     *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                                                                                                                                                                                     *  SOFTWARE.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     * @author : Nathanael Braun
+	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
+	                                                                                                                                                                                                     */
+	
+	
+	// will use as external the index in dist
+	
+	var SimpleObjectProto = {}.constructor;
+	_index2.default.decorators = {};
+	
+	var castTypesToAppliable = {};
+	var castTypes = {};
+	
+	_index2.default.decorator = function caster() {
+	    for (var _len = arguments.length, argz = Array(_len), _key = 0; _key < _len; _key++) {
+	        argz[_key] = arguments[_key];
+	    }
+	
+	    // are we decorating a member / without argz
+	    if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	        argz[2].value = caster(argz[0]);
+	        return argz[0];
+	    } else if (!is.fn(argz[0])) {
+	        return function () {
+	            for (var _len2 = arguments.length, argz2 = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	                argz2[_key2] = arguments[_key2];
+	            }
+	
+	            // are we decorating a member / with argz
+	            if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                argz2[2].value = addCaster(argz2[0], argz, true);
+	                return argz2[0];
+	            } else return addCaster.apply(undefined, [argz2[0]].concat(argz));
+	        };
+	    }
+	    return addCaster.apply(undefined, argz);
+	};
+	
+	function addCaster() {
+	    for (var _len3 = arguments.length, argz = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	        argz[_key3] = arguments[_key3];
+	    }
+	
+	    var cast = (!argz[0] || is.fn(argz[0])) && argz.shift();
+	    if (!cast) throw "ReScope cast : bad decorator function";
+	    var typeName = (!argz[0] || is.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
+	        test = (!argz[0] || is.fn(argz[0])) && argz.shift(),
+	        onlyMembers = (!argz[0] || is.bool(argz[0])) && argz.shift(),
+	        prefix = (!argz[0] || is.string(argz[0])) && argz.shift() || "as",
+	        casterName = typeName && prefix + typeName[0].toUpperCase() + typeName.substr(1);
+	
+	    if (!castTypesToAppliable[typeName]) {
+	        castTypesToAppliable[typeName] = [];
+	
+	        _index2.default.decorators[casterName] = castTypes[typeName] = function doCast() {
+	            for (var _len4 = arguments.length, argz = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+	                argz[_key4] = arguments[_key4];
+	            }
+	
+	            // are we decorating a member / without argz
+	            if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	                argz[2].value = applyCastableType(typeName, argz, true);
+	                return argz[0];
+	            } else if (!isCastableType(typeName, argz[0])) {
+	                return function () {
+	                    for (var _len5 = arguments.length, argz2 = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	                        argz2[_key5] = arguments[_key5];
+	                    }
+	
+	                    // are we decorating a member / with argz
+	                    if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                        argz2[2].value = applyCastableType(typeName, argz, true);
+	                        return argz2[0];
+	                    } else return doCast.apply(undefined, [argz2[0]].concat(argz));
+	                };
+	            }
+	            return applyCastableType(typeName, argz, false);
+	        };
+	    }
+	    castTypesToAppliable[typeName].unshift({
+	        typeName: typeName, test: test, onlyMembers: onlyMembers, cast: cast
+	    });
+	    return cast;
+	}
+	
+	function isCastableType(typeName, Comp, member, stateScope) {
+	    var castable = castTypesToAppliable[typeName];
+	    for (var i = 0; i < castable.length; i++) {
+	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return castable[i];
+	    }return false;
+	}
+	
+	function applyCastableType(typeName, Comp, argz, member, stateScope) {
+	
+	    var castable = castTypesToAppliable[typeName] || [];
+	    for (var i = 0; i < castable.length; i++) {
+	        var _castable$i;
+	
+	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return (_castable$i = castable[i]).cast.apply(_castable$i, [Comp].concat(_toConsumableArray(argz)));
+	    }console.warn("reScope cast : Unknown type", typeName, Comp);
+	    return false;
+	}
+	
+	exports.default = _index2.default;
+	module.exports = exports["default"];
+
+/***/ }),
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4366,14 +4513,14 @@
 	/* 1 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(21);
+		module.exports = __webpack_require__(22);
 	
 		/***/
 	},
 	/* 2 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(22);
+		module.exports = __webpack_require__(23);
 	
 		/***/
 	},
@@ -4450,8 +4597,7 @@
 	                     * @contact : caipilabs@gmail.com
 	                     */
 	
-		//import {Scope} from 'rescope';
-	
+		__webpack_require__(1);
 	
 		var _react = __webpack_require__(4);
 	
@@ -4603,7 +4749,6 @@
 	  * @param scope {ReScope.Scope|function} the propagated Scope where the stores will be searched ( default : the default
 	  *     ReScope::Scope::scopes.static scope )
 	  * @param use {array} the list of stores to inject from the current scope
-	  * @param additionalContext {Object} context to be propagated
 	  * @returns {ReScopeProvider}
 	  */
 		function reScopeProps() {
@@ -4715,7 +4860,7 @@
 					if (_this3.$scope && use.length) {
 						_this3.state = _extends({}, _this3.state, initialState, _this3.$scope.map(_this3, use, false));
 					} else if (!_this3.$scope) _this3.render = function () {
-						return _react2.default.createElement('div', null, 'No ReScope context in ', BaseComponent.name);
+						return _react2.default.createElement('div', null, 'No Scope found in ', BaseComponent.name);
 					};
 	
 					_this3.$dispatch = _this3.$dispatch.bind(_this3);
@@ -4793,9 +4938,7 @@
 		(0, _index.addScopableType)(function (Comp) {
 			return Comp && Comp.prototype instanceof _react2.default.Component;
 		}, reScopeToState, false, true);
-		(0, _index.addScopableType)(function (Comp) {
-			return Comp && Comp.prototype instanceof _react2.default.Component;
-		},
+	
 		/**
 	  * Return a React "HOC" (High Order Component) that :
 	  *  - Render BaseComponent with new scope that inherit the given scope or context scope
@@ -4885,7 +5028,11 @@
 			}), _class4.defaultProps = _extends({}, BaseComponent.defaultProps || {}), _class4.displayName = "scoped(" + compName + ")", _temp4);
 	
 			return ScopeProvider;
-		});
+		}
+	
+		(0, _index.addScopableType)(function (Comp) {
+			return Comp && Comp.prototype instanceof _react2.default.Component;
+		}, reScope);
 	
 		exports.default = Component;
 		exports.Component = Component;
@@ -4896,28 +5043,28 @@
 	/* 4 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(23);
+		module.exports = __webpack_require__(24);
 	
 		/***/
 	},
 	/* 5 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(58);
+		module.exports = __webpack_require__(59);
 	
 		/***/
 	},
 	/* 6 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(59);
+		module.exports = __webpack_require__(60);
 	
 		/***/
 	}]
 	/******/);
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -5013,6 +5160,8 @@
 	
 		var _scopable = __webpack_require__(9);
 	
+		__webpack_require__(10);
+	
 		var _index = __webpack_require__(8);
 	
 		var _index2 = _interopRequireDefault(_index);
@@ -5023,34 +5172,33 @@
 	
 		// will use as external the index in dist
 	
-		/*
-	  * Copyright (c)  2018 Wise Wild Web .
-	  *
-	  *  MIT License
-	  *
-	  *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	  *  of this software and associated documentation files (the "Software"), to deal
-	  *  in the Software without restriction, including without limitation the rights
-	  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	  *  copies of the Software, and to permit persons to whom the Software is
-	  *  furnished to do so, subject to the following conditions:
-	  *
-	  *  The above copyright notice and this permission notice shall be included in all
-	  *  copies or substantial portions of the Software.
-	  *
-	  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	  *  SOFTWARE.
-	  *
-	  * @author : Nathanael Braun
-	  * @contact : caipilabs@gmail.com
-	  */
+		_Scope2.default.Store = _Store2.default; /*
+	                                           * Copyright (c)  2018 Wise Wild Web .
+	                                           *
+	                                           *  MIT License
+	                                           *
+	                                           *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                           *  of this software and associated documentation files (the "Software"), to deal
+	                                           *  in the Software without restriction, including without limitation the rights
+	                                           *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                           *  copies of the Software, and to permit persons to whom the Software is
+	                                           *  furnished to do so, subject to the following conditions:
+	                                           *
+	                                           *  The above copyright notice and this permission notice shall be included in all
+	                                           *  copies or substantial portions of the Software.
+	                                           *
+	                                           *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                           *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                           *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                           *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                           *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                           *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                           *  SOFTWARE.
+	                                           *
+	                                           * @author : Nathanael Braun
+	                                           * @contact : caipilabs@gmail.com
+	                                           */
 	
-		_Scope2.default.Store = _Store2.default;
 		_index2.default.Scope = _Scope2.default;
 		_index2.default.Context = _Scope2.default;
 		_index2.default.Store = _Store2.default;
@@ -5063,11 +5211,11 @@
 			return map;
 		};
 	
-		try {
-			__webpack_require__(10);
-		} catch (e) {}
-	
 		exports.default = _index2.default;
+	
+		try {
+			__webpack_require__(11);
+		} catch (e) {}
 		module.exports = exports["default"];
 	
 		/***/
@@ -7796,6 +7944,7 @@
 			});
 		}
 	
+		//
 		function isScopableType(Comp, member, stateScope) {
 	
 			for (var i = 0; i < scopables.length; i++) {
@@ -7902,9 +8051,164 @@
 		/***/
 	},
 	/* 10 */
+	/***/function (module, exports, __webpack_require__) {
+	
+		"use strict";
+	
+		Object.defineProperty(exports, "__esModule", {
+			value: true
+		});
+	
+		var _index = __webpack_require__(8);
+	
+		var _index2 = _interopRequireDefault(_index);
+	
+		function _interopRequireDefault(obj) {
+			return obj && obj.__esModule ? obj : { default: obj };
+		}
+	
+		function _toConsumableArray(arr) {
+			if (Array.isArray(arr)) {
+				for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+					arr2[i] = arr[i];
+				}return arr2;
+			} else {
+				return Array.from(arr);
+			}
+		} /*
+	    * Copyright (c)  2018 Wise Wild Web .
+	    *
+	    *  MIT License
+	    *
+	    *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	    *  of this software and associated documentation files (the "Software"), to deal
+	    *  in the Software without restriction, including without limitation the rights
+	    *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	    *  copies of the Software, and to permit persons to whom the Software is
+	    *  furnished to do so, subject to the following conditions:
+	    *
+	    *  The above copyright notice and this permission notice shall be included in all
+	    *  copies or substantial portions of the Software.
+	    *
+	    *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	    *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	    *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	    *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	    *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	    *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	    *  SOFTWARE.
+	    *
+	    * @author : Nathanael Braun
+	    * @contact : caipilabs@gmail.com
+	    */
+	
+		// will use as external the index in dist
+	
+		var SimpleObjectProto = {}.constructor;
+		_index2.default.decorators = {};
+	
+		var castTypesToAppliable = {};
+		var castTypes = {};
+	
+		_index2.default.decorator = function caster() {
+			for (var _len = arguments.length, argz = Array(_len), _key = 0; _key < _len; _key++) {
+				argz[_key] = arguments[_key];
+			}
+	
+			// are we decorating a member / without argz
+			if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+				argz[2].value = caster(argz[0]);
+				return argz[0];
+			} else if (!is.fn(argz[0])) {
+				return function () {
+					for (var _len2 = arguments.length, argz2 = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+						argz2[_key2] = arguments[_key2];
+					}
+	
+					// are we decorating a member / with argz
+					if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+						argz2[2].value = addCaster(argz2[0], argz, true);
+						return argz2[0];
+					} else return addCaster.apply(undefined, [argz2[0]].concat(argz));
+				};
+			}
+			return addCaster.apply(undefined, argz);
+		};
+	
+		function addCaster() {
+			for (var _len3 = arguments.length, argz = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+				argz[_key3] = arguments[_key3];
+			}
+	
+			var cast = (!argz[0] || is.fn(argz[0])) && argz.shift();
+			if (!cast) throw "ReScope cast : bad decorator function";
+			var typeName = (!argz[0] || is.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
+			    test = (!argz[0] || is.fn(argz[0])) && argz.shift(),
+			    onlyMembers = (!argz[0] || is.bool(argz[0])) && argz.shift(),
+			    prefix = (!argz[0] || is.string(argz[0])) && argz.shift() || "as",
+			    casterName = typeName && prefix + typeName[0].toUpperCase() + typeName.substr(1);
+	
+			if (!castTypesToAppliable[typeName]) {
+				castTypesToAppliable[typeName] = [];
+	
+				_index2.default.decorators[casterName] = castTypes[typeName] = function doCast() {
+					for (var _len4 = arguments.length, argz = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+						argz[_key4] = arguments[_key4];
+					}
+	
+					// are we decorating a member / without argz
+					if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+						argz[2].value = applyCastableType(typeName, argz, true);
+						return argz[0];
+					} else if (!isCastableType(typeName, argz[0])) {
+						return function () {
+							for (var _len5 = arguments.length, argz2 = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+								argz2[_key5] = arguments[_key5];
+							}
+	
+							// are we decorating a member / with argz
+							if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+								argz2[2].value = applyCastableType(typeName, argz, true);
+								return argz2[0];
+							} else return doCast.apply(undefined, [argz2[0]].concat(argz));
+						};
+					}
+					return applyCastableType(typeName, argz, false);
+				};
+			}
+			castTypesToAppliable[typeName].unshift({
+				typeName: typeName, test: test, onlyMembers: onlyMembers, cast: cast
+			});
+			return cast;
+		}
+	
+		function isCastableType(typeName, Comp, member, stateScope) {
+			var castable = castTypesToAppliable[typeName];
+			for (var i = 0; i < castable.length; i++) {
+				if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return castable[i];
+			}return false;
+		}
+	
+		function applyCastableType(typeName, Comp, argz, member, stateScope) {
+	
+			var castable = castTypesToAppliable[typeName] || [];
+			for (var i = 0; i < castable.length; i++) {
+				var _castable$i;
+	
+				if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return (_castable$i = castable[i]).cast.apply(_castable$i, [Comp].concat(_toConsumableArray(argz)));
+			}console.warn("reScope cast : Unknown type", typeName, Comp);
+			return false;
+		}
+	
+		exports.default = _index2.default;
+		module.exports = exports["default"];
+	
+		/***/
+	},
+	/* 11 */
 	/***/function (module, exports) {
 	
-		module.exports = __webpack_require__(20);
+		module.exports = __webpack_require__(21);
 	
 		/***/
 	}]
@@ -7913,7 +8217,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -8033,16 +8337,16 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	module.exports = __webpack_require__(24);
+	module.exports = __webpack_require__(25);
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8055,26 +8359,26 @@
 	
 	'use strict';
 	
-	var _assign = __webpack_require__(25);
+	var _assign = __webpack_require__(26);
 	
-	var ReactBaseClasses = __webpack_require__(26);
-	var ReactChildren = __webpack_require__(35);
-	var ReactDOMFactories = __webpack_require__(43);
-	var ReactElement = __webpack_require__(37);
-	var ReactPropTypes = __webpack_require__(49);
-	var ReactVersion = __webpack_require__(54);
+	var ReactBaseClasses = __webpack_require__(27);
+	var ReactChildren = __webpack_require__(36);
+	var ReactDOMFactories = __webpack_require__(44);
+	var ReactElement = __webpack_require__(38);
+	var ReactPropTypes = __webpack_require__(50);
+	var ReactVersion = __webpack_require__(55);
 	
-	var createReactClass = __webpack_require__(55);
-	var onlyChild = __webpack_require__(57);
+	var createReactClass = __webpack_require__(56);
+	var onlyChild = __webpack_require__(58);
 	
 	var createElement = ReactElement.createElement;
 	var createFactory = ReactElement.createFactory;
 	var cloneElement = ReactElement.cloneElement;
 	
 	if (process.env.NODE_ENV !== 'production') {
-	  var lowPriorityWarning = __webpack_require__(34);
-	  var canDefineProperty = __webpack_require__(31);
-	  var ReactElementValidator = __webpack_require__(44);
+	  var lowPriorityWarning = __webpack_require__(35);
+	  var canDefineProperty = __webpack_require__(32);
+	  var ReactElementValidator = __webpack_require__(45);
 	  var didWarnPropTypesDeprecated = false;
 	  createElement = ReactElementValidator.createElement;
 	  createFactory = ReactElementValidator.createFactory;
@@ -8177,7 +8481,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports) {
 
 	/*
@@ -8273,7 +8577,7 @@
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8286,15 +8590,15 @@
 	
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27),
-	    _assign = __webpack_require__(25);
+	var _prodInvariant = __webpack_require__(28),
+	    _assign = __webpack_require__(26);
 	
-	var ReactNoopUpdateQueue = __webpack_require__(28);
+	var ReactNoopUpdateQueue = __webpack_require__(29);
 	
-	var canDefineProperty = __webpack_require__(31);
-	var emptyObject = __webpack_require__(32);
-	var invariant = __webpack_require__(33);
-	var lowPriorityWarning = __webpack_require__(34);
+	var canDefineProperty = __webpack_require__(32);
+	var emptyObject = __webpack_require__(33);
+	var invariant = __webpack_require__(34);
+	var lowPriorityWarning = __webpack_require__(35);
 	
 	/**
 	 * Base class helpers for the updating state of a component.
@@ -8419,7 +8723,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports) {
 
 	/**
@@ -8460,7 +8764,7 @@
 	module.exports = reactProdInvariant;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8473,7 +8777,7 @@
 	
 	'use strict';
 	
-	var warning = __webpack_require__(29);
+	var warning = __webpack_require__(30);
 	
 	function warnNoop(publicInstance, callerName) {
 	  if (process.env.NODE_ENV !== 'production') {
@@ -8558,7 +8862,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8571,7 +8875,7 @@
 	
 	'use strict';
 	
-	var emptyFunction = __webpack_require__(30);
+	var emptyFunction = __webpack_require__(31);
 	
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -8626,7 +8930,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -8667,7 +8971,7 @@
 	module.exports = emptyFunction;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8696,7 +9000,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8719,7 +9023,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8778,7 +9082,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8846,7 +9150,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
@@ -8859,11 +9163,11 @@
 	
 	'use strict';
 	
-	var PooledClass = __webpack_require__(36);
-	var ReactElement = __webpack_require__(37);
+	var PooledClass = __webpack_require__(37);
+	var ReactElement = __webpack_require__(38);
 	
-	var emptyFunction = __webpack_require__(30);
-	var traverseAllChildren = __webpack_require__(40);
+	var emptyFunction = __webpack_require__(31);
+	var traverseAllChildren = __webpack_require__(41);
 	
 	var twoArgumentPooler = PooledClass.twoArgumentPooler;
 	var fourArgumentPooler = PooledClass.fourArgumentPooler;
@@ -9039,7 +9343,7 @@
 	module.exports = ReactChildren;
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9053,9 +9357,9 @@
 	
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27);
+	var _prodInvariant = __webpack_require__(28);
 	
-	var invariant = __webpack_require__(33);
+	var invariant = __webpack_require__(34);
 	
 	/**
 	 * Static poolers. Several custom versions for each potential number of
@@ -9154,7 +9458,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9167,15 +9471,15 @@
 	
 	'use strict';
 	
-	var _assign = __webpack_require__(25);
+	var _assign = __webpack_require__(26);
 	
-	var ReactCurrentOwner = __webpack_require__(38);
+	var ReactCurrentOwner = __webpack_require__(39);
 	
-	var warning = __webpack_require__(29);
-	var canDefineProperty = __webpack_require__(31);
+	var warning = __webpack_require__(30);
+	var canDefineProperty = __webpack_require__(32);
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
 	
-	var REACT_ELEMENT_TYPE = __webpack_require__(39);
+	var REACT_ELEMENT_TYPE = __webpack_require__(40);
 	
 	var RESERVED_PROPS = {
 	  key: true,
@@ -9498,7 +9802,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports) {
 
 	/**
@@ -9529,7 +9833,7 @@
 	module.exports = ReactCurrentOwner;
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports) {
 
 	/**
@@ -9551,7 +9855,7 @@
 	module.exports = REACT_ELEMENT_TYPE;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9564,15 +9868,15 @@
 	
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27);
+	var _prodInvariant = __webpack_require__(28);
 	
-	var ReactCurrentOwner = __webpack_require__(38);
-	var REACT_ELEMENT_TYPE = __webpack_require__(39);
+	var ReactCurrentOwner = __webpack_require__(39);
+	var REACT_ELEMENT_TYPE = __webpack_require__(40);
 	
-	var getIteratorFn = __webpack_require__(41);
-	var invariant = __webpack_require__(33);
-	var KeyEscapeUtils = __webpack_require__(42);
-	var warning = __webpack_require__(29);
+	var getIteratorFn = __webpack_require__(42);
+	var invariant = __webpack_require__(34);
+	var KeyEscapeUtils = __webpack_require__(43);
+	var warning = __webpack_require__(30);
 	
 	var SEPARATOR = '.';
 	var SUBSEPARATOR = ':';
@@ -9730,7 +10034,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports) {
 
 	/**
@@ -9773,7 +10077,7 @@
 	module.exports = getIteratorFn;
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports) {
 
 	/**
@@ -9834,7 +10138,7 @@
 	module.exports = KeyEscapeUtils;
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9847,7 +10151,7 @@
 	
 	'use strict';
 	
-	var ReactElement = __webpack_require__(37);
+	var ReactElement = __webpack_require__(38);
 	
 	/**
 	 * Create a factory that creates HTML tag elements.
@@ -9856,7 +10160,7 @@
 	 */
 	var createDOMFactory = ReactElement.createFactory;
 	if (process.env.NODE_ENV !== 'production') {
-	  var ReactElementValidator = __webpack_require__(44);
+	  var ReactElementValidator = __webpack_require__(45);
 	  createDOMFactory = ReactElementValidator.createFactory;
 	}
 	
@@ -10006,7 +10310,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10026,16 +10330,16 @@
 	
 	'use strict';
 	
-	var ReactCurrentOwner = __webpack_require__(38);
-	var ReactComponentTreeHook = __webpack_require__(45);
-	var ReactElement = __webpack_require__(37);
+	var ReactCurrentOwner = __webpack_require__(39);
+	var ReactComponentTreeHook = __webpack_require__(46);
+	var ReactElement = __webpack_require__(38);
 	
-	var checkReactTypeSpec = __webpack_require__(46);
+	var checkReactTypeSpec = __webpack_require__(47);
 	
-	var canDefineProperty = __webpack_require__(31);
-	var getIteratorFn = __webpack_require__(41);
-	var warning = __webpack_require__(29);
-	var lowPriorityWarning = __webpack_require__(34);
+	var canDefineProperty = __webpack_require__(32);
+	var getIteratorFn = __webpack_require__(42);
+	var warning = __webpack_require__(30);
+	var lowPriorityWarning = __webpack_require__(35);
 	
 	function getDeclarationErrorAddendum() {
 	  if (ReactCurrentOwner.current) {
@@ -10264,7 +10568,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10278,12 +10582,12 @@
 	
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27);
+	var _prodInvariant = __webpack_require__(28);
 	
-	var ReactCurrentOwner = __webpack_require__(38);
+	var ReactCurrentOwner = __webpack_require__(39);
 	
-	var invariant = __webpack_require__(33);
-	var warning = __webpack_require__(29);
+	var invariant = __webpack_require__(34);
+	var warning = __webpack_require__(30);
 	
 	function isNative(fn) {
 	  // Based on isNative() from Lodash
@@ -10646,7 +10950,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10659,13 +10963,13 @@
 	
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27);
+	var _prodInvariant = __webpack_require__(28);
 	
-	var ReactPropTypeLocationNames = __webpack_require__(47);
-	var ReactPropTypesSecret = __webpack_require__(48);
+	var ReactPropTypeLocationNames = __webpack_require__(48);
+	var ReactPropTypesSecret = __webpack_require__(49);
 	
-	var invariant = __webpack_require__(33);
-	var warning = __webpack_require__(29);
+	var invariant = __webpack_require__(34);
+	var warning = __webpack_require__(30);
 	
 	var ReactComponentTreeHook;
 	
@@ -10675,7 +10979,7 @@
 	  // https://github.com/facebook/react/issues/7240
 	  // Remove the inline requires when we don't need them anymore:
 	  // https://github.com/facebook/react/pull/7178
-	  ReactComponentTreeHook = __webpack_require__(45);
+	  ReactComponentTreeHook = __webpack_require__(46);
 	}
 	
 	var loggedTypeFailures = {};
@@ -10717,7 +11021,7 @@
 	
 	        if (process.env.NODE_ENV !== 'production') {
 	          if (!ReactComponentTreeHook) {
-	            ReactComponentTreeHook = __webpack_require__(45);
+	            ReactComponentTreeHook = __webpack_require__(46);
 	          }
 	          if (debugID !== null) {
 	            componentStackInfo = ReactComponentTreeHook.getStackAddendumByID(debugID);
@@ -10736,7 +11040,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10764,7 +11068,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports) {
 
 	/**
@@ -10783,7 +11087,7 @@
 	module.exports = ReactPropTypesSecret;
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
@@ -10796,15 +11100,15 @@
 	
 	'use strict';
 	
-	var _require = __webpack_require__(37),
+	var _require = __webpack_require__(38),
 	    isValidElement = _require.isValidElement;
 	
-	var factory = __webpack_require__(50);
+	var factory = __webpack_require__(51);
 	
 	module.exports = factory(isValidElement);
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
@@ -10820,7 +11124,7 @@
 	// Therefore we re-export development-only version with all the PropTypes checks here.
 	// However if one is migrating to the `prop-types` npm library, they will go through the
 	// `index.js` entry point, and it will branch depending on the environment.
-	var factory = __webpack_require__(51);
+	var factory = __webpack_require__(52);
 	module.exports = function(isValidElement) {
 	  // It is still allowed in 15.5.
 	  var throwOnDirectAccess = false;
@@ -10829,7 +11133,7 @@
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10841,13 +11145,13 @@
 	
 	'use strict';
 	
-	var emptyFunction = __webpack_require__(30);
-	var invariant = __webpack_require__(33);
-	var warning = __webpack_require__(29);
-	var assign = __webpack_require__(25);
+	var emptyFunction = __webpack_require__(31);
+	var invariant = __webpack_require__(34);
+	var warning = __webpack_require__(30);
+	var assign = __webpack_require__(26);
 	
-	var ReactPropTypesSecret = __webpack_require__(52);
-	var checkPropTypes = __webpack_require__(53);
+	var ReactPropTypesSecret = __webpack_require__(53);
+	var checkPropTypes = __webpack_require__(54);
 	
 	module.exports = function(isValidElement, throwOnDirectAccess) {
 	  /* global Symbol */
@@ -11378,7 +11682,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports) {
 
 	/**
@@ -11396,7 +11700,7 @@
 
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -11409,9 +11713,9 @@
 	'use strict';
 	
 	if (process.env.NODE_ENV !== 'production') {
-	  var invariant = __webpack_require__(33);
-	  var warning = __webpack_require__(29);
-	  var ReactPropTypesSecret = __webpack_require__(52);
+	  var invariant = __webpack_require__(34);
+	  var warning = __webpack_require__(30);
+	  var ReactPropTypesSecret = __webpack_require__(53);
 	  var loggedTypeFailures = {};
 	}
 	
@@ -11462,7 +11766,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports) {
 
 	/**
@@ -11478,7 +11782,7 @@
 	module.exports = '15.6.2';
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
@@ -11491,19 +11795,19 @@
 	
 	'use strict';
 	
-	var _require = __webpack_require__(26),
+	var _require = __webpack_require__(27),
 	    Component = _require.Component;
 	
-	var _require2 = __webpack_require__(37),
+	var _require2 = __webpack_require__(38),
 	    isValidElement = _require2.isValidElement;
 	
-	var ReactNoopUpdateQueue = __webpack_require__(28);
-	var factory = __webpack_require__(56);
+	var ReactNoopUpdateQueue = __webpack_require__(29);
+	var factory = __webpack_require__(57);
 	
 	module.exports = factory(Component, isValidElement, ReactNoopUpdateQueue);
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -11516,13 +11820,13 @@
 	
 	'use strict';
 	
-	var _assign = __webpack_require__(25);
+	var _assign = __webpack_require__(26);
 	
-	var emptyObject = __webpack_require__(32);
-	var _invariant = __webpack_require__(33);
+	var emptyObject = __webpack_require__(33);
+	var _invariant = __webpack_require__(34);
 	
 	if (process.env.NODE_ENV !== 'production') {
-	  var warning = __webpack_require__(29);
+	  var warning = __webpack_require__(30);
 	}
 	
 	var MIXINS_KEY = 'mixins';
@@ -12380,7 +12684,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -12392,11 +12696,11 @@
 	 */
 	'use strict';
 	
-	var _prodInvariant = __webpack_require__(27);
+	var _prodInvariant = __webpack_require__(28);
 	
-	var ReactElement = __webpack_require__(37);
+	var ReactElement = __webpack_require__(38);
 	
-	var invariant = __webpack_require__(33);
+	var invariant = __webpack_require__(34);
 	
 	/**
 	 * Returns the first child in a collection of children and verifies that there
@@ -12421,7 +12725,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports) {
 
 	/* globals window, HTMLElement */
@@ -13227,7 +13531,7 @@
 
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -13252,17 +13556,17 @@
 	  // By explicitly using `prop-types` you are opting into new development behavior.
 	  // http://fb.me/prop-types-in-prod
 	  var throwOnDirectAccess = true;
-	  module.exports = __webpack_require__(51)(isValidElement, throwOnDirectAccess);
+	  module.exports = __webpack_require__(52)(isValidElement, throwOnDirectAccess);
 	} else {
 	  // By explicitly using `prop-types` you are opting into new production behavior.
 	  // http://fb.me/prop-types-in-prod
-	  module.exports = __webpack_require__(60)();
+	  module.exports = __webpack_require__(61)();
 	}
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
@@ -13274,9 +13578,9 @@
 	
 	'use strict';
 	
-	var emptyFunction = __webpack_require__(30);
-	var invariant = __webpack_require__(33);
-	var ReactPropTypesSecret = __webpack_require__(52);
+	var emptyFunction = __webpack_require__(31);
+	var invariant = __webpack_require__(34);
+	var ReactPropTypesSecret = __webpack_require__(53);
 	
 	module.exports = function() {
 	  function shim(props, propName, componentName, location, propFullName, secret) {

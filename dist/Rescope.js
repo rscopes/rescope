@@ -84,6 +84,8 @@ module.exports =
 	
 	var _scopable = __webpack_require__(9);
 	
+	__webpack_require__(10);
+	
 	var _index = __webpack_require__(8);
 	
 	var _index2 = _interopRequireDefault(_index);
@@ -92,38 +94,36 @@ module.exports =
 	
 	// will use as external the index in dist
 	
-	/*
-	 * Copyright (c)  2018 Wise Wild Web .
-	 *
-	 *  MIT License
-	 *
-	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	 *  of this software and associated documentation files (the "Software"), to deal
-	 *  in the Software without restriction, including without limitation the rights
-	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	 *  copies of the Software, and to permit persons to whom the Software is
-	 *  furnished to do so, subject to the following conditions:
-	 *
-	 *  The above copyright notice and this permission notice shall be included in all
-	 *  copies or substantial portions of the Software.
-	 *
-	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	 *  SOFTWARE.
-	 *
-	 * @author : Nathanael Braun
-	 * @contact : caipilabs@gmail.com
-	 */
+	_Scope2.default.Store = _Store2.default; /*
+	                                          * Copyright (c)  2018 Wise Wild Web .
+	                                          *
+	                                          *  MIT License
+	                                          *
+	                                          *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                          *  of this software and associated documentation files (the "Software"), to deal
+	                                          *  in the Software without restriction, including without limitation the rights
+	                                          *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                          *  copies of the Software, and to permit persons to whom the Software is
+	                                          *  furnished to do so, subject to the following conditions:
+	                                          *
+	                                          *  The above copyright notice and this permission notice shall be included in all
+	                                          *  copies or substantial portions of the Software.
+	                                          *
+	                                          *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                          *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                          *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                          *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                          *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                          *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                          *  SOFTWARE.
+	                                          *
+	                                          * @author : Nathanael Braun
+	                                          * @contact : caipilabs@gmail.com
+	                                          */
 	
-	_Scope2.default.Store = _Store2.default;
 	_index2.default.Scope = _Scope2.default;
 	_index2.default.Context = _Scope2.default;
 	_index2.default.Store = _Store2.default;
-	_index2.default.addScopableType = _scopable.addScopableType;
 	_index2.default.reScope = _scopable.reScope;
 	_index2.default.scopeToState = _scopable.scopeToState;
 	_index2.default.reScopeState = _scopable.scopeToState;
@@ -132,11 +132,12 @@ module.exports =
 	    return map;
 	};
 	
-	try {
-	    __webpack_require__(10);
-	} catch (e) {}
-	
 	exports.default = _index2.default;
+	
+	
+	try {
+	    __webpack_require__(11);
+	} catch (e) {}
 	module.exports = exports["default"];
 
 /***/ }),
@@ -2738,6 +2739,7 @@ module.exports =
 	    });
 	}
 	
+	//
 	function isScopableType(Comp, member, stateScope) {
 	
 	    for (var i = 0; i < scopables.length; i++) {
@@ -2843,6 +2845,151 @@ module.exports =
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _index = __webpack_require__(8);
+	
+	var _index2 = _interopRequireDefault(_index);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /*
+	                                                                                                                                                                                                     * Copyright (c)  2018 Wise Wild Web .
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  MIT License
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                                                                                                                                                                                     *  of this software and associated documentation files (the "Software"), to deal
+	                                                                                                                                                                                                     *  in the Software without restriction, including without limitation the rights
+	                                                                                                                                                                                                     *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                                                                                                                                                                                     *  copies of the Software, and to permit persons to whom the Software is
+	                                                                                                                                                                                                     *  furnished to do so, subject to the following conditions:
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  The above copyright notice and this permission notice shall be included in all
+	                                                                                                                                                                                                     *  copies or substantial portions of the Software.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                                                                                                                                                                                     *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                                                                                                                                                                                     *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                                                                                                                                                                                     *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                                                                                                                                                                                     *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                                                                                                                                                                                     *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                                                                                                                                                                                     *  SOFTWARE.
+	                                                                                                                                                                                                     *
+	                                                                                                                                                                                                     * @author : Nathanael Braun
+	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
+	                                                                                                                                                                                                     */
+	
+	
+	// will use as external the index in dist
+	
+	var SimpleObjectProto = {}.constructor;
+	_index2.default.decorators = {};
+	
+	var castTypesToAppliable = {};
+	var castTypes = {};
+	
+	_index2.default.decorator = function caster() {
+	    for (var _len = arguments.length, argz = Array(_len), _key = 0; _key < _len; _key++) {
+	        argz[_key] = arguments[_key];
+	    }
+	
+	    // are we decorating a member / without argz
+	    if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	        argz[2].value = caster(argz[0]);
+	        return argz[0];
+	    } else if (!is.fn(argz[0])) {
+	        return function () {
+	            for (var _len2 = arguments.length, argz2 = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	                argz2[_key2] = arguments[_key2];
+	            }
+	
+	            // are we decorating a member / with argz
+	            if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                argz2[2].value = addCaster(argz2[0], argz, true);
+	                return argz2[0];
+	            } else return addCaster.apply(undefined, [argz2[0]].concat(argz));
+	        };
+	    }
+	    return addCaster.apply(undefined, argz);
+	};
+	
+	function addCaster() {
+	    for (var _len3 = arguments.length, argz = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	        argz[_key3] = arguments[_key3];
+	    }
+	
+	    var cast = (!argz[0] || is.fn(argz[0])) && argz.shift();
+	    if (!cast) throw "ReScope cast : bad decorator function";
+	    var typeName = (!argz[0] || is.string(argz[0])) && argz.shift() || cast.name || cast.displayName,
+	        test = (!argz[0] || is.fn(argz[0])) && argz.shift(),
+	        onlyMembers = (!argz[0] || is.bool(argz[0])) && argz.shift(),
+	        prefix = (!argz[0] || is.string(argz[0])) && argz.shift() || "as",
+	        casterName = typeName && prefix + typeName[0].toUpperCase() + typeName.substr(1);
+	
+	    if (!castTypesToAppliable[typeName]) {
+	        castTypesToAppliable[typeName] = [];
+	
+	        _index2.default.decorators[casterName] = castTypes[typeName] = function doCast() {
+	            for (var _len4 = arguments.length, argz = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+	                argz[_key4] = arguments[_key4];
+	            }
+	
+	            // are we decorating a member / without argz
+	            if (argz[0] instanceof SimpleObjectProto && argz[2] instanceof SimpleObjectProto && argz[0].hasOwnProperty(argz[1])) {
+	                argz[2].value = applyCastableType(typeName, argz, true);
+	                return argz[0];
+	            } else if (!isCastableType(typeName, argz[0])) {
+	                return function () {
+	                    for (var _len5 = arguments.length, argz2 = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	                        argz2[_key5] = arguments[_key5];
+	                    }
+	
+	                    // are we decorating a member / with argz
+	                    if (argz2[0] instanceof SimpleObjectProto && argz2[2] instanceof SimpleObjectProto && argz2[0].hasOwnProperty(argz2[1])) {
+	                        argz2[2].value = applyCastableType(typeName, argz, true);
+	                        return argz2[0];
+	                    } else return doCast.apply(undefined, [argz2[0]].concat(argz));
+	                };
+	            }
+	            return applyCastableType(typeName, argz, false);
+	        };
+	    }
+	    castTypesToAppliable[typeName].unshift({
+	        typeName: typeName, test: test, onlyMembers: onlyMembers, cast: cast
+	    });
+	    return cast;
+	}
+	
+	function isCastableType(typeName, Comp, member, stateScope) {
+	    var castable = castTypesToAppliable[typeName];
+	    for (var i = 0; i < castable.length; i++) {
+	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return castable[i];
+	    }return false;
+	}
+	
+	function applyCastableType(typeName, Comp, argz, member, stateScope) {
+	
+	    var castable = castTypesToAppliable[typeName] || [];
+	    for (var i = 0; i < castable.length; i++) {
+	        var _castable$i;
+	
+	        if ((member === undefined || member == castable[i].member) && castable[i].test(Comp)) return (_castable$i = castable[i]).cast.apply(_castable$i, [Comp].concat(_toConsumableArray(argz)));
+	    }console.warn("reScope cast : Unknown type", typeName, Comp);
+	    return false;
+	}
+	
+	exports.default = _index2.default;
+	module.exports = exports["default"];
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 	module.exports = require("react-rescope");

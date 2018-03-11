@@ -43,6 +43,7 @@ function addScopableType( test, handle, member = false, stateScope = false ) {
     )
 }
 
+//
 function isScopableType( Comp, member, stateScope ) {
     
     for ( let i = 0; i < scopables.length; i++ )

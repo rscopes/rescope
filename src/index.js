@@ -24,7 +24,7 @@
  * @author : Nathanael Braun
  * @contact : caipilabs@gmail.com
  */
-
+console.warn("rescope index !!")
 // Common rescope modules int
 export default {
 };

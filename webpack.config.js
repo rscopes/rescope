@@ -46,7 +46,7 @@ module.exports    = [
             libraryTarget: 'commonjs2'
         },
         target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [nodeExternals(), './index'],
+        externals: [nodeExternals(), './index', 'rescope-spells', 'react-rescope'],
         resolve  : {
             extensions: [
                 "",
@@ -71,6 +71,7 @@ module.exports    = [
                         
                         ].map(require.resolve),
                         plugins       : [
+                            "babel-plugin-syntax-dynamic-import",
                             "babel-plugin-add-module-exports",
                             'babel-plugin-transform-decorators-legacy'
                         ].map(require.resolve)

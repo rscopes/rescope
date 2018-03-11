@@ -74,11 +74,15 @@ module.exports =
 	    value: true
 	});
 	
-	var _Scope = __webpack_require__(1);
+	var _index = __webpack_require__(1);
+	
+	var _index2 = _interopRequireDefault(_index);
+	
+	var _Scope = __webpack_require__(2);
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(6);
+	var _Store = __webpack_require__(7);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
@@ -86,62 +90,65 @@ module.exports =
 	
 	__webpack_require__(10);
 	
-	var _index = __webpack_require__(8);
-	
-	var _index2 = _interopRequireDefault(_index);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	// will use as external the index in dist
+	var $global = typeof window !== 'undefined' ? window : global; /*
+	                                                                * Copyright (c)  2018 Wise Wild Web .
+	                                                                *
+	                                                                *  MIT License
+	                                                                *
+	                                                                *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                                                *  of this software and associated documentation files (the "Software"), to deal
+	                                                                *  in the Software without restriction, including without limitation the rights
+	                                                                *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                                                *  copies of the Software, and to permit persons to whom the Software is
+	                                                                *  furnished to do so, subject to the following conditions:
+	                                                                *
+	                                                                *  The above copyright notice and this permission notice shall be included in all
+	                                                                *  copies or substantial portions of the Software.
+	                                                                *
+	                                                                *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                                                *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                                                *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                                                *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                                                *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                                                *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                                                *  SOFTWARE.
+	                                                                *
+	                                                                * @author : Nathanael Braun
+	                                                                * @contact : caipilabs@gmail.com
+	                                                                */
 	
-	_Scope2.default.Store = _Store2.default; /*
-	                                          * Copyright (c)  2018 Wise Wild Web .
-	                                          *
-	                                          *  MIT License
-	                                          *
-	                                          *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                                          *  of this software and associated documentation files (the "Software"), to deal
-	                                          *  in the Software without restriction, including without limitation the rights
-	                                          *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                                          *  copies of the Software, and to permit persons to whom the Software is
-	                                          *  furnished to do so, subject to the following conditions:
-	                                          *
-	                                          *  The above copyright notice and this permission notice shall be included in all
-	                                          *  copies or substantial portions of the Software.
-	                                          *
-	                                          *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                                          *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                                          *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                                          *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                                          *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                                          *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                                          *  SOFTWARE.
-	                                          *
-	                                          * @author : Nathanael Braun
-	                                          * @contact : caipilabs@gmail.com
-	                                          */
+	exports.default = $global.___rescope || _index2.default;
 	
-	_index2.default.Scope = _Scope2.default;
-	_index2.default.Context = _Scope2.default;
-	_index2.default.Store = _Store2.default;
-	_index2.default.reScope = _scopable.reScope;
-	_index2.default.scopeToState = _scopable.scopeToState;
-	_index2.default.reScopeState = _scopable.scopeToState;
-	_index2.default.scopeRef = function scopeRef(map, key) {
-	    map[key] = new _Scope2.default.scopeRef(map[key]);
-	    return map;
-	};
+	if ($global.___rescope) {
+	    console.warn("ReScope is defined multiple times !! \nCheck you're packaging");
+	} else {
 	
-	exports.default = _index2.default;
-	
-	
-	try {
-	    __webpack_require__(11);
-	} catch (e) {}
+	    $global.___rescope = _index2.default;
+	    _Scope2.default.Store = _Store2.default;
+	    _index2.default.Scope = _Scope2.default;
+	    _index2.default.Context = _Scope2.default;
+	    _index2.default.Store = _Store2.default;
+	    _index2.default.reScope = _scopable.reScope;
+	    _index2.default.scopeToState = _scopable.scopeToState;
+	    _index2.default.reScopeState = _scopable.scopeToState;
+	    _index2.default.scopeRef = function scopeRef(map, key) {
+	        map[key] = new _Scope2.default.scopeRef(map[key]);
+	        return map;
+	    };
+	}
 	module.exports = exports["default"];
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+	module.exports = require("./index");
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -179,7 +186,7 @@ module.exports =
 	                    * @contact : caipilabs@gmail.com
 	                    */
 	
-	var _dist = __webpack_require__(2);
+	var _dist = __webpack_require__(3);
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -191,9 +198,9 @@ module.exports =
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var is = __webpack_require__(3),
-	    EventEmitter = __webpack_require__(4),
-	    shortid = __webpack_require__(5),
+	var is = __webpack_require__(4),
+	    EventEmitter = __webpack_require__(5),
+	    shortid = __webpack_require__(6),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -1294,7 +1301,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1403,7 +1410,6 @@ module.exports =
 	  * @author : Nathanael Braun
 	  * @contact : caipilabs@gmail.com
 	  */
-	
 		// Common rescope modules int
 		exports.default = {};
 		module.exports = exports["default"];
@@ -1414,13 +1420,13 @@ module.exports =
 	//# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 	module.exports = require("is");
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1461,7 +1467,7 @@ module.exports =
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	var is = __webpack_require__(3);
+	var is = __webpack_require__(4);
 	
 	var Emitter = function () {
 	    function Emitter() {
@@ -1544,13 +1550,13 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 	module.exports = require("shortid");
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1610,11 +1616,11 @@ module.exports =
 	 * @todo : lot of optims...
 	 */
 	
-	var is = __webpack_require__(3),
-	    Scope = __webpack_require__(1),
-	    EventEmitter = __webpack_require__(4),
-	    TaskSequencer = __webpack_require__(7),
-	    shortid = __webpack_require__(5),
+	var is = __webpack_require__(4),
+	    Scope = __webpack_require__(2),
+	    EventEmitter = __webpack_require__(5),
+	    TaskSequencer = __webpack_require__(8),
+	    shortid = __webpack_require__(6),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
@@ -2527,7 +2533,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2536,11 +2542,11 @@ module.exports =
 	    value: true
 	});
 	
-	var _index = __webpack_require__(8);
+	var _index = __webpack_require__(1);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
-	var _is = __webpack_require__(3);
+	var _is = __webpack_require__(4);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
@@ -2672,12 +2678,6 @@ module.exports =
 	module.exports = exports["default"];
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-	module.exports = require("./index");
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2688,11 +2688,11 @@ module.exports =
 	});
 	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
 	
-	var _is = __webpack_require__(3);
+	var _is = __webpack_require__(4);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
-	var _index = __webpack_require__(8);
+	var _index = __webpack_require__(1);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -2853,7 +2853,7 @@ module.exports =
 	    value: true
 	});
 	
-	var _index = __webpack_require__(8);
+	var _index = __webpack_require__(1);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -2987,12 +2987,6 @@ module.exports =
 	
 	exports.default = _index2.default;
 	module.exports = exports["default"];
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-	module.exports = require("react-rescope");
 
 /***/ })
 /******/ ]);

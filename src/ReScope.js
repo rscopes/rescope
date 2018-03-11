@@ -25,30 +25,32 @@
  * @contact : caipilabs@gmail.com
  */
 
+import index from "./index";// will use as external the index in dist
+let $global = (typeof window !== 'undefined') ? window : global;
+
 import Scope from "./Scope";
 import Store from "./Store";
 import {addScopableType, reScope, scopeToState} from "./scopable";
 import "./decorators";
-import index from "./index";// will use as external the index in dist
 
-Scope.Store           = Store;
-index.Scope           = Scope;
-index.Context         = Scope;
-index.Store           = Store;
-index.reScope         = reScope;
-index.scopeToState    = scopeToState;
-index.reScopeState    = scopeToState;
-index.scopeRef        =
-    function scopeRef( map, key ) {
-        map[key] = new Scope.scopeRef(map[key]);
-        return map;
-    };
-
-
-export default index;
-
-
-try {
-    require("react-rescope");
-} catch ( e ) {
+export default $global.___rescope || index;
+if ( $global.___rescope ) {
+    console.warn("ReScope is defined multiple times !! \nCheck you're packaging")
+}
+else {
+    
+    $global.___rescope = index;
+    Scope.Store        = Store;
+    index.Scope        = Scope;
+    index.Context      = Scope;
+    index.Store        = Store;
+    index.reScope      = reScope;
+    index.scopeToState = scopeToState;
+    index.reScopeState = scopeToState;
+    index.scopeRef     =
+        function scopeRef( map, key ) {
+            map[key] = new Scope.scopeRef(map[key]);
+            return map;
+        };
+    
 }

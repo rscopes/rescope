@@ -119,7 +119,9 @@ module.exports =
 	                                                                */
 	
 	//import "./decorators";
-	
+	try {
+	    __webpack_require__(9);
+	} catch (e) {}
 	exports.default = $global.___rescope || _index2.default;
 	
 	if ($global.___rescope) {
@@ -670,7 +672,7 @@ module.exports =
 	            }, {})]);
 	
 	            this.mount(key);
-	            this.retainStores(Object.keys(lastRevs));
+	            this.retainStores(Object.keys(lastRevs), 'listeners');
 	
 	            if (setInitial && this._stable) {
 	                data = this.getUpdates(lastRevs);
@@ -698,7 +700,7 @@ module.exports =
 	                i = followers && followers.length;
 	            while (followers && i--) {
 	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && followers[i][2] == as) {
-	                    this.disposeStores(Object.keys(followers[i][3]));
+	                    this.disposeStores(Object.keys(followers[i][3]), 'listeners');
 	                    return followers.splice(i, 1);
 	                }
 	            }
@@ -1265,7 +1267,10 @@ module.exports =
 	                if (!is.fn(ctx[key])) {
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
-	            }Object.keys(this._._listening).forEach(function (id) {
+	            }[].concat(_toConsumableArray(this._.followers)).map(function (follower) {
+	                return _this20.unBind.apply(_this20, _toConsumableArray(follower));
+	            });
+	            Object.keys(this._._listening).forEach(function (id) {
 	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
 	            });
 	
@@ -1273,7 +1278,6 @@ module.exports =
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	
 	            if (!this._.isLocalId) delete openScopes[this._id];
-	            this._.followers.map(this.unBind.bind(this));
 	
 	            while (this._._mixedList.length) {
 	                this._._mixed[0].removeListener(this._._mixedList.shift());
@@ -2724,6 +2728,12 @@ module.exports =
 	exports.addScopableType = addScopableType;
 	exports.reScope = reScope;
 	exports.scopeToState = scopeToState;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	module.exports = require("react-rescope");
 
 /***/ })
 /******/ ]);

@@ -26,8 +26,6 @@
  */
 
 
-import {Store} from "../dist";
-
 var is                = require('is'),
     EventEmitter      = require('./Emitter'),
     shortid           = require('shortid')
@@ -76,7 +74,7 @@ class Scope extends EventEmitter {
                     ? _refs.push(sm[key].path + ':' + cpath)
                     : (sm[key] && sm[key] instanceof Function)
                     ? _refs.push(sm[key]().path + ':' + cpath)
-                    : (sm[key] && sm[key].prototype instanceof Store)
+                    : (sm[key] && sm[key].prototype instanceof Scope.Store)
                           ? _refs.push(sm[key].as(cpath))
                           : state[cpath] = sm[key]
                 //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
@@ -464,7 +462,7 @@ class Scope extends EventEmitter {
             ]);
         
         this.mount(key);
-        this.retainStores(Object.keys(lastRevs));
+        this.retainStores(Object.keys(lastRevs), 'listeners');
         
         if ( setInitial && this._stable ) {
             data = this.getUpdates(lastRevs);
@@ -492,7 +490,7 @@ class Scope extends EventEmitter {
         while ( followers && i-- )
             if ( followers[i][0] === obj && ('' + followers[i][1]) == ('' + key) &&
                 followers[i][2] == as ) {
-                this.disposeStores(Object.keys(followers[i][3]));
+                this.disposeStores(Object.keys(followers[i][3]), 'listeners');
                 return followers.splice(i, 1);
             }
     }
@@ -1006,6 +1004,7 @@ class Scope extends EventEmitter {
             if ( !is.fn(ctx[key]) ) {
                 !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
             }
+        [...this._.followers].map(follower => this.unBind(...follower));
         Object.keys(
             this._._listening
         ).forEach(
@@ -1017,7 +1016,6 @@ class Scope extends EventEmitter {
         
         if ( !this._.isLocalId )
             delete openScopes[this._id];
-        this._.followers.map(this.unBind.bind(this));
         
         while ( this._._mixedList.length ) {
             this._._mixed[0].removeListener(this._._mixedList.shift());

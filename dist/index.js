@@ -99,7 +99,6 @@ module.exports =
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	
 	// Common rescope modules int
 	exports.default = {};
 	module.exports = exports["default"];

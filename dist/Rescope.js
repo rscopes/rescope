@@ -74,7 +74,11 @@ module.exports =
 	    value: true
 	});
 	
-	var _Scope = __webpack_require__(1);
+	var _index = __webpack_require__(1);
+	
+	var _index2 = _interopRequireDefault(_index);
+	
+	var _Scope = __webpack_require__(2);
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
@@ -82,15 +86,93 @@ module.exports =
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(9);
-	
-	var _index = __webpack_require__(8);
-	
-	var _index2 = _interopRequireDefault(_index);
+	var _scopable = __webpack_require__(8);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	// will use as external the index in dist
+	var $global = typeof window !== 'undefined' ? window : global; /*
+	                                                                * Copyright (c)  2018 Wise Wild Web .
+	                                                                *
+	                                                                *  MIT License
+	                                                                *
+	                                                                *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	                                                                *  of this software and associated documentation files (the "Software"), to deal
+	                                                                *  in the Software without restriction, including without limitation the rights
+	                                                                *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	                                                                *  copies of the Software, and to permit persons to whom the Software is
+	                                                                *  furnished to do so, subject to the following conditions:
+	                                                                *
+	                                                                *  The above copyright notice and this permission notice shall be included in all
+	                                                                *  copies or substantial portions of the Software.
+	                                                                *
+	                                                                *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	                                                                *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	                                                                *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	                                                                *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	                                                                *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	                                                                *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	                                                                *  SOFTWARE.
+	                                                                *
+	                                                                * @author : Nathanael Braun
+	                                                                * @contact : caipilabs@gmail.com
+	                                                                */
+	
+	//import "./decorators";
+	try {
+	    __webpack_require__(9);
+	} catch (e) {}
+	exports.default = $global.___rescope || _index2.default;
+	
+	if ($global.___rescope) {
+	    console.warn("ReScope is defined multiple times !! \nCheck you're packaging");
+	} else {
+	
+	    $global.___rescope = _index2.default;
+	    _Scope2.default.Store = _Store2.default;
+	    _index2.default.Scope = _Scope2.default;
+	    _index2.default.Context = _Scope2.default;
+	    _index2.default.Store = _Store2.default;
+	    _index2.default.reScope = _scopable.reScope;
+	    _index2.default.scopeToState = _scopable.scopeToState;
+	    _index2.default.reScopeState = _scopable.scopeToState;
+	    _index2.default.addScopableType = _scopable.addScopableType;
+	    _index2.default.scopeRef = function scopeRef(map, key) {
+	        map[key] = new _Scope2.default.scopeRef(map[key]);
+	        return map;
+	    };
+	}
+	module.exports = exports["default"];
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+	module.exports = require("./index");
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _class, _temp;
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	/*
 	 * Copyright (c)  2018 Wise Wild Web .
@@ -118,77 +200,6 @@ module.exports =
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	
-	_Scope2.default.Store = _Store2.default;
-	_index2.default.Scope = _Scope2.default;
-	_index2.default.Context = _Scope2.default;
-	_index2.default.Store = _Store2.default;
-	_index2.default.addScopableType = _scopable.addScopableType;
-	_index2.default.reScope = _scopable.reScope;
-	_index2.default.scopeToState = _scopable.scopeToState;
-	_index2.default.reScopeState = _scopable.scopeToState;
-	_index2.default.scopeRef = function scopeRef(map, key) {
-	    map[key] = new _Scope2.default.scopeRef(map[key]);
-	    return map;
-	};
-	
-	try {
-	    __webpack_require__(10);
-	} catch (e) {}
-	
-	exports.default = _index2.default;
-	module.exports = exports["default"];
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _class, _temp; /*
-	                    * Copyright (c)  2018 Wise Wild Web .
-	                    *
-	                    *  MIT License
-	                    *
-	                    *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                    *  of this software and associated documentation files (the "Software"), to deal
-	                    *  in the Software without restriction, including without limitation the rights
-	                    *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                    *  copies of the Software, and to permit persons to whom the Software is
-	                    *  furnished to do so, subject to the following conditions:
-	                    *
-	                    *  The above copyright notice and this permission notice shall be included in all
-	                    *  copies or substantial portions of the Software.
-	                    *
-	                    *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                    *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                    *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                    *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                    *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                    *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                    *  SOFTWARE.
-	                    *
-	                    * @author : Nathanael Braun
-	                    * @contact : caipilabs@gmail.com
-	                    */
-	
-	var _dist = __webpack_require__(2);
-	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	var is = __webpack_require__(3),
 	    EventEmitter = __webpack_require__(4),
@@ -240,7 +251,7 @@ module.exports =
 	
 	            Object.keys(sm).forEach(function (key) {
 	                var cpath = path ? path + '.' + key : key;
-	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof _dist.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;
@@ -661,7 +672,7 @@ module.exports =
 	            }, {})]);
 	
 	            this.mount(key);
-	            this.retainStores(Object.keys(lastRevs));
+	            this.retainStores(Object.keys(lastRevs), 'listeners');
 	
 	            if (setInitial && this._stable) {
 	                data = this.getUpdates(lastRevs);
@@ -689,7 +700,7 @@ module.exports =
 	                i = followers && followers.length;
 	            while (followers && i--) {
 	                if (followers[i][0] === obj && '' + followers[i][1] == '' + key && followers[i][2] == as) {
-	                    this.disposeStores(Object.keys(followers[i][3]));
+	                    this.disposeStores(Object.keys(followers[i][3]), 'listeners');
 	                    return followers.splice(i, 1);
 	                }
 	            }
@@ -1256,7 +1267,10 @@ module.exports =
 	                if (!is.fn(ctx[key])) {
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
-	            }Object.keys(this._._listening).forEach(function (id) {
+	            }[].concat(_toConsumableArray(this._.followers)).map(function (follower) {
+	                return _this20.unBind.apply(_this20, _toConsumableArray(follower));
+	            });
+	            Object.keys(this._._listening).forEach(function (id) {
 	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
 	            });
 	
@@ -1264,7 +1278,6 @@ module.exports =
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	
 	            if (!this._.isLocalId) delete openScopes[this._id];
-	            this._.followers.map(this.unBind.bind(this));
 	
 	            while (this._._mixedList.length) {
 	                this._._mixed[0].removeListener(this._._mixedList.shift());
@@ -1291,126 +1304,6 @@ module.exports =
 	}, _class.scopes = openScopes, _temp);
 	exports.default = Scope;
 	module.exports = exports['default'];
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	
-	/*!
-	 * MIT License
-	 * 
-	 * Copyright (c) 2018 Wise Wild Web
-	 * 
-	 * Permission is hereby granted, free of charge, to any person obtaining a copy
-	 * of this software and associated documentation files (the "Software"), to deal
-	 * in the Software without restriction, including without limitation the rights
-	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	 * copies of the Software, and to permit persons to whom the Software is
-	 * furnished to do so, subject to the following conditions:
-	 * 
-	 * The above copyright notice and this permission notice shall be included in all
-	 * copies or substantial portions of the Software.
-	 * 
-	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	 * SOFTWARE.
-	 */
-	module.exports =
-	/******/function (modules) {
-		// webpackBootstrap
-		/******/ // The module cache
-		/******/var installedModules = {};
-		/******/
-		/******/ // The require function
-		/******/function __webpack_require__(moduleId) {
-			/******/
-			/******/ // Check if module is in cache
-			/******/if (installedModules[moduleId])
-				/******/return installedModules[moduleId].exports;
-			/******/
-			/******/ // Create a new module (and put it into the cache)
-			/******/var module = installedModules[moduleId] = {
-				/******/exports: {},
-				/******/id: moduleId,
-				/******/loaded: false
-				/******/ };
-			/******/
-			/******/ // Execute the module function
-			/******/modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-			/******/
-			/******/ // Flag the module as loaded
-			/******/module.loaded = true;
-			/******/
-			/******/ // Return the exports of the module
-			/******/return module.exports;
-			/******/
-		}
-		/******/
-		/******/
-		/******/ // expose the modules object (__webpack_modules__)
-		/******/__webpack_require__.m = modules;
-		/******/
-		/******/ // expose the module cache
-		/******/__webpack_require__.c = installedModules;
-		/******/
-		/******/ // __webpack_public_path__
-		/******/__webpack_require__.p = "/";
-		/******/
-		/******/ // Load entry module and return exports
-		/******/return __webpack_require__(0);
-		/******/
-	}(
-	/************************************************************************/
-	/******/[
-	/* 0 */
-	/***/function (module, exports) {
-	
-		"use strict";
-	
-		Object.defineProperty(exports, "__esModule", {
-			value: true
-		});
-		/*
-	  * Copyright (c)  2018 Wise Wild Web .
-	  *
-	  *  MIT License
-	  *
-	  *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	  *  of this software and associated documentation files (the "Software"), to deal
-	  *  in the Software without restriction, including without limitation the rights
-	  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	  *  copies of the Software, and to permit persons to whom the Software is
-	  *  furnished to do so, subject to the following conditions:
-	  *
-	  *  The above copyright notice and this permission notice shall be included in all
-	  *  copies or substantial portions of the Software.
-	  *
-	  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	  *  SOFTWARE.
-	  *
-	  * @author : Nathanael Braun
-	  * @contact : caipilabs@gmail.com
-	  */
-	
-		// Common rescope modules int
-		exports.default = {};
-		module.exports = exports["default"];
-	
-		/***/
-	}]
-	/******/);
-	//# sourceMappingURL=index.js.map
 
 /***/ }),
 /* 3 */
@@ -1610,7 +1503,7 @@ module.exports =
 	 */
 	
 	var is = __webpack_require__(3),
-	    Scope = __webpack_require__(1),
+	    Scope = __webpack_require__(2),
 	    EventEmitter = __webpack_require__(4),
 	    TaskSequencer = __webpack_require__(7),
 	    shortid = __webpack_require__(5),
@@ -2535,7 +2428,7 @@ module.exports =
 	    value: true
 	});
 	
-	var _index = __webpack_require__(8);
+	var _index = __webpack_require__(1);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -2672,12 +2565,6 @@ module.exports =
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports) {
-
-	module.exports = require("./index");
-
-/***/ }),
-/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2691,7 +2578,7 @@ module.exports =
 	
 	var _is2 = _interopRequireDefault(_is);
 	
-	var _index = __webpack_require__(8);
+	var _index = __webpack_require__(1);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -2738,6 +2625,7 @@ module.exports =
 	    });
 	}
 	
+	//
 	function isScopableType(Comp, member, stateScope) {
 	
 	    for (var i = 0; i < scopables.length; i++) {
@@ -2842,7 +2730,7 @@ module.exports =
 	exports.scopeToState = scopeToState;
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 	module.exports = require("react-rescope");

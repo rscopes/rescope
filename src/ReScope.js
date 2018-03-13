@@ -31,13 +31,7 @@ let $global = (typeof window !== 'undefined') ? window : global;
 import Scope from "./Scope";
 import Store from "./Store";
 import {addScopableType, reScope, scopeToState} from "./scopable";
-//import "./decorators";
-try {
-    require('react-rescope')
-} catch ( e ) {
 
-}
-export default $global.___rescope || index;
 if ( $global.___rescope ) {
     console.warn("ReScope is defined multiple times !! \nCheck you're packaging")
 }
@@ -59,3 +53,4 @@ else {
         };
     
 }
+export default $global.___rescope || index;

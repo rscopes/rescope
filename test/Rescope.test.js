@@ -246,7 +246,9 @@ describe('Rescope', function () {
                     if ( _data.local_5.remapTest == 'ok' ) done();
                     else done(new Error("fail"));
                 },
-                "local_5"
+                "local_5",
+                null,
+                false // no intial value
             )
             .dispatch("makeItOk", 'ok')
     });

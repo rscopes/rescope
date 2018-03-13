@@ -271,7 +271,7 @@ class Store extends EventEmitter {
             this._require.push(...cfg.require);
         
         this._followers = [];
-        
+        this._changesSW = {};
         if ( apply )
             this.apply = apply;
         
@@ -291,16 +291,17 @@ class Store extends EventEmitter {
             
             
             if ( initialState || this._use.length ) {// sync apply
-                this.state = {
+                this._changesSW = {
                     ...(initialState || {}),
                     ...scope.map(this, this._use)
                 };
-                if ( this.shouldApply(this.state) && this.data === undefined ) {
-                    this.data = this.apply(this.data, this.state, this.state);
-                    applied   = true;
+                this.state      = {};
+                if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
+                    this.data       = this.apply(this.data, this._changesSW, this._changesSW);
+                    applied         = true;
+                    this.state      = this._changesSW;
+                    this._changesSW = {};
                 }
-                else
-                    this._changesSW = { ...this.state }
             }
         }
         if ( (this.data !== undefined || applied) && !this.__locks.all ) {
@@ -351,6 +352,14 @@ class Store extends EventEmitter {
         //console.groupEnd();
         
         this.data = v;
+    }
+    
+    /**
+     * Get the incoming state ( for immediate state relative actions )
+     * @returns {{}|*}
+     */
+    get nextState() {
+        return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
     
     /**

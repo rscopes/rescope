@@ -118,12 +118,6 @@ module.exports =
 	                                                                * @contact : caipilabs@gmail.com
 	                                                                */
 	
-	//import "./decorators";
-	try {
-	    __webpack_require__(9);
-	} catch (e) {}
-	exports.default = $global.___rescope || _index2.default;
-	
 	if ($global.___rescope) {
 	    console.warn("ReScope is defined multiple times !! \nCheck you're packaging");
 	} else {
@@ -142,6 +136,7 @@ module.exports =
 	        return map;
 	    };
 	}
+	exports.default = $global.___rescope || _index2.default;
 	module.exports = exports["default"];
 
 /***/ }),
@@ -1729,7 +1724,7 @@ module.exports =
 	        if (cfg.require) (_this$_require2 = _this._require).push.apply(_this$_require2, _toConsumableArray(cfg.require));
 	
 	        _this._followers = [];
-	
+	        _this._changesSW = {};
 	        if (apply) _this.apply = apply;
 	
 	        if (cfg.snapshot && cfg.snapshot[_this.scopeObj._id + '/' + name]) {
@@ -1744,11 +1739,14 @@ module.exports =
 	
 	            if (initialState || _this._use.length) {
 	                // sync apply
-	                _this.state = _extends({}, initialState || {}, scope.map(_this, _this._use));
-	                if (_this.shouldApply(_this.state) && _this.data === undefined) {
-	                    _this.data = _this.apply(_this.data, _this.state, _this.state);
+	                _this._changesSW = _extends({}, initialState || {}, scope.map(_this, _this._use));
+	                _this.state = {};
+	                if (_this.shouldApply(_this._changesSW) && _this.data === undefined) {
+	                    _this.data = _this.apply(_this.data, _this._changesSW, _this._changesSW);
 	                    applied = true;
-	                } else _this._changesSW = _extends({}, _this.state);
+	                    _this.state = _this._changesSW;
+	                    _this._changesSW = {};
+	                }
 	            }
 	        }
 	        if ((_this.data !== undefined || applied) && !_this.__locks.all) {
@@ -2411,6 +2409,17 @@ module.exports =
 	
 	            this.data = v;
 	        }
+	
+	        /**
+	         * Get the incoming state ( for immediate state relative actions )
+	         * @returns {{}|*}
+	         */
+	
+	    }, {
+	        key: 'nextState',
+	        get: function get() {
+	            return this._changesSW && _extends({}, this.state, this._changesSW) || this.state;
+	        }
 	    }]);
 	
 	    return Store;
@@ -2728,12 +2737,6 @@ module.exports =
 	exports.addScopableType = addScopableType;
 	exports.reScope = reScope;
 	exports.scopeToState = scopeToState;
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-	module.exports = require("react-rescope");
 
 /***/ })
 /******/ ]);

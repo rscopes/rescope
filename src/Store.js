@@ -570,7 +570,7 @@ class Store extends EventEmitter {
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
             if ( !this.state
-                || changes.hasOwnProperty(k)
+                || changes.hasOwnProperty(k)// todo
                 && (
                     pState[k] !== changes[k]
                 ) || pState.hasOwnProperty(k)

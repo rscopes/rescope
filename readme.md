@@ -21,18 +21,12 @@ and maintains the corresponding data accordingly.
 
 Stores can manage part of, or the entire App state's determining values,<br>
 maintain intermediate, possibly asynchronous resources,<br>
-And/or finals or ready-to-render data.
-
-When a component injects one of the stores available in its Scope, <br>
-ReScope instantiates synchronously (if possible) theirs dependencies. <br>
-
-Next, when a store receives a state mutation, <br>
-the resulting data update is propagated to the stores and listening components.
+and/or finals or ready-to-render data.
 
 ### Scopes ?
 
 To deal with complex architectures the Scopes allow :
-- normalized contexts for modules & views
+- normalized scopes for modules & views
 - to inherit & mix other Scopes,
 - automatic & chained destroy
 - ...
@@ -48,7 +42,7 @@ To deal with complex architectures the Scopes allow :
 - Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
 - Inheritable ES6 class
-- Easy, partial or complete scopes serialization
+- Easy, partial or complete scopes serialization / restoration
 - Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
 - Lazy stores instantiation & active stores auto destroy
 - Library agnostic

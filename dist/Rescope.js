@@ -1256,13 +1256,13 @@ module.exports =
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
-	            this.dead = true;
 	            this.emit("destroy", this);
 	            for (var key in ctx) {
 	                if (!is.fn(ctx[key])) {
 	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
 	                }
-	            }[].concat(_toConsumableArray(this._.followers)).map(function (follower) {
+	            }this.dead = true;
+	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
 	                return _this20.unBind.apply(_this20, _toConsumableArray(follower));
 	            });
 	            Object.keys(this._._listening).forEach(function (id) {
@@ -1999,7 +1999,8 @@ module.exports =
 	                change,
 	                changes = this._changesSW = this._changesSW || {};
 	            for (var k in pState) {
-	                if (!this.state || changes.hasOwnProperty(k) && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
+	                if (!this.state || changes.hasOwnProperty(k) // todo
+	                && pState[k] !== changes[k] || pState.hasOwnProperty(k) && (pState[k] !== this.state[k] || this.state[k] && pState[k] && pState[k]._rev != this._revs[k] // rev/hash update
 	                )) {
 	                    change = true;
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;

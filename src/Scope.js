@@ -998,12 +998,12 @@ class Scope extends EventEmitter {
     destroy() {
         let ctx   = this._._scope;
         //console.warn("destroy", this._id);
-        this.dead = true;
         this.emit("destroy", this);
         for ( let key in ctx )
             if ( !is.fn(ctx[key]) ) {
                 !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
             }
+        this.dead = true;
         [...this._.followers].map(follower => this.unBind(...follower));
         Object.keys(
             this._._listening

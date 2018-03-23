@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "3.6.3",
+  "version": "3.6.4",
   "description": "Flexible & scopable state management system with flux architecture & multiples store components",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/ReScope.js",

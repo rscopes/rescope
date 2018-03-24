@@ -871,15 +871,23 @@ module.exports =
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var withChilds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-	            var withParents = arguments[1];
-	            var withMixed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-	            var norefs = arguments[3];
-	            var output = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	            var _this10 = this;
+	
+	            var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+	                alias = _ref3.alias,
+	                _ref3$withChilds = _ref3.withChilds,
+	                withChilds = _ref3$withChilds === undefined ? true : _ref3$withChilds,
+	                withParents = _ref3.withParents,
+	                _ref3$withMixed = _ref3.withMixed,
+	                withMixed = _ref3$withMixed === undefined ? true : _ref3$withMixed,
+	                norefs = _ref3.norefs;
+	
+	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
 	            var ctx = this._._scope;
 	            if (output[this._id]) return;
 	
+	            //@todo : better serialize method
 	            output[this._id] = {};
 	
 	            Object.keys(ctx).forEach(function (id) {
@@ -888,16 +896,36 @@ module.exports =
 	                ctx[id].serialize(!norefs, output);
 	            });
 	
-	            withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+	            withParents && this.parent && this.parent.serialize({
+	                withChild: false,
+	                withParents: true,
+	                withMixed: withMixed,
+	                norefs: norefs
+	            }, output);
 	
 	            withChilds && this._.childScopes.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, norefs, output);
+	                !ctx._.isLocalId && ctx.serialize({
+	                    withChild: true,
+	                    withParents: false,
+	                    withMixed: withMixed,
+	                    norefs: norefs
+	                }, output);
 	            });
 	
 	            withMixed && this._._mixed.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, norefs, output);
+	                !ctx._.isLocalId && ctx.serialize({
+	                    withChild: false,
+	                    withParents: false,
+	                    withMixed: withMixed,
+	                    norefs: norefs
+	                }, output);
 	            });
 	
+	            if (alias) {
+	                output = Object.keys(output).reduce(function (h, k) {
+	                    return h[k.replace(_this10._id, alias)] = output[k], h;
+	                }, {});
+	            }
 	            return output;
 	        }
 	
@@ -910,18 +938,18 @@ module.exports =
 	    }, {
 	        key: 'restore',
 	        value: function restore(snapshot, force) {
-	            var _this10 = this;
+	            var _this11 = this;
 	
 	            var ctx = this._._scope;
 	
 	            snapshot[this._id] && Object.keys(ctx).forEach(function (name) {
-	                var snap = snapshot[_this10._id + '/' + name];
+	                var snap = snapshot[_this11._id + '/' + name];
 	
 	                if (snap) {
 	
 	                    if (force && !is.fn(ctx[name])) ctx[name].destroy();
 	
-	                    _this10.mount(name, snapshot); // quiet
+	                    _this11.mount(name, snapshot); // quiet
 	                }
 	            });
 	
@@ -964,7 +992,7 @@ module.exports =
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action) {
-	            var _this11 = this,
+	            var _this12 = this,
 	                _parent2;
 	
 	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -979,7 +1007,7 @@ module.exports =
 	            Object.keys(this._._scope).forEach(function (id) {
 	                var _$_scope$id;
 	
-	                if (!is.fn(_this11._._scope[id])) (_$_scope$id = _this11._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
+	                if (!is.fn(_this12._._scope[id])) (_$_scope$id = _this12._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 	            });
 	
 	            if (bActs && bActs.test(action)) return;
@@ -1000,11 +1028,11 @@ module.exports =
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this12 = this;
+	            var _this13 = this;
 	
 	            if (this._stable) return cb(null, this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this12.data);
+	                return cb(null, _this13.data);
 	            });
 	        }
 	
@@ -1018,13 +1046,13 @@ module.exports =
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this13 = this;
+	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this13.stores[id] && _this13.stores[id].retain && _this13.stores[id].retain(reason);
+	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
 	            });
 	        }
 	
@@ -1038,13 +1066,13 @@ module.exports =
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this14 = this;
+	            var _this15 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].dispose && _this14.stores[id].dispose(reason);
+	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -1074,7 +1102,7 @@ module.exports =
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this15 = this;
+	            var _this16 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -1088,15 +1116,15 @@ module.exports =
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this15._.stabilizerTM = null;
-	                    if (_this15.__locks.all) return;
+	                    _this16._.stabilizerTM = null;
+	                    if (_this16.__locks.all) return;
 	
-	                    _this15._.propagTM && clearTimeout(_this15._.propagTM);
+	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
 	
-	                    _this15._stable = true;
-	                    _this15.emit("stable", _this15);
+	                    _this16._stable = true;
+	                    _this16.emit("stable", _this16);
 	
-	                    !_this15.dead && _this15._propag(); // stability can induce destroy
+	                    !_this16.dead && _this16._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -1108,27 +1136,27 @@ module.exports =
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this16 = this;
+	            var _this17 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this16._.propagTM = null;
-	                _this16._propag();
+	                _this17._.propagTM = null;
+	                _this17._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this17 = this;
+	            var _this18 = this;
 	
-	            if (this._.followers.length) this._.followers.forEach(function (_ref3) {
-	                var obj = _ref3[0],
-	                    key = _ref3[1],
-	                    as = _ref3[2],
-	                    lastRevs = _ref3[3],
-	                    remaps = _ref3[3];
+	            if (this._.followers.length) this._.followers.forEach(function (_ref4) {
+	                var obj = _ref4[0],
+	                    key = _ref4[1],
+	                    as = _ref4[2],
+	                    lastRevs = _ref4[3],
+	                    remaps = _ref4[3];
 	
-	                var data = _this17.getUpdates(lastRevs);
+	                var data = _this18.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1155,31 +1183,31 @@ module.exports =
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this18 = this;
+	            var _this19 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this18._.unStableChilds--;
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this18._.unStableChilds++;
-	                    if (1 == _this18._.unStableChilds) _this18.emit("unstableTree", _this18);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this18._.unStableChilds--;
-	                    if (!ctx.isStable()) _this18._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
+	                    if (!ctx.isStable()) _this19._.unStableChilds--;
 	
-	                    if (!_this18._.unStableChilds) _this18.emit("stableTree", _this18);
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1216,7 +1244,7 @@ module.exports =
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this19 = this;
+	            var _this20 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1234,7 +1262,7 @@ module.exports =
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
 	                        //this.then(s => {
-	                        !_this19.__retains.all && _this19.destroy();
+	                        !_this20.__retains.all && _this20.destroy();
 	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
@@ -1252,7 +1280,7 @@ module.exports =
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this20 = this;
+	            var _this21 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1263,10 +1291,10 @@ module.exports =
 	                }
 	            }this.dead = true;
 	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
-	                return _this20.unBind.apply(_this20, _toConsumableArray(follower));
+	                return _this21.unBind.apply(_this21, _toConsumableArray(follower));
 	            });
 	            Object.keys(this._._listening).forEach(function (id) {
-	                return _this20._._scope[id].removeListener(_this20._._listening[id]);
+	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);

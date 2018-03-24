@@ -650,11 +650,12 @@ class Scope extends EventEmitter {
      * @param output
      * @returns {{}}
      */
-    serialize( withChilds = true, withParents, withMixed = true, norefs, output = {} ) {
+    serialize( { alias, withChilds = true, withParents, withMixed = true, norefs } = {}, output = {} ) {
         let ctx = this._._scope;
         if ( output[this._id] )
             return;
         
+        //@todo : better serialize method
         output[this._id] = {};
         
         Object.keys(ctx).forEach(
@@ -666,20 +667,42 @@ class Scope extends EventEmitter {
             }
         )
         
-        withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
+        withParents && this.parent && this.parent.serialize({
+                                                                withChild  : false,
+                                                                withParents: true,
+                                                                withMixed,
+                                                                norefs
+                                                            }, output);
         
         withChilds && this._.childScopes.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, norefs, output);
+                !ctx._.isLocalId && ctx.serialize({
+                                                      withChild  : true,
+                                                      withParents: false,
+                                                      withMixed,
+                                                      norefs
+                                                  }, output);
             }
         );
         
         withMixed && this._._mixed.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, norefs, output);
+                !ctx._.isLocalId && ctx.serialize({
+                                                      withChild  : false,
+                                                      withParents: false,
+                                                      withMixed,
+                                                      norefs
+                                                  }, output);
             }
         );
         
+        if ( alias ) {
+            output = Object.keys(output)
+                           .reduce(
+                               ( h, k ) => (h[k.replace(this._id, alias)] = output[k], h),
+                               {}
+                           )
+        }
         return output;
     }
     
@@ -996,7 +1019,7 @@ class Scope extends EventEmitter {
      * order destroy of local stores
      */
     destroy() {
-        let ctx   = this._._scope;
+        let ctx = this._._scope;
         //console.warn("destroy", this._id);
         this.emit("destroy", this);
         for ( let key in ctx )

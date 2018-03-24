@@ -555,7 +555,7 @@
 	            this.relink(storesMap, this, false, false);
 	            Object.keys(storesMap).forEach(function (id) {
 	                if (storesMap[id].singleton || is.fn(storesMap[id]) && (state[id] || data[id])) {
-	                    _this5._mount(id, state[id], data[id]);
+	                    _this5._mount(id, undefined, state[id], data[id]);
 	                } else if (state[id] || data[id]) {
 	                    if (data[id]) {
 	                        if (state[id]) _this5.stores[id].state = state[id];
@@ -611,7 +611,7 @@
 	                        return _this6._._scope[id] && _this6._._scope[id].state;
 	                    },
 	                    set: function set(v) {
-	                        return _this6._mount(id, null, v);
+	                        return _this6._mount(id, undefined, v);
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.data.prototype, id, {
@@ -900,11 +900,11 @@
 	            withParents && this.parent && this.parent.serialize(false, true, withMixed, output);
 	
 	            withChilds && this._.childScopes.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
+	                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, norefs, output);
 	            });
 	
 	            withMixed && this._._mixed.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
+	                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, norefs, output);
 	            });
 	
 	            return output;

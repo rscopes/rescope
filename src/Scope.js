@@ -329,7 +329,7 @@ class Scope extends EventEmitter {
         Object.keys(storesMap).forEach(
             id => {
                 if ( storesMap[id].singleton || (is.fn(storesMap[id]) && (state[id] || data[id])) ) {
-                    this._mount(id, state[id], data[id])
+                    this._mount(id, undefined, state[id], data[id])
                 }
                 else if ( state[id] || data[id] ) {
                     if ( data[id] ) {
@@ -391,7 +391,7 @@ class Scope extends EventEmitter {
                           id,
                           {
                               get: () => (this._._scope[id] && this._._scope[id].state),
-                              set: ( v ) => (this._mount(id, null, v))
+                              set: ( v ) => (this._mount(id, undefined, v))
                           }
                       );
                       Object.defineProperty(
@@ -670,13 +670,13 @@ class Scope extends EventEmitter {
         
         withChilds && this._.childScopes.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, output);
+                !ctx._.isLocalId && ctx.serialize(true, false, withMixed, norefs, output);
             }
         );
         
         withMixed && this._._mixed.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, output);
+                !ctx._.isLocalId && ctx.serialize(false, false, withMixed, norefs, output);
             }
         );
         

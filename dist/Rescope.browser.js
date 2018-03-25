@@ -251,11 +251,12 @@
 	
 	            var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 	
-	            var path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+	            var actions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+	            var path = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";
 	
 	            Object.keys(sm).forEach(function (key) {
 	                var cpath = path ? path + '.' + key : key;
-	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? _refs.push(sm[key]().path + ':' + cpath) : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? actions[key] = sm[key] : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;

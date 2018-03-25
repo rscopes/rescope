@@ -66,14 +66,14 @@ class Scope extends EventEmitter {
      * @param _ref
      * @returns {{storeId, path, alias: *, ref: *}}
      */
-    static stateMapToRefList( sm, state = {}, _refs = [], path = "" ) {
+    static stateMapToRefList( sm, state = {}, _refs = [], actions = {}, path = "" ) {
         Object.keys(sm).forEach(
             key => {
                 let cpath = path ? path + '.' + key : key;
                 sm[key] instanceof Scope.scopeRef
                     ? _refs.push(sm[key].path + ':' + cpath)
                     : (sm[key] && sm[key] instanceof Function)
-                    ? _refs.push(sm[key]().path + ':' + cpath)
+                    ? actions[key] = sm[key]
                     : (sm[key] && sm[key].prototype instanceof Scope.Store)
                           ? _refs.push(sm[key].as(cpath))
                           : state[cpath] = sm[key]

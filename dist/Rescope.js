@@ -247,7 +247,7 @@ module.exports =
 	
 	            Object.keys(sm).forEach(function (key) {
 	                var cpath = path ? path + '.' + key : key;
-	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : sm[key] && sm[key] instanceof Function ? actions[key] = sm[key] : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
+	                sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? actions[key] = sm[key] : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : state[cpath] = sm[key];
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;

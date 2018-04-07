@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "3.6.8",
+  "version": "3.6.7",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "dist/ReScope.js",
@@ -11,10 +11,6 @@
     "buildStaging": "webpack",
     "test": "mocha --compilers js:babel-core/register ./test/*.test.js -b",
     "dev": "webpack -w"
-  },
-  "optionalDependencies": {
-    "rescope-spells": "^0.0.1",
-    "react-rescope": "^1.1.1"
   },
   "dependencies": {
     "is": "^3.2.1",

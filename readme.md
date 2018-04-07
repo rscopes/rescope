@@ -31,7 +31,7 @@ To deal with complex architectures & data processing the Scopes allow :
 - ...
 
 ## What else ?
-<br>
+
 - React "high order components" factories decorators ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
 - Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
 - Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores µState control,

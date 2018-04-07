@@ -80,18 +80,21 @@ The app state could be mutated using different methods depending the needs.
 ### Using actions
 
 Actions could be dispatched from scopes or directly on the stores.
-* dispatching actions on scopes will trigger store's actions starting from the top parent store
+
+\* They are only called if theirs stores are active.
 
 ```jsx
 class AppState extend Store{
         static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
         static actions = {
             activateSalt(arg){// binded on the store instance
+
                 // return some state updates
                 return {some:'mutations'};
                 // or
                 return; // to not change the state
                 // wait, release, setState & push remain callable
+                // this.nextState contain the incoming state
             }
         }
     }

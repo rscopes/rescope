@@ -266,14 +266,23 @@
 	         * Init a ReScope scope
 	         *
 	         * @param storesMap {Object} Object with the initial stores definition / instances
-	         * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
-	         * @param parent
-	         * @param state
-	         * @param data
-	         * @param name
-	         * @param defaultMaxListeners
-	         * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-	         * @param autoDestroy  {bool} will trigger retain & dispose after start
+	         * @param config {Object} Scope config
+	         * {
+	         *  parent {scope} @optional parent scope
+	         *
+	         *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
+	         *  key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'::'+key)
+	         *  incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
+	         *
+	         *  state {Object} @optional initial state by store alias
+	         *  data {Object} @optional initial data by store alias
+	         *
+	         *  rootEmitter {bool} @optional true to not being destabilized by parent
+	         *  boundedActions {array | regexp} @optional list or regexp of actions not propagated to the parent
+	         *
+	         *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	         *  autoDestroy  {bool} will trigger retain & dispose after start
+	         *  }
 	         * @returns {Scope}
 	         */
 	
@@ -286,10 +295,8 @@
 	            id = _ref2.id,
 	            state = _ref2.state,
 	            data = _ref2.data,
-	            name = _ref2.name,
 	            _ref2$incrementId = _ref2.incrementId,
 	            incrementId = _ref2$incrementId === undefined ? !!key : _ref2$incrementId,
-	            defaultMaxListeners = _ref2.defaultMaxListeners,
 	            persistenceTm = _ref2.persistenceTm,
 	            autoDestroy = _ref2.autoDestroy,
 	            rootEmitter = _ref2.rootEmitter,
@@ -300,8 +307,6 @@
 	        var _this = _possibleConstructorReturn(this, (Scope.__proto__ || Object.getPrototypeOf(Scope)).call(this));
 	
 	        var _ = {};
-	
-	        _.maxListeners = defaultMaxListeners || _this.constructor.defaultMaxListeners;
 	
 	        id = id || key && (parent && parent._id || '') + '::' + key;
 	
@@ -2657,9 +2662,9 @@
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
@@ -2698,12 +2703,6 @@
 	 * @contact : caipilabs@gmail.com
 	 */
 	
-	/**
-	 * Ultra scalable state-aware store
-	 *
-	 * @todo : lot of optims...
-	 */
-	
 	var is = __webpack_require__(3),
 	    Scope = __webpack_require__(2),
 	    EventEmitter = __webpack_require__(4),
@@ -2718,149 +2717,18 @@
 	var Store = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
 	
-	    _createClass(Store, null, [{
-	        key: 'as',
-	
-	
-	        /**
-	         * get a Builder-key pair for Store::map
-	         * @param {string} name
-	         * @returns {{store: Store, name: *}}
-	         */
-	        // overridable list of store that will allow push if updated
-	        value: function as(name) {
-	            return { store: this, name: name };
-	        }
-	
-	        /**
-	         * Map all named stores in {keys} to the {object}'s state
-	         * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
-	         * @static
-	         * @param object {Object} target state aware object (React.Component|Store|...)
-	         * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-	         */
-	        // default state
-	        /**
-	         * if retain goes to 0 :
-	         * false to not destroy,
-	         * 0 to sync auto destroy
-	         * Ms to autodestroy after tm ms if no retain has been called
-	         * @type {boolean|Int}
-	         */
-	        // overridable list of source stores
-	
-	    }, {
-	        key: 'map',
-	        value: function map(component, keys, scope, origin) {
-	            var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-	
-	            var targetRevs = component._revs || {};
-	            var targetScope = component.stores || (component.stores = {});
-	            var initialOutputs = {};
-	            keys = is.array(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
-	
-	            scope = scope || Store.staticScope;
-	
-	            keys = keys.filter(
-	            // @todo : use query refs
-	            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
-	            function (key) {
-	                var _component$_sources;
-	
-	                if (!key) {
-	                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
-	                    return false;
-	                }
-	                var name = void 0,
-	                    alias = void 0,
-	                    path = void 0,
-	                    store = void 0;
-	                if (key.store && key.name) {
-	                    alias = name = key.name;
-	                    store = key.store;
-	                } else if (is.fn(key)) {
-	                    name = alias = key.name || key.defaultName;
-	                    store = key;
-	                } else {
-	                    key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-	                    name = key[1];
-	                    path = key[2] && key[2].substr(1);
-	                    store = scope.stores[key[1]];
-	                    alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
-	                }
-	
-	                if (targetRevs[name]) return false; // ignore dbl uses for now
-	
-	                if (!store) {
-	                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (component.name || component) + ' !!', store);
-	                    return false;
-	                } else if (is.fn(store)) {
-	                    scope._mount(name);
-	                    scope.stores[name].bind(component, alias, setInitial, path);
-	                } else {
-	                    store.bind(component, alias, setInitial, path);
-	                }
-	
-	                // give initial store weight basing sources
-	                (_component$_sources = component._sources).push.apply(_component$_sources, _toConsumableArray(scope.stores[name]._sources));
-	
-	                targetRevs[alias] = targetRevs[alias] || true;
-	                !targetScope[name] && (targetScope[name] = scope.stores[name]);
-	                if (scope.stores[name].hasOwnProperty('data')) initialOutputs[name] = scope.data[name];
-	                return true;
-	            });
-	
-	            // ...
-	            var mixedCWUnmount,
-	                unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-	
-	            if (component.hasOwnProperty(unMountKey)) {
-	                mixedCWUnmount = component[unMountKey];
-	            }
-	
-	            component[unMountKey] = function () {
-	                delete component[unMountKey];
-	                if (mixedCWUnmount) component[unMountKey] = mixedCWUnmount;
-	
-	                keys.map(function (key) {
-	                    var name = void 0,
-	                        alias = void 0,
-	                        path = void 0,
-	                        store = void 0;
-	                    if (key.store && key.name) {
-	                        alias = name = key.name;
-	                        store = key.store;
-	                    } else if (is.fn(key)) {
-	                        name = alias = key.name || key.defaultName;
-	                        store = scope.stores[name];
-	                    } else {
-	                        key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-	                        name = key[1];
-	                        path = key[2] && key[2].substr(1);
-	                        store = scope.stores[key[1]];
-	                        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
-	                    }
-	
-	                    store && !is.fn(store) && store.unBind(component, alias, path);
-	                });
-	                return component[unMountKey] && component[unMountKey].apply(component, arguments);
-	            };
-	
-	            return initialOutputs;
-	        }
-	
-	        /**
-	         * Constructor, will build a rescope store
-	         *
-	         * (scope, {require,use,apply,state, data})
-	         * (scope)
-	         *
-	         * @param scope {object} scope where to find the other stores (default : static staticScope )
-	         * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
-	         */
-	
-	    }]);
-	
+	    /**
+	     * Constructor, will build a rescope store
+	     *
+	     * (scope, {require,use,apply,state, data})
+	     * (scope)
+	     *
+	     * @param scope {object} scope where to find the other stores (default : static
+	     *     staticScope )
+	     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key",
+	     *     otherStore.as("otherKey")]
+	     */
+	    // overridable list of store that will allow push if updated
 	    function Store() {
 	        var _this$_require, _this$_require2;
 	
@@ -2874,11 +2742,8 @@
 	            cfg = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
 	            name = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
 	            watchs = is.array(argz[0]) ? argz.shift() : cfg.use || [],
-	            // watchs need to be defined after all the
-	        // store are registered : so we can't deal
-	        // with any "static use" automaticly
-	        apply = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
-	            initialState = _static.state || _static.initialState,
+	            apply = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
+	            initialState = _static.state || _static.initialState || _static.defaultState,
 	            applied;
 	
 	        _this._uid = cfg._uid || shortid.generate();
@@ -2975,6 +2840,15 @@
 	     * @deprecated
 	     * @returns {*}
 	     */
+	    // default state
+	    /**
+	     * if retain goes to 0 :
+	     * false to not destroy,
+	     * 0 to sync auto destroy
+	     * Ms to autodestroy after tm ms if no retain has been called
+	     * @type {boolean|Int}
+	     */
+	    // overridable list of source stores
 	
 	
 	    _createClass(Store, [{
@@ -2982,7 +2856,8 @@
 	
 	
 	        /**
-	         * Overridable method to know if a data change should be propag to the listening stores & components
+	         * Overridable method to know if a data change should be propag to the listening
+	         * stores & components
 	         */
 	        value: function shouldPropag(nDatas) {
 	
@@ -3026,8 +2901,8 @@
 	
 	        /**
 	         * Overridable applier / remapper
-	         * If state or lastPublicState are simple hash maps apply will return {...data, ...state}
-	         * if not it will return the last private state
+	         * If state or lastPublicState are simple hash maps apply will return {...data,
+	         * ...state} if not it will return the last private state
 	         * @param data
 	         * @param state
 	         * @returns {*}
@@ -3115,7 +2990,8 @@
 	
 	        /**
 	         * Pull stores in the private state
-	         * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+	         * @param stores  {Array} (passed to Store::map) Ex : ["session",
+	         *     "otherNamedStore:key", otherStore.as("otherKey")]
 	         */
 	
 	    }, {
@@ -3161,7 +3037,8 @@
 	        }
 	
 	        /**
-	         * Call the apply fn using the current accumulated state update then, push the resulting data if stable
+	         * Call the apply fn using the current accumulated state update then, push the
+	         * resulting data if stable
 	         * @param force
 	         * @returns {boolean}
 	         */
@@ -3433,7 +3310,8 @@
 	
 	        /**
 	         * Add a lock so the store will not propag it data untill release() is call
-	         * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+	         * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
+	         *     array of stuff to wait
 	         * @returns {TaskFlow}
 	         */
 	
@@ -3612,9 +3490,9 @@
 	         */
 	        ,
 	        set: function set(v) {
-	            //console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
-	            //console.log("Rescope store : Setting datas is depreciated, use data", (new Error()).stack);
-	            //console.groupEnd();
+	            //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
+	            // data"); console.log("Rescope store : Setting datas is depreciated, use data",
+	            // (new Error()).stack); console.groupEnd();
 	
 	            this.data = v;
 	        }
@@ -3634,10 +3512,126 @@
 	    return Store;
 	}(EventEmitter);
 	
+	/**
+	 * get a static aliased reference of a store
+	 * @param {string} name
+	 * @returns {{store: Store, name: *}}
+	 */
+	
+	
 	Store.use = [];
 	Store.staticScope = new Scope({}, { id: "static" });
 	Store.state = undefined;
 	Store.persistenceTm = false;
+	Store.as = function (name) {
+	    return { store: this, name: name };
+	};
+	
+	/**
+	 * Map all named stores in {keys} to the {object}'s state
+	 * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
+	 * @static
+	 * @param object {Object} target state aware object (React.Component|Store|...)
+	 * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key",
+	 *     store.as('anotherKey')]
+	 */
+	Store.map = function (component, keys, scope, origin) {
+	    var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+	
+	    var targetRevs = component._revs || {};
+	    var targetScope = component.stores || (component.stores = {});
+	    var initialOutputs = {};
+	    keys = is.array(keys) ? [].concat(_toConsumableArray(keys)) : [keys];
+	
+	    scope = scope || Store.staticScope;
+	
+	    keys = keys.filter(
+	    // @todo : use query refs
+	    // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
+	    function (key) {
+	        var _component$_sources;
+	
+	        if (!key) {
+	            console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+	            return false;
+	        }
+	        var name = void 0,
+	            alias = void 0,
+	            path = void 0,
+	            store = void 0;
+	        if (key.store && key.name) {
+	            alias = name = key.name;
+	            store = key.store;
+	        } else if (is.fn(key)) {
+	            name = alias = key.name || key.defaultName;
+	            store = key;
+	        } else {
+	            key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	            name = key[1];
+	            path = key[2] && key[2].substr(1);
+	            store = scope.stores[key[1]];
+	            alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+	        }
+	
+	        if (targetRevs[name]) return false; // ignore dbl uses for now
+	
+	        if (!store) {
+	            console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (component.name || component) + ' !!', store);
+	            return false;
+	        } else if (is.fn(store)) {
+	            scope._mount(name);
+	            scope.stores[name].bind(component, alias, setInitial, path);
+	        } else {
+	            store.bind(component, alias, setInitial, path);
+	        }
+	
+	        // give initial store weight basing sources
+	        (_component$_sources = component._sources).push.apply(_component$_sources, _toConsumableArray(scope.stores[name]._sources));
+	
+	        targetRevs[alias] = targetRevs[alias] || true;
+	        !targetScope[name] && (targetScope[name] = scope.stores[name]);
+	        if (scope.stores[name].hasOwnProperty('data')) initialOutputs[name] = scope.data[name];
+	        return true;
+	    });
+	
+	    // ...
+	    var mixedCWUnmount,
+	        unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
+	
+	    if (component.hasOwnProperty(unMountKey)) {
+	        mixedCWUnmount = component[unMountKey];
+	    }
+	
+	    component[unMountKey] = function () {
+	        delete component[unMountKey];
+	        if (mixedCWUnmount) component[unMountKey] = mixedCWUnmount;
+	
+	        keys.map(function (key) {
+	            var name = void 0,
+	                alias = void 0,
+	                path = void 0,
+	                store = void 0;
+	            if (key.store && key.name) {
+	                alias = name = key.name;
+	                store = key.store;
+	            } else if (is.fn(key)) {
+	                name = alias = key.name || key.defaultName;
+	                store = scope.stores[name];
+	            } else {
+	                key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	                name = key[1];
+	                path = key[2] && key[2].substr(1);
+	                store = scope.stores[key[1]];
+	                alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+	            }
+	
+	            store && !is.fn(store) && store.unBind(component, alias, path);
+	        });
+	        return component[unMountKey] && component[unMountKey].apply(component, arguments);
+	    };
+	
+	    return initialOutputs;
+	};
 	exports.default = Store;
 	module.exports = exports['default'];
 

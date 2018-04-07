@@ -7,7 +7,7 @@
 
 ## What ?
 
-ReScope is a flexible, effective and easy to use State management system inspired by ReactJS methods.
+ReScope is a flexible, effective and easy to use µState management system inspired by ReactJS methods.
 
 ## How ?
 
@@ -16,62 +16,65 @@ By using independent, specialized & serializable "Data Stores" in a Flux oriente
 ### Stores ?
 
 ReScope stores look like "React components for data".<br>
-They use determining values and the others store data as state,<br>
-and maintains the corresponding data accordingly.
+Basically, they render determined data according theirs entry state.
 
-Stores can manage part of, or the entire App state's determining values,<br>
+Each Stores can manage part of, or the entire App state's determining values,<br>
 maintain intermediate, possibly asynchronous resources,<br>
 and/or finals or ready-to-render data.
 
 ### Scopes ?
 
-To deal with complex architectures the Scopes allow :
+To deal with complex architectures & data processing the Scopes allow :
 - normalized scopes for modules & views
 - to inherit & mix other Scopes,
 - automatic & chained destroy
 - ...
 
 ## What else ?
-
-- React "high order components" factories ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
-- Allow to keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
-- Allow to remove 99.9% of all the tpls code and put them in clean, reusable & specialized stores,
+<br>
+- React "high order components" factories decorators ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
+- Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
+- Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores µState control,
 - Easy pairing of remote / webworker based stores
 - Easy remapping & aliasing of dependencies data,
+- Easy, partial or complete serialization / restoration
 - 1 stem super class to rule all the async process
-- Semaphores like API ( wait, release, retain, dispose )
 - Promise like APIs
+- Semaphores like API ( wait, release, retain, dispose )
 - Inheritable ES6 class
-- Easy, partial or complete scopes serialization / restoration
-- Synchronised injection & init (React SSR) (as long as stores transformations stay sync)
+- Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
 - Lazy stores instantiation & active stores auto destroy
-- Library agnostic
 - Another alternative to Redux & co
+- Library agnostic, rescope has no dependencies and will keep working with any states based system
 - etc..
 
 ## Doc ?
 
-### [Work in progress doc](doc/readme.md)
+Comming slowly, [Work in progress doc](doc/readme.md)
 
-#### [About Stores](doc/Store.md)
-#### [About Scopes](doc/Scope.md)
-#### [About React HOCs](doc/React.md)
+About [Stores](doc/Store.md) <br>
+About [Scopes](doc/Scope.md)
 
-### (Dumb) Simple \& working examples [here](https://github.com/CaipiLabs/rescope-samples)
+### Related packages
 
-\*: The Store's scope is common to the vanilla & react example
+The ReScope package has a limited perimeter, <br>
+other packages make it even easier to use:<br>
 
-### And the [tests](test/Rescope.test.js)
+React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
+
+### Samples & bootstraps
+
+The examples and bootstrap will come gradually [here](https://github.com/CaipiLabs/rescope-samples)
 
 ## What's next ?
 
 - Optimize
-- @reScope stores state / data ?
-- Possibly some semantic/normalisation updates
-- Even better deps definition
 - Many more tests
 - Cosmetics rewrites & more comments
-- better refs management
+- Optimize refs management
+- Optimize actions propag
+- Possibly some semantic/normalisation updates
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
 <span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>

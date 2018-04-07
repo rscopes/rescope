@@ -25,12 +25,6 @@
  * @contact : caipilabs@gmail.com
  */
 
-/**
- * Ultra scalable state-aware store
- *
- * @todo : lot of optims...
- */
-
 var is            = require('is'),
     Scope         = require('./Scope'),
     EventEmitter  = require('./Emitter'),
@@ -58,152 +52,33 @@ class Store extends EventEmitter {
            static persistenceTm = false;
     
     /**
-     * get a Builder-key pair for Store::map
-     * @param {string} name
-     * @returns {{store: Store, name: *}}
-     */
-    static as( name ) {
-        return { store: this, name };
-    }
-    
-    /**
-     * Map all named stores in {keys} to the {object}'s state
-     * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
-     * @static
-     * @param object {Object} target state aware object (React.Component|Store|...)
-     * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key", store.as('anotherKey')]
-     */
-    static map( component, keys, scope, origin, setInitial = false ) {
-        var targetRevs     = component._revs || {};
-        var targetScope    = component.stores || (component.stores = {});
-        var initialOutputs = {};
-        keys               = is.array(keys) ? [...keys] : [keys];
-        
-        
-        scope = scope || Store.staticScope;
-        
-        keys = keys.filter(
-            // @todo : use query refs
-            // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
-            ( key ) => {
-                if ( !key ) {
-                    console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
-                    return false;
-                }
-                let name,
-                    alias,
-                    path,
-                    store;
-                if ( key.store && key.name ) {
-                    alias = name = key.name;
-                    store = key.store;
-                }
-                else if ( is.fn(key) ) {
-                    name = alias = key.name || key.defaultName;
-                    store = key;
-                }
-                else {
-                    key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                    name  = key[1];
-                    path  = key[2] && key[2].substr(1);
-                    store = scope.stores[key[1]];
-                    alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
-                }
-                
-                if ( targetRevs[name] ) return false;// ignore dbl uses for now
-                
-                if ( !store ) {
-                    console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (component.name || component) + ' !!', store);
-                    return false;
-                }
-                else if ( is.fn(store) ) {
-                    scope._mount(name)
-                    scope.stores[name].bind(component, alias, setInitial, path);
-                }
-                else {
-                    store.bind(component, alias, setInitial, path);
-                }
-                
-                // give initial store weight basing sources
-                component._sources.push(...scope.stores[name]._sources);
-                
-                targetRevs[alias] = targetRevs[alias] || true;
-                !targetScope[name] && (targetScope[name] = scope.stores[name]);
-                if ( scope.stores[name].hasOwnProperty('data') )
-                    initialOutputs[name] = scope.data[name];
-                return true;
-            }
-        );
-        
-        // ...
-        var mixedCWUnmount,
-            unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-        
-        if ( component.hasOwnProperty(unMountKey) ) {
-            mixedCWUnmount = component[unMountKey];
-        }
-        
-        component[unMountKey] = ( ...argz ) => {
-            delete component[unMountKey];
-            if ( mixedCWUnmount )
-                component[unMountKey] = mixedCWUnmount;
-            
-            keys.map(
-                ( key ) => {
-                    let name,
-                        alias, path,
-                        store;
-                    if ( key.store && key.name ) {
-                        alias = name = key.name;
-                        store = key.store;
-                    }
-                    else if ( is.fn(key) ) {
-                        name = alias = key.name || key.defaultName;
-                        store = scope.stores[name];
-                    }
-                    else {
-                        key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                        name  = key[1];
-                        path  = key[2] && key[2].substr(1);
-                        store = scope.stores[key[1]];
-                        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
-                    }
-                    
-                    store && !is.fn(store) && store.unBind(component, alias, path)
-                }
-            );
-            return component[unMountKey] && component[unMountKey](...argz);
-        }
-        
-        return initialOutputs;
-    }
-    
-    /**
      * Constructor, will build a rescope store
      *
      * (scope, {require,use,apply,state, data})
      * (scope)
      *
-     * @param scope {object} scope where to find the other stores (default : static staticScope )
-     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+     * @param scope {object} scope where to find the other stores (default : static
+     *     staticScope )
+     * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key",
+     *     otherStore.as("otherKey")]
      */
     constructor() {
         super();
-        var argz         = [...arguments],
+        var argz         = [ ...arguments ],
             _static      = this.constructor,
-            scope        = argz[0] instanceof Scope
-                ? argz.shift()
-                : _static.scope ? Scope.getScope(_static.scope)
-                               : is.string(argz[0])
-                      ? Scope.getScope(argz.shift())
-                      : _static.staticScope,
-            cfg          = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
-            name         = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
-            watchs       = is.array(argz[0]) ? argz.shift() : cfg.use || [],// watchs need to be defined after all the
-                                                                            // store are registered : so we can't deal
-                                                                            // with any "static use" automaticly
-            apply        = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
-            initialState = _static.state || _static.initialState,
+            scope        = argz[ 0 ] instanceof Scope
+                           ? argz.shift()
+                           : _static.scope ? Scope.getScope(_static.scope)
+                                           : is.string(argz[ 0 ])
+                                             ? Scope.getScope(argz.shift())
+                                             : _static.staticScope,
+            cfg          = argz[ 0 ] && !is.array(argz[ 0 ]) && !is.string(argz[ 0 ])
+                           ? argz.shift()
+                           : {},
+            name         = is.string(argz[ 0 ]) ? argz[ 0 ] : cfg.name || _static.name,
+            watchs       = is.array(argz[ 0 ]) ? argz.shift() : cfg.use || [],
+            apply        = is.fn(argz[ 0 ]) ? argz.shift() : cfg.apply || null,
+            initialState = _static.state || _static.initialState || _static.defaultState,
             applied;
         
         this._uid = cfg._uid || shortid.generate();
@@ -214,7 +89,7 @@ class Store extends EventEmitter {
         
         // autoDestroyTm
         this._autoDestroy   = !!this._persistenceTm;
-        this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
+        this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || ( cfg.autoDestroy || _static.autoDestroy ) && 5;
         
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
@@ -236,33 +111,33 @@ class Store extends EventEmitter {
         this._revs    = {};
         this.stores   = {};
         this._require = [];
-        this._sources = [name];
+        this._sources = [ name ];
         
         if ( is.array(_static.use) ) {
-            this._use = [...watchs, ...(_static.use || []).map(
+            this._use = [ ...watchs, ...( _static.use || [] ).map(
                 key => {
                     let ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
-                    if ( ref[1] ) {
-                        let ref2 = ref[2].split('.');
-                        this._require.push(ref[3] || ref2[ref2.length - 1]);
+                    if ( ref[ 1 ] ) {
+                        let ref2 = ref[ 2 ].split('.');
+                        this._require.push(ref[ 3 ] || ref2[ ref2.length - 1 ]);
                     }
-                    return ref[2];
+                    return ref[ 2 ];
                 }
-            )];
+            ) ];
         }
         else {
-            this._use = [...watchs, ...(
+            this._use = [ ...watchs, ...(
                 _static.use ? Object.keys(_static.use)
                                     .map(
                                         key => {
                                             let ref = key.match(/^(\!?)(.*)$/);
-                                            ref[1] && this._require.push(_static.use[key]);
-                                            return ref[2] + ((_static.use[key] === true)
-                                                ? ''
-                                                : ':' + _static.use[key]);
+                                            ref[ 1 ] && this._require.push(_static.use[ key ]);
+                                            return ref[ 2 ] + ( ( _static.use[ key ] === true )
+                                                                ? ''
+                                                                : ':' + _static.use[ key ] );
                                         }
                                     ) : []
-            )];
+            ) ];
         }
         
         if ( _static.require )
@@ -275,7 +150,7 @@ class Store extends EventEmitter {
         if ( apply )
             this.apply = apply;
         
-        if ( cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + name] ) {
+        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + name ] ) {
             this.restore(cfg.snapshot);
             this._stable = true;
             scope.bind(this, this._use, false);
@@ -292,7 +167,7 @@ class Store extends EventEmitter {
             
             if ( initialState || this._use.length ) {// sync apply
                 this._changesSW = {
-                    ...(initialState || {}),
+                    ...( initialState || {} ),
                     ...scope.map(this, this._use)
                 };
                 this.state      = {};
@@ -304,13 +179,13 @@ class Store extends EventEmitter {
                 }
             }
         }
-        if ( (this.data !== undefined || applied) && !this.__locks.all ) {
+        if ( ( this.data !== undefined || applied ) && !this.__locks.all ) {
             this._stable = true;
             this._rev++;
         }
         else {
             this._stable = false;
-            if ( !_static.managed && !this.state && (!this._use || !this._use.length) ) {
+            if ( !_static.managed && !this.state && ( !this._use || !this._use.length ) ) {
                 console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
             }
         }
@@ -347,9 +222,9 @@ class Store extends EventEmitter {
      * @returns {*}
      */
     set datas( v ) {
-        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use data");
-        //console.log("Rescope store : Setting datas is depreciated, use data", (new Error()).stack);
-        //console.groupEnd();
+        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
+        // data"); console.log("Rescope store : Setting datas is depreciated, use data",
+        // (new Error()).stack); console.groupEnd();
         
         this.data = v;
     }
@@ -363,7 +238,8 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Overridable method to know if a data change should be propag to the listening stores & components
+     * Overridable method to know if a data change should be propag to the listening
+     * stores & components
      */
     shouldPropag( nDatas ) {
         
@@ -376,12 +252,16 @@ class Store extends EventEmitter {
         r           = !cDatas && nDatas || cDatas !== nDatas;
         !r && cDatas && Object.keys(cDatas).forEach(
             ( key ) => {
-                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+                r = r || ( nDatas
+                           ? cDatas[ key ] !== nDatas[ key ]
+                           : cDatas && cDatas[ key ] )
             }
         );
         !r && nDatas && Object.keys(nDatas).forEach(
             ( key ) => {
-                r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key])
+                r = r || ( nDatas
+                           ? cDatas[ key ] !== nDatas[ key ]
+                           : cDatas && cDatas[ key ] )
             }
         );
         return r;
@@ -394,24 +274,24 @@ class Store extends EventEmitter {
         var _static = this.constructor;
         
         return (
-            !!this.isComplete(state)
-        ) && (is.array(_static.follow)
-                ? _static.follow
-                         .reduce(( r, i ) => (r || state && state[i]), false)
-                : _static.follow
-                  ? Object.keys(_static.follow)
-                          .reduce(( r, i ) => (
-                              r
-                              || state && is.fn(_static.follow[i]) && _static.follow[i].call(this, state[i])
-                              || _static.follow[i] && state[i] !== this.state[i]
-                          ), false) : true
-        );
+                   !!this.isComplete(state)
+               ) && ( is.array(_static.follow)
+                      ? _static.follow
+                               .reduce(( r, i ) => ( r || state && state[ i ] ), false)
+                      : _static.follow
+                        ? Object.keys(_static.follow)
+                                .reduce(( r, i ) => (
+                                    r
+                                    || state && is.fn(_static.follow[ i ]) && _static.follow[ i ].call(this, state[ i ])
+                                    || _static.follow[ i ] && state[ i ] !== this.state[ i ]
+                                ), false) : true
+               );
     }
     
     /**
      * Overridable applier / remapper
-     * If state or lastPublicState are simple hash maps apply will return {...data, ...state}
-     * if not it will return the last private state
+     * If state or lastPublicState are simple hash maps apply will return {...data,
+     * ...state} if not it will return the last private state
      * @param data
      * @param state
      * @returns {*}
@@ -463,10 +343,10 @@ class Store extends EventEmitter {
     retrieve( path, i = 0, obj = this.data ) {
         path = is.string(path) ? path.split('.') : path;
         return !obj || !path || !path.length
-            ? obj
-            : path.length == i + 1
-                   ? obj[path[i]]
-                   : this.retrieve(path, i + 1, obj[path[i]]);
+               ? obj
+               : path.length == i + 1
+                 ? obj[ path[ i ] ]
+                 : this.retrieve(path, i + 1, obj[ path[ i ] ]);
     }
     
     dispatch( action, ...argz ) {
@@ -475,21 +355,22 @@ class Store extends EventEmitter {
     
     trigger( action, ...argz ) {
         let { actions } = this.constructor;
-        if ( actions && actions[action] ) {
-            let ns = actions[action].call(this, ...argz);
+        if ( actions && actions[ action ] ) {
+            let ns = actions[ action ].call(this, ...argz);
             ns && this.setState(ns);
         }
     }
     
     /**
      * Pull stores in the private state
-     * @param stores  {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key", otherStore.as("otherKey")]
+     * @param stores  {Array} (passed to Store::map) Ex : ["session",
+     *     "otherNamedStore:key", otherStore.as("otherKey")]
      */
     pull( stores, doWait, origin ) {
         let initialOutputs = this.scopeObj.map(this, stores);
         if ( doWait ) {
             this.wait();
-            stores.forEach(( s ) => this.scope[s] && this.wait(this.scope[s]));
+            stores.forEach(( s ) => this.scope[ s ] && this.wait(this.scope[ s ]));
             this.release();
         }
         return initialOutputs;
@@ -503,9 +384,9 @@ class Store extends EventEmitter {
         cb    = force === true ? cb : force;
         force = force === true;
         if ( !force &&
-            (
-                !this.hasDataChange(data)
-            )
+             (
+                 !this.hasDataChange(data)
+             )
         ) {
             cb && cb();
             if ( !this.__locks.all ) {
@@ -524,7 +405,8 @@ class Store extends EventEmitter {
     }
     
     /**
-     * Call the apply fn using the current accumulated state update then, push the resulting data if stable
+     * Call the apply fn using the current accumulated state update then, push the
+     * resulting data if stable
      * @param force
      * @returns {boolean}
      */
@@ -533,16 +415,16 @@ class Store extends EventEmitter {
         if ( !force && !this._changesSW && this.data )
             return;
         
-        var nextState = { ...this.state, ...(this._changesSW || {}) },
+        var nextState = { ...this.state, ...( this._changesSW || {} ) },
             nextData  = this.apply(this.data, nextState, this._changesSW);
         
         this._stabilizer = null;
         this.state       = nextState;
         this._changesSW  = null;
         if ( !force &&
-            (
-                !this.hasDataChange(nextData)
-            )
+             (
+                 !this.hasDataChange(nextData)
+             )
         ) {
             if ( !this.__locks.all ) {
                 let stable   = this._stable;
@@ -570,18 +452,18 @@ class Store extends EventEmitter {
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
             if ( !this.state
-                || changes.hasOwnProperty(k)// todo
-                && (
-                    pState[k] !== changes[k]
-                ) || pState.hasOwnProperty(k)
-                && (
-                    pState[k] !== this.state[k]
-                    ||
-                    (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
-                ) ) {
-                change        = true;
-                this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k]    = pState[k];
+                 || changes.hasOwnProperty(k)// todo
+                 && (
+                     pState[ k ] !== changes[ k ]
+                 ) || pState.hasOwnProperty(k)
+                 && (
+                 pState[ k ] !== this.state[ k ]
+                 ||
+                 ( this.state[ k ] && pState[ k ] && ( pState[ k ]._rev != this._revs[ k ] ) )// rev/hash update
+                 ) ) {
+                change          = true;
+                this._revs[ k ] = pState[ k ] && pState[ k ]._rev || true;
+                changes[ k ]    = pState[ k ];
             }
         
         if ( !this.shouldApply({ ...this.state, ...changes }) ) {
@@ -611,16 +493,16 @@ class Store extends EventEmitter {
             changes = this._changesSW = this._changesSW || {};
         for ( var k in pState )
             if ( !this.state || pState.hasOwnProperty(k)
-                && (
-                    pState[k] != this.state[k]
-                    ||
-                    (this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
-                ) ) {
-                change        = true;
-                this._revs[k] = pState[k] && pState[k]._rev || true;
-                changes[k]    = pState[k];
+                 && (
+                 pState[ k ] != this.state[ k ]
+                 ||
+                 ( this.state[ k ] && pState[ k ] && ( pState[ k ]._rev != this._revs[ k ] ) )// rev/hash update
+                 ) ) {
+                change          = true;
+                this._revs[ k ] = pState[ k ] && pState[ k ]._rev || true;
+                changes[ k ]    = pState[ k ];
             }
-        this.shouldApply({ ...(this.state || {}), ...changes }) && this.pushState();
+        this.shouldApply({ ...( this.state || {} ), ...changes }) && this.pushState();
         return this.data;
     }
     
@@ -635,13 +517,13 @@ class Store extends EventEmitter {
     
     on( lists ) {
         if ( !is.string(lists) && lists )
-            Object.keys(lists).forEach(k => super.on(k, lists[k]));
+            Object.keys(lists).forEach(k => super.on(k, lists[ k ]));
         else super.on(...arguments);
     }
     
     removeListener( lists ) {
         if ( !is.string(lists) && lists )
-            Object.keys(lists).forEach(k => super.removeListener(k, lists[k]));
+            Object.keys(lists).forEach(k => super.removeListener(k, lists[ k ]));
         else super.removeListener(...arguments);
     }
     
@@ -655,7 +537,7 @@ class Store extends EventEmitter {
             !this._require
             || !this._require.length
             || state && this._require.reduce(
-                ( r, key ) => (r && state[key]),
+                ( r, key ) => ( r && state[ key ] ),
                 true
             )
         );
@@ -688,23 +570,23 @@ class Store extends EventEmitter {
                     }
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                        name  = key[1];
-                        path  = key[2] && key[2].substr(1);
-                        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+                        name  = key[ 1 ];
+                        path  = key[ 2 ] && key[ 2 ].substr(1);
+                        alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
                     }
                 
-                    if ( !this.scopeObj.stores[name].scopeObj._.isLocalId )
-                        map[alias] = this.scopeObj.stores[name].scopeObj._id + '/' + name;
+                    if ( !this.scopeObj.stores[ name ].scopeObj._.isLocalId )
+                        map[ alias ] = this.scopeObj.stores[ name ].scopeObj._id + '/' + name;
                 
                     return map;
                 }, {}
-                ) || {};
+                         ) || {};
         
-        output[this.scopeObj._id + '/' + this.name] = {
+        output[ this.scopeObj._id + '/' + this.name ] = {
             state: this.state &&
-            (!withRefs
-                ? { ...this.state }
-                : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})),
+                   ( !withRefs
+                     ? { ...this.state }
+                     : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {}) ),
             data : this.data,
             refs
         };
@@ -716,15 +598,15 @@ class Store extends EventEmitter {
      * @returns bool
      */
     restore( snapshot ) {
-        let snap = snapshot[this.scopeObj._id + '/' + this.name];
+        let snap = snapshot[ this.scopeObj._id + '/' + this.name ];
         if ( snap ) {
             this.state = snap.state;
             Object.keys(snap.refs).forEach(
                 ( key ) => {//todo
-                    if ( snapshot[snap.refs[key]] )
-                        snap.state[key] = snapshot[snap.refs[key]].data;
+                    if ( snapshot[ snap.refs[ key ] ] )
+                        snap.state[ key ] = snapshot[ snap.refs[ key ] ].data;
                     else
-                        console.warn('not found : ', key, snap.refs[key])
+                        console.warn('not found : ', key, snap.refs[ key ])
                 }
             )
             
@@ -742,7 +624,7 @@ class Store extends EventEmitter {
         var followers = this._followers,
             i         = followers && followers.length;
         while ( followers && i-- )
-            if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
+            if ( followers[ i ][ 0 ] === obj && followers[ i ][ 1 ] === key && followers[ i ][ 2 ] === path )
                 return followers.splice(i, 1);
     }
     
@@ -752,11 +634,11 @@ class Store extends EventEmitter {
      * @param key {string} optional key where to map the public state
      */
     bind( obj, key, setInitial = true, path ) {
-        this._followers.push([obj, key, path]);
+        this._followers.push([ obj, key, path ]);
         if ( setInitial && this.data && this._stable ) {
             let data = path ? this.retrieve(path) : this.data;
             if ( typeof obj != "function" ) {
-                if ( key ) obj.setState({ [key]: data });
+                if ( key ) obj.setState({ [ key ]: data });
                 else obj.setState(data);
             }
             else {
@@ -778,7 +660,8 @@ class Store extends EventEmitter {
     
     /**
      * Add a lock so the store will not propag it data untill release() is call
-     * @param previous {Store|number|Array} @optional wf to wait, releases to wait or array of stuff to wait
+     * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
+     *     array of stuff to wait
      * @returns {TaskFlow}
      */
     wait( previous ) {
@@ -793,8 +676,8 @@ class Store extends EventEmitter {
         
         let reason = is.string(previous) ? previous : null;
         if ( reason ) {
-            this.__locks[reason] = this.__locks[reason] || 0;
-            this.__locks[reason]++;
+            this.__locks[ reason ] = this.__locks[ reason ] || 0;
+            this.__locks[ reason ]++;
         }
         if ( previous && is.fn(previous.then) ) {
             previous.then(this.release.bind(this, null));
@@ -819,10 +702,10 @@ class Store extends EventEmitter {
         }
         
         if ( reason ) {
-            if ( this.__locks[reason] == 0 )
+            if ( this.__locks[ reason ] == 0 )
                 console.error("Release more than locking !", reason);
-            this.__locks[reason] = this.__locks[reason] || 0;
-            this.__locks[reason]--;
+            this.__locks[ reason ] = this.__locks[ reason ] || 0;
+            this.__locks[ reason ]--;
         }
         
         if ( !reason && this.__locks.all == 0 )
@@ -834,17 +717,17 @@ class Store extends EventEmitter {
             propag && this._rev++;//
             if ( propag && this._followers.length )
                 this._followers.forEach(function propag( follower ) {
-                    let data = follower[2] ? me.retrieve(follower[2]) : me.data;
+                    let data = follower[ 2 ] ? me.retrieve(follower[ 2 ]) : me.data;
                     //if ( !data ) return;
                     
-                    if ( typeof follower[0] == "function" ) {
-                        follower[0](data);
+                    if ( typeof follower[ 0 ] == "function" ) {
+                        follower[ 0 ](data);
                     }
                     else {
                         //cb && i++;
-                        follower[0].setState(
-                            (follower[1]) ? { [follower[1]]: data }
-                                : data
+                        follower[ 0 ].setState(
+                            ( follower[ 1 ] ) ? { [ follower[ 1 ] ]: data }
+                                              : data
                             //,
                             //cb && (
                             //    () => (!(--i) && cb())
@@ -868,18 +751,18 @@ class Store extends EventEmitter {
     retain( reason ) {
         this.__retains.all++;
         if ( reason ) {
-            this.__retains[reason] = this.__retains[reason] || 0;
-            this.__retains[reason]++;
+            this.__retains[ reason ] = this.__retains[ reason ] || 0;
+            this.__retains[ reason ]++;
         }
     }
     
     dispose( reason ) {
         //console.warn("dispose", reason, this.__retains);
         if ( reason ) {
-            if ( !this.__retains[reason] )
+            if ( !this.__retains[ reason ] )
                 throw new Error("Dispose more than retaining : " + reason);
             
-            this.__retains[reason]--;
+            this.__retains[ reason ]--;
         }
         if ( this.__retains.all == 0 )
             throw new Error("Dispose more than retaining !");
@@ -901,7 +784,7 @@ class Store extends EventEmitter {
             }
             else {
                 //this.then(s =>
-                (!this.__retains.all && this.destroy())
+                ( !this.__retains.all && this.destroy() )
                 //);
             }
         }
@@ -917,9 +800,9 @@ class Store extends EventEmitter {
         if ( this._followers.length )
             this._followers.forEach(
                 ( follower ) => {
-                    if ( typeof follower[0] !== "function" ) {
-                        if ( follower[0].stores )
-                            delete follower[0].stores[follower[1]];
+                    if ( typeof follower[ 0 ] !== "function" ) {
+                        if ( follower[ 0 ].stores )
+                            delete follower[ 0 ].stores[ follower[ 1 ] ];
                     }
                 }
             );
@@ -931,4 +814,125 @@ class Store extends EventEmitter {
     }
 }
 
+/**
+ * get a static aliased reference of a store
+ * @param {string} name
+ * @returns {{store: Store, name: *}}
+ */
+Store.as = function ( name ) {
+    return { store: this, name };
+}
+
+/**
+ * Map all named stores in {keys} to the {object}'s state
+ * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
+ * @static
+ * @param object {Object} target state aware object (React.Component|Store|...)
+ * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key",
+ *     store.as('anotherKey')]
+ */
+Store.map = function ( component, keys, scope, origin, setInitial = false ) {
+    var targetRevs     = component._revs || {};
+    var targetScope    = component.stores || ( component.stores = {} );
+    var initialOutputs = {};
+    keys               = is.array(keys) ? [ ...keys ] : [ keys ];
+    
+    
+    scope = scope || Store.staticScope;
+    
+    keys = keys.filter(
+        // @todo : use query refs
+        // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
+        ( key ) => {
+            if ( !key ) {
+                console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+                return false;
+            }
+            let name,
+                alias,
+                path,
+                store;
+            if ( key.store && key.name ) {
+                alias = name = key.name;
+                store = key.store;
+            }
+            else if ( is.fn(key) ) {
+                name = alias = key.name || key.defaultName;
+                store = key;
+            }
+            else {
+                key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                name  = key[ 1 ];
+                path  = key[ 2 ] && key[ 2 ].substr(1);
+                store = scope.stores[ key[ 1 ] ];
+                alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+            }
+            
+            if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
+            
+            if ( !store ) {
+                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( component.name || component ) + ' !!', store);
+                return false;
+            }
+            else if ( is.fn(store) ) {
+                scope._mount(name)
+                scope.stores[ name ].bind(component, alias, setInitial, path);
+            }
+            else {
+                store.bind(component, alias, setInitial, path);
+            }
+            
+            // give initial store weight basing sources
+            component._sources.push(...scope.stores[ name ]._sources);
+            
+            targetRevs[ alias ] = targetRevs[ alias ] || true;
+            !targetScope[ name ] && ( targetScope[ name ] = scope.stores[ name ] );
+            if ( scope.stores[ name ].hasOwnProperty('data') )
+                initialOutputs[ name ] = scope.data[ name ];
+            return true;
+        }
+    );
+    
+    // ...
+    var mixedCWUnmount,
+        unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
+    
+    if ( component.hasOwnProperty(unMountKey) ) {
+        mixedCWUnmount = component[ unMountKey ];
+    }
+    
+    component[ unMountKey ] = ( ...argz ) => {
+        delete component[ unMountKey ];
+        if ( mixedCWUnmount )
+            component[ unMountKey ] = mixedCWUnmount;
+        
+        keys.map(
+            ( key ) => {
+                let name,
+                    alias, path,
+                    store;
+                if ( key.store && key.name ) {
+                    alias = name = key.name;
+                    store = key.store;
+                }
+                else if ( is.fn(key) ) {
+                    name = alias = key.name || key.defaultName;
+                    store = scope.stores[ name ];
+                }
+                else {
+                    key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                    name  = key[ 1 ];
+                    path  = key[ 2 ] && key[ 2 ].substr(1);
+                    store = scope.stores[ key[ 1 ] ];
+                    alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+                }
+                
+                store && !is.fn(store) && store.unBind(component, alias, path)
+            }
+        );
+        return component[ unMountKey ] && component[ unMountKey ](...argz);
+    }
+    
+    return initialOutputs;
+};
 export default Store;

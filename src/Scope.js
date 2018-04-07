@@ -66,14 +66,14 @@ class Scope extends EventEmitter {
      * @param _ref
      * @returns {{storeId, path, alias: *, ref: *}}
      */
-    static stateMapToRefList( sm, state = {}, _refs = [], path = "" ) {
+    static stateMapToRefList( sm, state = {}, _refs = [], actions = {}, path = "" ) {
         Object.keys(sm).forEach(
             key => {
                 let cpath = path ? path + '.' + key : key;
                 sm[key] instanceof Scope.scopeRef
                     ? _refs.push(sm[key].path + ':' + cpath)
                     : (sm[key] && sm[key] instanceof Function)
-                    ? _refs.push(sm[key]().path + ':' + cpath)
+                    ? actions[key] = sm[key]
                     : (sm[key] && sm[key].prototype instanceof Scope.Store)
                           ? _refs.push(sm[key].as(cpath))
                           : state[cpath] = sm[key]
@@ -87,21 +87,28 @@ class Scope extends EventEmitter {
      * Init a ReScope scope
      *
      * @param storesMap {Object} Object with the initial stores definition / instances
-     * @param id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
-     * @param parent
-     * @param state
-     * @param data
-     * @param name
-     * @param defaultMaxListeners
-     * @param persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-     * @param autoDestroy  {bool} will trigger retain & dispose after start
+     * @param config {Object} Scope config
+     * {
+     *  parent {scope} @optional parent scope
+     *
+     *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
+     *  key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'::'+key)
+     *  incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
+     *
+     *  state {Object} @optional initial state by store alias
+     *  data {Object} @optional initial data by store alias
+     *
+     *  rootEmitter {bool} @optional true to not being destabilized by parent
+     *  boundedActions {array | regexp} @optional list or regexp of actions not propagated to the parent
+     *
+     *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+     *  autoDestroy  {bool} will trigger retain & dispose after start
+     *  }
      * @returns {Scope}
      */
-    constructor( storesMap, { parent, key, id, state, data, name, incrementId = !!key, defaultMaxListeners, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
+    constructor( storesMap, { parent, key, id, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
         super();
         var _ = {};
-        
-        _.maxListeners = defaultMaxListeners || this.constructor.defaultMaxListeners;
         
         id = id || key && ((parent && parent._id || '') + '::' + key);
         

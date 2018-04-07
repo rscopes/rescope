@@ -1,14 +1,19 @@
 # ReScope
 
-_ this is a draft & wip doc _
+_ this is a draft  wip doc _
 
 
 #### [About Stores](./Store.md)
 #### [About Scopes](./Scope.md)
-#### [About React HOCs](./React.md)
 
-### (Dumb) Simple \& working examples [here](../src/examples)
+### Related packages
 
-\*: The Store's scope is common to the vanilla & react example
+The ReScope package has a limited perimeter, <br>
+other packages make it even easier to use:<br>
 
-### And the [tests](../test/Rescope.test.js)
+React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
+
+### Samples & bootstraps
+
+The examples and bootstrap will come gradually [here](https://github.com/CaipiLabs/rescope-samples)

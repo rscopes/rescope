@@ -1,5 +1,6 @@
 # Scopes
 
+_ this is a draft  wip doc _
 
 ## Stability
 
@@ -69,15 +70,16 @@ MyLocalScope.mixin(MyMixableScope);
 
 _* parents stores of the mixed scopes will not be available on the target Scope_
 
-## Access Scoped store, state & data
+## Access Scoped store, actions, state & data
 
-Available data, state & stores can be accessed directly.
+Available data, state, actions & stores can be accessed directly.
 
 ```
 
 let MyScope = new Scope({...stores_map}, {/* config */});
 
 // accessing this scope, its parents and mixed data, state & stores
+// MyScope.actions.*
 // MyScope.stores.*
 // MyScope.state.*
 // MyScope.data.*
@@ -91,16 +93,39 @@ let MyScope = new Scope({...stores_map}, {/* config */});
 
 ## Serialize & restore app state & data
 
-The method :
 ```
-
+let snapshot = ScopeObj.serialize();
+/*...*/
+ScopeObj.restore(snapshot)
 
 ```
-
 
 ## Auto destroy scopes
 
+Use scopes config :
+```
+{
+    persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    autoDestroy  {bool} will trigger retain & dispose after start
+}
+```
+
 ## Auto destroy/unload stores
+
+After timeout, Stores are auto destroyed when there no listeners left.<br>
+They can easely become "resident" using this.retain :
+
+```
+/*...*/
+constructor(){
+    super(...arguments);
+    this.retain('forever');
+}
+```
+
+Note that :
+ - as it auto-retained it will never be destroyed by scopes, even if the scope is destroyed
+ - this will not make the store staticly instanciated over all the scope instances
 
 
 ## General & theoretical Scope definition example  :

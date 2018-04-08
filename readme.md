@@ -5,9 +5,7 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
 
 
-{: style="text-align:center"}
-![reScope](./doc/logo.png)
-{: style="text-align:left"}
+->![reScope](./doc/logo.png  | width=100)<-
 
 ## What ?
 

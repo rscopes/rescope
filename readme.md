@@ -5,7 +5,10 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
 
 
-![reScope](./doc/logo.png  | width=100)
+<p align="center">
+  <img width="172" src="./doc/logo.png">
+</p>
+
 
 ## What ?
 

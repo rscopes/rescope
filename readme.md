@@ -5,6 +5,10 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
 
 
+{: style="text-align:center"}
+![reScope](./doc/logo.png)
+{: style="text-align:left"}
+
 ## What ?
 
 ReScope is a flexible, effective and easy to use µState management system inspired by ReactJS methods.

@@ -1,8 +1,7 @@
 
-# ReScope
-<br/>
 <p align="center">
-  <img width="172" src="./doc/assets/logo.svg">
+<h1>ReScope</h1>
+  <img width="192" src="./doc/assets/logo.svg">
 </p>
 <br/>
 
@@ -12,9 +11,10 @@
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
 
+##
 ## ReScope What ?
 
-ReScope is a flexible, effective and easy to use µState management system inspired by ReactJS methods.
+ReScope is a flexible, effective and easy to use state management system inspired by ReactJS methods.
 
 ## How ?
 

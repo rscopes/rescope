@@ -43,7 +43,7 @@ To deal with complex architectures & data processing the Scopes allow :
 - Easy pairing of remote / webworker based stores
 - Easy remapping & aliasing of dependencies data,
 - Easy, partial or complete serialization / restoration
-- 1 stem super class to rule all the async process
+- No more real async problems
 - Promise like APIs
 - Semaphores like API ( wait, release, retain, dispose )
 - Inheritable ES6 class

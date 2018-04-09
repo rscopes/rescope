@@ -1,7 +1,11 @@
 
 <p align="center">
-<h1>ReScope</h1>
+
+# ReScope
+
+<p align="center">
   <img width="192" src="./doc/assets/logo.svg">
+</p>
 </p>
 <br/>
 

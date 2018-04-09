@@ -2,7 +2,7 @@
 
 <br/>
 <p align="center">
-  <img width="192" src="./doc/assets/logo.svg">
+  <img width="192" src="https://github.com/CaipiLabs/rescope/raw/master/doc/assets/logo.svg?sanitize=true">
 </p>
 
 ## 

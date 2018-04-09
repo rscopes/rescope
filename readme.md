@@ -2,7 +2,7 @@
 # ReScope
 <br/>
 <p align="center">
-  <img width="172" src="./doc/logo.png">
+  <img width="172" src="./doc/logo.svg">
 </p>
 <br/>
 

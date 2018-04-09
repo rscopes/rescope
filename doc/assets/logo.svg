@@ -17,7 +17,7 @@
    id="svg1267"
    inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="logo.svg"
-   inkscape:export-filename="C:\Users\nbs2\Desktop\logo.png"
+   inkscape:export-filename="G:\n8tz\rescope\rescope\doc\logo.png"
    inkscape:export-xdpi="95.471283"
    inkscape:export-ydpi="95.471283">
   <defs
@@ -97,7 +97,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="6.703125"
-     inkscape:cx="64"
+     inkscape:cx="61.016317"
      inkscape:cy="64"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -141,21 +141,20 @@
          style="opacity:0.547;fill:#6b6fca;fill-opacity:0.25294118;fill-rule:evenodd;stroke:none" />
     </g>
     <g
-       id="g7642"
-       style="opacity:0.85096154;stroke:#000000;stroke-width:2.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0.12912633,0,0,0.1672797,15.063366,264.79414)">
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Roboto;-inkscape-font-specification:Roboto;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-         x="64.801826"
-         y="174.505"
-         id="text3980"
-         transform="scale(1.0668884,0.93730515)"><tspan
-           sodipodi:role="line"
-           id="tspan3982"
-           x="64.801826"
-           y="174.505"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.33745956px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto Bold'">RS</tspan></text>
+       id="text3980"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Roboto;-inkscape-font-specification:Roboto;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       transform="matrix(0.13776338,0,0,0.15679212,15.063366,264.79414)"
+       aria-label="RS">
+      <path
+         inkscape:connector-curvature="0"
+         id="path6009"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.33745956px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto Bold'"
+         d="m 85.991229,153.15022 q 0,-1.15766 -0.47547,-1.98457 -0.475469,-0.8269 -1.633134,-1.30237 -0.806231,-0.33076 -1.881206,-0.39278 -1.074974,-0.0827 -2.501383,-0.0827 h -2.873489 v 8.28971 h 2.439365 q 1.901878,0 3.183578,-0.18605 1.281701,-0.18606 2.14995,-0.84758 0.826903,-0.64085 1.19901,-1.40574 0.392779,-0.78556 0.392779,-2.08793 z m 12.38288,21.35478 h -9.695444 l -8.39307,-11.28723 H 76.626547 V 174.505 h -7.896929 v -30.78148 h 13.313147 q 2.728781,0 4.692677,0.31009 1.963896,0.31009 3.679721,1.34372 1.736497,1.03363 2.749454,2.68744 1.033629,1.63313 1.033629,4.11384 0,3.41098 -1.591789,5.56093 -1.571117,2.14995 -4.506624,3.57635 z" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path6011"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.33745956px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto Bold'"
+         d="m 126.53017,164.83023 q 0,4.54797 -3.86577,7.40079 -3.8451,2.83214 -10.46033,2.83214 -3.82443,0 -6.67725,-0.66152 -2.83214,-0.68219 -5.31285,-1.71582 v -7.38012 h 0.86825 q 2.46003,1.9639 5.4989,3.0182 3.05955,1.0543 5.87102,1.0543 0.72354,0 1.90188,-0.12403 1.17833,-0.12404 1.92255,-0.41345 0.90959,-0.37211 1.48842,-0.93027 0.59951,-0.55816 0.59951,-1.65381 0,-1.01295 -0.86825,-1.73649 -0.84758,-0.74422 -2.50138,-1.137 -1.7365,-0.41345 -3.67972,-0.76488 -1.92255,-0.37211 -3.61771,-0.93027 -3.88644,-1.26103 -5.60227,-3.41098 -1.69515,-2.17062 -1.69515,-5.37487 0,-4.2999 3.8451,-7.00801 3.86578,-2.72878 9.92284,-2.72878 3.03887,0 5.99505,0.59951 2.97686,0.57883 5.14748,1.46775 v 7.0907 h -0.84758 q -1.86053,-1.48843 -4.56864,-2.48071 -2.68744,-1.01296 -5.49891,-1.01296 -0.99228,0 -1.98457,0.14471 -0.97161,0.12403 -1.8812,0.49614 -0.80623,0.31009 -1.38506,0.95094 -0.57884,0.62018 -0.57884,1.42641 0,1.21968 0.93027,1.8812 0.93027,0.64085 3.51434,1.17834 1.69515,0.35144 3.2456,0.6822 1.57111,0.33076 3.36963,0.90959 3.53501,1.15767 5.20949,3.16291 1.69515,1.98457 1.69515,5.16814 z" />
     </g>
     <path
        style="fill:#bababa;fill-opacity:1;stroke:none;stroke-width:3.77952766"

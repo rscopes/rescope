@@ -23,7 +23,7 @@ By using independent, specialized & serializable "Data Stores" in a Flux oriente
 ### Stores ?
 
 ReScope stores look like "React components for data".<br>
-Basically, they render determined data according theirs entry state.
+Basically, they render determined data according theirs entry state & dependencies data.
 
 Each Stores can manage part of, or the entire App state's determining values,<br>
 maintain intermediate, possibly asynchronous resources,<br>

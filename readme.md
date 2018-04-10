@@ -66,7 +66,7 @@ To deal with complex architectures & data processing the Scopes allow :
 
 ## Doc ?
 
-Comming slowly, [Work in progress doc](doc/readme.md)
+[Work in progress doc](doc/readme.md)
 
 About [Stores](doc/Store.md) <br>
 About [Scopes](doc/Scope.md)

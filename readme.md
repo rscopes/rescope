@@ -22,8 +22,8 @@ Just like React Components. <br/>
 Of course, that's quickly said, in an application, the data must deal with complex dependencies, <br/>
 different contexts, custom data bindings, and so on. <br/>
 This is where reScope comes in: <br/>
-It offers a simple, flexible and familiar structure to organize and synchronize your data components, <br/>
-theirs dependencies, scopes, and, among other things, theirs persitence & active instances.
+It offers a simple, flexible and familiar structure to organize and synchronize your data components. <br/>
+It manage theirs dependencies, scopes, and, among other things, theirs persitence & active instances.
 
 ## How ?
 

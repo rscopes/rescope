@@ -16,7 +16,7 @@ ReScope is a flexible, effective and easy to use state management system inspire
 
 ## What's the point ?
 
-Applications transform structured data& events into user-friendly interfaces and controls. <br/>
+Applications transform structured data & events into user-friendly interfaces and controls. <br/>
 The set of data transformations of one or more applications can be divided into reusable data components with a reactive state and result data.<br/>
 Just like React Components. <br/>
 Of course, that's quickly said, in an application, the data must deal with complex dependencies, <br/>
@@ -24,7 +24,7 @@ different contexts, custom data bindings, and so on. <br/>
 
 This is where reScope comes in: <br/>
 It offers a simple, flexible and familiar structure to organize and synchronize your data components. <br/>
-It manage theirs dependencies, scopes, and, among other things, theirs persitence & active instances.
+It manage theirs dependencies, theirs scopes, persitence, active instances & much more.
 
 ## How ?
 

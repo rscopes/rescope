@@ -28,11 +28,11 @@
       <stop
          id="stop6019"
          offset="0"
-         style="stop-color:#464646;stop-opacity:0" />
+         style="stop-color:#202020;stop-opacity:0.25" />
       <stop
          id="stop6021"
          offset="1"
-         style="stop-color:#ffffff;stop-opacity:0.87155962" />
+         style="stop-color:#ffffff;stop-opacity:0.92372882" />
     </linearGradient>
     <linearGradient
        inkscape:collect="always"
@@ -309,11 +309,6 @@
          style="fill:#e91616;fill-opacity:0.62755102;stroke:none;opacity:1"
          inkscape:connector-curvature="0" />
     </g>
-    <path
-       inkscape:connector-curvature="0"
-       id="path5985"
-       style="opacity:0.382;fill:url(#radialGradient6017);fill-opacity:1;stroke:none;stroke-width:0.05;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.63775509"
-       d="m 8.0484418,288.82726 -1.6e-4,5.04055 4.2756402,-2.52027 z m 5.0382602,-2.86498 1.6e-4,4.93554 4.18648,-2.46772 z m -5.0380802,-2.9697 -1.8e-4,5.04035 4.2756502,-2.52027 z m 3.2e-4,-10.89313 -1.6e-4,5.04055 4.2756402,-2.52028 z m 5.0382602,-2.86498 1.6e-4,4.93553 4.18649,-2.46771 z m -5.0380902,-2.9697 -1.7e-4,5.04035 4.2756502,-2.52028 z m 14.2413702,14.19859 -1.6e-4,5.04054 4.27564,-2.52027 z m 5.03826,-2.86499 1.6e-4,4.93554 4.18648,-2.46772 z m -5.03809,-2.96969 -1.6e-4,5.04035 4.27565,-2.52028 z" />
     <g
        id="g5723"
        style="opacity:0.858">
@@ -832,5 +827,10 @@
          d="m 16.809786,280.15712 5.2e-5,1.58907 -1.347929,-0.79453 z"
          id="path5833" />
     </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path5985"
+       style="opacity:0.446;fill:url(#radialGradient6017);fill-opacity:1;stroke:none;stroke-width:0.05;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.63775509"
+       d="m 8.0484418,288.82726 -1.6e-4,5.04055 4.2756402,-2.52027 z m 5.0382602,-2.86498 1.6e-4,4.93554 4.18648,-2.46772 z m -5.0380802,-2.9697 -1.8e-4,5.04035 4.2756502,-2.52027 z m 3.2e-4,-10.89313 -1.6e-4,5.04055 4.2756402,-2.52028 z m 5.0382602,-2.86498 1.6e-4,4.93553 4.18649,-2.46771 z m -5.0380902,-2.9697 -1.7e-4,5.04035 4.2756502,-2.52028 z m 14.2413702,14.19859 -1.6e-4,5.04054 4.27564,-2.52027 z m 5.03826,-2.86499 1.6e-4,4.93554 4.18648,-2.46772 z m -5.03809,-2.96969 -1.6e-4,5.04035 4.27565,-2.52028 z" />
   </g>
 </svg>

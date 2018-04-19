@@ -1591,6 +1591,12 @@ module.exports =
 	            _this.scope = scope.stores;
 	        }
 	
+	        // standardized scope access
+	        _this.$scope = _this.scopeObj;
+	        _this.$stores = _this.scopeObj.stores;
+	        _this.$actions = _this.scopeObj.actions;
+	        _this.$dispatch = _this.scopeObj.dispatch.bind(_this.scopeObj);
+	
 	        _this._rev = _this.constructor._rev || 0;
 	        _this._revs = {};
 	        _this.stores = {};

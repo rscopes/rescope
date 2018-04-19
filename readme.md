@@ -51,7 +51,7 @@ To deal with complex architectures & data processing the Scopes allow :
 
 - React "high order components" factories decorators ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
 - Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
-- Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores µState control,
+- Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores,
 - Easy pairing of remote / webworker based stores
 - Easy remapping & aliasing of dependencies data,
 - Easy, partial or complete serialization / restoration
@@ -89,8 +89,6 @@ The examples and bootstrap will come gradually [here](https://github.com/CaipiLa
 - Optimize
 - Many more tests
 - Cosmetics rewrites & more comments
-- Optimize refs management
-- Optimize actions propag
 - Possibly some semantic/normalisation updates
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

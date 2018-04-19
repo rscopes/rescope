@@ -106,6 +106,11 @@ class Store extends EventEmitter {
             this.scope    = scope.stores;
         }
         
+        // standardized scope access
+        this.$scope = this.scopeObj;
+        this.$stores = this.scopeObj.stores;
+        this.$actions = this.scopeObj.actions;
+        this.$dispatch = this.scopeObj.dispatch.bind(this.scopeObj);
         
         this._rev     = this.constructor._rev || 0;
         this._revs    = {};
@@ -236,6 +241,9 @@ class Store extends EventEmitter {
     get nextState() {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
+    
+    
+    
     
     /**
      * Overridable method to know if a data change should be propag to the listening

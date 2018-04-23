@@ -390,6 +390,7 @@ class Scope extends EventEmitter {
                           lctx,
                           id,
                           {
+                              enumerable:true,
                               get: () => this._._scope[id]
                           }
                       );
@@ -397,6 +398,7 @@ class Scope extends EventEmitter {
                           targetCtx._.state.prototype,
                           id,
                           {
+                              enumerable:true,
                               get: () => (this._._scope[id] && this._._scope[id].state),
                               set: ( v ) => (this._mount(id, undefined, v))
                           }
@@ -405,6 +407,7 @@ class Scope extends EventEmitter {
                           targetCtx._.data.prototype,
                           id,
                           {
+                              enumerable:true,
                               get: () => (this._._scope[id] && this._._scope[id].data),
                               set: ( v ) => (this._mount(id, undefined, v))
                           }

@@ -608,11 +608,13 @@
 	                } else if (!force && !external) _this6._._scope[id] = srcCtx[id];
 	
 	                Object.defineProperty(lctx, id, {
+	                    enumerable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id];
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.state.prototype, id, {
+	                    enumerable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].state;
 	                    },
@@ -621,6 +623,7 @@
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.data.prototype, id, {
+	                    enumerable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].data;
 	                    },

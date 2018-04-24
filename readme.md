@@ -88,6 +88,7 @@ The examples and bootstrap will come gradually [here](https://github.com/CaipiLa
 
 - Optimize
 - Many more tests
+- Allow dependencies thats are not defined yet
 - Cosmetics rewrites & more comments
 - Possibly some semantic/normalisation updates
 

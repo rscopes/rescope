@@ -226,7 +226,8 @@ module.exports =
 	                return 0;
 	            }).join('::') : scopes;
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
-	        } // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+	        } // if > 0, will wait 'persistenceTm' ms before destroy when
+	        // dispose reach 0
 	
 	    }, {
 	        key: 'stateMapToRefList',
@@ -261,18 +262,20 @@ module.exports =
 	         * {
 	         *  parent {scope} @optional parent scope
 	         *
-	         *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id' scope)
-	         *  key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'::'+key)
-	         *  incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
+	         *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
+	         *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
+	         *     will be (parent.id+'::'+key) incrementId {bool} @optional true to add a suffix
+	         *     id, if the provided key or id globally exist
 	         *
 	         *  state {Object} @optional initial state by store alias
 	         *  data {Object} @optional initial data by store alias
 	         *
 	         *  rootEmitter {bool} @optional true to not being destabilized by parent
-	         *  boundedActions {array | regexp} @optional list or regexp of actions not propagated to the parent
+	         *  boundedActions {array | regexp} @optional list or regexp of actions not
+	         *     propagated to the parent
 	         *
-	         *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
-	         *  autoDestroy  {bool} will trigger retain & dispose after start
+	         *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
+	         *     dispose reach 0 autoDestroy  {bool} will trigger retain & dispose after start
 	         *  }
 	         * @returns {Scope}
 	         */
@@ -403,8 +406,8 @@ module.exports =
 	         *
 	         * Mount the stores in storesList, in this scope or in its parents or mixed scopes
 	         *
-	         * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope store ref from Store::as or
-	         *     Store:as
+	         * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope
+	         *     store ref from Store::as or Store:as
 	         * @param state
 	         * @param data
 	         * @returns {Scope}
@@ -441,7 +444,12 @@ module.exports =
 	                var store = this._._scope[id],
 	                    ctx = void 0;
 	                if (is.fn(store)) {
-	                    this._._scope[id] = new store(this, { snapshot: snapshot, name: id, state: state, data: data });
+	                    this._._scope[id] = new store(this, {
+	                        snapshot: snapshot,
+	                        name: id,
+	                        state: state,
+	                        data: data
+	                    });
 	                } else if (snapshot) store.restore(snapshot);else {
 	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
@@ -458,11 +466,9 @@ module.exports =
 	            var _this3 = this;
 	
 	            //if ( !this.__scope[id] ) {//ask mixed || parent
-	            //    if ( this.__mixed.reduce(( mounted, ctx ) => (mounted || ctx._watchStore(id, state, data)), false) ||
-	            //        !this.parent )
-	            //        return;
-	            //    return this.parent._watchStore(...arguments);
-	            //}
+	            //    if ( this.__mixed.reduce(( mounted, ctx ) => (mounted ||
+	            // ctx._watchStore(id, state, data)), false) || !this.parent ) return; return
+	            // this.parent._watchStore(...arguments); }
 	            if (!this._._listening[id] && !is.fn(this._._scope[id])) {
 	                !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
 	                !this._._scope[id].isStable() && this.wait(id);
@@ -599,13 +605,13 @@ module.exports =
 	                } else if (!force && !external) _this6._._scope[id] = srcCtx[id];
 	
 	                Object.defineProperty(lctx, id, {
-	                    enumerable: true,
+	                    enumerable: true, configurable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id];
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.state.prototype, id, {
-	                    enumerable: true,
+	                    enumerable: true, configurable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].state;
 	                    },
@@ -614,7 +620,8 @@ module.exports =
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.data.prototype, id, {
-	                    enumerable: true,
+	                    enumerable: true, configurable: true,
+	
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].data;
 	                    },
@@ -834,7 +841,8 @@ module.exports =
 	                    if (storesRevMap && storesRevMap.hasOwnProperty(id)) {
 	                        storesRevMap[id].rev = ctx[id]._rev;
 	                        storesRevMap[id].refs.forEach(function (ref) {
-	                            //console.warn("update ref ", ref.ref, this.retrieve(ref.path));
+	                            //console.warn("update ref ", ref.ref,
+	                            // this.retrieve(ref.path));
 	                            output[ref.alias] = _this9.retrieve(ref.path);
 	                        });
 	                    } else {
@@ -1174,7 +1182,8 @@ module.exports =
 	                    obj(data, lastRevs && [].concat(_toConsumableArray(lastRevs)) || "no revs");
 	                }
 	                // lastRevs &&
-	                // key.forEach(id => (lastRevs[id] = this.stores[id] && this.stores[id]._rev || 0));
+	                // key.forEach(id => (lastRevs[id] = this.stores[id] &&
+	                // this.stores[id]._rev || 0));
 	            });
 	            this.emit("update", this.getUpdates());
 	        }

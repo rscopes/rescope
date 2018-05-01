@@ -3,14 +3,13 @@
   "version": "3.6.12",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
-  "main": "dist/ReScope.js",
+  "main": "./etc/npm/index.js",
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",
   "scripts": {
-    "build": "webpack&&webpack -p",
-    "buildStaging": "webpack",
-    "test": "mocha --compilers js:babel-core/register ./test/*.test.js -b",
-    "dev": "webpack -w"
+    "build": "set NODE_ENV=production && webpack --config ./etc/wp/webpack.config.js && webpack --config ./etc/wp/webpack.config.js -p",
+    "test": "mocha --compilers js:babel-core/register ./etc/test/*.test.js -b",
+    "dev": "webpack -w --config ./etc/wp/webpack.config.js"
   },
   "dependencies": {
     "is": "^3.2.1",

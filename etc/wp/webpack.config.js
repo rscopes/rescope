@@ -35,13 +35,12 @@ var nodeExternals = require('webpack-node-externals');
 module.exports    = [
     {
         entry    : {
-            "ReScope": "./src/ReScope.js",
-            "index"  : "./src/index.js",
+            "ReScope": "./src/index.js",
         },
         devtool  : production ? false : 'source-map',
         output   : {
             path         : __dirname,
-            filename     : production ? "dist/[name].min.js" : "dist/[name].js",
+            filename     : production ? "../../dist/[name].min.js" : "../../dist/[name].js",
             publicPath   : "/",
             libraryTarget: 'commonjs2'
         },
@@ -93,7 +92,7 @@ module.exports    = [
         },
         plugins: (
             [
-                new webpack.BannerPlugin(fs.readFileSync("./LICENCE.HEAD.MD").toString()),
+                new webpack.BannerPlugin(fs.readFileSync("./etc/wp/LICENCE.HEAD.MD").toString()),
                 
                 new webpack.DefinePlugin({
                                              __PROD__: production
@@ -119,12 +118,12 @@ module.exports    = [
     },
     {
         entry  : {
-            "ReScope": "./src/ReScope.js",
+            "ReScope": "./src/index.js",
         },
         devtool: production ? false : 'source-map',
         output : {
             path         : __dirname,
-            filename     : production ? "dist/[name].browser.min.js" : "dist/[name].browser.js",
+            filename     : production ? "../../dist/[name].browser.min.js" : "../../dist/[name].browser.js",
             publicPath   : "/",
             libraryTarget: 'var'
         },

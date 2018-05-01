@@ -29,7 +29,7 @@ var child_process = require('child_process');
 var os            = require('os');
 var shortid       = require('shortid');
 var path          = require('path'),
-    packageCfg    = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json'));
+    packageCfg    = JSON.parse(require('fs').readFileSync(__dirname + '/../../package.json'));
 
 
 var util  = require('util'),
@@ -40,22 +40,22 @@ describe('Rescope', function () {
     let Rescope,
         StaticContext,
         TestContext;
-    it('should build well', function ( done ) {
-        this.timeout(Infinity);
-        
-        child_process.exec(
-            'npm run buildStaging',
-            {
-                //cwd: "/"
-            },
-            function ( error, stdout, stderr ) {
-                done(error)
-            });
-        
-    });
+    //it('should build well', function ( done ) {
+    //    this.timeout(Infinity);
+    //
+    //    child_process.exec(
+    //        'npm run buildStaging',
+    //        {
+    //            //cwd: "/"
+    //        },
+    //        function ( error, stdout, stderr ) {
+    //            done(error)
+    //        });
+    //
+    //});
     it('should require well', function ( done ) {
         this.timeout(Infinity);
-        Rescope = require('../dist/ReScope');
+        Rescope = require('../npm');
         done(!Rescope)
     });
     it('should create basic Scopes well', function ( done ) {
@@ -79,8 +79,8 @@ describe('Rescope', function () {
                 globalStoreWithActions: class globalStoreWithActions extends Rescope.Store {
                     static state = { ok: true };
                     static actions = {
-                        makeItOk  : v => ({ ok: v }),
-                        someAction: v => ({ value: v })
+                        makeItOk  : v => ( { ok: v } ),
+                        someAction: v => ( { value: v } )
                     };
                 },
                 stats                 : class stats extends Rescope.Store {
@@ -102,7 +102,7 @@ describe('Rescope', function () {
                     static state = { ok: true };
                     
                     static actions = {
-                        makeError: v => ({ failNow: true })
+                        makeError: v => ( { failNow: true } )
                     };
                     
                     apply( data, state ) {
@@ -116,14 +116,14 @@ describe('Rescope', function () {
                     }
                 },
                 local_1       : class local_1 extends Rescope.Store {
-                    static use = ["!globalAsyncStore"];
+                    static use = [ "!globalAsyncStore" ];
                     static state = { ok: true };
                 },
                 local_2       : class local_2 extends Rescope.Store {
                     static state = { ok: true };
                 },
                 local_3       : class local_3 extends Rescope.Store {
-                    static use = ["globalStoreWithActions", "local_2"];
+                    static use = [ "globalStoreWithActions", "local_2" ];
                     static state = { ok: true };
                 },
                 local_4       : class local_4 extends Rescope.Store {
@@ -132,7 +132,7 @@ describe('Rescope', function () {
                 local_5       : class local_5 extends Rescope.Store {
                     static use = { "!local_3.globalStoreWithActions.ok": "remapTest" };
                     static follow = {
-                        remapTest: v => (v === "ok")
+                        remapTest: v => ( v === "ok" )
                     };
                     
                     apply( data, state ) {
@@ -159,7 +159,8 @@ describe('Rescope', function () {
     }
     
     it('should synchrone init them well', function ( done ) {
-        TestContext.state.local_3 = { updated: true };// should mount all the required store
+        TestContext.state.local_3 = { updated: true };// should mount all the required
+                                                      // store
         
         let data = TestContext.data,
             ok   =
@@ -256,7 +257,7 @@ describe('Rescope', function () {
         var fn;
         TestContext.bind(
             fn = ( data ) => {
-                TestContext.unBind(fn, ["globalStoreWithActions", "local_3"]);
+                TestContext.unBind(fn, [ "globalStoreWithActions", "local_3" ]);
                 let ok =
                         data.globalStoreWithActions.resync &&
                         data.local_3.globalStoreWithActions.resync;
@@ -265,9 +266,10 @@ describe('Rescope', function () {
                 else done(new Error("fail "))
                 
             },
-            ["globalStoreWithActions", "local_3"], false
+            [ "globalStoreWithActions", "local_3" ], false
         );
-        TestContext.state.globalStoreWithActions = { resync: true };// should mount all the required store
+        TestContext.state.globalStoreWithActions = { resync: true };// should mount all
+                                                                    // the required store
     });
     it('should mixin scopes well', function ( done ) {
         this.timeout(10000);
@@ -299,7 +301,7 @@ describe('Rescope', function () {
                 }
             );
         TestContext2.mixin(StaticContext);
-        if ( TestContext2.stores['globalAsyncStore'] && TestContext2.stores['local_2'] && TestContext2.stores['test0'] )
+        if ( TestContext2.stores[ 'globalAsyncStore' ] && TestContext2.stores[ 'local_2' ] && TestContext2.stores[ 'test0' ] )
             done();
         else
             done(new Error("Not working !!!"));
@@ -350,7 +352,7 @@ describe('Rescope', function () {
             TestContext2 = FlyingContext = new Rescope.Scope(
                 {
                     local_2: class local_2 extends Rescope.Store {
-                        static use = ["test0"];
+                        static use = [ "test0" ];
                         
                         static state = { ok: true };
                     }
@@ -394,7 +396,7 @@ describe('Rescope', function () {
     it('should restore with force (reset) well (fast test)', function ( done ) {
         StaticContext.restore(serializeTest, true);
         let ok = !TestContext.data.globalStoreWithActions.value &&
-            FlyingContext.data.local_2.yiha;
+                 FlyingContext.data.local_2.yiha;
         !ok && console.log("!!!!!!!!!!!!!", TestContext.data.globalStoreWithActions)
         if ( ok ) done();
         else done(new Error("fail "))
@@ -415,11 +417,11 @@ describe('Rescope', function () {
         this.timeout(10000);
         
         TestContext.mount(
-            ["stats"])
+            [ "stats" ])
                    .then(
                        ( e, r ) => {
                 
-                           TestContext.retainStores(["stats"]);
+                           TestContext.retainStores([ "stats" ]);
                            setTimeout(
                                tm => {
                                    let
@@ -431,8 +433,8 @@ describe('Rescope', function () {
                                                autoDestroy  : true
                                            }
                                        );
-                                   TestContext2.disposeStores(["stats"]);
-                                   if ( typeof TestContext2.stores['stats'] == 'function' )
+                                   TestContext2.disposeStores([ "stats" ]);
+                                   if ( typeof TestContext2.stores[ 'stats' ] == 'function' )
                                        done(new Error("Not working !!!"));
                                    else
                                        done();

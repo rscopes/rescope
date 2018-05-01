@@ -27,8 +27,8 @@
 
 var is            = require('is'),
     Scope         = require('./Scope'),
-    EventEmitter  = require('./Emitter'),
-    TaskSequencer = require('./TaskSequencer'),
+    EventEmitter  = require('./utils/Emitter'),
+    TaskSequencer = require('./utils/TaskSequencer'),
     shortid       = require('shortid'),
     objProto      = Object.getPrototypeOf({});
 
@@ -107,9 +107,9 @@ class Store extends EventEmitter {
         }
         
         // standardized scope access
-        this.$scope = this.scopeObj;
-        this.$stores = this.scopeObj.stores;
-        this.$actions = this.scopeObj.actions;
+        this.$scope    = this.scopeObj;
+        this.$stores   = this.scopeObj.stores;
+        this.$actions  = this.scopeObj.actions;
         this.$dispatch = this.scopeObj.dispatch.bind(this.scopeObj);
         
         this._rev     = this.constructor._rev || 0;
@@ -241,8 +241,6 @@ class Store extends EventEmitter {
     get nextState() {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
-    
-    
     
     
     /**

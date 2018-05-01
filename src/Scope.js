@@ -27,7 +27,7 @@
 
 
 var is                = require('is'),
-    EventEmitter      = require('./Emitter'),
+    EventEmitter      = require('./utils/Emitter'),
     shortid           = require('shortid')
     , __proto__push   = ( target, id, parent ) => {
         let fn         = function () {

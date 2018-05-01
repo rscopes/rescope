@@ -1,27 +1,3 @@
-/*!
- * MIT License
- * 
- * Copyright (c) 2018 Wise Wild Web
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -68,85 +44,78 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	"use strict";
+	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	
-	var _index = __webpack_require__(1);
-	
-	var _index2 = _interopRequireDefault(_index);
-	
-	var _Scope = __webpack_require__(2);
+	var _Scope = __webpack_require__(1);
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(6);
+	var _Store = __webpack_require__(14);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(8);
+	var _scopable = __webpack_require__(17);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	// will use as external the index in dist
-	var $global = typeof window !== 'undefined' ? window : global; /*
-	                                                                * Copyright (c)  2018 Wise Wild Web .
-	                                                                *
-	                                                                *  MIT License
-	                                                                *
-	                                                                *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	                                                                *  of this software and associated documentation files (the "Software"), to deal
-	                                                                *  in the Software without restriction, including without limitation the rights
-	                                                                *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	                                                                *  copies of the Software, and to permit persons to whom the Software is
-	                                                                *  furnished to do so, subject to the following conditions:
-	                                                                *
-	                                                                *  The above copyright notice and this permission notice shall be included in all
-	                                                                *  copies or substantial portions of the Software.
-	                                                                *
-	                                                                *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	                                                                *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	                                                                *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	                                                                *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	                                                                *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	                                                                *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	                                                                *  SOFTWARE.
-	                                                                *
-	                                                                * @author : Nathanael Braun
-	                                                                * @contact : caipilabs@gmail.com
-	                                                                */
+	/*
+	 * Copyright (c)  2018 Wise Wild Web .
+	 *
+	 *  MIT License
+	 *
+	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	 *  of this software and associated documentation files (the "Software"), to deal
+	 *  in the Software without restriction, including without limitation the rights
+	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 *  copies of the Software, and to permit persons to whom the Software is
+	 *  furnished to do so, subject to the following conditions:
+	 *
+	 *  The above copyright notice and this permission notice shall be included in all
+	 *  copies or substantial portions of the Software.
+	 *
+	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 *  SOFTWARE.
+	 *
+	 * @author : Nathanael Braun
+	 * @contact : caipilabs@gmail.com
+	 */
 	
+	var $global = typeof window !== 'undefined' ? window : global;
+	
+	var RS = $global.___rescope || {};
 	if ($global.___rescope) {
 	    console.warn("ReScope is defined multiple times !! \nCheck you're packaging");
 	} else {
 	
-	    $global.___rescope = _index2.default;
+	    $global.___rescope = RS;
 	    _Scope2.default.Store = _Store2.default;
-	    _index2.default.Scope = _Scope2.default;
-	    _index2.default.Context = _Scope2.default;
-	    _index2.default.Store = _Store2.default;
-	    _index2.default.reScope = _scopable.reScope;
-	    _index2.default.scopeToState = _scopable.scopeToState;
-	    _index2.default.reScopeState = _scopable.scopeToState;
-	    _index2.default.addScopableType = _scopable.addScopableType;
-	    _index2.default.scopeRef = function scopeRef(map, key) {
+	    RS.Scope = _Scope2.default;
+	    RS.Context = _Scope2.default;
+	    RS.Store = _Store2.default;
+	    RS.reScope = _scopable.reScope;
+	    RS.scopeToState = _scopable.scopeToState;
+	    RS.reScopeState = _scopable.scopeToState;
+	    RS.addScopableType = _scopable.addScopableType;
+	    RS.scopeRef = function scopeRef(map, key) {
 	        map[key] = new _Scope2.default.scopeRef(map[key]);
 	        return map;
 	    };
 	}
-	exports.default = $global.___rescope || _index2.default;
+	exports.default = RS;
 	module.exports = exports["default"];
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-	module.exports = require("./index");
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -156,8 +125,6 @@ module.exports =
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _class, _temp;
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -196,9 +163,9 @@ module.exports =
 	 * @contact : caipilabs@gmail.com
 	 */
 	
-	var is = __webpack_require__(3),
-	    EventEmitter = __webpack_require__(4),
-	    shortid = __webpack_require__(5),
+	var is = __webpack_require__(2),
+	    EventEmitter = __webpack_require__(3),
+	    shortid = __webpack_require__(4),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -211,7 +178,8 @@ module.exports =
 	/**
 	 * Base Scope object
 	 */
-	var Scope = (_temp = _class = function (_EventEmitter) {
+	
+	var Scope = function (_EventEmitter) {
 	    _inherits(Scope, _EventEmitter);
 	
 	    _createClass(Scope, null, [{
@@ -1340,20 +1308,827 @@ module.exports =
 	    }]);
 	
 	    return Scope;
-	}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopeRef = function scopeRef(path) {
+	}(EventEmitter);
+	
+	Scope.persistenceTm = 1;
+	Scope.Store = null;
+	
+	Scope.scopeRef = function scopeRef(path) {
 	    this.path = path;
-	}, _class.scopes = openScopes, _temp);
+	};
+	
+	Scope.scopes = openScopes;
 	exports.default = Scope;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, exports) {
 
-	module.exports = require("is");
+	/* globals window, HTMLElement */
+	
+	'use strict';
+	
+	/**!
+	 * is
+	 * the definitive JavaScript type testing library
+	 *
+	 * @copyright 2013-2014 Enrico Marino / Jordan Harband
+	 * @license MIT
+	 */
+	
+	var objProto = Object.prototype;
+	var owns = objProto.hasOwnProperty;
+	var toStr = objProto.toString;
+	var symbolValueOf;
+	if (typeof Symbol === 'function') {
+	  symbolValueOf = Symbol.prototype.valueOf;
+	}
+	var isActualNaN = function (value) {
+	  return value !== value;
+	};
+	var NON_HOST_TYPES = {
+	  'boolean': 1,
+	  number: 1,
+	  string: 1,
+	  undefined: 1
+	};
+	
+	var base64Regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
+	var hexRegex = /^[A-Fa-f0-9]+$/;
+	
+	/**
+	 * Expose `is`
+	 */
+	
+	var is = {};
+	
+	/**
+	 * Test general.
+	 */
+	
+	/**
+	 * is.type
+	 * Test if `value` is a type of `type`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @param {String} type type
+	 * @return {Boolean} true if `value` is a type of `type`, false otherwise
+	 * @api public
+	 */
+	
+	is.a = is.type = function (value, type) {
+	  return typeof value === type;
+	};
+	
+	/**
+	 * is.defined
+	 * Test if `value` is defined.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is defined, false otherwise
+	 * @api public
+	 */
+	
+	is.defined = function (value) {
+	  return typeof value !== 'undefined';
+	};
+	
+	/**
+	 * is.empty
+	 * Test if `value` is empty.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is empty, false otherwise
+	 * @api public
+	 */
+	
+	is.empty = function (value) {
+	  var type = toStr.call(value);
+	  var key;
+	
+	  if (type === '[object Array]' || type === '[object Arguments]' || type === '[object String]') {
+	    return value.length === 0;
+	  }
+	
+	  if (type === '[object Object]') {
+	    for (key in value) {
+	      if (owns.call(value, key)) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  return !value;
+	};
+	
+	/**
+	 * is.equal
+	 * Test if `value` is equal to `other`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @param {Mixed} other value to compare with
+	 * @return {Boolean} true if `value` is equal to `other`, false otherwise
+	 */
+	
+	is.equal = function equal(value, other) {
+	  if (value === other) {
+	    return true;
+	  }
+	
+	  var type = toStr.call(value);
+	  var key;
+	
+	  if (type !== toStr.call(other)) {
+	    return false;
+	  }
+	
+	  if (type === '[object Object]') {
+	    for (key in value) {
+	      if (!is.equal(value[key], other[key]) || !(key in other)) {
+	        return false;
+	      }
+	    }
+	    for (key in other) {
+	      if (!is.equal(value[key], other[key]) || !(key in value)) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  if (type === '[object Array]') {
+	    key = value.length;
+	    if (key !== other.length) {
+	      return false;
+	    }
+	    while (key--) {
+	      if (!is.equal(value[key], other[key])) {
+	        return false;
+	      }
+	    }
+	    return true;
+	  }
+	
+	  if (type === '[object Function]') {
+	    return value.prototype === other.prototype;
+	  }
+	
+	  if (type === '[object Date]') {
+	    return value.getTime() === other.getTime();
+	  }
+	
+	  return false;
+	};
+	
+	/**
+	 * is.hosted
+	 * Test if `value` is hosted by `host`.
+	 *
+	 * @param {Mixed} value to test
+	 * @param {Mixed} host host to test with
+	 * @return {Boolean} true if `value` is hosted by `host`, false otherwise
+	 * @api public
+	 */
+	
+	is.hosted = function (value, host) {
+	  var type = typeof host[value];
+	  return type === 'object' ? !!host[value] : !NON_HOST_TYPES[type];
+	};
+	
+	/**
+	 * is.instance
+	 * Test if `value` is an instance of `constructor`.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an instance of `constructor`
+	 * @api public
+	 */
+	
+	is.instance = is['instanceof'] = function (value, constructor) {
+	  return value instanceof constructor;
+	};
+	
+	/**
+	 * is.nil / is.null
+	 * Test if `value` is null.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is null, false otherwise
+	 * @api public
+	 */
+	
+	is.nil = is['null'] = function (value) {
+	  return value === null;
+	};
+	
+	/**
+	 * is.undef / is.undefined
+	 * Test if `value` is undefined.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is undefined, false otherwise
+	 * @api public
+	 */
+	
+	is.undef = is.undefined = function (value) {
+	  return typeof value === 'undefined';
+	};
+	
+	/**
+	 * Test arguments.
+	 */
+	
+	/**
+	 * is.args
+	 * Test if `value` is an arguments object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an arguments object, false otherwise
+	 * @api public
+	 */
+	
+	is.args = is.arguments = function (value) {
+	  var isStandardArguments = toStr.call(value) === '[object Arguments]';
+	  var isOldArguments = !is.array(value) && is.arraylike(value) && is.object(value) && is.fn(value.callee);
+	  return isStandardArguments || isOldArguments;
+	};
+	
+	/**
+	 * Test array.
+	 */
+	
+	/**
+	 * is.array
+	 * Test if 'value' is an array.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an array, false otherwise
+	 * @api public
+	 */
+	
+	is.array = Array.isArray || function (value) {
+	  return toStr.call(value) === '[object Array]';
+	};
+	
+	/**
+	 * is.arguments.empty
+	 * Test if `value` is an empty arguments object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an empty arguments object, false otherwise
+	 * @api public
+	 */
+	is.args.empty = function (value) {
+	  return is.args(value) && value.length === 0;
+	};
+	
+	/**
+	 * is.array.empty
+	 * Test if `value` is an empty array.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an empty array, false otherwise
+	 * @api public
+	 */
+	is.array.empty = function (value) {
+	  return is.array(value) && value.length === 0;
+	};
+	
+	/**
+	 * is.arraylike
+	 * Test if `value` is an arraylike object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an arguments object, false otherwise
+	 * @api public
+	 */
+	
+	is.arraylike = function (value) {
+	  return !!value && !is.bool(value)
+	    && owns.call(value, 'length')
+	    && isFinite(value.length)
+	    && is.number(value.length)
+	    && value.length >= 0;
+	};
+	
+	/**
+	 * Test boolean.
+	 */
+	
+	/**
+	 * is.bool
+	 * Test if `value` is a boolean.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a boolean, false otherwise
+	 * @api public
+	 */
+	
+	is.bool = is['boolean'] = function (value) {
+	  return toStr.call(value) === '[object Boolean]';
+	};
+	
+	/**
+	 * is.false
+	 * Test if `value` is false.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is false, false otherwise
+	 * @api public
+	 */
+	
+	is['false'] = function (value) {
+	  return is.bool(value) && Boolean(Number(value)) === false;
+	};
+	
+	/**
+	 * is.true
+	 * Test if `value` is true.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is true, false otherwise
+	 * @api public
+	 */
+	
+	is['true'] = function (value) {
+	  return is.bool(value) && Boolean(Number(value)) === true;
+	};
+	
+	/**
+	 * Test date.
+	 */
+	
+	/**
+	 * is.date
+	 * Test if `value` is a date.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a date, false otherwise
+	 * @api public
+	 */
+	
+	is.date = function (value) {
+	  return toStr.call(value) === '[object Date]';
+	};
+	
+	/**
+	 * is.date.valid
+	 * Test if `value` is a valid date.
+	 *
+	 * @param {Mixed} value value to test
+	 * @returns {Boolean} true if `value` is a valid date, false otherwise
+	 */
+	is.date.valid = function (value) {
+	  return is.date(value) && !isNaN(Number(value));
+	};
+	
+	/**
+	 * Test element.
+	 */
+	
+	/**
+	 * is.element
+	 * Test if `value` is an html element.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an HTML Element, false otherwise
+	 * @api public
+	 */
+	
+	is.element = function (value) {
+	  return value !== undefined
+	    && typeof HTMLElement !== 'undefined'
+	    && value instanceof HTMLElement
+	    && value.nodeType === 1;
+	};
+	
+	/**
+	 * Test error.
+	 */
+	
+	/**
+	 * is.error
+	 * Test if `value` is an error object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an error object, false otherwise
+	 * @api public
+	 */
+	
+	is.error = function (value) {
+	  return toStr.call(value) === '[object Error]';
+	};
+	
+	/**
+	 * Test function.
+	 */
+	
+	/**
+	 * is.fn / is.function (deprecated)
+	 * Test if `value` is a function.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a function, false otherwise
+	 * @api public
+	 */
+	
+	is.fn = is['function'] = function (value) {
+	  var isAlert = typeof window !== 'undefined' && value === window.alert;
+	  if (isAlert) {
+	    return true;
+	  }
+	  var str = toStr.call(value);
+	  return str === '[object Function]' || str === '[object GeneratorFunction]' || str === '[object AsyncFunction]';
+	};
+	
+	/**
+	 * Test number.
+	 */
+	
+	/**
+	 * is.number
+	 * Test if `value` is a number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a number, false otherwise
+	 * @api public
+	 */
+	
+	is.number = function (value) {
+	  return toStr.call(value) === '[object Number]';
+	};
+	
+	/**
+	 * is.infinite
+	 * Test if `value` is positive or negative infinity.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is positive or negative Infinity, false otherwise
+	 * @api public
+	 */
+	is.infinite = function (value) {
+	  return value === Infinity || value === -Infinity;
+	};
+	
+	/**
+	 * is.decimal
+	 * Test if `value` is a decimal number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a decimal number, false otherwise
+	 * @api public
+	 */
+	
+	is.decimal = function (value) {
+	  return is.number(value) && !isActualNaN(value) && !is.infinite(value) && value % 1 !== 0;
+	};
+	
+	/**
+	 * is.divisibleBy
+	 * Test if `value` is divisible by `n`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} n dividend
+	 * @return {Boolean} true if `value` is divisible by `n`, false otherwise
+	 * @api public
+	 */
+	
+	is.divisibleBy = function (value, n) {
+	  var isDividendInfinite = is.infinite(value);
+	  var isDivisorInfinite = is.infinite(n);
+	  var isNonZeroNumber = is.number(value) && !isActualNaN(value) && is.number(n) && !isActualNaN(n) && n !== 0;
+	  return isDividendInfinite || isDivisorInfinite || (isNonZeroNumber && value % n === 0);
+	};
+	
+	/**
+	 * is.integer
+	 * Test if `value` is an integer.
+	 *
+	 * @param value to test
+	 * @return {Boolean} true if `value` is an integer, false otherwise
+	 * @api public
+	 */
+	
+	is.integer = is['int'] = function (value) {
+	  return is.number(value) && !isActualNaN(value) && value % 1 === 0;
+	};
+	
+	/**
+	 * is.maximum
+	 * Test if `value` is greater than 'others' values.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Array} others values to compare with
+	 * @return {Boolean} true if `value` is greater than `others` values
+	 * @api public
+	 */
+	
+	is.maximum = function (value, others) {
+	  if (isActualNaN(value)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.arraylike(others)) {
+	    throw new TypeError('second argument must be array-like');
+	  }
+	  var len = others.length;
+	
+	  while (--len >= 0) {
+	    if (value < others[len]) {
+	      return false;
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * is.minimum
+	 * Test if `value` is less than `others` values.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Array} others values to compare with
+	 * @return {Boolean} true if `value` is less than `others` values
+	 * @api public
+	 */
+	
+	is.minimum = function (value, others) {
+	  if (isActualNaN(value)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.arraylike(others)) {
+	    throw new TypeError('second argument must be array-like');
+	  }
+	  var len = others.length;
+	
+	  while (--len >= 0) {
+	    if (value > others[len]) {
+	      return false;
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * is.nan
+	 * Test if `value` is not a number.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is not a number, false otherwise
+	 * @api public
+	 */
+	
+	is.nan = function (value) {
+	  return !is.number(value) || value !== value;
+	};
+	
+	/**
+	 * is.even
+	 * Test if `value` is an even number.
+	 *
+	 * @param {Number} value value to test
+	 * @return {Boolean} true if `value` is an even number, false otherwise
+	 * @api public
+	 */
+	
+	is.even = function (value) {
+	  return is.infinite(value) || (is.number(value) && value === value && value % 2 === 0);
+	};
+	
+	/**
+	 * is.odd
+	 * Test if `value` is an odd number.
+	 *
+	 * @param {Number} value value to test
+	 * @return {Boolean} true if `value` is an odd number, false otherwise
+	 * @api public
+	 */
+	
+	is.odd = function (value) {
+	  return is.infinite(value) || (is.number(value) && value === value && value % 2 !== 0);
+	};
+	
+	/**
+	 * is.ge
+	 * Test if `value` is greater than or equal to `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	is.ge = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value >= other;
+	};
+	
+	/**
+	 * is.gt
+	 * Test if `value` is greater than `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	is.gt = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value > other;
+	};
+	
+	/**
+	 * is.le
+	 * Test if `value` is less than or equal to `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean} if 'value' is less than or equal to 'other'
+	 * @api public
+	 */
+	
+	is.le = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value <= other;
+	};
+	
+	/**
+	 * is.lt
+	 * Test if `value` is less than `other`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} other value to compare with
+	 * @return {Boolean} if `value` is less than `other`
+	 * @api public
+	 */
+	
+	is.lt = function (value, other) {
+	  if (isActualNaN(value) || isActualNaN(other)) {
+	    throw new TypeError('NaN is not a valid value');
+	  }
+	  return !is.infinite(value) && !is.infinite(other) && value < other;
+	};
+	
+	/**
+	 * is.within
+	 * Test if `value` is within `start` and `finish`.
+	 *
+	 * @param {Number} value value to test
+	 * @param {Number} start lower bound
+	 * @param {Number} finish upper bound
+	 * @return {Boolean} true if 'value' is is within 'start' and 'finish'
+	 * @api public
+	 */
+	is.within = function (value, start, finish) {
+	  if (isActualNaN(value) || isActualNaN(start) || isActualNaN(finish)) {
+	    throw new TypeError('NaN is not a valid value');
+	  } else if (!is.number(value) || !is.number(start) || !is.number(finish)) {
+	    throw new TypeError('all arguments must be numbers');
+	  }
+	  var isAnyInfinite = is.infinite(value) || is.infinite(start) || is.infinite(finish);
+	  return isAnyInfinite || (value >= start && value <= finish);
+	};
+	
+	/**
+	 * Test object.
+	 */
+	
+	/**
+	 * is.object
+	 * Test if `value` is an object.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is an object, false otherwise
+	 * @api public
+	 */
+	is.object = function (value) {
+	  return toStr.call(value) === '[object Object]';
+	};
+	
+	/**
+	 * is.primitive
+	 * Test if `value` is a primitive.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a primitive, false otherwise
+	 * @api public
+	 */
+	is.primitive = function isPrimitive(value) {
+	  if (!value) {
+	    return true;
+	  }
+	  if (typeof value === 'object' || is.object(value) || is.fn(value) || is.array(value)) {
+	    return false;
+	  }
+	  return true;
+	};
+	
+	/**
+	 * is.hash
+	 * Test if `value` is a hash - a plain object literal.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a hash, false otherwise
+	 * @api public
+	 */
+	
+	is.hash = function (value) {
+	  return is.object(value) && value.constructor === Object && !value.nodeType && !value.setInterval;
+	};
+	
+	/**
+	 * Test regexp.
+	 */
+	
+	/**
+	 * is.regexp
+	 * Test if `value` is a regular expression.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a regexp, false otherwise
+	 * @api public
+	 */
+	
+	is.regexp = function (value) {
+	  return toStr.call(value) === '[object RegExp]';
+	};
+	
+	/**
+	 * Test string.
+	 */
+	
+	/**
+	 * is.string
+	 * Test if `value` is a string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a string, false otherwise
+	 * @api public
+	 */
+	
+	is.string = function (value) {
+	  return toStr.call(value) === '[object String]';
+	};
+	
+	/**
+	 * Test base64 string.
+	 */
+	
+	/**
+	 * is.base64
+	 * Test if `value` is a valid base64 encoded string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a base64 encoded string, false otherwise
+	 * @api public
+	 */
+	
+	is.base64 = function (value) {
+	  return is.string(value) && (!value.length || base64Regex.test(value));
+	};
+	
+	/**
+	 * Test base64 string.
+	 */
+	
+	/**
+	 * is.hex
+	 * Test if `value` is a valid hex encoded string.
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if 'value' is a hex encoded string, false otherwise
+	 * @api public
+	 */
+	
+	is.hex = function (value) {
+	  return is.string(value) && (!value.length || hexRegex.test(value));
+	};
+	
+	/**
+	 * is.symbol
+	 * Test if `value` is an ES6 Symbol
+	 *
+	 * @param {Mixed} value value to test
+	 * @return {Boolean} true if `value` is a Symbol, false otherise
+	 * @api public
+	 */
+	
+	is.symbol = function (value) {
+	  return typeof Symbol === 'function' && toStr.call(value) === '[object Symbol]' && typeof symbolValueOf.call(value) === 'symbol';
+	};
+	
+	module.exports = is;
+
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1394,7 +2169,7 @@ module.exports =
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	var is = __webpack_require__(3);
+	var is = __webpack_require__(2);
 	
 	var Emitter = function () {
 	    function Emitter() {
@@ -1477,13 +2252,377 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = require("shortid");
+	'use strict';
+	module.exports = __webpack_require__(5);
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var alphabet = __webpack_require__(6);
+	var encode = __webpack_require__(8);
+	var decode = __webpack_require__(10);
+	var build = __webpack_require__(11);
+	var isValid = __webpack_require__(12);
+	
+	// if you are using cluster or multiple servers use this to make each instance
+	// has a unique value for worker
+	// Note: I don't know if this is automatically set when using third
+	// party cluster solutions such as pm2.
+	var clusterWorkerId = __webpack_require__(13) || 0;
+	
+	/**
+	 * Set the seed.
+	 * Highly recommended if you don't want people to try to figure out your id schema.
+	 * exposed as shortid.seed(int)
+	 * @param seed Integer value to seed the random alphabet.  ALWAYS USE THE SAME SEED or you might get overlaps.
+	 */
+	function seed(seedValue) {
+	    alphabet.seed(seedValue);
+	    return module.exports;
+	}
+	
+	/**
+	 * Set the cluster worker or machine id
+	 * exposed as shortid.worker(int)
+	 * @param workerId worker must be positive integer.  Number less than 16 is recommended.
+	 * returns shortid module so it can be chained.
+	 */
+	function worker(workerId) {
+	    clusterWorkerId = workerId;
+	    return module.exports;
+	}
+	
+	/**
+	 *
+	 * sets new characters to use in the alphabet
+	 * returns the shuffled alphabet
+	 */
+	function characters(newCharacters) {
+	    if (newCharacters !== undefined) {
+	        alphabet.characters(newCharacters);
+	    }
+	
+	    return alphabet.shuffled();
+	}
+	
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function generate() {
+	  return build(clusterWorkerId);
+	}
+	
+	// Export all other functions as properties of the generate function
+	module.exports = generate;
+	module.exports.generate = generate;
+	module.exports.seed = seed;
+	module.exports.worker = worker;
+	module.exports.characters = characters;
+	module.exports.decode = decode;
+	module.exports.isValid = isValid;
+
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var randomFromSeed = __webpack_require__(7);
+	
+	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
+	var alphabet;
+	var previousSeed;
+	
+	var shuffled;
+	
+	function reset() {
+	    shuffled = false;
+	}
+	
+	function setCharacters(_alphabet_) {
+	    if (!_alphabet_) {
+	        if (alphabet !== ORIGINAL) {
+	            alphabet = ORIGINAL;
+	            reset();
+	        }
+	        return;
+	    }
+	
+	    if (_alphabet_ === alphabet) {
+	        return;
+	    }
+	
+	    if (_alphabet_.length !== ORIGINAL.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. You submitted ' + _alphabet_.length + ' characters: ' + _alphabet_);
+	    }
+	
+	    var unique = _alphabet_.split('').filter(function(item, ind, arr){
+	       return ind !== arr.lastIndexOf(item);
+	    });
+	
+	    if (unique.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. These characters were not unique: ' + unique.join(', '));
+	    }
+	
+	    alphabet = _alphabet_;
+	    reset();
+	}
+	
+	function characters(_alphabet_) {
+	    setCharacters(_alphabet_);
+	    return alphabet;
+	}
+	
+	function setSeed(seed) {
+	    randomFromSeed.seed(seed);
+	    if (previousSeed !== seed) {
+	        reset();
+	        previousSeed = seed;
+	    }
+	}
+	
+	function shuffle() {
+	    if (!alphabet) {
+	        setCharacters(ORIGINAL);
+	    }
+	
+	    var sourceArray = alphabet.split('');
+	    var targetArray = [];
+	    var r = randomFromSeed.nextValue();
+	    var characterIndex;
+	
+	    while (sourceArray.length > 0) {
+	        r = randomFromSeed.nextValue();
+	        characterIndex = Math.floor(r * sourceArray.length);
+	        targetArray.push(sourceArray.splice(characterIndex, 1)[0]);
+	    }
+	    return targetArray.join('');
+	}
+	
+	function getShuffled() {
+	    if (shuffled) {
+	        return shuffled;
+	    }
+	    shuffled = shuffle();
+	    return shuffled;
+	}
+	
+	/**
+	 * lookup shuffled letter
+	 * @param index
+	 * @returns {string}
+	 */
+	function lookup(index) {
+	    var alphabetShuffled = getShuffled();
+	    return alphabetShuffled[index];
+	}
+	
+	module.exports = {
+	    characters: characters,
+	    seed: setSeed,
+	    lookup: lookup,
+	    shuffled: getShuffled
+	};
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	// Found this seed-based random generator somewhere
+	// Based on The Central Randomizer 1.3 (C) 1997 by Paul Houle (houle@msc.cornell.edu)
+	
+	var seed = 1;
+	
+	/**
+	 * return a random number based on a seed
+	 * @param seed
+	 * @returns {number}
+	 */
+	function getNextValue() {
+	    seed = (seed * 9301 + 49297) % 233280;
+	    return seed/(233280.0);
+	}
+	
+	function setSeed(_seed_) {
+	    seed = _seed_;
+	}
+	
+	module.exports = {
+	    nextValue: getNextValue,
+	    seed: setSeed
+	};
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var randomByte = __webpack_require__(9);
+	
+	function encode(lookup, number) {
+	    var loopCounter = 0;
+	    var done;
+	
+	    var str = '';
+	
+	    while (!done) {
+	        str = str + lookup( ( (number >> (4 * loopCounter)) & 0x0f ) | randomByte() );
+	        done = number < (Math.pow(16, loopCounter + 1 ) );
+	        loopCounter++;
+	    }
+	    return str;
+	}
+	
+	module.exports = encode;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
+	
+	function randomByte() {
+	    if (!crypto || !crypto.getRandomValues) {
+	        return Math.floor(Math.random() * 256) & 0x30;
+	    }
+	    var dest = new Uint8Array(1);
+	    crypto.getRandomValues(dest);
+	    return dest[0] & 0x30;
+	}
+	
+	module.exports = randomByte;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(6);
+	
+	/**
+	 * Decode the id to get the version and worker
+	 * Mainly for debugging and testing.
+	 * @param id - the shortid-generated id.
+	 */
+	function decode(id) {
+	    var characters = alphabet.shuffled();
+	    return {
+	        version: characters.indexOf(id.substr(0, 1)) & 0x0f,
+	        worker: characters.indexOf(id.substr(1, 1)) & 0x0f
+	    };
+	}
+	
+	module.exports = decode;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var encode = __webpack_require__(8);
+	var alphabet = __webpack_require__(6);
+	
+	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
+	// This number should be updated every year or so to keep the generated id short.
+	// To regenerate `new Date() - 0` and bump the version. Always bump the version!
+	var REDUCE_TIME = 1459707606518;
+	
+	// don't change unless we change the algos or REDUCE_TIME
+	// must be an integer and less than 16
+	var version = 6;
+	
+	// Counter is used when shortid is called multiple times in one second.
+	var counter;
+	
+	// Remember the last time shortid was called in case counter is needed.
+	var previousSeconds;
+	
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function build(clusterWorkerId) {
+	
+	    var str = '';
+	
+	    var seconds = Math.floor((Date.now() - REDUCE_TIME) * 0.001);
+	
+	    if (seconds === previousSeconds) {
+	        counter++;
+	    } else {
+	        counter = 0;
+	        previousSeconds = seconds;
+	    }
+	
+	    str = str + encode(alphabet.lookup, version);
+	    str = str + encode(alphabet.lookup, clusterWorkerId);
+	    if (counter > 0) {
+	        str = str + encode(alphabet.lookup, counter);
+	    }
+	    str = str + encode(alphabet.lookup, seconds);
+	
+	    return str;
+	}
+	
+	module.exports = build;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(6);
+	
+	function isShortId(id) {
+	    if (!id || typeof id !== 'string' || id.length < 6 ) {
+	        return false;
+	    }
+	
+	    var characters = alphabet.characters();
+	    var len = id.length;
+	    for(var i = 0; i < len;i++) {
+	        if (characters.indexOf(id[i]) === -1) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
+	
+	module.exports = isShortId;
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	module.exports = 0;
+
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1497,8 +2636,6 @@ module.exports =
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
-	var _class, _temp;
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
@@ -1537,17 +2674,18 @@ module.exports =
 	 * @contact : caipilabs@gmail.com
 	 */
 	
-	var is = __webpack_require__(3),
-	    Scope = __webpack_require__(2),
-	    EventEmitter = __webpack_require__(4),
-	    TaskSequencer = __webpack_require__(7),
-	    shortid = __webpack_require__(5),
+	var is = __webpack_require__(2),
+	    Scope = __webpack_require__(1),
+	    EventEmitter = __webpack_require__(3),
+	    TaskSequencer = __webpack_require__(15),
+	    shortid = __webpack_require__(4),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
 	 * @class Store
 	 */
-	var Store = (_temp = _class = function (_EventEmitter) {
+	
+	var Store = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
 	
 	    /**
@@ -2349,7 +3487,7 @@ module.exports =
 	    }]);
 	
 	    return Store;
-	}(EventEmitter), _class.use = [], _class.staticScope = new Scope({}, { id: "static" }), _class.state = undefined, _class.persistenceTm = false, _temp);
+	}(EventEmitter);
 	
 	/**
 	 * get a static aliased reference of a store
@@ -2357,6 +3495,11 @@ module.exports =
 	 * @returns {{store: Store, name: *}}
 	 */
 	
+	
+	Store.use = [];
+	Store.staticScope = new Scope({}, { id: "static" });
+	Store.state = undefined;
+	Store.persistenceTm = false;
 	Store.as = function (name) {
 	    return { store: this, name: name };
 	};
@@ -2470,20 +3613,16 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 7 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	"use strict";
+	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	
-	var _index = __webpack_require__(1);
-	
-	var _index2 = _interopRequireDefault(_index);
-	
-	var _is = __webpack_require__(3);
+	var _is = __webpack_require__(2);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
@@ -2492,33 +3631,6 @@ module.exports =
 	/**
 	 * Minimal push sequencer, apply stores specific task in the right order (root stores first)
 	 */
-	/*
-	 * Copyright (c)  2018 Wise Wild Web .
-	 *
-	 *  MIT License
-	 *
-	 *  Permission is hereby granted, free of charge, to any person obtaining a copy
-	 *  of this software and associated documentation files (the "Software"), to deal
-	 *  in the Software without restriction, including without limitation the rights
-	 *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	 *  copies of the Software, and to permit persons to whom the Software is
-	 *  furnished to do so, subject to the following conditions:
-	 *
-	 *  The above copyright notice and this permission notice shall be included in all
-	 *  copies or substantial portions of the Software.
-	 *
-	 *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	 *  SOFTWARE.
-	 *
-	 * @author : Nathanael Braun
-	 * @contact : caipilabs@gmail.com
-	 */
-	
 	var taskQueue = [],
 	    curWeight = 0,
 	    maxWeight = 0,
@@ -2550,7 +3662,34 @@ module.exports =
 	    } : function () {
 	        process.removeListener('uncaughtException', errorCatcher.dispatch);
 	    }
-	}; // will use as external the index in dist
+	}; /*
+	    * Copyright (c)  2018 Wise Wild Web .
+	    *
+	    *  MIT License
+	    *
+	    *  Permission is hereby granted, free of charge, to any person obtaining a copy
+	    *  of this software and associated documentation files (the "Software"), to deal
+	    *  in the Software without restriction, including without limitation the rights
+	    *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	    *  copies of the Software, and to permit persons to whom the Software is
+	    *  furnished to do so, subject to the following conditions:
+	    *
+	    *  The above copyright notice and this permission notice shall be included in all
+	    *  copies or substantial portions of the Software.
+	    *
+	    *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	    *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	    *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	    *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	    *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	    *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	    *  SOFTWARE.
+	    *
+	    * @author : Nathanael Braun
+	    * @contact : caipilabs@gmail.com
+	    */
+	
+	//import index from "./index";// will use as external the index in dist
 	
 	
 	function runNow() {
@@ -2613,9 +3752,200 @@ module.exports =
 	    }
 	};
 	module.exports = exports["default"];
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
 
 /***/ }),
-/* 8 */
+/* 16 */
+/***/ (function(module, exports) {
+
+	// shim for using process in browser
+	var process = module.exports = {};
+	
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+	
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+	
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+	
+	
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+	
+	
+	
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+	
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+	
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+	
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+	
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+	
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	process.prependListener = noop;
+	process.prependOnceListener = noop;
+	
+	process.listeners = function (name) { return [] }
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+	
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2625,11 +3955,9 @@ module.exports =
 	});
 	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
 	
-	var _is = __webpack_require__(3);
+	var _is = __webpack_require__(2);
 	
 	var _is2 = _interopRequireDefault(_is);
-	
-	var _index = __webpack_require__(1);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -2659,6 +3987,9 @@ module.exports =
 	                                                                                                                                                                                                     * @author : Nathanael Braun
 	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
 	                                                                                                                                                                                                     */
+	
+	//import Scope from "../Scope";
+	//import Store from "./Store";
 	
 	var SimpleObjectProto = {}.constructor;
 	
@@ -2749,31 +4080,16 @@ module.exports =
 	//addScopableType(
 	//    ( Comp ) => (Comp && Comp.prototype instanceof Store),
 	//    function reScope( ...argz ) {
-	//        let BaseStore    = (!argz[0] || argz[0].prototype instanceof Store) && argz.shift(),
-	//            scope        = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0])) && argz.shift(),
-	//            use          = (is.array(argz[0])) && argz.shift(),
-	//            stateMap     = !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
-	//            initialState = {};
-	//
-	//        let compName = BaseStore.displayName || BaseStore.name;
-	//
-	//        use = [...(BaseStore.use || []), ...(use || [])];
-	//        stateMap && Scope.stateMapToRefList(stateMap, initialState, use);
-	//
-	//        class StateScopedStore extends BaseStore {
-	//            static use         = use;
-	//            static displayName = "stateScoped(" + compName + ")";
-	//
-	//            constructor( ...argz ) {
-	//                super(scope, argz.slice(argz[0] instanceof Scope ? 1 : 0))
-	//            }
-	//        }
-	//
-	//        return StateScopedStore;
-	//    },
-	//    false,
-	//    true
-	//)
+	//        let BaseStore    = (!argz[0] || argz[0].prototype instanceof Store) &&
+	// argz.shift(), scope        = (!argz[0] || argz[0] instanceof Scope || is.fn(argz[0]))
+	// && argz.shift(), use          = (is.array(argz[0])) && argz.shift(), stateMap     =
+	// !use && (!argz[0] || argz[0] instanceof SimpleObjectProto) && argz.shift(),
+	// initialState = {};  let compName = BaseStore.displayName || BaseStore.name;  use =
+	// [...(BaseStore.use || []), ...(use || [])]; stateMap &&
+	// Scope.stateMapToRefList(stateMap, initialState, use);  class StateScopedStore extends
+	// BaseStore { static use         = use; static displayName = "stateScoped(" + compName +
+	// ")";  constructor( ...argz ) { super(scope, argz.slice(argz[0] instanceof Scope ? 1 :
+	// 0)) } }  return StateScopedStore; }, false, true )
 	
 	
 	exports.addScopableType = addScopableType;
@@ -2782,4 +4098,4 @@ module.exports =
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=ReScope.js.map
+//# sourceMappingURL=ReScope.browser.js.map

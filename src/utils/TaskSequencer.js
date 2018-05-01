@@ -25,7 +25,7 @@
  * @contact : caipilabs@gmail.com
  */
 
-import index from "./index";// will use as external the index in dist
+//import index from "./index";// will use as external the index in dist
 import is from "is";
 
 /**

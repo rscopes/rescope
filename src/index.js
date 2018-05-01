@@ -24,6 +24,33 @@
  * @author : Nathanael Braun
  * @contact : caipilabs@gmail.com
  */
-// Common rescope modules int
-export default {
-};
+
+let $global = ( typeof window !== 'undefined' ) ? window : global;
+
+import Scope                                      from "./Scope";
+import Store                                      from "./Store";
+import { addScopableType, reScope, scopeToState } from "./utils/scopable";
+
+const RS = $global.___rescope || {};
+if ( $global.___rescope ) {
+    console.warn("ReScope is defined multiple times !! \nCheck you're packaging")
+}
+else {
+    
+    $global.___rescope = RS;
+    Scope.Store        = Store;
+    RS.Scope           = Scope;
+    RS.Context         = Scope;
+    RS.Store           = Store;
+    RS.reScope         = reScope;
+    RS.scopeToState    = scopeToState;
+    RS.reScopeState    = scopeToState;
+    RS.addScopableType = addScopableType;
+    RS.scopeRef        =
+        function scopeRef( map, key ) {
+            map[ key ] = new Scope.scopeRef(map[ key ]);
+            return map;
+        };
+    
+}
+export default RS;

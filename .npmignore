@@ -28,5 +28,6 @@ $RECYCLE.BIN/
 # App specific
 
 .tmp
-node_modules
 .idea
+/doc/
+/src/

@@ -9,7 +9,6 @@
 [![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
-##
 ## ReScope What ?
 
 ReScope is a flexible, effective and easy to use state management system inspired by ReactJS methods.
@@ -55,9 +54,6 @@ To deal with complex architectures & data processing the Scopes allow :
 - Easy pairing of remote / webworker based stores
 - Easy remapping & aliasing of dependencies data,
 - Easy, partial or complete serialization / restoration
-- No more real async problems
-- Promise like APIs
-- Semaphores like API ( wait, release, retain, dispose )
 - Inheritable ES6 class
 - Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
 - Lazy stores instantiation & active stores auto destroy

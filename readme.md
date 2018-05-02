@@ -4,6 +4,7 @@
 <p align="center">
   <img width="192" src="https://github.com/CaipiLabs/rescope/raw/master/doc/assets/logo.svg?sanitize=true">
 </p>
+<br/><br/>
 
 [![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
@@ -16,10 +17,9 @@ ReScope is a flexible, effective and easy to use state management system inspire
 ## What's the point ?
 
 Applications transform structured data & events into user-friendly interfaces and controls. <br/>
-The set of data transformations of one or more applications can be divided into reusable data components with a reactive state and result data.<br/>
+The set of data transformations of one or more applications can be divided into reusable data components with a reactive state and result data.
 Just like React Components. <br/>
-Of course, that's quickly said, in an application, the data must deal with complex dependencies, <br/>
-different contexts, custom data bindings, and so on. <br/>
+Of course, that's quickly said, in an application, the data must deal with complex dependencies, different contexts, custom data bindings, and so on. <br/>
 
 This is where reScope comes in: <br/>
 It offers a simple, flexible and familiar structure to organize and synchronize your data components. <br/>

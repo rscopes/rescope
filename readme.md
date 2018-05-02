@@ -5,10 +5,10 @@
   <img width="192" src="https://github.com/CaipiLabs/rescope/raw/master/doc/assets/logo.svg?sanitize=true">
 </p>
 
-## 
 [![Build Status](https://travis-ci.org/CaipiLabs/rescope.svg?branch=master)](https://travis-ci.org/CaipiLabs/rescope)
 [![NPM Version](https://badge.fury.io/js/rescope.svg?style=flat)](https://npmjs.org/package/rescope)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#)
+##
 ## ReScope What ?
 
 ReScope is a flexible, effective and easy to use state management system inspired by ReactJS methods.

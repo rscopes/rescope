@@ -60,7 +60,7 @@ let MyAppScope = new Scope({
 
 ### Using mixin
 
-We can add any mixed Scope as we want.
+We can mix as many Scope as we want.
 ```
 let MyMixableScope = new Scope({...stores_instancied_or_not});
 let MyLocalScope = new Scope({...stores_instancied_or_not});
@@ -124,7 +124,7 @@ constructor(){
 ```
 
 Note that :
- - as it auto-retained it will never be destroyed by scopes, even if the scope is destroyed
+ - as its auto-retained it will never be destroyed by scopes, even if the scope is destroyed
  - this will not make the store staticly instanciated over all the scope instances
 
 

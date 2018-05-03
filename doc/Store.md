@@ -273,6 +273,8 @@ export default class myInterpolatedDataStore extends Store {
 
 ## How to catch synchrone errors in the apply fn
 
+( global error catch based, eg. not using try catch )
+
 ```jsx
 export default class testErrorCatch extends Rescope.Store {
    static state = { ok: true };

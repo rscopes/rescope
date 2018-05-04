@@ -1,1 +1,1 @@
-module.export = require('../etc/npm/index')
+module.exports = require('../etc/npm/index')

@@ -813,8 +813,8 @@ class Scope extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(null, this.data);
-        this.once('stable', e => cb(null, this.data));
+            return cb(this.data);
+        this.once('stable', e => cb(this.data));
     }
     
     /**

@@ -199,47 +199,13 @@ class Store extends EventEmitter {
     }
     
     /**
-     * @deprecated
-     * @returns {*}
-     */
-    get contextObj() {
-        return this.scopeObj;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get context() {
-        return this.scope;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get datas() {
-        return this.data;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    set datas( v ) {
-        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
-        // data"); console.log("Rescope store : Setting datas is depreciated, use data",
-        // (new Error()).stack); console.groupEnd();
-        
-        this.data = v;
-    }
-    
-    /**
      * Get the incoming state ( for immediate state relative actions )
      * @returns {{}|*}
      */
     get nextState() {
-        return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
+        return this._nextState || (
+            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
+        );
     }
     
     
@@ -421,12 +387,13 @@ class Store extends EventEmitter {
         if ( !force && !this._changesSW && this.data )
             return;
         
-        var nextState = { ...this.state, ...( this._changesSW || {} ) },
+        var nextState = this._nextState || { ...this.state, ...( this._changesSW || {} ) },
             nextData  = this.apply(this.data, nextState, this._changesSW);
         
         this._stabilizer = null;
         this.state       = nextState;
         this._changesSW  = null;
+        
         if ( !force &&
              (
                  !this.hasDataChange(nextData)
@@ -472,7 +439,8 @@ class Store extends EventEmitter {
                 changes[ k ]    = pState[ k ];
             }
         
-        if ( !this.shouldApply({ ...this.state, ...changes }) ) {
+        this._nextState = { ...this.state, ...changes };
+        if ( !this.shouldApply(this._nextState) ) {
             return;
         }
         
@@ -660,15 +628,15 @@ class Store extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(null, this.data);
-        this.once('stable', e => cb(null, this.data));
+            return cb(this.data);
+        this.once('stable', e => cb(this.data));
     }
     
     /**
      * Add a lock so the store will not propag it data untill release() is call
      * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
      *     array of stuff to wait
-     * @returns {TaskFlow}
+     * @returns {this}
      */
     wait( previous ) {
         if ( typeof previous == "number" )

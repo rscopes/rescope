@@ -116,6 +116,11 @@ function run() {
 
 export default {
     pushTask( obj, fn, argz ) {
+        /**
+         * The more a store have sources, the more it should be processed first
+         * So leafs stores stay sync, root stores get merged state updates and global state stay coherent
+         * @type {*|number}
+         */
         let weight = obj._sources && obj._sources.length || 1,
             stack  = taskQueue[weight] =
                 taskQueue[weight] || [];

@@ -26,8 +26,6 @@
  */
 
 import is    from 'is'
-//import Scope from "../Scope";
-//import Store from "./Store";
 
 const SimpleObjectProto = ( {} ).constructor;
 

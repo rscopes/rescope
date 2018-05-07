@@ -70,7 +70,6 @@ This is done in 2 way :
 
 A store initialized with data will be stable synchronously when instantiated. <br>
 If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
-(implying that the Store object may not be fully initialized) <br>
 
 ## Actions & mutations
 
@@ -140,15 +139,20 @@ Stores only have to maintain the state-data coherence, but can have initial stat
 - Using initial state & data :
 ```jsx
 class MyStore extends Store {
-        static state = {};// initial state
+        static state = {};// initial state (soft cloned)
         static data = {};// initial data (soft cloned)
+
+        state = {
+        // instance initial state (merged over cfg & static definitions)
+        }
+        data = {}// precedence over cfg.data
 };
 
 let MyStoreInstance = new MyStore(
         BaseScope,
         {
-            state : {}, // take static defined state/data precedence
-            data  : {}
+            state : {}, // merged over the static state
+            data  : {}// precedence over static data
         }
 )
 

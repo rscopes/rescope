@@ -75,9 +75,10 @@ class Store extends EventEmitter {
             cfg          = argz[ 0 ] && !is.array(argz[ 0 ]) && !is.string(argz[ 0 ])
                            ? argz.shift()
                            : {},
-            name         = is.string(argz[ 0 ]) ? argz[ 0 ] : cfg.name || _static.name,
-            watchs       = is.array(argz[ 0 ]) ? argz.shift() : cfg.use || [],
-            apply        = is.fn(argz[ 0 ]) ? argz.shift() : cfg.apply || null,
+            taskQueue    = is.array(argz[ 0 ]) ? argz.shift() : null,
+            name         = cfg.name || _static.name,
+            watchs       = cfg.use || [],
+            apply        = cfg.apply || null,
             initialState = _static.state || _static.initialState || _static.defaultState,
             applied;
         
@@ -90,7 +91,7 @@ class Store extends EventEmitter {
         // autoDestroyTm
         this._autoDestroy   = !!this._persistenceTm;
         this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || ( cfg.autoDestroy || _static.autoDestroy ) && 5;
-        
+        this._cfg           = cfg;
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
         }
@@ -151,51 +152,31 @@ class Store extends EventEmitter {
             this._require.push(...cfg.require);
         
         this._followers = [];
-        this._changesSW = {};
+        this._changesSW = initialState || {};
+        this.state      = initialState && {};
         if ( apply )
             this.apply = apply;
         
-        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + name ] ) {
-            this.restore(cfg.snapshot);
-            this._stable = true;
-            scope.bind(this, this._use, false);
+        /**
+         * Initial state isn't fully initialized ( childs constructors can set it )
+         * Scope based instance have taskQueue to delay init synchronously, if not
+         * present we use setTimeout
+         */
+        if ( taskQueue ) {
+            taskQueue.push(this._afterConstructor.bind(this))
         }
-        else {
-            
-            if ( _static.data !== undefined )
-                this.data = { ..._static.data };
-            if ( cfg.hasOwnProperty("data") && cfg.data !== undefined )
-                this.data = cfg.data;
-            if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-                initialState = { ...initialState, ...cfg.state };
-            
-            
-            if ( initialState || this._use.length ) {// sync apply
-                this._changesSW = {
-                    ...( initialState || {} ),
-                    ...scope.map(this, this._use)
-                };
-                this.state      = {};
-                if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
-                    this.data       = this.apply(this.data, this._changesSW, this._changesSW);
-                    applied         = true;
-                    this.state      = this._changesSW;
-                    this._changesSW = {};
-                }
-            }
-        }
-        if ( ( this.data !== undefined || applied ) && !this.__locks.all ) {
-            this._stable = true;
-            this._rev++;
-        }
-        else {
-            this._stable = false;
-            if ( !_static.managed && !this.state && ( !this._use || !this._use.length ) ) {
-                console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
-            }
-        }
-        !this._stable && this.emit('unstable', this.state);
-        
+        else
+            setTimeout(this._afterConstructor.bind(this))
+    }
+    
+    /**
+     * Get the incoming state ( for immediate state relative actions )
+     * @returns {{}|*}
+     */
+    get nextState() {
+        return this._nextState || (
+            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
+        );
     }
     
     /**
@@ -242,6 +223,67 @@ class Store extends EventEmitter {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
     
+    _afterConstructor() {
+        let cfg          = this._cfg,
+            _static      = this.constructor,
+            initialState = this.state,
+            initialData  = this.data,
+            applied;
+        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
+            this.restore(cfg.snapshot);
+            this._stable = true;
+            this.$scope.bind(this, this._use, false);
+        }
+        else {
+            
+            if ( initialData )
+                this.data = initialData;
+            else if ( _static.data !== undefined )
+                this.data = { ..._static.data };
+            else if ( cfg.hasOwnProperty("data") )
+                this.data = cfg.data;
+            
+            if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
+                initialState = { ...initialState, ...cfg.state };
+            
+            if ( this.data === undefined ) {
+                if ( initialState || this._use.length ) {// sync apply
+                    this._changesSW = {
+                        ...this._changesSW,
+                        ...( initialState || {} ),
+                        ...this.$scope.map(this, this._use)
+                    };
+                    this.state      = {};
+                    if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
+                        this.data       = this.apply(this.data, this._changesSW, this._changesSW);
+                        applied         = true;
+                        this.state      = this._changesSW;
+                        this._changesSW = {};
+                    }
+                }
+            }else{
+                applied         = true;
+                this.state = {// assume this state is sync with initial data
+                    ...this._changesSW,
+                    ...( initialState || {} ),
+                    ...this.$scope.map(this, this._use)
+                }
+                this._changesSW = {};
+            }
+        }
+        if ( ( this.data !== undefined || applied ) && !this.__locks.all ) {
+            this._stable = true;
+            this._rev++;
+        }
+        else {
+            this._stable = false;
+            if ( !_static.managed && !this.state && ( !this._use || !this._use.length ) ) {
+                console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+            }
+        }
+        !this._stable && this.emit('unstable', this.state);
+        
+    }
     
     /**
      * Overridable method to know if a data change should be propag to the listening
@@ -421,12 +463,13 @@ class Store extends EventEmitter {
         if ( !force && !this._changesSW && this.data )
             return;
         
-        var nextState = { ...this.state, ...( this._changesSW || {} ) },
+        var nextState = this._nextState || { ...this.state, ...( this._changesSW || {} ) },
             nextData  = this.apply(this.data, nextState, this._changesSW);
         
         this._stabilizer = null;
         this.state       = nextState;
         this._changesSW  = null;
+        
         if ( !force &&
              (
                  !this.hasDataChange(nextData)
@@ -472,7 +515,8 @@ class Store extends EventEmitter {
                 changes[ k ]    = pState[ k ];
             }
         
-        if ( !this.shouldApply({ ...this.state, ...changes }) ) {
+        this._nextState = { ...this.state, ...changes };
+        if ( !this.shouldApply(this._nextState) ) {
             return;
         }
         
@@ -660,15 +704,15 @@ class Store extends EventEmitter {
      */
     then( cb ) {
         if ( this._stable )
-            return cb(null, this.data);
-        this.once('stable', e => cb(null, this.data));
+            return cb(this.data);
+        this.once('stable', e => cb(this.data));
     }
     
     /**
      * Add a lock so the store will not propag it data untill release() is call
      * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
      *     array of stuff to wait
-     * @returns {TaskFlow}
+     * @returns {this}
      */
     wait( previous ) {
         if ( typeof previous == "number" )

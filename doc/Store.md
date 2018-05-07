@@ -70,7 +70,6 @@ This is done in 2 way :
 
 A store initialized with data will be stable synchronously when instantiated. <br>
 If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
-(implying that the Store object may not be fully initialized) <br>
 
 ## Actions & mutations
 

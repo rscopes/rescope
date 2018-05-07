@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
   "main": "./etc/npm/index.js",

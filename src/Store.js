@@ -75,9 +75,10 @@ class Store extends EventEmitter {
             cfg          = argz[ 0 ] && !is.array(argz[ 0 ]) && !is.string(argz[ 0 ])
                            ? argz.shift()
                            : {},
-            name         = is.string(argz[ 0 ]) ? argz[ 0 ] : cfg.name || _static.name,
-            watchs       = is.array(argz[ 0 ]) ? argz.shift() : cfg.use || [],
-            apply        = is.fn(argz[ 0 ]) ? argz.shift() : cfg.apply || null,
+            taskQueue    = is.array(argz[ 0 ]) ? argz.shift() : null,
+            name         = cfg.name || _static.name,
+            watchs       = cfg.use || [],
+            apply        = cfg.apply || null,
             initialState = _static.state || _static.initialState || _static.defaultState,
             applied;
         
@@ -90,7 +91,7 @@ class Store extends EventEmitter {
         // autoDestroyTm
         this._autoDestroy   = !!this._persistenceTm;
         this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || ( cfg.autoDestroy || _static.autoDestroy ) && 5;
-        
+        this._cfg           = cfg;
         if ( cfg && cfg.on ) {
             this.on(cfg.on);
         }
@@ -151,14 +152,42 @@ class Store extends EventEmitter {
             this._require.push(...cfg.require);
         
         this._followers = [];
-        this._changesSW = {};
+        this._changesSW = initialState||{};
+        this.state      = initialState&&{};
         if ( apply )
             this.apply = apply;
-        
-        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + name ] ) {
+    
+        /**
+         * Initial state isn't fully initialized ( childs can set it )
+         * Scope based instance have taskQueue to delay init synchronously, if not present we use setTimeout
+         */
+        if (taskQueue)
+        {
+            taskQueue.push(this._afterConstructor.bind(this))
+        }
+        else
+            setTimeout(this._afterConstructor.bind(this))
+    }
+    
+    /**
+     * Get the incoming state ( for immediate state relative actions )
+     * @returns {{}|*}
+     */
+    get nextState() {
+        return this._nextState || (
+            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
+        );
+    }
+    
+    _afterConstructor() {
+        let cfg          = this._cfg,
+            _static      = this.constructor,
+            initialState = this.state,
+            applied;
+        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
             this.restore(cfg.snapshot);
             this._stable = true;
-            scope.bind(this, this._use, false);
+            this.$scope.bind(this, this._use, false);
         }
         else {
             
@@ -172,8 +201,9 @@ class Store extends EventEmitter {
             
             if ( initialState || this._use.length ) {// sync apply
                 this._changesSW = {
+                    ...this._changesSW,
                     ...( initialState || {} ),
-                    ...scope.map(this, this._use)
+                    ...this.$scope.map(this, this._use)
                 };
                 this.state      = {};
                 if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
@@ -199,14 +229,50 @@ class Store extends EventEmitter {
     }
     
     /**
+     * @deprecated
+     * @returns {*}
+     */
+    get contextObj() {
+        return this.scopeObj;
+    }
+    
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    get context() {
+        return this.scope;
+    }
+    
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    get datas() {
+        return this.data;
+    }
+    
+    /**
+     * @deprecated
+     * @returns {*}
+     */
+    set datas( v ) {
+        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
+        // data"); console.log("Rescope store : Setting datas is depreciated, use data",
+        // (new Error()).stack); console.groupEnd();
+        
+        this.data = v;
+    }
+    
+    /**
      * Get the incoming state ( for immediate state relative actions )
      * @returns {{}|*}
      */
     get nextState() {
-        return this._nextState || (
-            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
-        );
+        return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
+    
+    
     
     
     /**

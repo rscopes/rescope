@@ -98,6 +98,10 @@ describe('Rescope', function () {
         );
         TestContext   = new Rescope.Scope(
             {
+                testSetInitialState: class testSetInitialState extends Rescope.Store {
+                    static state = { ok: false, andOk:true };
+                    state = {ok:true};
+                },
                 testErrorCatch: class testErrorCatch extends Rescope.Store {
                     static state = { ok: true };
                     
@@ -226,10 +230,20 @@ describe('Rescope', function () {
         TestContext.mount("local_1");// should trigger global 1 wich will push in 1000ms
         
     });
+    it('should deal with merged initial state well', function ( done ) {
+        this.timeout(4000);
+        TestContext.mount("testSetInitialState").then(
+            (_data ) => {
+                if ( _data.testSetInitialState.ok && _data.testSetInitialState.andOk ) done();
+                else done(new Error("fail"))
+            }
+        );
+        
+    });
     it('should remap well', function ( done ) {
         this.timeout(4000);
         TestContext.mount("local_4").then(
-            ( e, _data ) => {
+            (_data ) => {
                 if ( _data.local_4.remapTest ) done();
                 else done(new Error("fail"))
             }
@@ -419,7 +433,7 @@ describe('Rescope', function () {
         TestContext.mount(
             [ "stats" ])
                    .then(
-                       ( e, r ) => {
+                       ( r ) => {
                 
                            TestContext.retainStores([ "stats" ]);
                            setTimeout(

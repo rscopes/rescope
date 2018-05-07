@@ -45,13 +45,12 @@ var is                = require('is'),
 class Scope extends EventEmitter {
     static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when
                              // dispose reach 0
-    static Store         = null;
-    static scopeRef      = function scopeRef( path ) {
+    static Store    = null;
+    static scopeRef = function scopeRef( path ) {
         this.path = path;
     };
     
     static scopes = openScopes;// all active scopes
-    
     
     static getScope( scopes ) {
         let skey = is.array(scopes) ? scopes.sort(( a, b ) => {
@@ -202,14 +201,6 @@ class Scope extends EventEmitter {
     }
     
     /**
-     * @deprecated
-     * @returns {*}
-     */
-    get datas() {
-        return this.data;
-    }
-    
-    /**
      *
      * Mount the stores in storesList, in this scope or in its parents or mixed scopes
      *
@@ -242,14 +233,15 @@ class Scope extends EventEmitter {
             return this.parent._mount(...arguments);
         }
         else {
-            let store = this._._scope[ id ], ctx;
+            let store = this._._scope[ id ], taskQueue = [];
             if ( is.fn(store) ) {
                 this._._scope[ id ] = new store(this, {
                     snapshot,
                     name: id,
                     state,
                     data
-                });
+                }, taskQueue);
+                while ( taskQueue.length ) taskQueue.shift()();
             }
             else if ( snapshot )
                 store.restore(snapshot);
@@ -396,27 +388,29 @@ class Scope extends EventEmitter {
                           lctx,
                           id,
                           {
-                              enumerable: true, configurable: true,
-                              get                           : () => this._._scope[ id ]
+                              enumerable  : true,
+                              configurable: true,
+                              get         : () => this._._scope[ id ]
                           }
                       );
                       Object.defineProperty(
                           targetCtx._.state.prototype,
                           id,
                           {
-                              enumerable: true, configurable: true,
-                              get                           : () => ( this._._scope[ id ] && this._._scope[ id ].state ),
-                              set                           : ( v ) => ( this._mount(id, undefined, v) )
+                              enumerable  : true,
+                              configurable: true,
+                              get         : () => ( this._._scope[ id ] && this._._scope[ id ].state ),
+                              set         : ( v ) => ( this._mount(id, undefined, v) )
                           }
                       );
                       Object.defineProperty(
                           targetCtx._.data.prototype,
                           id,
                           {
-                              enumerable: true, configurable: true,
-                        
-                              get: () => ( this._._scope[ id ] && this._._scope[ id ].data ),
-                              set: ( v ) => ( this._mount(id, undefined, v) )
+                              enumerable  : true,
+                              configurable: true,
+                              get         : () => ( this._._scope[ id ] && this._._scope[ id ].data ),
+                              set         : ( v ) => ( this._mount(id, undefined, v) )
                           }
                       );
                 

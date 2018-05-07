@@ -186,7 +186,6 @@
 	        key: 'getScope',
 	        // all active scopes
 	
-	
 	        value: function getScope(scopes) {
 	            var skey = is.array(scopes) ? scopes.sort(function (a, b) {
 	                if (a.firstname < b.firstname) return -1;
@@ -361,25 +360,19 @@
 	    }
 	
 	    /**
-	     * @deprecated
-	     * @returns {*}
+	     *
+	     * Mount the stores in storesList, in this scope or in its parents or mixed scopes
+	     *
+	     * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope
+	     *     store ref from Store::as or Store:as
+	     * @param state
+	     * @param data
+	     * @returns {Scope}
 	     */
 	
 	
 	    _createClass(Scope, [{
 	        key: 'mount',
-	
-	
-	        /**
-	         *
-	         * Mount the stores in storesList, in this scope or in its parents or mixed scopes
-	         *
-	         * @param storesList {string|storeRef} Store name, Array of Store names, or Rescope
-	         *     store ref from Store::as or Store:as
-	         * @param state
-	         * @param data
-	         * @returns {Scope}
-	         */
 	        value: function mount(storesList, snapshot, state, data) {
 	            var _this2 = this;
 	
@@ -410,14 +403,17 @@
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            } else {
 	                var store = this._._scope[id],
-	                    ctx = void 0;
+	                    taskQueue = [];
 	                if (is.fn(store)) {
 	                    this._._scope[id] = new store(this, {
 	                        snapshot: snapshot,
 	                        name: id,
 	                        state: state,
 	                        data: data
-	                    });
+	                    }, taskQueue);
+	                    while (taskQueue.length) {
+	                        taskQueue.shift()();
+	                    }
 	                } else if (snapshot) store.restore(snapshot);else {
 	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
@@ -573,13 +569,15 @@
 	                } else if (!force && !external) _this6._._scope[id] = srcCtx[id];
 	
 	                Object.defineProperty(lctx, id, {
-	                    enumerable: true, configurable: true,
+	                    enumerable: true,
+	                    configurable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id];
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.state.prototype, id, {
-	                    enumerable: true, configurable: true,
+	                    enumerable: true,
+	                    configurable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].state;
 	                    },
@@ -588,8 +586,8 @@
 	                    }
 	                });
 	                Object.defineProperty(targetCtx._.data.prototype, id, {
-	                    enumerable: true, configurable: true,
-	
+	                    enumerable: true,
+	                    configurable: true,
 	                    get: function get() {
 	                        return _this6._._scope[id] && _this6._._scope[id].data;
 	                    },
@@ -1015,9 +1013,9 @@
 	        value: function then(cb) {
 	            var _this13 = this;
 	
-	            if (this._stable) return cb(null, this.data);
+	            if (this._stable) return cb(this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this13.data);
+	                return cb(_this13.data);
 	            });
 	        }
 	
@@ -1299,11 +1297,6 @@
 	                this._._parentList = null;
 	            }
 	            this._ = null;
-	        }
-	    }, {
-	        key: 'datas',
-	        get: function get() {
-	            return this.data;
 	        }
 	    }]);
 	
@@ -2711,9 +2704,10 @@
 	            _static = _this.constructor,
 	            scope = argz[0] instanceof Scope ? argz.shift() : _static.scope ? Scope.getScope(_static.scope) : is.string(argz[0]) ? Scope.getScope(argz.shift()) : _static.staticScope,
 	            cfg = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
-	            name = is.string(argz[0]) ? argz[0] : cfg.name || _static.name,
-	            watchs = is.array(argz[0]) ? argz.shift() : cfg.use || [],
-	            apply = is.fn(argz[0]) ? argz.shift() : cfg.apply || null,
+	            taskQueue = is.array(argz[0]) ? argz.shift() : null,
+	            name = cfg.name || _static.name,
+	            watchs = cfg.use || [],
+	            apply = cfg.apply || null,
 	            initialState = _static.state || _static.initialState || _static.defaultState,
 	            applied;
 	
@@ -2726,7 +2720,7 @@
 	        // autoDestroyTm
 	        _this._autoDestroy = !!_this._persistenceTm;
 	        _this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
-	
+	        _this._cfg = cfg;
 	        if (cfg && cfg.on) {
 	            _this.on(cfg.on);
 	        }
@@ -2774,48 +2768,23 @@
 	        if (cfg.require) (_this$_require2 = _this._require).push.apply(_this$_require2, _toConsumableArray(cfg.require));
 	
 	        _this._followers = [];
-	        _this._changesSW = {};
+	        _this._changesSW = initialState || {};
+	        _this.state = initialState && {};
 	        if (apply) _this.apply = apply;
 	
-	        if (cfg.snapshot && cfg.snapshot[_this.scopeObj._id + '/' + name]) {
-	            _this.restore(cfg.snapshot);
-	            _this._stable = true;
-	            scope.bind(_this, _this._use, false);
-	        } else {
-	
-	            if (_static.data !== undefined) _this.data = _extends({}, _static.data);
-	            if (cfg.hasOwnProperty("data") && cfg.data !== undefined) _this.data = cfg.data;
-	            if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
-	
-	            if (initialState || _this._use.length) {
-	                // sync apply
-	                _this._changesSW = _extends({}, initialState || {}, scope.map(_this, _this._use));
-	                _this.state = {};
-	                if (_this.shouldApply(_this._changesSW) && _this.data === undefined) {
-	                    _this.data = _this.apply(_this.data, _this._changesSW, _this._changesSW);
-	                    applied = true;
-	                    _this.state = _this._changesSW;
-	                    _this._changesSW = {};
-	                }
-	            }
-	        }
-	        if ((_this.data !== undefined || applied) && !_this.__locks.all) {
-	            _this._stable = true;
-	            _this._rev++;
-	        } else {
-	            _this._stable = false;
-	            if (!_static.managed && !_this.state && (!_this._use || !_this._use.length)) {
-	                console.warn("ReScope store '", _this.name, "' have no initial data, state or use. It can't stabilize...");
-	            }
-	        }
-	        !_this._stable && _this.emit('unstable', _this.state);
-	
+	        /**
+	         * Initial state isn't fully initialized ( childs can set it )
+	         * Scope based instance have taskQueue to delay init synchronously, if not present we use setTimeout
+	         */
+	        if (taskQueue) {
+	            taskQueue.push(_this._afterConstructor.bind(_this));
+	        } else setTimeout(_this._afterConstructor.bind(_this));
 	        return _this;
 	    }
 	
 	    /**
-	     * @deprecated
-	     * @returns {*}
+	     * Get the incoming state ( for immediate state relative actions )
+	     * @returns {{}|*}
 	     */
 	    // default state
 	    /**
@@ -2829,6 +2798,52 @@
 	
 	
 	    _createClass(Store, [{
+	        key: '_afterConstructor',
+	        value: function _afterConstructor() {
+	            var cfg = this._cfg,
+	                _static = this.constructor,
+	                initialState = this.state,
+	                applied = void 0;
+	            if (cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + this.name]) {
+	                this.restore(cfg.snapshot);
+	                this._stable = true;
+	                this.$scope.bind(this, this._use, false);
+	            } else {
+	
+	                if (_static.data !== undefined) this.data = _extends({}, _static.data);
+	                if (cfg.hasOwnProperty("data") && cfg.data !== undefined) this.data = cfg.data;
+	                if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
+	
+	                if (initialState || this._use.length) {
+	                    // sync apply
+	                    this._changesSW = _extends({}, this._changesSW, initialState || {}, this.$scope.map(this, this._use));
+	                    this.state = {};
+	                    if (this.shouldApply(this._changesSW) && this.data === undefined) {
+	                        this.data = this.apply(this.data, this._changesSW, this._changesSW);
+	                        applied = true;
+	                        this.state = this._changesSW;
+	                        this._changesSW = {};
+	                    }
+	                }
+	            }
+	            if ((this.data !== undefined || applied) && !this.__locks.all) {
+	                this._stable = true;
+	                this._rev++;
+	            } else {
+	                this._stable = false;
+	                if (!_static.managed && !this.state && (!this._use || !this._use.length)) {
+	                    console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+	                }
+	            }
+	            !this._stable && this.emit('unstable', this.state);
+	        }
+	
+	        /**
+	         * @deprecated
+	         * @returns {*}
+	         */
+	
+	    }, {
 	        key: 'shouldPropag',
 	
 	
@@ -3026,12 +3041,13 @@
 	
 	            if (!force && !this._changesSW && this.data) return;
 	
-	            var nextState = _extends({}, this.state, this._changesSW || {}),
+	            var nextState = this._nextState || _extends({}, this.state, this._changesSW || {}),
 	                nextData = this.apply(this.data, nextState, this._changesSW);
 	
 	            this._stabilizer = null;
 	            this.state = nextState;
 	            this._changesSW = null;
+	
 	            if (!force && !this.hasDataChange(nextData)) {
 	                if (!this.__locks.all) {
 	                    var stable = this._stable;
@@ -3068,7 +3084,8 @@
 	                    this._revs[k] = pState[k] && pState[k]._rev || true;
 	                    changes[k] = pState[k];
 	                }
-	            }if (!this.shouldApply(_extends({}, this.state, changes))) {
+	            }this._nextState = _extends({}, this.state, changes);
+	            if (!this.shouldApply(this._nextState)) {
 	                return;
 	            }
 	
@@ -3279,9 +3296,9 @@
 	        value: function then(cb) {
 	            var _this7 = this;
 	
-	            if (this._stable) return cb(null, this.data);
+	            if (this._stable) return cb(this.data);
 	            this.once('stable', function (e) {
-	                return cb(null, _this7.data);
+	                return cb(_this7.data);
 	            });
 	        }
 	
@@ -3289,7 +3306,7 @@
 	         * Add a lock so the store will not propag it data untill release() is call
 	         * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
 	         *     array of stuff to wait
-	         * @returns {TaskFlow}
+	         * @returns {this}
 	         */
 	
 	    }, {
@@ -3434,6 +3451,17 @@
 	            this.removeAllListeners();
 	        }
 	    }, {
+	        key: 'nextState',
+	
+	
+	        /**
+	         * Get the incoming state ( for immediate state relative actions )
+	         * @returns {{}|*}
+	         */
+	        get: function get() {
+	            return this._changesSW && _extends({}, this.state, this._changesSW) || this.state;
+	        }
+	    }, {
 	        key: 'contextObj',
 	        get: function get() {
 	            return this.scopeObj;
@@ -3472,17 +3500,6 @@
 	            // (new Error()).stack); console.groupEnd();
 	
 	            this.data = v;
-	        }
-	
-	        /**
-	         * Get the incoming state ( for immediate state relative actions )
-	         * @returns {{}|*}
-	         */
-	
-	    }, {
-	        key: 'nextState',
-	        get: function get() {
-	            return this._changesSW && _extends({}, this.state, this._changesSW) || this.state;
 	        }
 	    }]);
 	
@@ -3738,6 +3755,11 @@
 	
 	exports.default = {
 	    pushTask: function pushTask(obj, fn, argz) {
+	        /**
+	         * The more a store have sources, the more it should be processed first
+	         * So leafs stores stay sync, root stores get merged state updates and global state stay coherent
+	         * @type {*|number}
+	         */
 	        var weight = obj._sources && obj._sources.length || 1,
 	            stack = taskQueue[weight] = taskQueue[weight] || [];
 	
@@ -3987,9 +4009,6 @@
 	                                                                                                                                                                                                     * @author : Nathanael Braun
 	                                                                                                                                                                                                     * @contact : caipilabs@gmail.com
 	                                                                                                                                                                                                     */
-	
-	//import Scope from "../Scope";
-	//import Store from "./Store";
 	
 	var SimpleObjectProto = {}.constructor;
 	

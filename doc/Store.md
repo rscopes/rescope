@@ -142,12 +142,16 @@ Stores only have to maintain the state-data coherence, but can have initial stat
 class MyStore extends Store {
         static state = {};// initial state
         static data = {};// initial data (soft cloned)
+
+        state = {
+        // instance initial state (merged over cfg & static definitions)
+        }
 };
 
 let MyStoreInstance = new MyStore(
         BaseScope,
         {
-            state : {}, // take static defined state/data precedence
+            state : {}, // merged over the static one
             data  : {}
         }
 )

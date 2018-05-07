@@ -3777,7 +3777,7 @@
 	        curWeight = Math.min(curWeight, weight);
 	        taskCount++;
 	
-	        console.log("Push Task : ", fn, " on ", obj.name, weight);
+	        //console.log("Push Task : ", fn, " on ", obj.name, weight);
 	        stack.push([obj, fn, argz]);
 	        setTimeout(runNow, 0);
 	        return stack.length;

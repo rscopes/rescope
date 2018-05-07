@@ -1627,8 +1627,9 @@ module.exports =
 	        if (apply) _this.apply = apply;
 	
 	        /**
-	         * Initial state isn't fully initialized ( childs can set it )
-	         * Scope based instance have taskQueue to delay init synchronously, if not present we use setTimeout
+	         * Initial state isn't fully initialized ( childs constructors can set it )
+	         * Scope based instance have taskQueue to delay init synchronously, if not
+	         * present we use setTimeout
 	         */
 	        if (taskQueue) {
 	            taskQueue.push(_this._afterConstructor.bind(_this));
@@ -1657,6 +1658,7 @@ module.exports =
 	            var cfg = this._cfg,
 	                _static = this.constructor,
 	                initialState = this.state,
+	                initialData = this.data,
 	                applied = void 0;
 	            if (cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + this.name]) {
 	                this.restore(cfg.snapshot);
@@ -1664,20 +1666,26 @@ module.exports =
 	                this.$scope.bind(this, this._use, false);
 	            } else {
 	
-	                if (_static.data !== undefined) this.data = _extends({}, _static.data);
-	                if (cfg.hasOwnProperty("data") && cfg.data !== undefined) this.data = cfg.data;
+	                if (initialData) this.data = initialData;else if (_static.data !== undefined) this.data = _extends({}, _static.data);else if (cfg.hasOwnProperty("data")) this.data = cfg.data;
+	
 	                if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _extends({}, initialState, cfg.state);
 	
-	                if (initialState || this._use.length) {
-	                    // sync apply
-	                    this._changesSW = _extends({}, this._changesSW, initialState || {}, this.$scope.map(this, this._use));
-	                    this.state = {};
-	                    if (this.shouldApply(this._changesSW) && this.data === undefined) {
-	                        this.data = this.apply(this.data, this._changesSW, this._changesSW);
-	                        applied = true;
-	                        this.state = this._changesSW;
-	                        this._changesSW = {};
+	                if (this.data === undefined) {
+	                    if (initialState || this._use.length) {
+	                        // sync apply
+	                        this._changesSW = _extends({}, this._changesSW, initialState || {}, this.$scope.map(this, this._use));
+	                        this.state = {};
+	                        if (this.shouldApply(this._changesSW) && this.data === undefined) {
+	                            this.data = this.apply(this.data, this._changesSW, this._changesSW);
+	                            applied = true;
+	                            this.state = this._changesSW;
+	                            this._changesSW = {};
+	                        }
 	                    }
+	                } else {
+	                    applied = true;
+	                    this.state = _extends({}, this._changesSW, initialState || {}, this.$scope.map(this, this._use));
+	                    this._changesSW = {};
 	                }
 	            }
 	            if ((this.data !== undefined || applied) && !this.__locks.all) {
@@ -1693,18 +1701,12 @@ module.exports =
 	        }
 	
 	        /**
-	         * @deprecated
-	         * @returns {*}
+	         * Overridable method to know if a data change should be propag to the listening
+	         * stores & components
 	         */
 	
 	    }, {
 	        key: 'shouldPropag',
-	
-	
-	        /**
-	         * Overridable method to know if a data change should be propag to the listening
-	         * stores & components
-	         */
 	        value: function shouldPropag(nDatas) {
 	
 	            return true;
@@ -2317,6 +2319,12 @@ module.exports =
 	        }
 	    }, {
 	        key: 'contextObj',
+	
+	
+	        /**
+	         * @deprecated
+	         * @returns {*}
+	         */
 	        get: function get() {
 	            return this.scopeObj;
 	        }

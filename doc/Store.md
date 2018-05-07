@@ -140,19 +140,20 @@ Stores only have to maintain the state-data coherence, but can have initial stat
 - Using initial state & data :
 ```jsx
 class MyStore extends Store {
-        static state = {};// initial state
+        static state = {};// initial state (soft cloned)
         static data = {};// initial data (soft cloned)
 
         state = {
         // instance initial state (merged over cfg & static definitions)
         }
+        data = {}// precedence over cfg.data
 };
 
 let MyStoreInstance = new MyStore(
         BaseScope,
         {
-            state : {}, // merged over the static one
-            data  : {}
+            state : {}, // merged over the static state
+            data  : {}// precedence over static data
         }
 )
 

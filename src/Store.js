@@ -152,17 +152,17 @@ class Store extends EventEmitter {
             this._require.push(...cfg.require);
         
         this._followers = [];
-        this._changesSW = initialState||{};
-        this.state      = initialState&&{};
+        this._changesSW = initialState || {};
+        this.state      = initialState && {};
         if ( apply )
             this.apply = apply;
-    
+        
         /**
-         * Initial state isn't fully initialized ( childs can set it )
-         * Scope based instance have taskQueue to delay init synchronously, if not present we use setTimeout
+         * Initial state isn't fully initialized ( childs constructors can set it )
+         * Scope based instance have taskQueue to delay init synchronously, if not
+         * present we use setTimeout
          */
-        if (taskQueue)
-        {
+        if ( taskQueue ) {
             taskQueue.push(this._afterConstructor.bind(this))
         }
         else
@@ -177,55 +177,6 @@ class Store extends EventEmitter {
         return this._nextState || (
             this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
         );
-    }
-    
-    _afterConstructor() {
-        let cfg          = this._cfg,
-            _static      = this.constructor,
-            initialState = this.state,
-            applied;
-        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
-            this.restore(cfg.snapshot);
-            this._stable = true;
-            this.$scope.bind(this, this._use, false);
-        }
-        else {
-            
-            if ( _static.data !== undefined )
-                this.data = { ..._static.data };
-            if ( cfg.hasOwnProperty("data") && cfg.data !== undefined )
-                this.data = cfg.data;
-            if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
-                initialState = { ...initialState, ...cfg.state };
-            
-            
-            if ( initialState || this._use.length ) {// sync apply
-                this._changesSW = {
-                    ...this._changesSW,
-                    ...( initialState || {} ),
-                    ...this.$scope.map(this, this._use)
-                };
-                this.state      = {};
-                if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
-                    this.data       = this.apply(this.data, this._changesSW, this._changesSW);
-                    applied         = true;
-                    this.state      = this._changesSW;
-                    this._changesSW = {};
-                }
-            }
-        }
-        if ( ( this.data !== undefined || applied ) && !this.__locks.all ) {
-            this._stable = true;
-            this._rev++;
-        }
-        else {
-            this._stable = false;
-            if ( !_static.managed && !this.state && ( !this._use || !this._use.length ) ) {
-                console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
-            }
-        }
-        !this._stable && this.emit('unstable', this.state);
-        
     }
     
     /**
@@ -272,8 +223,67 @@ class Store extends EventEmitter {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
     
-    
-    
+    _afterConstructor() {
+        let cfg          = this._cfg,
+            _static      = this.constructor,
+            initialState = this.state,
+            initialData  = this.data,
+            applied;
+        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
+            this.restore(cfg.snapshot);
+            this._stable = true;
+            this.$scope.bind(this, this._use, false);
+        }
+        else {
+            
+            if ( initialData )
+                this.data = initialData;
+            else if ( _static.data !== undefined )
+                this.data = { ..._static.data };
+            else if ( cfg.hasOwnProperty("data") )
+                this.data = cfg.data;
+            
+            if ( cfg.hasOwnProperty("state") && cfg.state !== undefined )
+                initialState = { ...initialState, ...cfg.state };
+            
+            if ( this.data === undefined ) {
+                if ( initialState || this._use.length ) {// sync apply
+                    this._changesSW = {
+                        ...this._changesSW,
+                        ...( initialState || {} ),
+                        ...this.$scope.map(this, this._use)
+                    };
+                    this.state      = {};
+                    if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
+                        this.data       = this.apply(this.data, this._changesSW, this._changesSW);
+                        applied         = true;
+                        this.state      = this._changesSW;
+                        this._changesSW = {};
+                    }
+                }
+            }else{
+                applied         = true;
+                this.state = {// assume this state is sync with initial data
+                    ...this._changesSW,
+                    ...( initialState || {} ),
+                    ...this.$scope.map(this, this._use)
+                }
+                this._changesSW = {};
+            }
+        }
+        if ( ( this.data !== undefined || applied ) && !this.__locks.all ) {
+            this._stable = true;
+            this._rev++;
+        }
+        else {
+            this._stable = false;
+            if ( !_static.managed && !this.state && ( !this._use || !this._use.length ) ) {
+                console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+            }
+        }
+        !this._stable && this.emit('unstable', this.state);
+        
+    }
     
     /**
      * Overridable method to know if a data change should be propag to the listening

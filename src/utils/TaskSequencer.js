@@ -29,7 +29,8 @@
 import is from "is";
 
 /**
- * Minimal push sequencer, apply stores specific task in the right order (root stores first)
+ * Minimal push sequencer, apply stores specific task in the right order (root stores
+ * first)
  */
 let taskQueue      = [],
     curWeight      = 0,
@@ -44,24 +45,24 @@ let taskQueue      = [],
         lastError: null,
         dispatch : function ( error ) {
             errorCatcher.disable();
-            if ( task && task[0].handleError ) {
-                task[0].handleError(error, task);
+            if ( task && task[ 0 ].handleError ) {
+                task[ 0 ].handleError(error, task);
             }
             else if ( task )
-                console.error("ReScope : A task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name)
+                console.error("ReScope : A task has failed !!", task[ 1 ], " on ", task[ 0 ].name || task[ 0 ].constructor.name)
         
             isRunning = false;
             task      = null;
             runNow();
         },
-        enable   : (typeof window !== 'undefined')
-            ? () => {
+        enable   : ( typeof window !== 'undefined' )
+                   ? () => {
                 window.addEventListener('error', errorCatcher.dispatch)
             } : () => {
                 process.on('uncaughtException', errorCatcher.dispatch);
             },
-        disable  : (typeof window !== 'undefined')
-            ? () => {
+        disable  : ( typeof window !== 'undefined' )
+                   ? () => {
                 window.removeEventListener('error', errorCatcher.dispatch)
             } : () => {
                 process.removeListener('uncaughtException', errorCatcher.dispatch);
@@ -82,13 +83,13 @@ function run() {
     while ( taskCount ) {
         
         // try for the current weight
-        while ( !(taskQueue[curWeight] && taskQueue[curWeight].length) )
+        while ( !( taskQueue[ curWeight ] && taskQueue[ curWeight ].length ) )
             curWeight++;
         
         taskCount--;
-        task = taskQueue[curWeight].shift();
+        task = taskQueue[ curWeight ].shift();
         //console.log("Task : ", task[1], " on ", task[0].name);
-        task[0][task[1]].apply(task[0], task[2]);
+        task[ 0 ][ task[ 1 ] ].apply(task[ 0 ], task[ 2 ]);
     }
     task = undefined;
     errorCatcher.disable();
@@ -118,20 +119,21 @@ export default {
     pushTask( obj, fn, argz ) {
         /**
          * The more a store have sources, the more it should be processed first
-         * So leafs stores stay sync, root stores get merged state updates and global state stay coherent
+         * So leafs stores stay sync, root stores get merged state updates and global
+         * state stay coherent
          * @type {*|number}
          */
         let weight = obj._sources && obj._sources.length || 1,
-            stack  = taskQueue[weight] =
-                taskQueue[weight] || [];
+            stack  = taskQueue[ weight ] =
+                taskQueue[ weight ] || [];
         
         maxWeight = Math.max(maxWeight, weight);
         curWeight = Math.min(curWeight, weight);
         taskCount++;
         
         //console.log("Push Task : ", fn, " on ", obj.name, weight);
-        stack.push([obj, fn, argz]);
-        setTimeout(runNow);
+        stack.push([ obj, fn, argz ]);
+        setTimeout(runNow, 0);
         return stack.length;
     }
 };

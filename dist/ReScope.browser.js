@@ -3654,7 +3654,8 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	/**
-	 * Minimal push sequencer, apply stores specific task in the right order (root stores first)
+	 * Minimal push sequencer, apply stores specific task in the right order (root stores
+	 * first)
 	 */
 	var taskQueue = [],
 	    curWeight = 0,
@@ -3765,7 +3766,8 @@
 	    pushTask: function pushTask(obj, fn, argz) {
 	        /**
 	         * The more a store have sources, the more it should be processed first
-	         * So leafs stores stay sync, root stores get merged state updates and global state stay coherent
+	         * So leafs stores stay sync, root stores get merged state updates and global
+	         * state stay coherent
 	         * @type {*|number}
 	         */
 	        var weight = obj._sources && obj._sources.length || 1,
@@ -3777,7 +3779,7 @@
 	
 	        //console.log("Push Task : ", fn, " on ", obj.name, weight);
 	        stack.push([obj, fn, argz]);
-	        setTimeout(runNow);
+	        setTimeout(runNow, 0);
 	        return stack.length;
 	    }
 	};

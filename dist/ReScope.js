@@ -208,8 +208,6 @@ module.exports =
 	
 	    _createClass(Scope, null, [{
 	        key: 'getScope',
-	        // all active scopes
-	
 	        value: function getScope(scopes) {
 	            var skey = is.array(scopes) ? scopes.sort(function (a, b) {
 	                if (a.firstname < b.firstname) return -1;
@@ -217,9 +215,7 @@ module.exports =
 	                return 0;
 	            }).join('::') : scopes;
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
-	        } // if > 0, will wait 'persistenceTm' ms before destroy when
-	        // dispose reach 0
-	
+	        }
 	    }, {
 	        key: 'stateMapToRefList',
 	
@@ -243,36 +239,38 @@ module.exports =
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;
-	        }
-	
-	        /**
-	         * Init a ReScope scope
-	         *
-	         * @param storesMap {Object} Object with the initial stores definition / instances
-	         * @param config {Object} Scope config
-	         * {
-	         *  parent {scope} @optional parent scope
-	         *
-	         *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
-	         *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-	         *     will be (parent.id+'::'+key) incrementId {bool} @optional true to add a suffix
-	         *     id, if the provided key or id globally exist
-	         *
-	         *  state {Object} @optional initial state by store alias
-	         *  data {Object} @optional initial data by store alias
-	         *
-	         *  rootEmitter {bool} @optional true to not being destabilized by parent
-	         *  boundedActions {array | regexp} @optional list or regexp of actions not
-	         *     propagated to the parent
-	         *
-	         *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
-	         *     dispose reach 0 autoDestroy  {bool} will trigger retain & dispose after start
-	         *  }
-	         * @returns {Scope}
-	         */
+	        } // if > 0, will wait 'persistenceTm' ms before destroy when
+	        // dispose reach 0
 	
 	    }]);
 	
+	    // all active scopes
+	
+	    /**
+	     * Init a ReScope scope
+	     *
+	     * @param storesMap {Object} Object with the initial stores definition / instances
+	     * @param config {Object} Scope config
+	     * {
+	     *  parent {scope} @optional parent scope
+	     *
+	     *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
+	     *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
+	     *     will be (parent.id+'::'+key) incrementId {bool} @optional true to add a suffix
+	     *     id, if the provided key or id globally exist
+	     *
+	     *  state {Object} @optional initial state by store alias
+	     *  data {Object} @optional initial data by store alias
+	     *
+	     *  rootEmitter {bool} @optional true to not being destabilized by parent
+	     *  boundedActions {array | regexp} @optional list or regexp of actions not
+	     *     propagated to the parent
+	     *
+	     *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
+	     *     dispose reach 0 autoDestroy  {bool} will trigger retain & dispose after start
+	     *  }
+	     * @returns {Scope}
+	     */
 	    function Scope(storesMap) {
 	        var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
 	            parent = _ref2.parent,
@@ -1270,12 +1268,12 @@ module.exports =
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
 	                        //this.then(s => {
-	                        !_this20.__retains.all && _this20.destroy();
+	                        !_this20.__retains.all && !_this20.dead && _this20.destroy();
 	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
 	                    //this.then(s =>
-	                    !this.__retains.all && this.destroy();
+	                    !this.__retains.all && !this.dead && this.destroy();
 	                    //);
 	                }
 	            }
@@ -2277,12 +2275,12 @@ module.exports =
 	                    this._destroyTM = setTimeout(function (e) {
 	                        _this8._destroyTM = null;
 	                        //this.then(s => {
-	                        !_this8.__retains.all && _this8.destroy();
+	                        !_this8.__retains.all && !_this8.dead && _this8.destroy();
 	                        //});
 	                    }, this._persistenceTm);
 	                } else {
 	                    //this.then(s =>
-	                    !this.__retains.all && this.destroy();
+	                    !this.__retains.all && !this.dead && this.destroy();
 	                    //);
 	                }
 	            }

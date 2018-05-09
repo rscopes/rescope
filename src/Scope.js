@@ -43,15 +43,6 @@ var is                = require('is'),
  * Base Scope object
  */
 class Scope extends EventEmitter {
-    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when
-                             // dispose reach 0
-    static Store    = null;
-    static scopeRef = function scopeRef( path ) {
-        this.path = path;
-    };
-    
-    static scopes = openScopes;// all active scopes
-    
     static getScope( scopes ) {
         let skey = is.array(scopes) ? scopes.sort(( a, b ) => {
             if ( a.firstname < b.firstname ) return -1;
@@ -82,6 +73,14 @@ class Scope extends EventEmitter {
         )
         return _refs;
     }
+    
+    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when
+                             // dispose reach 0
+    static Store    = null;
+    static scopeRef = function scopeRef( path ) {
+        this.path = path;
+    };
+    static scopes   = openScopes;// all active scopes
     
     /**
      * Init a ReScope scope
@@ -1014,7 +1013,7 @@ class Scope extends EventEmitter {
                 this._.destroyTM = setTimeout(
                     e => {
                         //this.then(s => {
-                        !this.__retains.all && this.destroy()
+                        !this.__retains.all && !this.dead && this.destroy()
                         //});
                     },
                     this._.persistenceTm
@@ -1022,7 +1021,7 @@ class Scope extends EventEmitter {
             }
             else {
                 //this.then(s =>
-                ( !this.__retains.all && this.destroy() )
+                ( !this.__retains.all && !this.dead && this.destroy() )
                 //);
             }
         }

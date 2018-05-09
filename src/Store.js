@@ -261,9 +261,10 @@ class Store extends EventEmitter {
                         this._changesSW = {};
                     }
                 }
-            }else{
+            }
+            else {
                 applied         = true;
-                this.state = {// assume this state is sync with initial data
+                this.state      = {// assume this state is sync with initial data
                     ...this._changesSW,
                     ...( initialState || {} ),
                     ...this.$scope.map(this, this._use)
@@ -826,7 +827,7 @@ class Store extends EventEmitter {
                     e => {
                         this._destroyTM = null;
                         //this.then(s => {
-                        !this.__retains.all && this.destroy()
+                        !this.__retains.all && !this.dead && this.destroy()
                         //});
                     },
                     this._persistenceTm
@@ -834,7 +835,7 @@ class Store extends EventEmitter {
             }
             else {
                 //this.then(s =>
-                ( !this.__retains.all && this.destroy() )
+                ( !this.__retains.all && !this.dead && this.destroy() )
                 //);
             }
         }

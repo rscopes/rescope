@@ -413,13 +413,13 @@
 	                        taskQueue.shift()();
 	                    }
 	                } else if (is.rsScope(store.prototype)) {
-	                    this._._scope[ref.storeId] = new store({}, {
+	                    this._._scope[ref.storeId] = new store({ $parent: this }, {
 	                        snapshot: snapshot,
-	                        key: ref.storeId,
+	                        id: this._id + '/' + ref.storeId,
 	                        autoDestroy: true
 	                        //parent: this
 	                    });
-	                    this._._scope[ref.storeId].retain("scopedChildScope");
+	                    //this._._scope[ ref.storeId ].retain("scopedChildScope");
 	                    //this._watchStore(ref.storeId);
 	                    if (ref.path.length > 1) return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
 	                    //else return this._._scope[ ref.storeId ];
@@ -440,10 +440,6 @@
 	        value: function _watchStore(id, state, data) {
 	            var _this3 = this;
 	
-	            //if ( !this.__scope[id] ) {//ask mixed || parent
-	            //    if ( this.__mixed.reduce(( mounted, ctx ) => (mounted ||
-	            // ctx._watchStore(id, state, data)), false) || !this.parent ) return; return
-	            // this.parent._watchStore(...arguments); }
 	            if (!this._._listening[id] && !is.fn(this._._scope[id])) {
 	                //if ( is.rsStore(this._._scope[ id ]) ) {
 	                !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
@@ -463,21 +459,6 @@
 	                        return _this3.wait(id);
 	                    }
 	                });
-	                //}
-	                //else if ( is.rsScope(this._._scope[ id ]) ) {
-	                //!this._._scope[ id ]._autoDestroy && this._._scope[ id ].retain("scoped");
-	                //!this._._scope[ id ].isStable() && this.wait(id);
-	                //this._._scope[ id ].on(
-	                //    this._._listening[ id ] = {
-	                //        'destroy' : s => {
-	                //            delete this._._listening[ id ];
-	                //            this._._scope[ id ] = this._._scope[ id ].constructor;
-	                //        },
-	                //        'update'  : s => this.propag(),
-	                //        'stable'  : s => this.release(id),
-	                //        'unstable': s => this.wait(id)
-	                //    });
-	                //}
 	            }
 	            return true;
 	        }
@@ -548,6 +529,7 @@
 	
 	            this.relink(storesMap, this, false, false);
 	            Object.keys(storesMap).forEach(function (id) {
+	                if (id == "$parent") return;
 	                if (storesMap[id].singleton || is.fn(storesMap[id]) && (state[id] || data[id])) {
 	                    _this5._mount(id, undefined, state[id], data[id]);
 	                } else if (state[id] || data[id]) {
@@ -583,6 +565,7 @@
 	
 	            var lctx = targetCtx._.stores.prototype;
 	            Object.keys(srcCtx).forEach(function (id) {
+	                if (id == "$parent") return;
 	                if (!force && targetCtx._._scope[id] === srcCtx[id] || targetCtx._._scope[id] && targetCtx._._scope[id].constructor === srcCtx[id]) return;
 	
 	                if (!force && targetCtx._._scope[id]) {
@@ -904,7 +887,7 @@
 	            output[this._id] = {};
 	
 	            Object.keys(ctx).forEach(function (id) {
-	                if (is.fn(ctx[id])) return;
+	                if (id == "$parent" || is.fn(ctx[id])) return;
 	
 	                ctx[id].serialize(!norefs, output);
 	            });

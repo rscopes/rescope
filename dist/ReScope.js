@@ -444,11 +444,12 @@ module.exports =
 	                        //parent: this
 	                    });
 	                    this._._scope[ref.storeId].retain("scopedChildScope");
-	                    this._watchStore(ref.storeId);
-	                    if (ref.path.length > 1) return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);else return this._._scope[ref.storeId];
+	                    //this._watchStore(ref.storeId);
+	                    if (ref.path.length > 1) return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
+	                    //else return this._._scope[ ref.storeId ];
 	                } else if (is.rsScope(store) && ref.path.length > 1) {
 	                    return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
-	                } else if (snapshot) store.restore(snapshot);else if (is.rsStore(this._._scope[ref.storeId])) {
+	                } else if (snapshot && (is.rsScope(store) || is.rsScope(store))) store.restore(snapshot);else if (is.rsStore(this._._scope[ref.storeId])) {
 	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
 	                    if (data !== undefined) store.push(data);
@@ -488,23 +489,18 @@ module.exports =
 	                });
 	                //}
 	                //else if ( is.rsScope(this._._scope[ id ]) ) {
-	                !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
-	                !this._._scope[id].isStable() && this.wait(id);
-	                this._._scope[id].on(this._._listening[id] = {
-	                    'destroy': function destroy(s) {
-	                        delete _this3._._listening[id];
-	                        _this3._._scope[id] = _this3._._scope[id].constructor;
-	                    },
-	                    'update': function update(s) {
-	                        return _this3.propag();
-	                    },
-	                    'stable': function stable(s) {
-	                        return _this3.release(id);
-	                    },
-	                    'unstable': function unstable(s) {
-	                        return _this3.wait(id);
-	                    }
-	                });
+	                //!this._._scope[ id ]._autoDestroy && this._._scope[ id ].retain("scoped");
+	                //!this._._scope[ id ].isStable() && this.wait(id);
+	                //this._._scope[ id ].on(
+	                //    this._._listening[ id ] = {
+	                //        'destroy' : s => {
+	                //            delete this._._listening[ id ];
+	                //            this._._scope[ id ] = this._._scope[ id ].constructor;
+	                //        },
+	                //        'update'  : s => this.propag(),
+	                //        'stable'  : s => this.release(id),
+	                //        'unstable': s => this.wait(id)
+	                //    });
 	                //}
 	            }
 	            return true;
@@ -787,7 +783,8 @@ module.exports =
 	            }
 	            return refList.reduce(function (data, ref) {
 	                walknSet(data, ref.alias || ref.path, _this8.retrieve(ref.path));
-	                //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve && this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
+	                //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve &&
+	                // this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
 	                return data;
 	            }, {});
 	        }
@@ -1375,10 +1372,12 @@ module.exports =
 	    this.path = path;
 	}, _class.scopes = openScopes, _temp);
 	
+	
 	function walknSet(obj, path, value, stack) {
 	    if (is.string(path)) path = path.split('.');
 	    if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_toConsumableArray(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
 	}
+	
 	is.rsScope = function (obj) {
 	    return obj instanceof Scope;
 	};

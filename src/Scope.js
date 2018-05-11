@@ -250,15 +250,15 @@ class Scope extends EventEmitter {
                     //parent: this
                 });
                 this._._scope[ ref.storeId ].retain("scopedChildScope");
-                this._watchStore(ref.storeId);
+                //this._watchStore(ref.storeId);
                 if ( ref.path.length > 1 )
                     return this._._scope[ ref.storeId ].mount(ref.path.slice(1).join('.'), snapshot, state, data)
-                else return this._._scope[ ref.storeId ];
+                //else return this._._scope[ ref.storeId ];
             }
             else if ( is.rsScope(store) && ref.path.length > 1 ) {
                 return this._._scope[ ref.storeId ].mount(ref.path.slice(1).join('.'), snapshot, state, data)
             }
-            else if ( snapshot )
+            else if ( snapshot && ( is.rsScope(store) || is.rsScope(store) ) )
                 store.restore(snapshot);
             else if ( is.rsStore(this._._scope[ ref.storeId ]) ) {
                 if ( state !== undefined && data === undefined )
@@ -297,18 +297,18 @@ class Scope extends EventEmitter {
                 });
             //}
             //else if ( is.rsScope(this._._scope[ id ]) ) {
-            !this._._scope[ id ]._autoDestroy && this._._scope[ id ].retain("scoped");
-            !this._._scope[ id ].isStable() && this.wait(id);
-            this._._scope[ id ].on(
-                this._._listening[ id ] = {
-                    'destroy' : s => {
-                        delete this._._listening[ id ];
-                        this._._scope[ id ] = this._._scope[ id ].constructor;
-                    },
-                    'update'  : s => this.propag(),
-                    'stable'  : s => this.release(id),
-                    'unstable': s => this.wait(id)
-                });
+            //!this._._scope[ id ]._autoDestroy && this._._scope[ id ].retain("scoped");
+            //!this._._scope[ id ].isStable() && this.wait(id);
+            //this._._scope[ id ].on(
+            //    this._._listening[ id ] = {
+            //        'destroy' : s => {
+            //            delete this._._listening[ id ];
+            //            this._._scope[ id ] = this._._scope[ id ].constructor;
+            //        },
+            //        'update'  : s => this.propag(),
+            //        'stable'  : s => this.release(id),
+            //        'unstable': s => this.wait(id)
+            //    });
             //}
         }
         return true;
@@ -555,8 +555,8 @@ class Scope extends EventEmitter {
      * @returns {Object} Initial outputs of the stores in 'storesList'
      */
     map( to, storesList, bind = true ) {
-        let Store  = this.constructor.Store;
-        storesList = is.array(storesList) ? storesList : [ storesList ];
+        let Store   = this.constructor.Store;
+        storesList  = is.array(storesList) ? storesList : [ storesList ];
         let refList = storesList.map(this.parseRef);
         this.mount(storesList);
         if ( bind && to instanceof Store ) {
@@ -583,8 +583,9 @@ class Scope extends EventEmitter {
             
         }
         return refList.reduce(( data, ref ) => {
-            walknSet(data, ref.alias||ref.path, this.retrieve(ref.path))
-        //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve && this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
+            walknSet(data, ref.alias || ref.path, this.retrieve(ref.path))
+            //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve &&
+            // this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
             return data;
         }, {});
     }
@@ -1113,13 +1114,16 @@ class Scope extends EventEmitter {
         
     }
 }
+
 function walknSet( obj, path, value, stack ) {
     if ( is.string(path) )
         path = path.split('.');
     if ( !path.length )
         return false;
     else if ( path.length == 1 )
-        return obj[ path[ 0 ] ] = stack ? [ ...( obj[ path[ 0 ] ] || [] ), value ] : value;
+        return obj[ path[ 0 ] ] = stack
+                                  ? [ ...( obj[ path[ 0 ] ] || [] ), value ]
+                                  : value;
     else
         return walknSet(
             obj[ path[ 0 ] ] =
@@ -1128,6 +1132,7 @@ function walknSet( obj, path, value, stack ) {
             value, stack
         );
 }
+
 is.rsScope = function ( obj ) {
     return obj instanceof Scope
 }

@@ -54,11 +54,11 @@
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(14);
+	var _Store = __webpack_require__(15);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(17);
+	var _scopable = __webpack_require__(18);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -164,8 +164,8 @@
 	 */
 	
 	var is = __webpack_require__(2),
-	    EventEmitter = __webpack_require__(3),
-	    shortid = __webpack_require__(4),
+	    EventEmitter = __webpack_require__(4),
+	    shortid = __webpack_require__(5),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -286,6 +286,7 @@
 	        }
 	
 	        _this._id = id;
+	        _this._rev = 0;
 	        openScopes[id] = _this;
 	        _.persistenceTm = persistenceTm || _this.constructor.persistenceTm;
 	
@@ -386,12 +387,11 @@
 	    }, {
 	        key: '_mount',
 	        value: function _mount(id, snapshot, state, data) {
-	            if (typeof id !== 'string') {
-	                this.register(_defineProperty({}, id.name, id.store));
-	                id = id.name;
-	            }
+	            var ref = void 0;
 	
-	            if (!this._._scope[id]) {
+	            ref = this.parseRef(id);
+	
+	            if (!this._._scope[ref.storeId]) {
 	                var _parent;
 	
 	                //ask mixed || parent
@@ -400,27 +400,39 @@
 	                }, false) || !this.parent) return;
 	                return (_parent = this.parent)._mount.apply(_parent, arguments);
 	            } else {
-	                var store = this._._scope[id],
+	                var store = this._._scope[ref.storeId],
 	                    taskQueue = [];
-	                if (is.fn(store)) {
-	                    this._._scope[id] = new store(this, {
+	                if (is.rsStore(store.prototype)) {
+	                    this._._scope[ref.storeId] = new store(this, {
 	                        snapshot: snapshot,
-	                        name: id,
+	                        name: ref.storeId,
 	                        state: state,
 	                        data: data
 	                    }, taskQueue);
 	                    while (taskQueue.length) {
 	                        taskQueue.shift()();
 	                    }
-	                } else if (snapshot) store.restore(snapshot);else {
+	                } else if (is.rsScope(store.prototype)) {
+	                    this._._scope[ref.storeId] = new store({}, {
+	                        snapshot: snapshot,
+	                        key: ref.storeId,
+	                        autoDestroy: true
+	                        //parent: this
+	                    });
+	                    this._._scope[ref.storeId].retain("scopedChildScope");
+	                    this._watchStore(ref.storeId);
+	                    if (ref.path.length > 1) return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);else return this._._scope[ref.storeId];
+	                } else if (is.rsScope(store) && ref.path.length > 1) {
+	                    return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
+	                } else if (snapshot) store.restore(snapshot);else if (is.rsStore(this._._scope[ref.storeId])) {
 	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
 	                    if (data !== undefined) store.push(data);
 	                }
-	                this._watchStore(id);
+	                this._watchStore(ref.storeId);
 	            }
 	
-	            return this._._scope[id];
+	            return this._._scope[ref.storeId];
 	        }
 	    }, {
 	        key: '_watchStore',
@@ -432,6 +444,7 @@
 	            // ctx._watchStore(id, state, data)), false) || !this.parent ) return; return
 	            // this.parent._watchStore(...arguments); }
 	            if (!this._._listening[id] && !is.fn(this._._scope[id])) {
+	                //if ( is.rsStore(this._._scope[ id ]) ) {
 	                !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
 	                !this._._scope[id].isStable() && this.wait(id);
 	                this._._scope[id].on(this._._listening[id] = {
@@ -449,6 +462,26 @@
 	                        return _this3.wait(id);
 	                    }
 	                });
+	                //}
+	                //else if ( is.rsScope(this._._scope[ id ]) ) {
+	                !this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
+	                !this._._scope[id].isStable() && this.wait(id);
+	                this._._scope[id].on(this._._listening[id] = {
+	                    'destroy': function destroy(s) {
+	                        delete _this3._._listening[id];
+	                        _this3._._scope[id] = _this3._._scope[id].constructor;
+	                    },
+	                    'update': function update(s) {
+	                        return _this3.propag();
+	                    },
+	                    'stable': function stable(s) {
+	                        return _this3.release(id);
+	                    },
+	                    'unstable': function unstable(s) {
+	                        return _this3.wait(id);
+	                    }
+	                });
+	                //}
 	            }
 	            return true;
 	        }
@@ -590,12 +623,18 @@
 	                        return _this6._._scope[id] && _this6._._scope[id].data;
 	                    },
 	                    set: function set(v) {
-	                        return _this6._mount(id, undefined, v);
+	                        return _this6._mount(id, undefined, undefined, v);
 	                    }
 	                });
 	
 	                var actions = srcCtx[id] instanceof Scope.Store ? srcCtx[id].constructor.actions : srcCtx[id].actions,
 	                    activeActions = targetCtx._.actions.prototype;
+	                if (is.rsScope(_this6._._scope[id].prototype)) _this6._mount(id);
+	                if (is.rsScope(_this6._._scope[id])) {
+	                    activeActions[id] = _this6._._scope[id].actions;
+	                }
+	                if (!is.rsStore(_this6._._scope[id]) && !is.rsStore(_this6._._scope[id].prototype)) return;
+	
 	                actions && Object.keys(actions).forEach(function (act) {
 	                    if (activeActions.hasOwnProperty(act)) activeActions[act].__targetStores++;else {
 	                        activeActions[act] = _this6.dispatch.bind(_this6, act);
@@ -701,9 +740,7 @@
 	            var Store = this.constructor.Store;
 	            storesList = is.array(storesList) ? storesList : [storesList];
 	            var refList = storesList.map(this.parseRef);
-	            this.mount(refList.map(function (ref) {
-	                return ref.storeId;
-	            }));
+	            this.mount(storesList);
 	            if (bind && to instanceof Store) {
 	                Store.map(to, storesList, this, this, false);
 	            } else if (bind) {
@@ -724,11 +761,9 @@
 	                    return to[unMountKey] && to[unMountKey].apply(to, arguments);
 	                };
 	            }
-	            return storesList.reduce(function (data, id) {
-	                if (!is.string(id)) id = id.name;
-	                id = id.split(':'); //@todo
-	                id[0] = id[0].split('.');
-	                data[id[1] || id[0][id[0].length - 1]] = _this8.stores[id[0][0]] && _this8.stores[id[0][0]].retrieve && _this8.stores[id[0][0]].retrieve(id[0].splice(1));
+	            return refList.reduce(function (data, ref) {
+	                walknSet(data, ref.alias || ref.path, _this8.retrieve(ref.path));
+	                //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve && this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
 	                return data;
 	            }, {});
 	        }
@@ -942,6 +977,15 @@
 	                !ctx._.isLocalId && ctx.restore(snapshot, force);
 	            });
 	        }
+	    }, {
+	        key: 'setState',
+	        value: function setState(pState) {
+	            var _this12 = this;
+	
+	            Object.keys(pState).forEach(function (k) {
+	                return _this12.state[k] = pState[k];
+	            });
+	        }
 	
 	        /**
 	         * get a parsed reference
@@ -952,6 +996,10 @@
 	    }, {
 	        key: 'parseRef',
 	        value: function parseRef(_ref) {
+	            if (typeof _ref !== 'string') {
+	                this.register(_defineProperty({}, _ref.name, _ref.store));
+	                _ref = _ref.name;
+	            }
 	            var ref = _ref.split(':');
 	            ref[0] = ref[0].split('.');
 	            return {
@@ -973,7 +1021,7 @@
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action) {
-	            var _this12 = this,
+	            var _this13 = this,
 	                _parent2;
 	
 	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -988,7 +1036,7 @@
 	            Object.keys(this._._scope).forEach(function (id) {
 	                var _$_scope$id;
 	
-	                if (!is.fn(_this12._._scope[id])) (_$_scope$id = _this12._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
+	                if (!is.fn(_this13._._scope[id])) (_$_scope$id = _this13._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 	            });
 	
 	            if (bActs && bActs.test(action)) return;
@@ -1009,11 +1057,11 @@
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this13 = this;
+	            var _this14 = this;
 	
 	            if (this._stable) return cb(this.data);
 	            this.once('stable', function (e) {
-	                return cb(_this13.data);
+	                return cb(_this14.data);
 	            });
 	        }
 	
@@ -1027,13 +1075,13 @@
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this14 = this;
+	            var _this15 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
+	                return _this15.stores[id] && _this15.stores[id].retain && _this15.stores[id].retain(reason);
 	            });
 	        }
 	
@@ -1047,13 +1095,13 @@
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this15 = this;
+	            var _this16 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
+	                return _this16.stores[id] && _this16.stores[id].dispose && _this16.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -1083,7 +1131,7 @@
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this16 = this;
+	            var _this17 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -1097,15 +1145,15 @@
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this16._.stabilizerTM = null;
-	                    if (_this16.__locks.all) return;
+	                    _this17._.stabilizerTM = null;
+	                    if (_this17.__locks.all) return;
 	
-	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
+	                    _this17._.propagTM && clearTimeout(_this17._.propagTM);
+	                    _this17._rev++;
+	                    _this17._stable = true;
+	                    _this17.emit("stable", _this17);
 	
-	                    _this16._stable = true;
-	                    _this16.emit("stable", _this16);
-	
-	                    !_this16.dead && _this16._propag(); // stability can induce destroy
+	                    !_this17.dead && _this17._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -1117,18 +1165,18 @@
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this17 = this;
+	            var _this18 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this17._.propagTM = null;
-	                _this17._propag();
+	                _this18._.propagTM = null;
+	                _this18._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this18 = this;
+	            var _this19 = this;
 	
 	            if (this._.followers.length) this._.followers.forEach(function (_ref4) {
 	                var obj = _ref4[0],
@@ -1137,7 +1185,7 @@
 	                    lastRevs = _ref4[3],
 	                    remaps = _ref4[3];
 	
-	                var data = _this18.getUpdates(lastRevs);
+	                var data = _this19.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1165,31 +1213,31 @@
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this19 = this;
+	            var _this20 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this19._.unStableChilds--;
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    _this20._.unStableChilds--;
+	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this19._.unStableChilds++;
-	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
+	                    _this20._.unStableChilds++;
+	                    if (1 == _this20._.unStableChilds) _this20.emit("unstableTree", _this20);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this19._.unStableChilds--;
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    _this20._.unStableChilds--;
+	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this19._.unStableChilds++;
-	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
+	                    _this20._.unStableChilds++;
+	                    if (1 == _this20._.unStableChilds) _this20.emit("unstableTree", _this20);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
-	                    if (!ctx.isStable()) _this19._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this20._.unStableChilds--;
+	                    if (!ctx.isStable()) _this20._.unStableChilds--;
 	
-	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
+	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1226,7 +1274,7 @@
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this20 = this;
+	            var _this21 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1244,7 +1292,7 @@
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
 	                        //this.then(s => {
-	                        !_this20.__retains.all && !_this20.dead && _this20.destroy();
+	                        !_this21.__retains.all && !_this21.dead && _this21.destroy();
 	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
@@ -1262,7 +1310,7 @@
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this21 = this;
+	            var _this22 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1273,10 +1321,10 @@
 	                }
 	            }this.dead = true;
 	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
-	                return _this21.unBind.apply(_this21, _toConsumableArray(follower));
+	                return _this22.unBind.apply(_this22, _toConsumableArray(follower));
 	            });
 	            Object.keys(this._._listening).forEach(function (id) {
-	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
+	                return _this22._._scope[id].removeListener(_this22._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -1309,11 +1357,37 @@
 	};
 	
 	Scope.scopes = openScopes;
+	
+	function walknSet(obj, path, value, stack) {
+	    if (is.string(path)) path = path.split('.');
+	    if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_toConsumableArray(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
+	}
+	is.rsScope = function (obj) {
+	    return obj instanceof Scope;
+	};
+	
 	exports.default = Scope;
 	module.exports = exports['default'];
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var is = __webpack_require__(3);
+	
+	exports.default = _extends({}, is);
+	module.exports = exports['default'];
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 	/* globals window, HTMLElement */
@@ -2119,7 +2193,7 @@
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2160,7 +2234,7 @@
 	 * @author : Nathanael Braun
 	 * @contact : caipilabs@gmail.com
 	 */
-	var is = __webpack_require__(2);
+	var is = __webpack_require__(3);
 	
 	var Emitter = function () {
 	    function Emitter() {
@@ -2243,30 +2317,30 @@
 	module.exports = exports['default'];
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	module.exports = __webpack_require__(5);
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
+	module.exports = __webpack_require__(6);
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
 	
-	var alphabet = __webpack_require__(6);
-	var encode = __webpack_require__(8);
-	var decode = __webpack_require__(10);
-	var build = __webpack_require__(11);
-	var isValid = __webpack_require__(12);
+	var alphabet = __webpack_require__(7);
+	var encode = __webpack_require__(9);
+	var decode = __webpack_require__(11);
+	var build = __webpack_require__(12);
+	var isValid = __webpack_require__(13);
 	
 	// if you are using cluster or multiple servers use this to make each instance
 	// has a unique value for worker
 	// Note: I don't know if this is automatically set when using third
 	// party cluster solutions such as pm2.
-	var clusterWorkerId = __webpack_require__(13) || 0;
+	var clusterWorkerId = __webpack_require__(14) || 0;
 	
 	/**
 	 * Set the seed.
@@ -2322,12 +2396,12 @@
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomFromSeed = __webpack_require__(7);
+	var randomFromSeed = __webpack_require__(8);
 	
 	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
 	var alphabet;
@@ -2426,7 +2500,7 @@
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2457,12 +2531,12 @@
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var randomByte = __webpack_require__(9);
+	var randomByte = __webpack_require__(10);
 	
 	function encode(lookup, number) {
 	    var loopCounter = 0;
@@ -2482,7 +2556,7 @@
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2502,11 +2576,11 @@
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(6);
+	var alphabet = __webpack_require__(7);
 	
 	/**
 	 * Decode the id to get the version and worker
@@ -2525,13 +2599,13 @@
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var encode = __webpack_require__(8);
-	var alphabet = __webpack_require__(6);
+	var encode = __webpack_require__(9);
+	var alphabet = __webpack_require__(7);
 	
 	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
 	// This number should be updated every year or so to keep the generated id short.
@@ -2579,11 +2653,11 @@
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var alphabet = __webpack_require__(6);
+	var alphabet = __webpack_require__(7);
 	
 	function isShortId(id) {
 	    if (!id || typeof id !== 'string' || id.length < 6 ) {
@@ -2604,7 +2678,7 @@
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2613,7 +2687,7 @@
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2667,9 +2741,9 @@
 	
 	var is = __webpack_require__(2),
 	    Scope = __webpack_require__(1),
-	    EventEmitter = __webpack_require__(3),
-	    TaskSequencer = __webpack_require__(15),
-	    shortid = __webpack_require__(4),
+	    EventEmitter = __webpack_require__(4),
+	    TaskSequencer = __webpack_require__(16),
+	    shortid = __webpack_require__(5),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
@@ -2957,8 +3031,8 @@
 	        value: function dispatch(action) {
 	            var _scopeObj;
 	
-	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	                argz[_key - 1] = arguments[_key];
+	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key2 = 1; _key2 < _len; _key2++) {
+	                argz[_key2 - 1] = arguments[_key2];
 	            }
 	
 	            (_scopeObj = this.scopeObj).dispatch.apply(_scopeObj, [action].concat(argz));
@@ -2971,8 +3045,8 @@
 	            if (actions && actions[action]) {
 	                var _actions$action;
 	
-	                for (var _len2 = arguments.length, argz = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-	                    argz[_key2 - 1] = arguments[_key2];
+	                for (var _len2 = arguments.length, argz = Array(_len2 > 1 ? _len2 - 1 : 0), _key3 = 1; _key3 < _len2; _key3++) {
+	                    argz[_key3 - 1] = arguments[_key3];
 	                }
 	
 	                var ns = (_actions$action = actions[action]).call.apply(_actions$action, [this].concat(argz));
@@ -3558,7 +3632,8 @@
 	        var name = void 0,
 	            alias = void 0,
 	            path = void 0,
-	            store = void 0;
+	            store = void 0,
+	            _key = void 0;
 	        if (key.store && key.name) {
 	            alias = name = key.name;
 	            store = key.store;
@@ -3566,14 +3641,17 @@
 	            name = alias = key.name || key.defaultName;
 	            store = key;
 	        } else {
-	            key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-	            name = key[1];
-	            path = key[2] && key[2].substr(1);
-	            store = scope.stores[key[1]];
-	            alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+	            _key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+	            name = _key[1];
+	            path = _key[2] && _key[2].substr(1);
+	            store = scope.stores[_key[1]];
+	            alias = _key[3] || path && path.match(/([^\.]*)$/)[0] || _key[1];
 	        }
 	
-	        if (targetRevs[name]) return false; // ignore dbl uses for now
+	        if (is.rsScope(store.prototype)) scope._mount(name);
+	        if (is.rsScope(store)) {
+	            store = scope._mount(key);
+	        } else if (targetRevs[name]) return false; // ignore dbl uses for now
 	
 	        if (!store) {
 	            console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (component.name || component) + ' !!', store);
@@ -3586,7 +3664,7 @@
 	        }
 	
 	        // give initial store weight basing sources
-	        (_component$_sources = component._sources).push.apply(_component$_sources, _toConsumableArray(scope.stores[name]._sources));
+	        scope.stores[name]._sources && (_component$_sources = component._sources).push.apply(_component$_sources, _toConsumableArray(scope.stores[name]._sources));
 	
 	        targetRevs[alias] = targetRevs[alias] || true;
 	        !targetScope[name] && (targetScope[name] = scope.stores[name]);
@@ -3594,7 +3672,7 @@
 	        return true;
 	    });
 	
-	    // ...
+	    // ... @todo
 	    var mixedCWUnmount,
 	        unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
 	
@@ -3632,11 +3710,16 @@
 	
 	    return initialOutputs;
 	};
+	
+	is.rsStore = function (obj) {
+	    return obj instanceof Store;
+	};
+	
 	exports.default = Store;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -3645,7 +3728,7 @@
 	    value: true
 	});
 	
-	var _is = __webpack_require__(2);
+	var _is = __webpack_require__(3);
 	
 	var _is2 = _interopRequireDefault(_is);
 	
@@ -3782,10 +3865,10 @@
 	    }
 	};
 	module.exports = exports["default"];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	// shim for using process in browser
@@ -3975,7 +4058,7 @@
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3985,7 +4068,7 @@
 	});
 	exports.scopeToState = exports.reScope = exports.addScopableType = undefined;
 	
-	var _is = __webpack_require__(2);
+	var _is = __webpack_require__(3);
 	
 	var _is2 = _interopRequireDefault(_is);
 	

@@ -25,7 +25,7 @@
  * @contact : caipilabs@gmail.com
  */
 
-var is            = require('is'),
+var is            = require('./utils/is'),
     Scope         = require('./Scope'),
     EventEmitter  = require('./utils/Emitter'),
     TaskSequencer = require('./utils/TaskSequencer'),
@@ -902,7 +902,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
             let name,
                 alias,
                 path,
-                store;
+                store, _key;
             if ( key.store && key.name ) {
                 alias = name = key.name;
                 store = key.store;
@@ -912,14 +912,18 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                 store = key;
             }
             else {
-                key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                name  = key[ 1 ];
-                path  = key[ 2 ] && key[ 2 ].substr(1);
-                store = scope.stores[ key[ 1 ] ];
-                alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+                _key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                name  = _key[ 1 ];
+                path  = _key[ 2 ] && _key[ 2 ].substr(1);
+                store = scope.stores[ _key[ 1 ] ];
+                alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
             }
             
-            if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
+            if ( is.rsScope(store.prototype) ) scope._mount(name);
+            if ( is.rsScope(store) ) {
+                store = scope._mount(key);
+            }
+            else if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
             
             if ( !store ) {
                 console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( component.name || component ) + ' !!', store);
@@ -934,7 +938,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
             }
             
             // give initial store weight basing sources
-            component._sources.push(...scope.stores[ name ]._sources);
+            scope.stores[ name ]._sources && component._sources.push(...scope.stores[ name ]._sources);
             
             targetRevs[ alias ] = targetRevs[ alias ] || true;
             !targetScope[ name ] && ( targetScope[ name ] = scope.stores[ name ] );
@@ -944,7 +948,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
         }
     );
     
-    // ...
+    // ... @todo
     var mixedCWUnmount,
         unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
     
@@ -986,4 +990,10 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
     
     return initialOutputs;
 };
+
+
+is.rsStore = function ( obj ) {
+    return obj instanceof Store
+}
+
 export default Store;

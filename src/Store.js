@@ -230,7 +230,7 @@ class Store extends EventEmitter {
             initialData  = this.data,
             applied;
         if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
-            this.restore(cfg.snapshot);
+            this.restore(cfg.snapshot, true);
             this._stable = true;
             this.$scope.bind(this, this._use, false);
         }
@@ -648,9 +648,12 @@ class Store extends EventEmitter {
      * restore state & data
      * @returns bool
      */
-    restore( snapshot ) {
+    restore( snapshot, immediate ) {
         let snap = snapshot[ this.scopeObj._id + '/' + this.name ];
         if ( snap ) {
+            if ( !this.isStable() && !immediate )
+                this.then(() => restore(snapshot))
+            
             this.state = snap.state;
             Object.keys(snap.refs).forEach(
                 ( key ) => {//todo
@@ -661,7 +664,8 @@ class Store extends EventEmitter {
                 }
             )
             
-            this.data = snap.data;
+            this.data       = snap.data;
+            this._changesSW = {};
         }
     }
     
@@ -912,7 +916,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                 store = key;
             }
             else {
-                _key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                _key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                 name  = _key[ 1 ];
                 path  = _key[ 2 ] && _key[ 2 ].substr(1);
                 store = scope.stores[ _key[ 1 ] ];

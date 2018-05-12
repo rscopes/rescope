@@ -2861,7 +2861,7 @@
 	                initialData = this.data,
 	                applied = void 0;
 	            if (cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + this.name]) {
-	                this.restore(cfg.snapshot);
+	                this.restore(cfg.snapshot, true);
 	                this._stable = true;
 	                this.$scope.bind(this, this._use, false);
 	            } else {
@@ -3288,9 +3288,23 @@
 	
 	    }, {
 	        key: 'restore',
-	        value: function restore(snapshot) {
+	        value: function (_restore) {
+	            function restore(_x, _x2) {
+	                return _restore.apply(this, arguments);
+	            }
+	
+	            restore.toString = function () {
+	                return _restore.toString();
+	            };
+	
+	            return restore;
+	        }(function (snapshot, immediate) {
 	            var snap = snapshot[this.scopeObj._id + '/' + this.name];
 	            if (snap) {
+	                if (!this.isStable() && !immediate) this.then(function () {
+	                    return restore(snapshot);
+	                });
+	
 	                this.state = snap.state;
 	                Object.keys(snap.refs).forEach(function (key) {
 	                    //todo
@@ -3298,8 +3312,9 @@
 	                });
 	
 	                this.data = snap.data;
+	                this._changesSW = {};
 	            }
-	        }
+	        })
 	
 	        /**
 	         * Un bind this store off the given component-key

@@ -78,11 +78,11 @@ module.exports =
 	
 	var _Scope2 = _interopRequireDefault(_Scope);
 	
-	var _Store = __webpack_require__(6);
+	var _Store = __webpack_require__(7);
 	
 	var _Store2 = _interopRequireDefault(_Store);
 	
-	var _scopable = __webpack_require__(8);
+	var _scopable = __webpack_require__(9);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -189,8 +189,11 @@ module.exports =
 	 */
 	
 	var is = __webpack_require__(2),
-	    EventEmitter = __webpack_require__(4),
-	    shortid = __webpack_require__(5),
+	    _require = __webpack_require__(4),
+	    walknSet = _require.walknSet,
+	    walknGet = _require.walknGet,
+	    EventEmitter = __webpack_require__(5),
+	    shortid = __webpack_require__(6),
 	    __proto__push = function __proto__push(target, id, parent) {
 	    var fn = function fn() {};
 	    fn.prototype = parent ? new parent._[id]() : target[id] || {};
@@ -213,7 +216,7 @@ module.exports =
 	                if (a.firstname < b.firstname) return -1;
 	                if (a.firstname > b.firstname) return 1;
 	                return 0;
-	            }).join('::') : scopes;
+	            }).join('+') : scopes;
 	            return openScopes[skey] = openScopes[skey] || new Scope({}, { id: skey });
 	        }
 	    }, {
@@ -256,7 +259,7 @@ module.exports =
 	     *
 	     *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
 	     *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-	     *     will be (parent.id+'::'+key) incrementId {bool} @optional true to add a suffix
+	     *     will be (parent.id+':>'+key) incrementId {bool} @optional true to add a suffix
 	     *     id, if the provided key or id globally exist
 	     *
 	     *  state {Object} @optional initial state by store alias
@@ -291,7 +294,7 @@ module.exports =
 	
 	        var _ = {};
 	
-	        id = id || key && (parent && parent._id || '') + '::' + key;
+	        id = id || key && (parent && parent._id || '') + ':>' + key;
 	
 	        _.isLocalId = !id;
 	
@@ -788,6 +791,21 @@ module.exports =
 	        }
 	
 	        /**
+	         * Get current store from json path
+	         * @param path
+	         * @returns {string|*}
+	         */
+	
+	    }, {
+	        key: 'retrieveStore',
+	        value: function retrieveStore() {
+	            var path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+	
+	            path = is.string(path) ? path.split('.') : path;
+	            return path && path.length && (path.length != 1 && this.stores[path[0]].retrieveStore ? this.stores[path[0]].retrieveStore(path.slice(1)) : path.length == 1 && this.stores[path[0]]);
+	        }
+	
+	        /**
 	         * Get or update storesRevMap's revisions
 	         * @param storesRevMap
 	         * @param local
@@ -891,8 +909,6 @@ module.exports =
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var _this10 = this;
-	
 	            var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 	                alias = _ref3.alias,
 	                _ref3$withChilds = _ref3.withChilds,
@@ -904,11 +920,12 @@ module.exports =
 	
 	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	            var ctx = this._._scope;
-	            if (output[this._id]) return;
+	            var ctx = this._._scope,
+	                idPath = this._id.split(/[\:|\/]/);
+	            if (walknGet(output, idPath)) return;
 	
 	            //@todo : better serialize method
-	            output[this._id] = {};
+	            walknSet(output, idPath, {});
 	
 	            Object.keys(ctx).forEach(function (id) {
 	                if (id == "$parent" || is.fn(ctx[id])) return;
@@ -943,7 +960,7 @@ module.exports =
 	
 	            if (alias) {
 	                output = Object.keys(output).reduce(function (h, k) {
-	                    return h[k.replace(_this10._id, alias)] = output[k], h;
+	                    return h[k.startsWith(alias) ? alias + k.substr(alias.length) : k] = output[k], h;
 	                }, {});
 	            }
 	            return output;
@@ -957,19 +974,22 @@ module.exports =
 	
 	    }, {
 	        key: 'restore',
-	        value: function restore(snapshot, force) {
-	            var _this11 = this;
+	        value: function restore(snapshot) {
+	            var _this10 = this;
+	
+	            var cfg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	            var force = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : is.bool(cfg) && cfg;
 	
 	            var ctx = this._._scope;
-	
 	            Object.keys(ctx).forEach(function (name) {
-	                var snap = snapshot[_this11._id + '/' + name];
+	                var idPath = (_this10._id + '/' + name).split(/[\:|\/]/),
+	                    snap = walknGet(snapshot, idPath);
 	
 	                if (snap) {
 	
 	                    if (force && !is.fn(ctx[name])) ctx[name].destroy();
 	
-	                    _this11.mount(name, snapshot); // quiet
+	                    _this10.mount(name, snapshot); // quiet
 	                }
 	            });
 	
@@ -984,10 +1004,10 @@ module.exports =
 	    }, {
 	        key: 'setState',
 	        value: function setState(pState) {
-	            var _this12 = this;
+	            var _this11 = this;
 	
 	            Object.keys(pState).forEach(function (k) {
-	                return _this12.state[k] = pState[k];
+	                return _this11.state[k] = pState[k];
 	            });
 	        }
 	
@@ -1025,7 +1045,7 @@ module.exports =
 	    }, {
 	        key: 'dispatch',
 	        value: function dispatch(action) {
-	            var _this13 = this,
+	            var _this12 = this,
 	                _parent2;
 	
 	            for (var _len = arguments.length, argz = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -1040,7 +1060,7 @@ module.exports =
 	            Object.keys(this._._scope).forEach(function (id) {
 	                var _$_scope$id;
 	
-	                if (!is.fn(_this13._._scope[id])) (_$_scope$id = _this13._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
+	                if (!is.fn(_this12._._scope[id])) (_$_scope$id = _this12._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 	            });
 	
 	            if (bActs && bActs.test(action)) return;
@@ -1061,11 +1081,11 @@ module.exports =
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this14 = this;
+	            var _this13 = this;
 	
 	            if (this._stable) return cb(this.data);
 	            this.once('stable', function (e) {
-	                return cb(_this14.data);
+	                return cb(_this13.data);
 	            });
 	        }
 	
@@ -1079,13 +1099,13 @@ module.exports =
 	    }, {
 	        key: 'retainStores',
 	        value: function retainStores() {
-	            var _this15 = this;
+	            var _this14 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this15.stores[id] && _this15.stores[id].retain && _this15.stores[id].retain(reason);
+	                return _this14.stores[id] && _this14.stores[id].retain && _this14.stores[id].retain(reason);
 	            });
 	        }
 	
@@ -1099,13 +1119,13 @@ module.exports =
 	    }, {
 	        key: 'disposeStores',
 	        value: function disposeStores() {
-	            var _this16 = this;
+	            var _this15 = this;
 	
 	            var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            var reason = arguments[1];
 	
 	            stores.forEach(function (id) {
-	                return _this16.stores[id] && _this16.stores[id].dispose && _this16.stores[id].dispose(reason);
+	                return _this15.stores[id] && _this15.stores[id].dispose && _this15.stores[id].dispose(reason);
 	            });
 	        }
 	
@@ -1135,7 +1155,7 @@ module.exports =
 	    }, {
 	        key: 'release',
 	        value: function release(reason) {
-	            var _this17 = this;
+	            var _this16 = this;
 	
 	            if (reason) {
 	                if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
@@ -1149,15 +1169,15 @@ module.exports =
 	                this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	
 	                this._.stabilizerTM = setTimeout(function (e) {
-	                    _this17._.stabilizerTM = null;
-	                    if (_this17.__locks.all) return;
+	                    _this16._.stabilizerTM = null;
+	                    if (_this16.__locks.all) return;
 	
-	                    _this17._.propagTM && clearTimeout(_this17._.propagTM);
-	                    _this17._rev++;
-	                    _this17._stable = true;
-	                    _this17.emit("stable", _this17);
+	                    _this16._.propagTM && clearTimeout(_this16._.propagTM);
+	                    _this16._rev++;
+	                    _this16._stable = true;
+	                    _this16.emit("stable", _this16);
 	
-	                    !_this17.dead && _this17._propag(); // stability can induce destroy
+	                    !_this16.dead && _this16._propag(); // stability can induce destroy
 	                });
 	            }
 	        }
@@ -1169,18 +1189,18 @@ module.exports =
 	    }, {
 	        key: 'propag',
 	        value: function propag() {
-	            var _this18 = this;
+	            var _this17 = this;
 	
 	            this._.propagTM && clearTimeout(this._.propagTM);
 	            this._.propagTM = setTimeout(function (e) {
-	                _this18._.propagTM = null;
-	                _this18._propag();
+	                _this17._.propagTM = null;
+	                _this17._propag();
 	            }, 2);
 	        }
 	    }, {
 	        key: '_propag',
 	        value: function _propag() {
-	            var _this19 = this;
+	            var _this18 = this;
 	
 	            if (this._.followers.length) this._.followers.forEach(function (_ref4) {
 	                var obj = _ref4[0],
@@ -1189,7 +1209,7 @@ module.exports =
 	                    lastRevs = _ref4[3],
 	                    remaps = _ref4[3];
 	
-	                var data = _this19.getUpdates(lastRevs);
+	                var data = _this18.getUpdates(lastRevs);
 	                if (!data) return;
 	                if (typeof obj != "function") {
 	                    //console.log("setState ",obj, Object.keys(data))
@@ -1217,31 +1237,31 @@ module.exports =
 	    }, {
 	        key: '_addChild',
 	        value: function _addChild(ctx) {
-	            var _this20 = this;
+	            var _this19 = this;
 	
 	            this._.childScopes.push(ctx);
 	            var lists = {
 	                'stable': function stable(s) {
-	                    _this20._.unStableChilds--;
-	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstable': function unstable(s) {
-	                    _this20._.unStableChilds++;
-	                    if (1 == _this20._.unStableChilds) _this20.emit("unstableTree", _this20);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'stableTree': function stableTree(s) {
-	                    _this20._.unStableChilds--;
-	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
+	                    _this19._.unStableChilds--;
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                },
 	                'unstableTree': function unstableTree(s) {
-	                    _this20._.unStableChilds++;
-	                    if (1 == _this20._.unStableChilds) _this20.emit("unstableTree", _this20);
+	                    _this19._.unStableChilds++;
+	                    if (1 == _this19._.unStableChilds) _this19.emit("unstableTree", _this19);
 	                },
 	                'destroy': function destroy(ctx) {
-	                    if (ctx._.unStableChilds) _this20._.unStableChilds--;
-	                    if (!ctx.isStable()) _this20._.unStableChilds--;
+	                    if (ctx._.unStableChilds) _this19._.unStableChilds--;
+	                    if (!ctx.isStable()) _this19._.unStableChilds--;
 	
-	                    if (!_this20._.unStableChilds) _this20.emit("stableTree", _this20);
+	                    if (!_this19._.unStableChilds) _this19.emit("stableTree", _this19);
 	                }
 	            },
 	                wasStable = this._.unStableChilds;
@@ -1278,7 +1298,7 @@ module.exports =
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this21 = this;
+	            var _this20 = this;
 	
 	            //console.log("dispose", this._id, reason);
 	            if (reason) {
@@ -1296,7 +1316,7 @@ module.exports =
 	                    this._.destroyTM && clearTimeout(this._.destroyTM);
 	                    this._.destroyTM = setTimeout(function (e) {
 	                        //this.then(s => {
-	                        !_this21.__retains.all && !_this21.dead && _this21.destroy();
+	                        !_this20.__retains.all && !_this20.dead && _this20.destroy();
 	                        //});
 	                    }, this._.persistenceTm);
 	                } else {
@@ -1314,7 +1334,7 @@ module.exports =
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
-	            var _this22 = this;
+	            var _this21 = this;
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
@@ -1325,10 +1345,10 @@ module.exports =
 	                }
 	            }this.dead = true;
 	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
-	                return _this22.unBind.apply(_this22, _toConsumableArray(follower));
+	                return _this21.unBind.apply(_this21, _toConsumableArray(follower));
 	            });
 	            Object.keys(this._._listening).forEach(function (id) {
-	                return _this22._._scope[id].removeListener(_this22._._listening[id]);
+	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
 	            });
 	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
@@ -1355,11 +1375,6 @@ module.exports =
 	    this.path = path;
 	}, _class.scopes = openScopes, _temp);
 	
-	
-	function walknSet(obj, path, value, stack) {
-	    if (is.string(path)) path = path.split('.');
-	    if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_toConsumableArray(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
-	}
 	
 	is.rsScope = function (obj) {
 	    return obj instanceof Scope;
@@ -1393,6 +1408,32 @@ module.exports =
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.walknSet = walknSet;
+	exports.walknGet = walknGet;
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	var is = __webpack_require__(2);
+	
+	function walknSet(obj, path, value, stack) {
+	    if (is.string(path)) path = path.split(/[\:|\/]/);
+	    if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_toConsumableArray(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
+	}
+	
+	function walknGet(obj, path) {
+	    if (is.string(path)) path = path.split(/[\:|\/]/);
+	    return path.length ? obj[path[0]] && walknGet(obj[path[0]], path.slice(1)) : obj;
+	}
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1516,13 +1557,13 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 	module.exports = require("shortid");
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1578,9 +1619,12 @@ module.exports =
 	
 	var is = __webpack_require__(2),
 	    Scope = __webpack_require__(1),
-	    EventEmitter = __webpack_require__(4),
-	    TaskSequencer = __webpack_require__(7),
-	    shortid = __webpack_require__(5),
+	    _require = __webpack_require__(4),
+	    walknSet = _require.walknSet,
+	    walknGet = _require.walknGet,
+	    EventEmitter = __webpack_require__(5),
+	    TaskSequencer = __webpack_require__(8),
+	    shortid = __webpack_require__(6),
 	    objProto = Object.getPrototypeOf({});
 	
 	/**
@@ -1714,7 +1758,7 @@ module.exports =
 	                initialState = this.state,
 	                initialData = this.data,
 	                applied = void 0;
-	            if (cfg.snapshot && cfg.snapshot[this.scopeObj._id + '/' + this.name]) {
+	            if (cfg.snapshot && walknGet(cfg.snapshot, this.scopeObj._id + '/' + this.name)) {
 	                this.restore(cfg.snapshot, true);
 	                this._stable = true;
 	                this.$scope.bind(this, this._use, false);
@@ -2111,27 +2155,29 @@ module.exports =
 	                    store = void 0;
 	                if (key.store && key.name) {
 	                    alias = name = key.name;
+	                    store = _this6.scopeObj.stores[name];
 	                } else if (is.fn(key)) {
 	                    name = alias = key.name || key.defaultName;
+	                    store = _this6.scopeObj.stores[name];
 	                } else {
 	                    key = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
 	                    name = key[1];
 	                    path = key[2] && key[2].substr(1);
 	                    alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+	                    store = _this6.scopeObj.retrieveStore(path);
 	                }
-	
-	                if (!_this6.scopeObj.stores[name].scopeObj._.isLocalId) map[alias] = _this6.scopeObj.stores[name].scopeObj._id + '/' + name;
+	                if (store && !store.scopeObj._.isLocalId) map[alias] = store.scopeObj._id + '/' + name;
 	
 	                return map;
 	            }, {}) || {};
 	
-	            output[this.scopeObj._id + '/' + this.name] = {
+	            walknSet(output, (this.scopeObj._id + '/' + this.name).split(/[\:|\/]/), {
 	                state: this.state && (!withRefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
 	                    return !refs[k] && (h[k] = _this6.state[k]), h;
 	                }, {})),
 	                data: this.data,
 	                refs: refs
-	            };
+	            });
 	            return output;
 	        }
 	
@@ -2153,7 +2199,7 @@ module.exports =
 	
 	            return restore;
 	        }(function (snapshot, immediate) {
-	            var snap = snapshot[this.scopeObj._id + '/' + this.name];
+	            var snap = walknGet(snapshot, this.scopeObj._id + '/' + this.name);
 	            if (snap) {
 	                if (!this.isStable() && !immediate) this.then(function () {
 	                    return restore(snapshot);
@@ -2565,7 +2611,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2713,7 +2759,7 @@ module.exports =
 	module.exports = exports["default"];
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";

@@ -26,18 +26,19 @@
  */
 
 
-var is                = require('./utils/is'),
-    EventEmitter      = require('./utils/Emitter'),
-    shortid           = require('shortid')
-    , __proto__push   = ( target, id, parent ) => {
+var is                     = require('./utils/is'),
+    { walknSet, walknGet } = require('./utils/utils'),
+    EventEmitter           = require('./utils/Emitter'),
+    shortid                = require('shortid')
+    , __proto__push        = ( target, id, parent ) => {
         let fn         = function () {
         };
         fn.prototype   = parent ? new parent._[ id ]() : target[ id ] || {};
         target[ id ]   = new fn();
         target._[ id ] = fn;
     },
-    openScopes        = {},
-    SimpleObjectProto = ( {} ).constructor;
+    openScopes             = {},
+    SimpleObjectProto      = ( {} ).constructor;
 
 /**
  * Base Scope object
@@ -48,7 +49,7 @@ class Scope extends EventEmitter {
             if ( a.firstname < b.firstname ) return -1;
             if ( a.firstname > b.firstname ) return 1;
             return 0;
-        }).join('::') : scopes;
+        }).join('+') : scopes;
         return openScopes[ skey ] = openScopes[ skey ] || new Scope({}, { id: skey });
     };
     
@@ -92,7 +93,7 @@ class Scope extends EventEmitter {
      *
      *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
      *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-     *     will be (parent.id+'::'+key) incrementId {bool} @optional true to add a suffix
+     *     will be (parent.id+':>'+key) incrementId {bool} @optional true to add a suffix
      *     id, if the provided key or id globally exist
      *
      *  state {Object} @optional initial state by store alias
@@ -111,7 +112,7 @@ class Scope extends EventEmitter {
         super();
         var _ = {};
         
-        id = id || key && ( ( parent && parent._id || '' ) + '::' + key );
+        id = id || key && ( ( parent && parent._id || '' ) + ':>' + key );
         
         _.isLocalId = !id;
         
@@ -585,6 +586,22 @@ class Scope extends EventEmitter {
     }
     
     /**
+     * Get current store from json path
+     * @param path
+     * @returns {string|*}
+     */
+    retrieveStore( path = "" ) {
+        path = is.string(path) ? path.split('.') : path;
+        return path
+               && path.length
+               && (
+               path.length != 1 && this.stores[ path[ 0 ] ].retrieveStore
+               ? this.stores[ path[ 0 ] ].retrieveStore(path.slice(1))
+               : path.length == 1 && this.stores[ path[ 0 ] ]
+               );
+    }
+    
+    /**
      * Get or update storesRevMap's revisions
      * @param storesRevMap
      * @param local
@@ -683,12 +700,13 @@ class Scope extends EventEmitter {
      * @returns {{}}
      */
     serialize( { alias, withChilds = true, withParents, withMixed = true, norefs } = {}, output = {} ) {
-        let ctx = this._._scope;
-        if ( output[ this._id ] )
+        let ctx    = this._._scope,
+            idPath = this._id.split(/[\:|\/]/);
+        if ( walknGet(output, idPath) )
             return;
         
         //@todo : better serialize method
-        output[ this._id ] = {};
+        walknSet(output, idPath, {});
         
         Object.keys(ctx).forEach(
             id => {
@@ -731,7 +749,12 @@ class Scope extends EventEmitter {
         if ( alias ) {
             output = Object.keys(output)
                            .reduce(
-                               ( h, k ) => ( h[ k.replace(this._id, alias) ] = output[ k ], h ),
+                               ( h, k ) => (
+                                   h[ k.startsWith(alias)
+                                      ? alias + k.substr(alias.length)
+                                      : k ] = output[ k ],
+                                       h
+                               ),
                                {}
                            )
         }
@@ -743,12 +766,13 @@ class Scope extends EventEmitter {
      * @param snapshot
      * @param force
      */
-    restore( snapshot, force ) {
+    restore( snapshot, cfg = {}, force = is.bool(cfg) && cfg ) {
         let ctx = this._._scope;
-        
         Object.keys(ctx).forEach(
             name => {
-                let snap = snapshot[ this._id + '/' + name ];
+                let
+                    idPath = ( this._id + '/' + name ).split(/[\:|\/]/),
+                    snap   = walknGet(snapshot, idPath);
                 
                 if ( snap ) {
                     
@@ -1098,23 +1122,6 @@ class Scope extends EventEmitter {
     }
 }
 
-function walknSet( obj, path, value, stack ) {
-    if ( is.string(path) )
-        path = path.split('.');
-    if ( !path.length )
-        return false;
-    else if ( path.length == 1 )
-        return obj[ path[ 0 ] ] = stack
-                                  ? [ ...( obj[ path[ 0 ] ] || [] ), value ]
-                                  : value;
-    else
-        return walknSet(
-            obj[ path[ 0 ] ] =
-                obj[ path[ 0 ] ] || {},
-            path.slice(1),
-            value, stack
-        );
-}
 
 is.rsScope = function ( obj ) {
     return obj instanceof Scope

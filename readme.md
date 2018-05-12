@@ -1,7 +1,11 @@
 
 <p align="center"><img  width="192" src ="https://github.com/CaipiLabs/rescope/raw/master/doc/assets/logo.svg?sanitize=true" /></p>
 
-<p align="center" style="font-size:25px"><b>ReScope</b></p>
+<p align="center" style="font-size:25px"><b>
+
+# ReScope
+
+</b></p>
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
@@ -9,8 +13,9 @@
 <img src="https://travis-ci.org/CaipiLabs/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>
-<a href="https://www.npmjs.com/package/rescope">
-<img src="https://img.shields.io/npm/dm/rescope.svg" /></a>
+<img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" />
+
+
 </p>
 
 

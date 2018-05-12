@@ -25,12 +25,13 @@
  * @contact : caipilabs@gmail.com
  */
 
-var is            = require('./utils/is'),
-    Scope         = require('./Scope'),
-    EventEmitter  = require('./utils/Emitter'),
-    TaskSequencer = require('./utils/TaskSequencer'),
-    shortid       = require('shortid'),
-    objProto      = Object.getPrototypeOf({});
+var is                     = require('./utils/is'),
+    Scope                  = require('./Scope'),
+    { walknSet, walknGet } = require('./utils/utils'),
+    EventEmitter           = require('./utils/Emitter'),
+    TaskSequencer          = require('./utils/TaskSequencer'),
+    shortid                = require('shortid'),
+    objProto               = Object.getPrototypeOf({});
 
 /**
  * @class Store
@@ -229,7 +230,7 @@ class Store extends EventEmitter {
             initialState = this.state,
             initialData  = this.data,
             applied;
-        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
+        if ( cfg.snapshot && walknGet(cfg.snapshot, this.scopeObj._id + '/' + this.name) ) {
             this.restore(cfg.snapshot, true);
             this._stable = true;
             this.$scope.bind(this, this._use, false);
@@ -615,32 +616,40 @@ class Store extends EventEmitter {
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
+                        store = this.scopeObj.stores[ name ];
                     }
                     else if ( is.fn(key) ) {
                         name = alias = key.name || key.defaultName;
+                        store = this.scopeObj.stores[ name ];
                     }
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                         name  = key[ 1 ];
                         path  = key[ 2 ] && key[ 2 ].substr(1);
                         alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+                        store = this.scopeObj.retrieveStore(path);
                     }
-                
-                    if ( !this.scopeObj.stores[ name ].scopeObj._.isLocalId )
-                        map[ alias ] = this.scopeObj.stores[ name ].scopeObj._id + '/' + name;
+                    if ( store && !store.scopeObj._.isLocalId )
+                        map[ alias ] = store.scopeObj._id + '/' + name;
                 
                     return map;
                 }, {}
                          ) || {};
         
-        output[ this.scopeObj._id + '/' + this.name ] = {
-            state: this.state &&
-                   ( !withRefs
-                     ? { ...this.state }
-                     : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {}) ),
-            data : this.data,
-            refs
-        };
+        walknSet(
+            output,
+            ( this.scopeObj._id + '/' + this.name ).split(/[\:|\/]/),
+            {
+                state: this.state &&
+                       (
+                           !withRefs
+                           ? { ...this.state }
+                           : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {})
+                       ),
+                data : this.data,
+                refs
+            }
+        );
         return output;
     }
     
@@ -649,7 +658,7 @@ class Store extends EventEmitter {
      * @returns bool
      */
     restore( snapshot, immediate ) {
-        let snap = snapshot[ this.scopeObj._id + '/' + this.name ];
+        let snap = walknGet(snapshot, ( this.scopeObj._id + '/' + this.name ));
         if ( snap ) {
             if ( !this.isStable() && !immediate )
                 this.then(() => restore(snapshot))

@@ -938,7 +938,7 @@
 	
 	            var ctx = this._._scope;
 	
-	            snapshot[this._id] && Object.keys(ctx).forEach(function (name) {
+	            Object.keys(ctx).forEach(function (name) {
 	                var snap = snapshot[_this11._id + '/' + name];
 	
 	                if (snap) {

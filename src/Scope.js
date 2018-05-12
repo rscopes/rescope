@@ -746,7 +746,7 @@ class Scope extends EventEmitter {
     restore( snapshot, force ) {
         let ctx = this._._scope;
         
-        snapshot[ this._id ] && Object.keys(ctx).forEach(
+        Object.keys(ctx).forEach(
             name => {
                 let snap = snapshot[ this._id + '/' + name ];
                 

@@ -26,19 +26,19 @@
  */
 
 
-var is                     = require('./utils/is'),
-    { walknSet, walknGet } = require('./utils/utils'),
-    EventEmitter           = require('./utils/Emitter'),
-    shortid                = require('shortid')
-    , __proto__push        = ( target, id, parent ) => {
+var is                                               = require('./utils/is'),
+    { walknSet, walknGet, keyWalknSet, keyWalknGet } = require('./utils/utils'),
+    EventEmitter                                     = require('./utils/Emitter'),
+    shortid                                          = require('shortid')
+    , __proto__push                                  = ( target, id, parent ) => {
         let fn         = function () {
         };
         fn.prototype   = parent ? new parent._[ id ]() : target[ id ] || {};
         target[ id ]   = new fn();
         target._[ id ] = fn;
     },
-    openScopes             = {},
-    SimpleObjectProto      = ( {} ).constructor;
+    openScopes                                       = {},
+    SimpleObjectProto                                = ( {} ).constructor;
 
 /**
  * Base Scope object
@@ -52,6 +52,7 @@ class Scope extends EventEmitter {
         }).join('+') : scopes;
         return openScopes[ skey ] = openScopes[ skey ] || new Scope({}, { id: skey });
     };
+    
     
     /**
      * get a parsed reference list from stateMap
@@ -83,6 +84,7 @@ class Scope extends EventEmitter {
     };
     static scopes   = openScopes;// all active scopes
     
+    
     /**
      * Init a ReScope scope
      *
@@ -93,7 +95,7 @@ class Scope extends EventEmitter {
      *
      *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
      *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-     *     will be (parent.id+':>'+key) incrementId {bool} @optional true to add a suffix
+     *     will be (parent.id+'>'+key) incrementId {bool} @optional true to add a suffix
      *     id, if the provided key or id globally exist
      *
      *  state {Object} @optional initial state by store alias
@@ -108,11 +110,11 @@ class Scope extends EventEmitter {
      *  }
      * @returns {Scope}
      */
-    constructor( storesMap, { parent, key, id, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
+    constructor( storesMap, { parent, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
         super();
         var _ = {};
         
-        id = id || key && ( ( parent && parent._id || '' ) + ':>' + key );
+        id = id || key && ( ( parent && parent._id || '' ) + '>' + key );
         
         _.isLocalId = !id;
         
@@ -139,8 +141,9 @@ class Scope extends EventEmitter {
         this.state   = {};
         this.data    = {};
         
-        this.parent = parent;
-        this._      = _;
+        this.parent       = parent;
+        this._            = _;
+        this._autoDestroy = autoDestroy;
         
         if ( parent && parent.dead )
             throw new Error("Can't use a dead scope as parent !");
@@ -155,8 +158,11 @@ class Scope extends EventEmitter {
         _.childScopesList = [];
         _.unStableChilds  = 0;
         
-        this.__retains    = { all: 0 };
-        this.__locks      = { all: 1 };
+        this.__retains = { all: 0 };
+        this.__locks   = { all: 1 };
+        
+        //_.snapshot        = snapshot;
+        //_.snapshot        = snapshot;
         _._boundedActions = is.array(boundedActions)
                             ? { test: boundedActions.includes.bind(boundedActions) }
                             : boundedActions;
@@ -191,6 +197,9 @@ class Scope extends EventEmitter {
         if ( parent ) {
             parent._addChild(this);
         }
+        
+        this.restore(snapshot);
+        
         if ( autoDestroy )
             setTimeout(
                 tm => {
@@ -222,10 +231,11 @@ class Scope extends EventEmitter {
     }
     
     _mount( id, snapshot, state, data ) {
-        let ref;
+        let ref, snap;
         
         ref = this.parseRef(id)
         
+        if ( id == "$parent" ) return;
         if ( !this._._scope[ ref.storeId ] ) {//ask mixed || parent
             if ( this._._mixed.reduce(( mounted, ctx ) => ( mounted || ctx._mount(id, snapshot, state, data) ), false) ||
                  !this.parent )
@@ -236,7 +246,7 @@ class Scope extends EventEmitter {
             let store = this._._scope[ ref.storeId ], taskQueue = [];
             if ( is.rsStore(store.prototype) ) {
                 this._._scope[ ref.storeId ] = new store(this, {
-                    snapshot,
+                    //snapshot,
                     name: ref.storeId,
                     state,
                     data
@@ -244,24 +254,21 @@ class Scope extends EventEmitter {
                 while ( taskQueue.length ) taskQueue.shift()();
             }
             else if ( is.rsScope(store.prototype) ) {
-                this._._scope[ ref.storeId ] = new store({ $parent: this }, {
-                    snapshot,
-                    id         : this._id + '/' + ref.storeId,
-                    autoDestroy: true
+                store = this._._scope[ ref.storeId ] = new store({ $parent: this }, {
+                    id: this._id + '/' + ref.storeId,
+                    //autoDestroy: true
                     //parent: this
                 });
                 //this._._scope[ ref.storeId ].retain("scopedChildScope");
                 //this._watchStore(ref.storeId);
                 if ( ref.path.length > 1 )
-                    return this._._scope[ ref.storeId ].mount(ref.path.slice(1).join('.'), snapshot, state, data)
+                    this._._scope[ ref.storeId ].mount(ref.path.slice(1).join('.'), snapshot, state, data)
                 //else return this._._scope[ ref.storeId ];
             }
-            else if ( is.rsScope(store) && ref.path.length > 1 ) {
-                return this._._scope[ ref.storeId ].mount(ref.path.slice(1).join('.'), snapshot, state, data)
-            }
-            else if ( snapshot && ( is.rsScope(store) || is.rsScope(store) ) )
-                store.restore(snapshot);
-            else if ( is.rsStore(this._._scope[ ref.storeId ]) ) {
+            //if ( snapshot && is.rsScope(store) && ( snap = keyWalknGet(snapshot,
+            // store._id) ) && snap[ '/' ] ) { return store.mount(Object.keys(snap[ '/'
+            // ])) } else if ( snapshot && is.rsStore(store) ) store.restore();
+            if ( is.rsStore(store) ) {
                 if ( state !== undefined && data === undefined )
                     store.setState(state);
                 else if ( state !== undefined )
@@ -380,7 +387,6 @@ class Scope extends EventEmitter {
         Object.keys(srcCtx)
               .forEach(
                   id => {
-                      if ( id == "$parent" ) return;
                       if ( !force && targetCtx._._scope[ id ] === srcCtx[ id ] ||
                            targetCtx._._scope[ id ] && ( targetCtx._._scope[ id ].constructor === srcCtx[ id ] ) )
                           return;
@@ -408,6 +414,7 @@ class Scope extends EventEmitter {
                               get         : () => this._._scope[ id ]
                           }
                       );
+                      if ( id == "$parent" ) return;
                       Object.defineProperty(
                           targetCtx._.state.prototype,
                           id,
@@ -568,8 +575,6 @@ class Scope extends EventEmitter {
         }
         return refList.reduce(( data, ref ) => {
             walknSet(data, ref.alias || ref.path, this.retrieve(ref.path))
-            //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve &&
-            // this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
             return data;
         }, {});
     }
@@ -614,6 +619,7 @@ class Scope extends EventEmitter {
         }
         Object.keys(ctx).forEach(
             id => {
+                if ( id == "$parent" ) return;
                 if ( !is.fn(ctx[ id ])
                 ) {
                     storesRevMap[ id ] = ctx[ id ]._rev;
@@ -643,6 +649,7 @@ class Scope extends EventEmitter {
         output = output || {};
         Object.keys(ctx).forEach(
             id => {
+                if ( id == "$parent" ) return;
                 if ( !output.hasOwnProperty(id) && !is.fn(ctx[ id ])
                      && ( !storesRevMap
                           || ( storesRevMap.hasOwnProperty(id) && storesRevMap[ id ] === undefined )
@@ -699,21 +706,22 @@ class Scope extends EventEmitter {
      * @param output
      * @returns {{}}
      */
-    serialize( { alias, withChilds = true, withParents, withMixed = true, norefs } = {}, output = {} ) {
-        let ctx    = this._._scope,
-            idPath = this._id.split(/[\:|\/]/);
-        if ( walknGet(output, idPath) )
-            return;
+    serialize( cfg = {}, output = {} ) {
+        let ctx                                                                 = this._._scope,
+            { alias, withChilds = true, withParents, withMixed = true, norefs } = cfg;
+        
+        if ( keyWalknGet(output, this._id) )
+            return output;
         
         //@todo : better serialize method
-        walknSet(output, idPath, {});
+        keyWalknSet(output, this._id, {});
         
         Object.keys(ctx).forEach(
             id => {
                 if ( id == "$parent" || is.fn(ctx[ id ]) )
                     return;
                 
-                ctx[ id ].serialize(!norefs, output);
+                ctx[ id ].serialize(cfg, output);
             }
         )
         
@@ -767,19 +775,28 @@ class Scope extends EventEmitter {
      * @param force
      */
     restore( snapshot, cfg = {}, force = is.bool(cfg) && cfg ) {
-        let ctx = this._._scope;
-        Object.keys(ctx).forEach(
+        let ctx  = this._._scope, snap;
+        snapshot = snapshot
+                   && keyWalknGet(snapshot, this._id)
+                   || this.takeSnapshotByKey(this._id);
+        
+        if ( !snapshot )
+            return;
+        
+        this._.snapshot = snapshot;
+        
+        snap = snapshot[ '/' ];
+        
+        snap && Object.keys(snap).forEach(
             name => {
-                let
-                    idPath = ( this._id + '/' + name ).split(/[\:|\/]/),
-                    snap   = walknGet(snapshot, idPath);
+                if ( name == "$parent" ) return;
                 
-                if ( snap ) {
+                if ( ctx[ name ] ) {
                     
                     if ( force && !is.fn(ctx[ name ]) )
                         ctx[ name ].destroy();
                     
-                    this.mount(name, snapshot);// quiet
+                    this._mount(name);// quiet
                 }
                 
             }
@@ -787,16 +804,73 @@ class Scope extends EventEmitter {
         
         this._._mixed.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.restore(snapshot, force);
+                !ctx._.isLocalId && ctx.restore(undefined, force);
             }
         );
         
         this._.childScopes.forEach(
             ctx => {
-                !ctx._.isLocalId && ctx.restore(snapshot, force);
+                !ctx._.isLocalId && ctx.restore(undefined, force);
             }
         );
         
+    }
+    
+    getSnapshotByKey( key, local ) {
+        // only have the local snap
+        if ( this._.snapshot && key.startsWith(this._id) ) {
+            let obj = keyWalknGet(this._.snapshot, key.substr(this._id.length))
+            //if ( obj ) {
+            //    this.deleteSnapshotByKey(key);
+            //}
+            return obj;
+        }
+        else return !local
+                    && this.parent
+                    && this.parent.getSnapshotByKey(key)
+                    ||
+                    this.stores.$parent
+                    && this.stores.$parent.getSnapshotByKey(key);
+        
+    }
+    
+    getSnapshotByKeyExt( snapshot, key, local ) {
+        // only have the local snap
+        if ( snapshot ) {
+            let obj = keyWalknGet(snapshot, key)
+            return obj;
+        }
+        
+    }
+    
+    takeSnapshotByKey( key, local ) {
+        if ( this._.snapshot && key.startsWith(this._id) ) {
+            let obj = keyWalknGet(this._.snapshot, key.substr(this._id.length))
+            if ( obj ) {
+                //this.deleteSnapshotByKey(key, true);
+            }
+            return obj;
+        }
+        else return !local
+                    && this.parent
+                    && this.parent.takeSnapshotByKey(key)
+                    ||
+                    this.stores.$parent
+                    && this.stores.$parent.takeSnapshotByKey(key);
+    }
+    
+    deleteSnapshotByKey( key, local ) {
+        if ( this._.snapshot && key.startsWith(this._id) ) {
+            let obj = keyWalknGet(this._.snapshot, key.substr(this._id.length).replace(/^(.*[\>|\/])[^\>|\/]+$/ig, '$1'))
+            if ( obj )
+                delete obj[ key.replace(/^.*[\>|\/]([^\>|\/]+)$/ig, '$1') ]
+        }
+        return !local
+               && this.parent
+               && this.parent.deleteSnapshotByKey(key)
+               ||
+               this.stores.$parent
+               && this.stores.$parent.deleteSnapshotByKey(key);
     }
     
     setState( pState ) {
@@ -840,6 +914,7 @@ class Scope extends EventEmitter {
         Object.keys(this._._scope)
               .forEach(
                   id => {
+                      if ( id == "$parent" ) return;
                       if ( !is.fn(this._._scope[ id ]) )
                           this._._scope[ id ].trigger(action, ...argz);
                   }
@@ -851,6 +926,11 @@ class Scope extends EventEmitter {
         this._._mixed.forEach(( ctx ) => ( ctx.dispatch(action, ...argz) ));
         this.parent && this.parent.dispatch(action, ...argz);
         return this;
+    }
+    
+    //
+    trigger() {
+        this.dispatch(...arguments);
     }
     
     /**
@@ -1087,37 +1167,37 @@ class Scope extends EventEmitter {
     destroy() {
         let ctx = this._._scope;
         //console.warn("destroy", this._id);
-        this.emit("destroy", this);
-        for ( let key in ctx )
-            if ( !is.fn(ctx[ key ]) ) {
-                !ctx[ key ]._autoDestroy && ctx[ key ].dispose("scoped");
-            }
-        this.dead = true;
-        [ ...this._.followers ].map(follower => this.unBind(...follower));
+        this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
+        this._.propagTM && clearTimeout(this._.propagTM);
         Object.keys(
             this._._listening
         ).forEach(
-            id => this._._scope[ id ].removeListener(this._._listening[ id ])
+            id => ( ( id !== "$parent" ) && this._._scope[ id ].removeListener(this._._listening[ id ]) )
         );
-        
-        this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
-        this._.propagTM && clearTimeout(this._.propagTM);
-        
-        if ( !this._.isLocalId )
-            delete openScopes[ this._id ];
-        
         while ( this._._mixedList.length ) {
             this._._mixed[ 0 ].removeListener(this._._mixedList.shift());
             this._._mixed.shift().dispose("mixedTo");
         }
+        [ ...this._.followers ].map(follower => this.unBind(...follower));
+        for ( let key in ctx )
+            if ( !is.fn(ctx[ key ]) ) {
+                if ( key == "$parent" ) continue;
+                !ctx[ key ]._autoDestroy && ctx[ key ].dispose("scoped");
+            }
         if ( this._._parentList ) {
             this.parent._rmChild(this);
             this.parent.removeListener(this._._parentList);
             this.parent.dispose("isMyParent");
             this._._parentList = null;
         }
-        this._ = null;
+        this.dead = true;
+        this.emit("destroy", this);
         
+        
+        //if ( !this._.isLocalId )
+        delete openScopes[ this._id ];
+        
+        //this._ = null;
         
     }
 }

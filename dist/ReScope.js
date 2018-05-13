@@ -192,6 +192,8 @@ module.exports =
 	    _require = __webpack_require__(4),
 	    walknSet = _require.walknSet,
 	    walknGet = _require.walknGet,
+	    keyWalknSet = _require.keyWalknSet,
+	    keyWalknGet = _require.keyWalknGet,
 	    EventEmitter = __webpack_require__(5),
 	    shortid = __webpack_require__(6),
 	    __proto__push = function __proto__push(target, id, parent) {
@@ -249,6 +251,7 @@ module.exports =
 	
 	    // all active scopes
 	
+	
 	    /**
 	     * Init a ReScope scope
 	     *
@@ -259,7 +262,7 @@ module.exports =
 	     *
 	     *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
 	     *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-	     *     will be (parent.id+':>'+key) incrementId {bool} @optional true to add a suffix
+	     *     will be (parent.id+'>'+key) incrementId {bool} @optional true to add a suffix
 	     *     id, if the provided key or id globally exist
 	     *
 	     *  state {Object} @optional initial state by store alias
@@ -279,6 +282,7 @@ module.exports =
 	            parent = _ref2.parent,
 	            key = _ref2.key,
 	            id = _ref2.id,
+	            snapshot = _ref2.snapshot,
 	            state = _ref2.state,
 	            data = _ref2.data,
 	            _ref2$incrementId = _ref2.incrementId,
@@ -294,7 +298,7 @@ module.exports =
 	
 	        var _ = {};
 	
-	        id = id || key && (parent && parent._id || '') + ':>' + key;
+	        id = id || key && (parent && parent._id || '') + '>' + key;
 	
 	        _.isLocalId = !id;
 	
@@ -324,6 +328,7 @@ module.exports =
 	
 	        _this.parent = parent;
 	        _this._ = _;
+	        _this._autoDestroy = autoDestroy;
 	
 	        if (parent && parent.dead) throw new Error("Can't use a dead scope as parent !");
 	
@@ -339,6 +344,9 @@ module.exports =
 	
 	        _this.__retains = { all: 0 };
 	        _this.__locks = { all: 1 };
+	
+	        //_.snapshot        = snapshot;
+	        //_.snapshot        = snapshot;
 	        _._boundedActions = is.array(boundedActions) ? { test: boundedActions.includes.bind(boundedActions) } : boundedActions;
 	        _._listening = {};
 	        _._scope = {};
@@ -377,6 +385,9 @@ module.exports =
 	        if (parent) {
 	            parent._addChild(_this);
 	        }
+	
+	        _this.restore(snapshot);
+	
 	        if (autoDestroy) setTimeout(function (tm) {
 	            _this.retain("autoDestroy");
 	            _this.dispose("autoDestroy");
@@ -414,10 +425,12 @@ module.exports =
 	    }, {
 	        key: '_mount',
 	        value: function _mount(id, snapshot, state, data) {
-	            var ref = void 0;
+	            var ref = void 0,
+	                snap = void 0;
 	
 	            ref = this.parseRef(id);
 	
+	            if (id == "$parent") return;
 	            if (!this._._scope[ref.storeId]) {
 	                var _parent;
 	
@@ -431,7 +444,7 @@ module.exports =
 	                    taskQueue = [];
 	                if (is.rsStore(store.prototype)) {
 	                    this._._scope[ref.storeId] = new store(this, {
-	                        snapshot: snapshot,
+	                        //snapshot,
 	                        name: ref.storeId,
 	                        state: state,
 	                        data: data
@@ -440,19 +453,20 @@ module.exports =
 	                        taskQueue.shift()();
 	                    }
 	                } else if (is.rsScope(store.prototype)) {
-	                    this._._scope[ref.storeId] = new store({ $parent: this }, {
-	                        snapshot: snapshot,
-	                        id: this._id + '/' + ref.storeId,
-	                        autoDestroy: true
+	                    store = this._._scope[ref.storeId] = new store({ $parent: this }, {
+	                        id: this._id + '/' + ref.storeId
+	                        //autoDestroy: true
 	                        //parent: this
 	                    });
 	                    //this._._scope[ ref.storeId ].retain("scopedChildScope");
 	                    //this._watchStore(ref.storeId);
-	                    if (ref.path.length > 1) return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
+	                    if (ref.path.length > 1) this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
 	                    //else return this._._scope[ ref.storeId ];
-	                } else if (is.rsScope(store) && ref.path.length > 1) {
-	                    return this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data);
-	                } else if (snapshot && (is.rsScope(store) || is.rsScope(store))) store.restore(snapshot);else if (is.rsStore(this._._scope[ref.storeId])) {
+	                }
+	                //if ( snapshot && is.rsScope(store) && ( snap = keyWalknGet(snapshot,
+	                // store._id) ) && snap[ '/' ] ) { return store.mount(Object.keys(snap[ '/'
+	                // ])) } else if ( snapshot && is.rsStore(store) ) store.restore();
+	                if (is.rsStore(store)) {
 	                    if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
 	
 	                    if (data !== undefined) store.push(data);
@@ -592,7 +606,6 @@ module.exports =
 	
 	            var lctx = targetCtx._.stores.prototype;
 	            Object.keys(srcCtx).forEach(function (id) {
-	                if (id == "$parent") return;
 	                if (!force && targetCtx._._scope[id] === srcCtx[id] || targetCtx._._scope[id] && targetCtx._._scope[id].constructor === srcCtx[id]) return;
 	
 	                if (!force && targetCtx._._scope[id]) {
@@ -612,6 +625,7 @@ module.exports =
 	                        return _this6._._scope[id];
 	                    }
 	                });
+	                if (id == "$parent") return;
 	                Object.defineProperty(targetCtx._.state.prototype, id, {
 	                    enumerable: true,
 	                    configurable: true,
@@ -769,8 +783,6 @@ module.exports =
 	            }
 	            return refList.reduce(function (data, ref) {
 	                walknSet(data, ref.alias || ref.path, _this8.retrieve(ref.path));
-	                //] = this.stores[ id[ 0 ][ 0 ] ] && this.stores[ id[ 0 ][ 0 ] ].retrieve &&
-	                // this.stores[ id[ 0 ][ 0 ] ].retrieve(id[ 0 ].splice(1));
 	                return data;
 	            }, {});
 	        }
@@ -823,6 +835,7 @@ module.exports =
 	                storesRevMap = {};
 	            }
 	            Object.keys(ctx).forEach(function (id) {
+	                if (id == "$parent") return;
 	                if (!is.fn(ctx[id])) {
 	                    storesRevMap[id] = ctx[id]._rev;
 	                } else if (!storesRevMap.hasOwnProperty(id)) storesRevMap[id] = false;
@@ -854,6 +867,7 @@ module.exports =
 	
 	            output = output || {};
 	            Object.keys(ctx).forEach(function (id) {
+	                if (id == "$parent") return;
 	                if (!output.hasOwnProperty(id) && !is.fn(ctx[id]) && (!storesRevMap || storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined || !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id].rev))) {
 	
 	                    updated = true;
@@ -909,28 +923,27 @@ module.exports =
 	    }, {
 	        key: 'serialize',
 	        value: function serialize() {
-	            var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-	                alias = _ref3.alias,
-	                _ref3$withChilds = _ref3.withChilds,
-	                withChilds = _ref3$withChilds === undefined ? true : _ref3$withChilds,
-	                withParents = _ref3.withParents,
-	                _ref3$withMixed = _ref3.withMixed,
-	                withMixed = _ref3$withMixed === undefined ? true : _ref3$withMixed,
-	                norefs = _ref3.norefs;
-	
+	            var cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-	
 	            var ctx = this._._scope,
-	                idPath = this._id.split(/[\:|\/]/);
-	            if (walknGet(output, idPath)) return;
+	                alias = cfg.alias,
+	                _cfg$withChilds = cfg.withChilds,
+	                withChilds = _cfg$withChilds === undefined ? true : _cfg$withChilds,
+	                withParents = cfg.withParents,
+	                _cfg$withMixed = cfg.withMixed,
+	                withMixed = _cfg$withMixed === undefined ? true : _cfg$withMixed,
+	                norefs = cfg.norefs;
+	
+	
+	            if (keyWalknGet(output, this._id)) return output;
 	
 	            //@todo : better serialize method
-	            walknSet(output, idPath, {});
+	            keyWalknSet(output, this._id, {});
 	
 	            Object.keys(ctx).forEach(function (id) {
 	                if (id == "$parent" || is.fn(ctx[id])) return;
 	
-	                ctx[id].serialize(!norefs, output);
+	                ctx[id].serialize(cfg, output);
 	            });
 	
 	            withParents && this.parent && this.parent.serialize({
@@ -980,26 +993,75 @@ module.exports =
 	            var cfg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	            var force = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : is.bool(cfg) && cfg;
 	
-	            var ctx = this._._scope;
-	            Object.keys(ctx).forEach(function (name) {
-	                var idPath = (_this10._id + '/' + name).split(/[\:|\/]/),
-	                    snap = walknGet(snapshot, idPath);
+	            var ctx = this._._scope,
+	                snap = void 0;
+	            snapshot = snapshot && keyWalknGet(snapshot, this._id) || this.takeSnapshotByKey(this._id);
 	
-	                if (snap) {
+	            if (!snapshot) return;
+	
+	            this._.snapshot = snapshot;
+	
+	            snap = snapshot['/'];
+	
+	            snap && Object.keys(snap).forEach(function (name) {
+	                if (name == "$parent") return;
+	
+	                if (ctx[name]) {
 	
 	                    if (force && !is.fn(ctx[name])) ctx[name].destroy();
 	
-	                    _this10.mount(name, snapshot); // quiet
+	                    _this10._mount(name); // quiet
 	                }
 	            });
 	
 	            this._._mixed.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.restore(snapshot, force);
+	                !ctx._.isLocalId && ctx.restore(undefined, force);
 	            });
 	
 	            this._.childScopes.forEach(function (ctx) {
-	                !ctx._.isLocalId && ctx.restore(snapshot, force);
+	                !ctx._.isLocalId && ctx.restore(undefined, force);
 	            });
+	        }
+	    }, {
+	        key: 'getSnapshotByKey',
+	        value: function getSnapshotByKey(key, local) {
+	            // only have the local snap
+	            if (this._.snapshot && key.startsWith(this._id)) {
+	                var obj = keyWalknGet(this._.snapshot, key.substr(this._id.length));
+	                //if ( obj ) {
+	                //    this.deleteSnapshotByKey(key);
+	                //}
+	                return obj;
+	            } else return !local && this.parent && this.parent.getSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.getSnapshotByKey(key);
+	        }
+	    }, {
+	        key: 'getSnapshotByKeyExt',
+	        value: function getSnapshotByKeyExt(snapshot, key, local) {
+	            // only have the local snap
+	            if (snapshot) {
+	                var obj = keyWalknGet(snapshot, key);
+	                return obj;
+	            }
+	        }
+	    }, {
+	        key: 'takeSnapshotByKey',
+	        value: function takeSnapshotByKey(key, local) {
+	            if (this._.snapshot && key.startsWith(this._id)) {
+	                var obj = keyWalknGet(this._.snapshot, key.substr(this._id.length));
+	                if (obj) {
+	                    //this.deleteSnapshotByKey(key, true);
+	                }
+	                return obj;
+	            } else return !local && this.parent && this.parent.takeSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.takeSnapshotByKey(key);
+	        }
+	    }, {
+	        key: 'deleteSnapshotByKey',
+	        value: function deleteSnapshotByKey(key, local) {
+	            if (this._.snapshot && key.startsWith(this._id)) {
+	                var obj = keyWalknGet(this._.snapshot, key.substr(this._id.length).replace(/^(.*[\>|\/])[^\>|\/]+$/ig, '$1'));
+	                if (obj) delete obj[key.replace(/^.*[\>|\/]([^\>|\/]+)$/ig, '$1')];
+	            }
+	            return !local && this.parent && this.parent.deleteSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.deleteSnapshotByKey(key);
 	        }
 	    }, {
 	        key: 'setState',
@@ -1060,6 +1122,7 @@ module.exports =
 	            Object.keys(this._._scope).forEach(function (id) {
 	                var _$_scope$id;
 	
+	                if (id == "$parent") return;
 	                if (!is.fn(_this12._._scope[id])) (_$_scope$id = _this12._._scope[id]).trigger.apply(_$_scope$id, [action].concat(argz));
 	            });
 	
@@ -1070,6 +1133,14 @@ module.exports =
 	            });
 	            this.parent && (_parent2 = this.parent).dispatch.apply(_parent2, [action].concat(argz));
 	            return this;
+	        }
+	
+	        //
+	
+	    }, {
+	        key: 'trigger',
+	        value: function trigger() {
+	            this.dispatch.apply(this, arguments);
 	        }
 	
 	        /**
@@ -1202,12 +1273,12 @@ module.exports =
 	        value: function _propag() {
 	            var _this18 = this;
 	
-	            if (this._.followers.length) this._.followers.forEach(function (_ref4) {
-	                var obj = _ref4[0],
-	                    key = _ref4[1],
-	                    as = _ref4[2],
-	                    lastRevs = _ref4[3],
-	                    remaps = _ref4[3];
+	            if (this._.followers.length) this._.followers.forEach(function (_ref3) {
+	                var obj = _ref3[0],
+	                    key = _ref3[1],
+	                    as = _ref3[2],
+	                    lastRevs = _ref3[3],
+	                    remaps = _ref3[3];
 	
 	                var data = _this18.getUpdates(lastRevs);
 	                if (!data) return;
@@ -1338,35 +1409,36 @@ module.exports =
 	
 	            var ctx = this._._scope;
 	            //console.warn("destroy", this._id);
-	            this.emit("destroy", this);
-	            for (var key in ctx) {
-	                if (!is.fn(ctx[key])) {
-	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
-	                }
-	            }this.dead = true;
-	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
-	                return _this21.unBind.apply(_this21, _toConsumableArray(follower));
-	            });
-	            Object.keys(this._._listening).forEach(function (id) {
-	                return _this21._._scope[id].removeListener(_this21._._listening[id]);
-	            });
-	
 	            this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 	            this._.propagTM && clearTimeout(this._.propagTM);
-	
-	            if (!this._.isLocalId) delete openScopes[this._id];
-	
+	            Object.keys(this._._listening).forEach(function (id) {
+	                return id !== "$parent" && _this21._._scope[id].removeListener(_this21._._listening[id]);
+	            });
 	            while (this._._mixedList.length) {
 	                this._._mixed[0].removeListener(this._._mixedList.shift());
 	                this._._mixed.shift().dispose("mixedTo");
 	            }
-	            if (this._._parentList) {
+	            [].concat(_toConsumableArray(this._.followers)).map(function (follower) {
+	                return _this21.unBind.apply(_this21, _toConsumableArray(follower));
+	            });
+	            for (var key in ctx) {
+	                if (!is.fn(ctx[key])) {
+	                    if (key == "$parent") continue;
+	                    !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
+	                }
+	            }if (this._._parentList) {
 	                this.parent._rmChild(this);
 	                this.parent.removeListener(this._._parentList);
 	                this.parent.dispose("isMyParent");
 	                this._._parentList = null;
 	            }
-	            this._ = null;
+	            this.dead = true;
+	            this.emit("destroy", this);
+	
+	            //if ( !this._.isLocalId )
+	            delete openScopes[this._id];
+	
+	            //this._ = null;
 	        }
 	    }]);
 	
@@ -1417,18 +1489,35 @@ module.exports =
 	});
 	exports.walknSet = walknSet;
 	exports.walknGet = walknGet;
+	exports.keyWalknSet = keyWalknSet;
+	exports.keyWalknGet = keyWalknGet;
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	var is = __webpack_require__(2);
 	
 	function walknSet(obj, path, value, stack) {
-	    if (is.string(path)) path = path.split(/[\:|\/]/);
+	    if (is.string(path)) path = path.split('.');
 	    if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_toConsumableArray(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
 	}
 	
-	function walknGet(obj, path) {
-	    if (is.string(path)) path = path.split(/[\:|\/]/);
+	function walknGet(obj, path, isKey) {
+	    if (is.string(path)) path = path.split('.');
+	    return path.length ? obj[path[0]] && walknGet(obj[path[0]], path.slice(1)) : obj;
+	}
+	
+	//@todo
+	function keyWalknSet(obj, path, value, stack) {
+	    if (is.string(path)) path = path.split(/(\>|\/)/ig).filter(function (v) {
+	        return v !== '>' && v;
+	    });
+	    return walknSet(obj, path, value);
+	}
+	
+	function keyWalknGet(obj, path, isKey) {
+	    if (is.string(path)) path = path.split(/(\>|\/)/ig).filter(function (v) {
+	        return v !== '>' && v;
+	    });
 	    return path.length ? obj[path[0]] && walknGet(obj[path[0]], path.slice(1)) : obj;
 	}
 
@@ -1620,16 +1709,12 @@ module.exports =
 	var is = __webpack_require__(2),
 	    Scope = __webpack_require__(1),
 	    _require = __webpack_require__(4),
-	    walknSet = _require.walknSet,
-	    walknGet = _require.walknGet,
+	    keyWalknSet = _require.keyWalknSet,
+	    keyWalknGet = _require.keyWalknGet,
 	    EventEmitter = __webpack_require__(5),
 	    TaskSequencer = __webpack_require__(8),
 	    shortid = __webpack_require__(6),
 	    objProto = Object.getPrototypeOf({});
-	
-	/**
-	 * @class Store
-	 */
 	var Store = (_temp = _class = function (_EventEmitter) {
 	    _inherits(Store, _EventEmitter);
 	
@@ -1747,7 +1832,8 @@ module.exports =
 	     * Ms to autodestroy after tm ms if no retain has been called
 	     * @type {boolean|Int}
 	     */
-	    // overridable list of source stores
+	
+	    //static use                  = [];// overridable list of source stores
 	
 	
 	    _createClass(Store, [{
@@ -1755,14 +1841,11 @@ module.exports =
 	        value: function _afterConstructor() {
 	            var cfg = this._cfg,
 	                _static = this.constructor,
+	                snapshot = this.restore(undefined, true),
 	                initialState = this.state,
 	                initialData = this.data,
 	                applied = void 0;
-	            if (cfg.snapshot && walknGet(cfg.snapshot, this.scopeObj._id + '/' + this.name)) {
-	                this.restore(cfg.snapshot, true);
-	                this._stable = true;
-	                this.$scope.bind(this, this._use, false);
-	            } else {
+	            {
 	
 	                if (initialData) this.data = initialData;else if (_static.data !== undefined) this.data = _extends({}, _static.data);else if (cfg.hasOwnProperty("data")) this.data = cfg.data;
 	
@@ -2144,10 +2227,10 @@ module.exports =
 	        value: function serialize() {
 	            var _this6 = this;
 	
-	            var withRefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+	            var cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	            var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	            var refs = withRefs && is.array(this._use) && this._use.reduce(function (map, key) {
+	            var refs = !cfg.norefs && is.array(this._use) && this._use.reduce(function (map, key) {
 	                //todo
 	                var name = void 0,
 	                    alias = void 0,
@@ -2171,11 +2254,12 @@ module.exports =
 	                return map;
 	            }, {}) || {};
 	
-	            walknSet(output, (this.scopeObj._id + '/' + this.name).split(/[\:|\/]/), {
-	                state: this.state && (!withRefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
+	            keyWalknSet(output, this.scopeObj._id + '/' + this.name, {
+	                state: this.state && (cfg.norefs ? _extends({}, this.state) : Object.keys(this.state).reduce(function (h, k) {
 	                    return !refs[k] && (h[k] = _this6.state[k]), h;
 	                }, {})),
-	                data: this.data,
+	                data: (this.data && this.data.__proto__ === objProto ? this.data : (is.bool(this.data) || is.number(this.data) || is.string(this.data)) && this.data) || undefined,
+	
 	                refs: refs
 	            });
 	            return output;
@@ -2199,20 +2283,24 @@ module.exports =
 	
 	            return restore;
 	        }(function (snapshot, immediate) {
-	            var snap = walknGet(snapshot, this.scopeObj._id + '/' + this.name);
-	            if (snap) {
+	            var _this7 = this;
+	
+	            snapshot = snapshot && keyWalknGet(snapshot, this.scopeObj._id + '/' + this.name) || this.$scope.takeSnapshotByKey(this.scopeObj._id + '/' + this.name);
+	
+	            if (!snapshot) return;
+	
+	            if (snapshot) {
 	                if (!this.isStable() && !immediate) this.then(function () {
 	                    return restore(snapshot);
 	                });
-	
-	                this.state = snap.state;
-	                Object.keys(snap.refs).forEach(function (key) {
+	                var snap = void 0;
+	                this.state = _extends({}, snapshot.state);
+	                Object.keys(snapshot.refs).forEach(function (key) {
 	                    //todo
-	                    if (snapshot[snap.refs[key]]) snap.state[key] = snapshot[snap.refs[key]].data;else console.warn('not found : ', key, snap.refs[key]);
+	                    if (snap = _this7.$scope.getSnapshotByKey(snapshot.refs[key])) _this7.state[key] = snap.data;else console.warn('not found : ', key, snap.refs[key]);
 	                });
 	
-	                this.data = snap.data;
-	                this._changesSW = {};
+	                this.data = snapshot.data;
 	            }
 	        })
 	
@@ -2265,11 +2353,11 @@ module.exports =
 	    }, {
 	        key: 'then',
 	        value: function then(cb) {
-	            var _this7 = this;
+	            var _this8 = this;
 	
 	            if (this._stable) return cb(this.data);
 	            this.once('stable', function (e) {
-	                return cb(_this7.data);
+	                return cb(_this8.data);
 	            });
 	        }
 	
@@ -2374,7 +2462,7 @@ module.exports =
 	    }, {
 	        key: 'dispose',
 	        value: function dispose(reason) {
-	            var _this8 = this;
+	            var _this9 = this;
 	
 	            //console.warn("dispose", reason, this.__retains);
 	            if (reason) {
@@ -2390,9 +2478,9 @@ module.exports =
 	                if (this._persistenceTm) {
 	                    this._destroyTM && clearTimeout(this._destroyTM);
 	                    this._destroyTM = setTimeout(function (e) {
-	                        _this8._destroyTM = null;
+	                        _this9._destroyTM = null;
 	                        //this.then(s => {
-	                        !_this8.__retains.all && !_this8.dead && _this8.destroy();
+	                        !_this9.__retains.all && !_this9.dead && _this9.destroy();
 	                        //});
 	                    }, this._persistenceTm);
 	                } else {
@@ -2481,7 +2569,7 @@ module.exports =
 	    }]);
 	
 	    return Store;
-	}(EventEmitter), _class.use = [], _class.staticScope = new Scope({}, { id: "static" }), _class.state = undefined, _class.persistenceTm = false, _temp);
+	}(EventEmitter), _class.staticScope = new Scope({}, { id: "static" }), _class.state = undefined, _class.persistenceTm = false, _temp);
 	
 	/**
 	 * get a static aliased reference of a store

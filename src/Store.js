@@ -25,20 +25,16 @@
  * @contact : caipilabs@gmail.com
  */
 
-var is                     = require('./utils/is'),
-    Scope                  = require('./Scope'),
-    { walknSet, walknGet } = require('./utils/utils'),
-    EventEmitter           = require('./utils/Emitter'),
-    TaskSequencer          = require('./utils/TaskSequencer'),
-    shortid                = require('shortid'),
-    objProto               = Object.getPrototypeOf({});
+var is                           = require('./utils/is'),
+    Scope                        = require('./Scope'),
+    { keyWalknSet, keyWalknGet } = require('./utils/utils'),
+    EventEmitter                 = require('./utils/Emitter'),
+    TaskSequencer                = require('./utils/TaskSequencer'),
+    shortid                      = require('shortid'),
+    objProto                     = Object.getPrototypeOf({});
 
-/**
- * @class Store
- */
 class Store extends EventEmitter {
-    
-    static use                  = [];// overridable list of source stores
+    //static use                  = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
     static staticScope          = new Scope({}, { id: "static" });
@@ -227,15 +223,11 @@ class Store extends EventEmitter {
     _afterConstructor() {
         let cfg          = this._cfg,
             _static      = this.constructor,
+            snapshot     = this.restore(undefined, true),
             initialState = this.state,
             initialData  = this.data,
             applied;
-        if ( cfg.snapshot && walknGet(cfg.snapshot, this.scopeObj._id + '/' + this.name) ) {
-            this.restore(cfg.snapshot, true);
-            this._stable = true;
-            this.$scope.bind(this, this._use, false);
-        }
-        else {
+        {
             
             if ( initialData )
                 this.data = initialData;
@@ -607,9 +599,9 @@ class Store extends EventEmitter {
      * Serialize state & data with sources refs
      * @returns bool
      */
-    serialize( withRefs = true, output = {} ) {
+    serialize( cfg = {}, output = {} ) {
         let refs =
-                withRefs && is.array(this._use) && this._use.reduce(
+                !cfg.norefs && is.array(this._use) && this._use.reduce(
                 ( map, key ) => {//todo
                     let name,
                         alias, path,
@@ -634,19 +626,29 @@ class Store extends EventEmitter {
                 
                     return map;
                 }, {}
-                         ) || {};
+                            ) || {};
         
-        walknSet(
+        keyWalknSet(
             output,
-            ( this.scopeObj._id + '/' + this.name ).split(/[\:|\/]/),
+            ( this.scopeObj._id + '/' + this.name ),
             {
                 state: this.state &&
                        (
-                           !withRefs
+                           cfg.norefs
                            ? { ...this.state }
                            : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {})
                        ),
-                data : this.data,
+                data : (
+                           this.data &&
+                           this.data.__proto__ === objProto ?
+                           this.data:
+                           ( is.bool(this.data)
+                             || is.number(this.data)
+                             || is.string(this.data) ) && this.data
+                       )
+                       || undefined
+                
+                ,
                 refs
             }
         );
@@ -658,23 +660,29 @@ class Store extends EventEmitter {
      * @returns bool
      */
     restore( snapshot, immediate ) {
-        let snap = walknGet(snapshot, ( this.scopeObj._id + '/' + this.name ));
-        if ( snap ) {
+        snapshot = snapshot
+                   && keyWalknGet(snapshot, this.scopeObj._id + '/' + this.name)
+                   || this.$scope.takeSnapshotByKey(this.scopeObj._id + '/' + this.name);
+        
+        if ( !snapshot )
+            return;
+        
+        if ( snapshot ) {
             if ( !this.isStable() && !immediate )
                 this.then(() => restore(snapshot))
-            
-            this.state = snap.state;
-            Object.keys(snap.refs).forEach(
+            let snap;
+            this.state = { ...snapshot.state };
+            Object.keys(snapshot.refs).forEach(
                 ( key ) => {//todo
-                    if ( snapshot[ snap.refs[ key ] ] )
-                        snap.state[ key ] = snapshot[ snap.refs[ key ] ].data;
+                    if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[ key ]) )
+                        this.state[ key ] = snap.data;
                     else
                         console.warn('not found : ', key, snap.refs[ key ])
                 }
             )
             
-            this.data       = snap.data;
-            this._changesSW = {};
+            this.data = snapshot.data;
+            
         }
     }
     

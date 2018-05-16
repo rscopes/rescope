@@ -1443,7 +1443,7 @@ module.exports =
 	    }]);
 	
 	    return Scope;
-	}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopeRef = function scopeRef(path) {
+	}(EventEmitter), _class.persistenceTm = 10000, _class.Store = null, _class.scopeRef = function scopeRef(path) {
 	    this.path = path;
 	}, _class.scopes = openScopes, _temp);
 	

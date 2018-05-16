@@ -76,7 +76,7 @@ class Scope extends EventEmitter {
         return _refs;
     }
     
-    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy when
+    static persistenceTm = 10000;// if > 0, will wait 'persistenceTm' ms before destroy when
                              // dispose reach 0
     static Store    = null;
     static scopeRef = function scopeRef( path ) {

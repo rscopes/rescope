@@ -1421,7 +1421,7 @@
 	    return Scope;
 	}(EventEmitter);
 	
-	Scope.persistenceTm = 1;
+	Scope.persistenceTm = 10000;
 	Scope.Store = null;
 	
 	Scope.scopeRef = function scopeRef(path) {

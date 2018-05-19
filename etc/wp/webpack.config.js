@@ -45,7 +45,7 @@ module.exports    = [
             libraryTarget: 'commonjs2'
         },
         target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [nodeExternals(), './index', 'rescope-spells', 'react-rescope'],
+        externals: [nodeExternals(), './index', 'rscopes', 'rscopes'],
         resolve  : {
             extensions: [
                 "",

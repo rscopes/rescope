@@ -76,8 +76,9 @@ class Scope extends EventEmitter {
         return _refs;
     }
     
-    static persistenceTm = 10000;// if > 0, will wait 'persistenceTm' ms before destroy when
-                             // dispose reach 0
+    static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy
+    // when
+    // dispose reach 0
     static Store    = null;
     static scopeRef = function scopeRef( path ) {
         this.path = path;
@@ -112,17 +113,25 @@ class Scope extends EventEmitter {
      */
     constructor( storesMap, { parent, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
         super();
-        var _ = {};
+        var _ = {}, keyIndex;
         
         id = id || key && ( ( parent && parent._id || '' ) + '>' + key );
         
         _.isLocalId = !id;
         
+        //if ( parent && key ) {
+        //    keyIndex = parent._.childScopes.find(ctx=>(ctx._id==id));
+        //    if ( keyIndex == -1 ) keyIndex = parent._.seenChilds;
+        //    keyIndex++;
+        //    if ( keyIndex )
+        //        id = id + '[' + keyIndex + ']';
+        //}
+        
         id = id || ( "_____" + shortid.generate() );
         
-        if ( openScopes[ id ] && !incrementId ) {
+        if ( openScopes[ id ] ) {
             this._id = id;
-            openScopes[ id ].register(storesMap);
+            //openScopes[ id ].register(storesMap);
             return openScopes[ id ]
         }
         else if ( openScopes[ id ] && incrementId ) {
@@ -157,6 +166,7 @@ class Scope extends EventEmitter {
         _.childScopes     = [];
         _.childScopesList = [];
         _.unStableChilds  = 0;
+        _.seenChilds      = 0;
         
         this.__retains = { all: 0 };
         this.__locks   = { all: 1 };
@@ -1064,6 +1074,7 @@ class Scope extends EventEmitter {
     
     _addChild( ctx ) {
         this._.childScopes.push(ctx);
+        this._.seenChilds++;
         let lists     = {
                 'stable'      : s => {
                     this._.unStableChilds--;

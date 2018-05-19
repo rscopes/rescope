@@ -244,7 +244,8 @@ module.exports =
 	                //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 	            });
 	            return _refs;
-	        } // if > 0, will wait 'persistenceTm' ms before destroy when
+	        } // if > 0, will wait 'persistenceTm' ms before destroy
+	        // when
 	        // dispose reach 0
 	
 	    }]);
@@ -296,19 +297,28 @@ module.exports =
 	
 	        var _this = _possibleConstructorReturn(this, (Scope.__proto__ || Object.getPrototypeOf(Scope)).call(this));
 	
-	        var _ = {};
+	        var _ = {},
+	            keyIndex;
 	
 	        id = id || key && (parent && parent._id || '') + '>' + key;
 	
 	        _.isLocalId = !id;
 	
+	        //if ( parent && key ) {
+	        //    keyIndex = parent._.childScopes.find(ctx=>(ctx._id==id));
+	        //    if ( keyIndex == -1 ) keyIndex = parent._.seenChilds;
+	        //    keyIndex++;
+	        //    if ( keyIndex )
+	        //        id = id + '[' + keyIndex + ']';
+	        //}
+	
 	        id = id || "_____" + shortid.generate();
 	
-	        if (openScopes[id] && !incrementId) {
+	        if (openScopes[id]) {
 	            var _ret;
 	
 	            _this._id = id;
-	            openScopes[id].register(storesMap);
+	            //openScopes[ id ].register(storesMap);
 	            return _ret = openScopes[id], _possibleConstructorReturn(_this, _ret);
 	        } else if (openScopes[id] && incrementId) {
 	            var i = -1;
@@ -341,6 +351,7 @@ module.exports =
 	        _.childScopes = [];
 	        _.childScopesList = [];
 	        _.unStableChilds = 0;
+	        _.seenChilds = 0;
 	
 	        _this.__retains = { all: 0 };
 	        _this.__locks = { all: 1 };
@@ -1311,6 +1322,7 @@ module.exports =
 	            var _this19 = this;
 	
 	            this._.childScopes.push(ctx);
+	            this._.seenChilds++;
 	            var lists = {
 	                'stable': function stable(s) {
 	                    _this19._.unStableChilds--;
@@ -1443,7 +1455,7 @@ module.exports =
 	    }]);
 	
 	    return Scope;
-	}(EventEmitter), _class.persistenceTm = 10000, _class.Store = null, _class.scopeRef = function scopeRef(path) {
+	}(EventEmitter), _class.persistenceTm = 1, _class.Store = null, _class.scopeRef = function scopeRef(path) {
 	    this.path = path;
 	}, _class.scopes = openScopes, _temp);
 	

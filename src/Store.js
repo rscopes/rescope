@@ -171,52 +171,6 @@ class Store extends EventEmitter {
      * @returns {{}|*}
      */
     get nextState() {
-        return this._nextState || (
-            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
-        );
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get contextObj() {
-        return this.scopeObj;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get context() {
-        return this.scope;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get datas() {
-        return this.data;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    set datas( v ) {
-        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
-        // data"); console.log("Rescope store : Setting datas is depreciated, use data",
-        // (new Error()).stack); console.groupEnd();
-        
-        this.data = v;
-    }
-    
-    /**
-     * Get the incoming state ( for immediate state relative actions )
-     * @returns {{}|*}
-     */
-    get nextState() {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
     
@@ -284,7 +238,6 @@ class Store extends EventEmitter {
      * stores & components
      */
     shouldPropag( nDatas ) {
-        
         return true;
     }
     
@@ -617,7 +570,7 @@ class Store extends EventEmitter {
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                         name  = key[ 1 ];
-                        path  = key[ 2 ] && key[ 2 ].substr(1);
+                        path  = name + key[ 2 ];
                         alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
                         store = this.scopeObj.retrieveStore(path);
                     }
@@ -641,7 +594,7 @@ class Store extends EventEmitter {
                 data : (
                            this.data &&
                            this.data.__proto__ === objProto ?
-                           this.data:
+                           this.data :
                            ( is.bool(this.data)
                              || is.number(this.data)
                              || is.string(this.data) ) && this.data
@@ -903,9 +856,9 @@ Store.as = function ( name ) {
  * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key",
  *     store.as('anotherKey')]
  */
-Store.map = function ( component, keys, scope, origin, setInitial = false ) {
-    var targetRevs     = component._revs || {};
-    var targetScope    = component.stores || ( component.stores = {} );
+Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
+    var targetRevs     = cStore._revs || {};
+    var targetScope    = cStore.stores || ( cStore.stores = {} );
     var initialOutputs = {};
     keys               = is.array(keys) ? [ ...keys ] : [ keys ];
     
@@ -939,27 +892,27 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                 store = scope.stores[ _key[ 1 ] ];
                 alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
             }
-            
+            if ( !store ) {
+                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( cStore.name || cStore ) + ' !!', store);
+                return false;
+            }
             if ( is.rsScope(store.prototype) ) scope._mount(name);
             if ( is.rsScope(store) ) {
                 store = scope._mount(key);
             }
             else if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
             
-            if ( !store ) {
-                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( component.name || component ) + ' !!', store);
-                return false;
-            }
-            else if ( is.fn(store) ) {
+            
+            if ( is.fn(store) ) {
                 scope._mount(name)
-                scope.stores[ name ].bind(component, alias, setInitial, path);
+                scope.stores[ name ].bind(cStore, alias, setInitial, path);
             }
             else {
-                store.bind(component, alias, setInitial, path);
+                store.bind(cStore, alias, setInitial, path);
             }
             
             // give initial store weight basing sources
-            scope.stores[ name ]._sources && component._sources.push(...scope.stores[ name ]._sources);
+            scope.stores[ name ]._sources && cStore._sources.push(...scope.stores[ name ]._sources);
             
             targetRevs[ alias ] = targetRevs[ alias ] || true;
             !targetScope[ name ] && ( targetScope[ name ] = scope.stores[ name ] );
@@ -970,18 +923,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
     );
     
     // ... @todo
-    var mixedCWUnmount,
-        unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-    
-    if ( component.hasOwnProperty(unMountKey) ) {
-        mixedCWUnmount = component[ unMountKey ];
-    }
-    
-    component[ unMountKey ] = ( ...argz ) => {
-        delete component[ unMountKey ];
-        if ( mixedCWUnmount )
-            component[ unMountKey ] = mixedCWUnmount;
-        
+    cStore.once('destroy', ( ...argz ) => {
         keys.map(
             ( key ) => {
                 let name,
@@ -1003,11 +945,10 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                     alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
                 }
                 
-                store && !is.fn(store) && store.unBind(component, alias, path)
+                store && !is.fn(store) && store.unBind(cStore, alias, path)
             }
         );
-        return component[ unMountKey ] && component[ unMountKey ](...argz);
-    }
+    })
     
     return initialOutputs;
 };

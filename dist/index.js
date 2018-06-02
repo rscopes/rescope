@@ -1,1 +1,0 @@
-module.exports = require('../etc/npm/index')

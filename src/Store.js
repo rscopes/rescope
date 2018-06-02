@@ -25,19 +25,16 @@
  * @contact : caipilabs@gmail.com
  */
 
-var is            = require('is'),
-    Scope         = require('./Scope'),
-    EventEmitter  = require('./utils/Emitter'),
-    TaskSequencer = require('./utils/TaskSequencer'),
-    shortid       = require('shortid'),
-    objProto      = Object.getPrototypeOf({});
+var is                           = require('./utils/is'),
+    Scope                        = require('./Scope'),
+    { keyWalknSet, keyWalknGet } = require('./utils/utils'),
+    EventEmitter                 = require('./utils/Emitter'),
+    TaskSequencer                = require('./utils/TaskSequencer'),
+    shortid                      = require('shortid'),
+    objProto                     = Object.getPrototypeOf({});
 
-/**
- * @class Store
- */
 class Store extends EventEmitter {
-    
-    static use                  = [];// overridable list of source stores
+    //static use                  = [];// overridable list of source stores
     static follow;// overridable list of store that will allow push if updated
     static require;
     static staticScope          = new Scope({}, { id: "static" });
@@ -174,67 +171,17 @@ class Store extends EventEmitter {
      * @returns {{}|*}
      */
     get nextState() {
-        return this._nextState || (
-            this._nextState = this._changesSW && { ...this.state, ...this._changesSW } || this.state
-        );
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get contextObj() {
-        return this.scopeObj;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get context() {
-        return this.scope;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    get datas() {
-        return this.data;
-    }
-    
-    /**
-     * @deprecated
-     * @returns {*}
-     */
-    set datas( v ) {
-        //console.groupCollapsed("Rescope store : Setting datas is depreciated, use
-        // data"); console.log("Rescope store : Setting datas is depreciated, use data",
-        // (new Error()).stack); console.groupEnd();
-        
-        this.data = v;
-    }
-    
-    /**
-     * Get the incoming state ( for immediate state relative actions )
-     * @returns {{}|*}
-     */
-    get nextState() {
         return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
     }
     
     _afterConstructor() {
         let cfg          = this._cfg,
             _static      = this.constructor,
+            snapshot     = this.restore(undefined, true),
             initialState = this.state,
             initialData  = this.data,
             applied;
-        if ( cfg.snapshot && cfg.snapshot[ this.scopeObj._id + '/' + this.name ] ) {
-            this.restore(cfg.snapshot);
-            this._stable = true;
-            this.$scope.bind(this, this._use, false);
-        }
-        else {
+        {
             
             if ( initialData )
                 this.data = initialData;
@@ -291,7 +238,6 @@ class Store extends EventEmitter {
      * stores & components
      */
     shouldPropag( nDatas ) {
-        
         return true;
     }
     
@@ -606,41 +552,59 @@ class Store extends EventEmitter {
      * Serialize state & data with sources refs
      * @returns bool
      */
-    serialize( withRefs = true, output = {} ) {
+    serialize( cfg = {}, output = {} ) {
         let refs =
-                withRefs && is.array(this._use) && this._use.reduce(
+                !cfg.norefs && is.array(this._use) && this._use.reduce(
                 ( map, key ) => {//todo
                     let name,
                         alias, path,
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
+                        store = this.scopeObj.stores[ name ];
                     }
                     else if ( is.fn(key) ) {
                         name = alias = key.name || key.defaultName;
+                        store = this.scopeObj.stores[ name ];
                     }
                     else {
                         key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
                         name  = key[ 1 ];
-                        path  = key[ 2 ] && key[ 2 ].substr(1);
+                        path  = name + key[ 2 ];
                         alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+                        store = this.scopeObj.retrieveStore(path);
                     }
-                
-                    if ( !this.scopeObj.stores[ name ].scopeObj._.isLocalId )
-                        map[ alias ] = this.scopeObj.stores[ name ].scopeObj._id + '/' + name;
+                    if ( store && !store.scopeObj._.isLocalId )
+                        map[ alias ] = store.scopeObj._id + '/' + name;
                 
                     return map;
                 }, {}
-                         ) || {};
+                            ) || {};
         
-        output[ this.scopeObj._id + '/' + this.name ] = {
-            state: this.state &&
-                   ( !withRefs
-                     ? { ...this.state }
-                     : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {}) ),
-            data : this.data,
-            refs
-        };
+        keyWalknSet(
+            output,
+            ( this.scopeObj._id + '/' + this.name ),
+            {
+                state: this.state &&
+                       (
+                           cfg.norefs
+                           ? { ...this.state }
+                           : Object.keys(this.state).reduce(( h, k ) => ( !refs[ k ] && ( h[ k ] = this.state[ k ] ), h ), {})
+                       ),
+                data : (
+                           this.data &&
+                           this.data.__proto__ === objProto ?
+                           this.data :
+                           ( is.bool(this.data)
+                             || is.number(this.data)
+                             || is.string(this.data) ) && this.data
+                       )
+                       || undefined
+                
+                ,
+                refs
+            }
+        );
         return output;
     }
     
@@ -648,20 +612,30 @@ class Store extends EventEmitter {
      * restore state & data
      * @returns bool
      */
-    restore( snapshot ) {
-        let snap = snapshot[ this.scopeObj._id + '/' + this.name ];
-        if ( snap ) {
-            this.state = snap.state;
-            Object.keys(snap.refs).forEach(
+    restore( snapshot, immediate ) {
+        snapshot = snapshot
+                   && keyWalknGet(snapshot, this.scopeObj._id + '/' + this.name)
+                   || this.$scope.takeSnapshotByKey(this.scopeObj._id + '/' + this.name);
+        
+        if ( !snapshot )
+            return;
+        
+        if ( snapshot ) {
+            if ( !this.isStable() && !immediate )
+                this.then(() => restore(snapshot))
+            let snap;
+            this.state = { ...snapshot.state };
+            Object.keys(snapshot.refs).forEach(
                 ( key ) => {//todo
-                    if ( snapshot[ snap.refs[ key ] ] )
-                        snap.state[ key ] = snapshot[ snap.refs[ key ] ].data;
+                    if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[ key ]) )
+                        this.state[ key ] = snap.data;
                     else
                         console.warn('not found : ', key, snap.refs[ key ])
                 }
             )
             
-            this.data = snap.data;
+            this.data = snapshot.data;
+            
         }
     }
     
@@ -882,9 +856,9 @@ Store.as = function ( name ) {
  * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key",
  *     store.as('anotherKey')]
  */
-Store.map = function ( component, keys, scope, origin, setInitial = false ) {
-    var targetRevs     = component._revs || {};
-    var targetScope    = component.stores || ( component.stores = {} );
+Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
+    var targetRevs     = cStore._revs || {};
+    var targetScope    = cStore.stores || ( cStore.stores = {} );
     var initialOutputs = {};
     keys               = is.array(keys) ? [ ...keys ] : [ keys ];
     
@@ -902,7 +876,7 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
             let name,
                 alias,
                 path,
-                store;
+                store, _key;
             if ( key.store && key.name ) {
                 alias = name = key.name;
                 store = key.store;
@@ -912,29 +886,33 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                 store = key;
             }
             else {
-                key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                name  = key[ 1 ];
-                path  = key[ 2 ] && key[ 2 ].substr(1);
-                store = scope.stores[ key[ 1 ] ];
-                alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
+                _key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                name  = _key[ 1 ];
+                path  = _key[ 2 ] && _key[ 2 ].substr(1);
+                store = scope.stores[ _key[ 1 ] ];
+                alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
             }
-            
-            if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
-            
             if ( !store ) {
-                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( component.name || component ) + ' !!', store);
+                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( cStore.name || cStore ) + ' !!', store);
                 return false;
             }
-            else if ( is.fn(store) ) {
+            if ( is.rsScope(store.prototype) ) scope._mount(name);
+            if ( is.rsScope(store) ) {
+                store = scope._mount(key);
+            }
+            else if ( targetRevs[ name ] ) return false;// ignore dbl uses for now
+            
+            
+            if ( is.fn(store) ) {
                 scope._mount(name)
-                scope.stores[ name ].bind(component, alias, setInitial, path);
+                scope.stores[ name ].bind(cStore, alias, setInitial, path);
             }
             else {
-                store.bind(component, alias, setInitial, path);
+                store.bind(cStore, alias, setInitial, path);
             }
             
             // give initial store weight basing sources
-            component._sources.push(...scope.stores[ name ]._sources);
+            scope.stores[ name ]._sources && cStore._sources.push(...scope.stores[ name ]._sources);
             
             targetRevs[ alias ] = targetRevs[ alias ] || true;
             !targetScope[ name ] && ( targetScope[ name ] = scope.stores[ name ] );
@@ -944,19 +922,8 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
         }
     );
     
-    // ...
-    var mixedCWUnmount,
-        unMountKey = component.isReactComponent ? "componentWillUnmount" : "destroy";
-    
-    if ( component.hasOwnProperty(unMountKey) ) {
-        mixedCWUnmount = component[ unMountKey ];
-    }
-    
-    component[ unMountKey ] = ( ...argz ) => {
-        delete component[ unMountKey ];
-        if ( mixedCWUnmount )
-            component[ unMountKey ] = mixedCWUnmount;
-        
+    // ... @todo
+    cStore.once('destroy', ( ...argz ) => {
         keys.map(
             ( key ) => {
                 let name,
@@ -978,12 +945,17 @@ Store.map = function ( component, keys, scope, origin, setInitial = false ) {
                     alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
                 }
                 
-                store && !is.fn(store) && store.unBind(component, alias, path)
+                store && !is.fn(store) && store.unBind(cStore, alias, path)
             }
         );
-        return component[ unMountKey ] && component[ unMountKey ](...argz);
-    }
+    })
     
     return initialOutputs;
 };
+
+
+is.rsStore = function ( obj ) {
+    return obj instanceof Store
+}
+
 export default Store;

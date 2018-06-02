@@ -30,14 +30,14 @@ var webpack = require("webpack")
 
 
 var production    = process.argv.indexOf("--production") > -1
-    || process.argv.indexOf("-p") > -1;
+                    || process.argv.indexOf("-p") > -1;
 var nodeExternals = require('webpack-node-externals');
 module.exports    = [
     {
         entry    : {
             "ReScope": "./src/index.js",
         },
-        devtool  : production ? false : 'source-map',
+        devtool  : production ? "source-map" : 'inline-source-map',
         output   : {
             path         : __dirname,
             filename     : production ? "../../dist/[name].min.js" : "../../dist/[name].js",
@@ -45,7 +45,7 @@ module.exports    = [
             libraryTarget: 'commonjs2'
         },
         target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [nodeExternals(), './index', 'rescope-spells', 'react-rescope'],
+        externals: [ nodeExternals(), './index', 'rscopes', 'rscopes' ],
         resolve  : {
             extensions: [
                 "",
@@ -120,7 +120,7 @@ module.exports    = [
         entry  : {
             "ReScope": "./src/index.js",
         },
-        devtool: production ? false : 'source-map',
+        devtool: production ? "source-map" : 'inline-source-map',
         output : {
             path         : __dirname,
             filename     : production ? "../../dist/[name].browser.min.js" : "../../dist/[name].browser.js",

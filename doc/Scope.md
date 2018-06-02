@@ -6,14 +6,6 @@ _ this is a draft  wip doc _
 
 The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.
 
-## Events
-
-ReScope use the concept of "Stability", so there only 4 events :
-
- - "stable"     (when the store current state is sync with the store data)
- - "unstable"   (see "Stability" below)
- - "stableTree" (when all child scopes are stable, for serialization, etc)
- - "update"     (When the scopes stores data are updated)
 
 ## Structuring Scopes
 
@@ -127,6 +119,15 @@ Note that :
  - as its auto-retained it will never be destroyed by scopes, even if the scope is destroyed
  - this will not make the store staticly instanciated over all the scope instances
 
+
+## Events
+
+ReScope use the concept of "Stability", so there only 4 events :
+
+ - "stable"     (when the store current state is sync with the store data)
+ - "unstable"   (see "Stability" below)
+ - "stableTree" (when all child scopes are stable, for serialization, etc)
+ - "update"     (When the scopes stores data are updated)
 
 ## General & theoretical Scope definition example  :
 

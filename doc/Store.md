@@ -1,11 +1,66 @@
 # ReScope Stores
 
-## Stability (the Store:apply function)
+_ this is a draft  wip doc _
+
+## Some theoretical stuffs
+
+### Stores Workflow
+
+- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
+- If this state have the required & followed value
+- The apply function push new data in an async or sync way
+- The store is stabilized and (if there is new data) propagated
+- listening stores have theirs state updated and we go to step 1 until the whole scope is stable
+
+### About state uptates & theirs propagation
+
+The more a store have sources, the more it state update will be applied first<br>
+This is required to :
+- Keep leafs stores sync & coherent with their sources
+- Apply merged state updates to root stores
+- Keep the global app state coherent
+
+This mean whatever the number of stores & the complexity of the deps,<br>
+updating a store state will update its synchrone child stores immediately.
+
+### Stores initial state / data
+
+A store initialized with data will be stable synchronously when instantiated. <br>
+If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
+
+### Stores initial state & data
+
+Serialization & restoration are managed by the Scopes objects.<br>
+Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :<br>
+
+- Using initial state & data :
+```jsx
+class MyStore extends Store {
+        static state = {};// initial state (soft cloned)
+        static data = {};// initial data (soft cloned)
+
+        state = {
+        // instance initial state (merged over cfg & static definitions)
+        }
+        data = {}// precedence over cfg.data
+};
+
+let MyStoreInstance = new MyStore(
+        BaseScope,
+        {
+            state : {}, // merged over the static state
+            data  : {}// precedence over static data
+        }
+)
+
+```
+
+### Stability (the Store:apply function)
 
 When state updates occurs, a store state stop being coherent with its results data.<br>
-In ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
+In the ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
 
-This is done in 2 way :
+This can be done in 2 way :
  - In a synchronized way, by returning a new data hashmap from the "apply" fn
 
 ```jsx
@@ -21,8 +76,8 @@ This is done in 2 way :
 ```
 
  - In an async way :
-    - using this.push(newData) or by returning a referenced hashmap
-    - and mostly by using wait() & release() paired functions, which will keep the store unstable and lock its update propagation until all wait() calls becomes released.
+    - using this.push(newData), modifying this.data or by returning a data referenced hashmap
+    - and mostly by using wait() & release() paired functions, which will keep the store unstable and lock its propagation until its locks reach 0 (all wait() calls becomes released).
 
 
 ```jsx
@@ -58,23 +113,11 @@ This is done in 2 way :
 ```
 
 
-## A Store Workflow
-
-- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
-- If this state have the required & followed value
-- The apply function push new data in an async or sync way
-- The store is stabilized and (if there is new data) propagated
-- listening stores have theirs state updated and we go to step 1 until the whole scope is stable
-
-## Stores initial state / restore
-
-A store initialized with data will be stable synchronously when instantiated. <br>
-If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
-
 ## Actions & mutations
 
-As the store stay independents, they deal with theirs own perimeters. <br>
-The app state could be mutated using different methods depending the needs.
+The app state could be mutated using different methods depending the needs.<br>
+
+_ * As the store stay independents, they deal with theirs own perimeters; calling an action will trigger all the active stores actions in the current & parent Scopes that match. _
 
 ### Using actions
 
@@ -87,6 +130,9 @@ class AppState extend Store{
         static use     = ["!AppConfig"];// require AppConfig to be applied & propagated
         static actions = {
             activateSalt(arg){// binded on the store instance
+
+                // this.nextState contain the current incoming state
+                // this.state contain the last stabilized state
 
                 // return some state updates
                 return {some:'mutations'};
@@ -107,6 +153,8 @@ Once a store state is updated, the resulting data changes are automatically prop
 ### Using stores functions
 
 The stores could be enhanced with functions & setters, that will ultimately update theirs state-data pairing.
+
+* Usefull to use stores as controllers
 
 ```jsx
 class AppState extend Store{
@@ -131,32 +179,6 @@ class AppState extend Store{
 Using push will update & propag the data of a store.
 * This should be used with cautious as it could break the state-data coherence. (that said not all the stores needs to be predictable)
 
-## Stores state & data serialization / restoration
-
-Serialization & restoration is managed by the Scopes objects.<br>
-Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :<br>
-
-- Using initial state & data :
-```jsx
-class MyStore extends Store {
-        static state = {};// initial state (soft cloned)
-        static data = {};// initial data (soft cloned)
-
-        state = {
-        // instance initial state (merged over cfg & static definitions)
-        }
-        data = {}// precedence over cfg.data
-};
-
-let MyStoreInstance = new MyStore(
-        BaseScope,
-        {
-            state : {}, // merged over the static state
-            data  : {}// precedence over static data
-        }
-)
-
-```
 
 ## How to add dependencies in a store
 
@@ -199,6 +221,8 @@ export default class myInterpolatedDataStore extends Store {
                 "!someRequieredSource"   : true,
                 "someSource2"            : "someSource2"
         };
+        // or
+        // static use = ["!some.stuff.withPath"]; // bind "withPath" value from the some or stuff store
 
         apply( data, { mySwitchValue, mySwitchValue2, mySwitchValue3, mySwitchValue4 }, changes ) {
             /*...*/
@@ -298,4 +322,25 @@ export default class testErrorCatch extends Rescope.Store {
    }
 }
 ```
+
+
+## About error catching
+
+ReScope catch errors using :
+ - process.on('uncaughtException',...) in node environnement
+ - window.addEventListener('error',...) in browser environement
+
+### Why ?
+
+First, depending the js engine, this cause performances issues.
+
+And, anyway, it is said that "using these events leave the process state incoherent";<br>
+I don't know for the v8 part, but in most cases in the rescope context; <br>
+loosing the execution stack starting from the apply fn will not hurt the whole rescope store coherence,<br>
+this only mean that the failing store will keep its previous state-data pair.  <br>
+
+Rescope will resume its propagation stack as usual; so the failling stores can simply update theirs state knowing theirs last sources data are invalid.
+
+That said, we are free to use try & catch in the apply fns.
+
 

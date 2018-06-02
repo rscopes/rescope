@@ -49,7 +49,7 @@ let taskQueue      = [],
                 task[ 0 ].handleError(error, task);
             }
             else if ( task )
-                console.error("ReScope : A task has failed !!", task[ 1 ], " on ", task[ 0 ].name || task[ 0 ].constructor.name)
+                console.error("ReScope : An apply task has failed !!", task[ 1 ], " on ", task[ 0 ].name || task[ 0 ].constructor.name)
         
             isRunning = false;
             task      = null;
@@ -119,8 +119,13 @@ export default {
     pushTask( obj, fn, argz ) {
         /**
          * The more a store have sources, the more it should be processed first
-         * So leafs stores stay sync, root stores get merged state updates and global
-         * state stay coherent
+         * So leafs stores stay sync, and root stores receive merged state updates;
+         * global state stay coherent
+         *
+         * This mean whatever the number of stores & the complexity of the deps,
+         * updating a store state will update its synchrone child stores immediately
+         *
+         *
          * @type {*|number}
          */
         let weight = obj._sources && obj._sources.length || 1,

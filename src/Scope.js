@@ -131,7 +131,7 @@ class Scope extends EventEmitter {
         
         if ( openScopes[ id ] ) {
             this._id = id;
-            //openScopes[ id ].register(storesMap);
+            openScopes[ id ].register(storesMap);
             return openScopes[ id ]
         }
         else if ( openScopes[ id ] && incrementId ) {
@@ -403,9 +403,12 @@ class Scope extends EventEmitter {
                 
                       if ( !force && targetCtx._._scope[ id ] ) {
                           if ( !external && !is.fn(targetCtx._._scope[ id ]) ) {
-                              console.info("Rescope Store : ", id, " already exist in this scope ! ( try __proto__ hot patch )");
-                              targetCtx._._scope[ id ].__proto__ = srcCtx[ id ].prototype;
-                        
+                              console.info("Rescope Store : ", id, " already exist in this scope ! ( Hot switching the store )");
+                              let tmp                  = targetCtx._._scope[ id ];
+                              targetCtx._._scope[ id ] = targetCtx._._scope[ id ].constructor;
+                              this._mount(id, null, tmp.state);
+                              tmp.destroy();
+                              //targetCtx._._scope[ id ].__proto__ = tmp.__proto__;
                           }
                           if ( !external && is.fn(targetCtx._._scope[ id ]) )
                               targetCtx._._scope[ id ] = srcCtx[ id ];

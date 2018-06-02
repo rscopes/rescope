@@ -893,7 +893,10 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
                 alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
             }
             if ( !store ) {
-                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( cStore.name || cStore ) + ' !!', store);
+                let i=[];
+                for (var o in scope.stores)
+                    i.push(o)
+                console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( cStore.name || cStore ) + ' !!', store, _key, scope.stores, i);
                 return false;
             }
             if ( is.rsScope(store.prototype) ) scope._mount(name);

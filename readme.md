@@ -26,7 +26,7 @@ ReScope is a flexible, effective and easy to use state management system inspire
 ## What's the point ?
 
 Applications transform structured data & events into user-friendly interfaces and controls. <br/>
-The set of data transformations of one or more applications can be divided into reusable data components with a reactive state and result data.
+The set of data transformations of one or more applications can be divided into reusable data components with reactive state and result data.
 Just like React Components. <br/>
 Of course, that's quickly said, in an application, the data must deal with complex dependencies, different contexts, custom data bindings, and so on. <br/>
 
@@ -41,7 +41,7 @@ By using independent, specialized & serializable "Data Stores" in a Flux oriente
 ### Stores ?
 
 ReScope stores look like "React components for data".<br>
-Basically, they render determined data according theirs entry state & dependencies data.
+Basically, they render determined data according theirs entry state & dependencies.
 
 Each Stores can manage part of, or the entire App state's determining values,<br>
 maintain intermediate, possibly asynchronous resources,<br>

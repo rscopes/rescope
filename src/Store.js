@@ -557,22 +557,22 @@ class Store extends EventEmitter {
                 !cfg.norefs && is.array(this._use) && this._use.reduce(
                 ( map, key ) => {//todo
                     let name,
-                        alias, path,
+                        alias, path,_key,
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
-                        store = this.scopeObj.stores[ name ];
+                        store = key.store;
                     }
                     else if ( is.fn(key) ) {
                         name = alias = key.name || key.defaultName;
-                        store = this.scopeObj.stores[ name ];
+                        store = key;
                     }
                     else {
-                        key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-                        name  = key[ 1 ];
-                        path  = name + key[ 2 ];
-                        alias = key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || key[ 1 ];
-                        store = this.scopeObj.retrieveStore(path);
+                        _key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+                        name  = _key[ 1 ];
+                        path  = _key[ 2 ] && _key[ 2 ].substr(1);
+                        store = this.scopeObj.stores[ _key[ 1 ] ];
+                        alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
                     }
                     if ( store && !store.scopeObj._.isLocalId )
                         map[ alias ] = store.scopeObj._id + '/' + name;

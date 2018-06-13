@@ -2,7 +2,7 @@
   "name": "rescope",
   "version": "4.0.0",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
-  "repository": "https://github.com/CaipiLabs/caipi-rescope.git",
+  "repository": "https://github.com/CaipiLabs/rescope.git",
   "main": "./etc/npm/index.js",
   "license": "MIT",
   "author": "Nathan Braun <caipilabs@gmail.com>",

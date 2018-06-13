@@ -115,7 +115,7 @@ class Scope extends EventEmitter {
         super();
         var _ = {}, keyIndex;
         
-        id = id || key && ( ( parent && parent._id || '' ) + '>' + key );
+        id = id || key && ( ( parent && parent._id || shortid.generate() ) + '>' + key );
         
         _.isLocalId = !id;
         
@@ -599,7 +599,9 @@ class Scope extends EventEmitter {
      */
     retrieve( path = "" ) {
         path = is.string(path) ? path.split('.') : path;
-        return path && this.stores[ path[ 0 ] ] &&
+        return path &&
+               this.stores[ path[ 0 ] ] &&
+               this.stores[ path[ 0 ] ].retrieve &&
                this.stores[ path[ 0 ] ].retrieve(path.slice(1));
     }
     
@@ -649,6 +651,32 @@ class Scope extends EventEmitter {
     }
     
     /**
+     * Get updated output basing storesRevMap's revisions.
+     * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
+     * @param storesRevMap
+     * @param output
+     * @param updated
+     * @returns {*|{}}
+     */
+    getRefsUpdates( refs, revMap, output ) {
+        
+        revMap = revMap || refs
+            .map(id => ( is.string(id) ? id : id.name ))
+            .map(id => ( this.parseRef(id) ))
+            .reduce(( revs, ref ) => {
+                revs[ ref.storeId ] = revs[ ref.storeId ] || {
+                    rev : 0,
+                    refs: []
+                };
+                revs[ ref.storeId ].refs.push(ref);
+                return revs;
+            }, {});
+        
+        return this.getUpdates(revMap, output)
+        
+    }
+    
+    /**
      * Get or update output basing storesRevMap's revisions.
      * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
      * @param storesRevMap
@@ -673,6 +701,7 @@ class Scope extends EventEmitter {
                     output[ id ] = this.data[ id ];
                     
                     if ( storesRevMap && storesRevMap.hasOwnProperty(id) ) {
+                        storesRevMap[ id ]     = storesRevMap[ id ] || { rev: 0, refs: [] };
                         storesRevMap[ id ].rev = ctx[ id ]._rev;
                         storesRevMap[ id ].refs.forEach(
                             ref => {

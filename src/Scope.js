@@ -115,7 +115,7 @@ class Scope extends EventEmitter {
         super();
         var _ = {}, keyIndex;
         
-        id = id || key && ( ( parent && parent._id || '' ) + '>' + key );
+        id = id || key && ( ( parent && parent._id || shortid.generate() ) + '>' + key );
         
         _.isLocalId = !id;
         

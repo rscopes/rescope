@@ -520,7 +520,7 @@ class Scope extends EventEmitter {
         
         if ( setInitial && this._stable ) {
             data = this.getUpdates(lastRevs);
-            if ( !data ) return;
+            if ( !data ) return lastRevs;
             if ( typeof obj != "function" ) {
                 if ( as ) obj.setState({ [ as ]: data });
                 else obj.setState(data);
@@ -529,7 +529,7 @@ class Scope extends EventEmitter {
                 obj(data);
             }
         }
-        return this;
+        return lastRevs;
     }
     
     /**
@@ -558,7 +558,7 @@ class Scope extends EventEmitter {
      * @param bind
      * @returns {Object} Initial outputs of the stores in 'storesList'
      */
-    map( to, storesList, bind = true ) {
+    map( to, storesList, bind = true, revMap ) {
         let Store   = this.constructor.Store;
         storesList  = is.array(storesList) ? storesList : [ storesList ];
         let refList = storesList.map(this.parseRef);
@@ -586,7 +586,7 @@ class Scope extends EventEmitter {
             }
             
         }
-        return refList.reduce(( data, ref ) => {
+        return revMap && this.getUpdates(revMap) || refList.reduce(( data, ref ) => {
             walknSet(data, ref.alias || ref.path, this.retrieve(ref.path))
             return data;
         }, {});
@@ -720,7 +720,7 @@ class Scope extends EventEmitter {
                 }
             }
         );
-        updated = this._._mixed.reduce(( updated, ctx ) => ( ctx.getUpdates(storesRevMap, output, updated) || updated ), updated);
+        updated = this._._mixed.reduceRight(( updated, ctx ) => ( ctx.getUpdates(storesRevMap, output, updated) || updated ), updated);
         updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
         return updated && output;
     }
@@ -889,7 +889,7 @@ class Scope extends EventEmitter {
         if ( this._.snapshot && key.startsWith(this._id) ) {
             let obj = keyWalknGet(this._.snapshot, key.substr(this._id.length))
             if ( obj ) {
-                //this.deleteSnapshotByKey(key, true);
+                this.deleteSnapshotByKey(key, true);
             }
             return obj;
         }

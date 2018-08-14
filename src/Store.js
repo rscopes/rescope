@@ -557,7 +557,7 @@ class Store extends EventEmitter {
                 !cfg.norefs && is.array(this._use) && this._use.reduce(
                 ( map, key ) => {//todo
                     let name,
-                        alias, path,_key,
+                        alias, path, _key,
                         store;
                     if ( key.store && key.name ) {
                         alias = name = key.name;
@@ -630,7 +630,7 @@ class Store extends EventEmitter {
                     if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[ key ]) )
                         this.state[ key ] = snap.data;
                     else
-                        console.warn('not found : ', key, snap.refs[ key ])
+                        console.warn('not found : ', key, snap && snap.refs[ key ])
                 }
             )
             
@@ -893,8 +893,8 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
                 alias = _key[ 3 ] || path && path.match(/([^\.]*)$/)[ 0 ] || _key[ 1 ];
             }
             if ( !store ) {
-                let i=[];
-                for (var o in scope.stores)
+                let i = [];
+                for ( var o in scope.stores )
                     i.push(o)
                 console.error("Not a mappable store item '" + name + "/" + alias + "' in " + ( cStore.name || cStore ) + ' !!', store, _key, scope.stores, i);
                 return false;

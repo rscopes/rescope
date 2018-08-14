@@ -485,7 +485,7 @@ class Scope extends EventEmitter {
      * @param as
      * @param setInitial {bool} false to not propag initial value (default : true)
      */
-    bind( obj, key, as, setInitial = true ) {
+    bind( obj, key, as, setInitial = true, revMap = {} ) {
         let lastRevs, data, refKeys;
         if ( key && !is.array(key) )
             key = [ key ];
@@ -512,7 +512,7 @@ class Scope extends EventEmitter {
                     };
                     revs[ ref.storeId ].refs.push(ref);
                     return revs;
-                }, {})
+                }, revMap)
             ]);
         
         this.mount(key);
@@ -520,7 +520,7 @@ class Scope extends EventEmitter {
         
         if ( setInitial && this._stable ) {
             data = this.getUpdates(lastRevs);
-            if ( !data ) return lastRevs;
+            if ( !data ) return this;
             if ( typeof obj != "function" ) {
                 if ( as ) obj.setState({ [ as ]: data });
                 else obj.setState(data);
@@ -529,7 +529,7 @@ class Scope extends EventEmitter {
                 obj(data);
             }
         }
-        return lastRevs;
+        return this;
     }
     
     /**

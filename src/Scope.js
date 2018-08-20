@@ -129,7 +129,7 @@ class Scope extends EventEmitter {
         
         id = id || ( "_____" + shortid.generate() );
         
-        if ( openScopes[ id ] ) {
+        if ( openScopes[ id ] && !incrementId ) {
             this._id = id;
             openScopes[ id ].register(storesMap);
             return openScopes[ id ]
@@ -247,7 +247,7 @@ class Scope extends EventEmitter {
         
         if ( id == "$parent" ) return;
         if ( !this._._scope[ ref.storeId ] ) {//ask mixed || parent
-            if ( this._._mixed.reduce(( mounted, ctx ) => ( mounted || ctx._mount(id, snapshot, state, data) ), false) ||
+            if ( this._._mixed.reduceRight(( mounted, ctx ) => ( mounted || ctx._mount(id, snapshot, state, data) ), false) ||
                  !this.parent )
                 return;
             return this.parent._mount(...arguments);
@@ -320,34 +320,41 @@ class Scope extends EventEmitter {
      */
     mixin( targetCtx ) {
         let parent = this.parent, lists;
+        
         this._._mixed.push(targetCtx)
         targetCtx.retain("mixedTo");
         if ( !targetCtx._stable )
             this.wait(targetCtx._id);
-        
         this._._mixedList.push(lists = {
             'stable'  : s => this.release(targetCtx._id),
             'unstable': s => this.wait(targetCtx._id),
             'update'  : s => this._propag()
         });
         
-        this.actions = {};
-        this.stores  = {};
-        this.state   = {};
-        this.data    = {};
+        //this.actions = {};
+        //this.stores  = {};
+        //this.state   = {};
+        //this.data    = {};
         targetCtx.on(lists);
+        
+        // reset protos
+        // push new proto with parent
         __proto__push(this, 'actions', parent);
         __proto__push(this, 'stores', parent);
         __proto__push(this, 'state', parent);
         __proto__push(this, 'data', parent);
-        
+        // print localz accessors
         this.relink(this._._scope, this, false, true);
+        
         this._._mixed.forEach(
             ctx => {
+                // push protos
                 __proto__push(this, 'actions');
                 __proto__push(this, 'stores');
                 __proto__push(this, 'state');
                 __proto__push(this, 'data');
+                this.stores.__origin = "mixed " + ctx._id;
+                // write mixed accessors
                 ctx.relink(ctx._._scope, this, true, true)
             }
         )
@@ -542,7 +549,8 @@ class Scope extends EventEmitter {
         var followers = this._.followers,
             i         = followers && followers.length;
         while ( followers && i-- )
-            if ( followers[ i ][ 0 ] === obj && ( '' + followers[ i ][ 1 ] ) == ( '' + key ) &&
+            if ( followers[ i ][ 0 ] === obj &&
+                 ( '' + followers[ i ][ 1 ] ) == ( '' + key ) &&
                  followers[ i ][ 2 ] == as ) {
                 this.disposeStores(Object.keys(followers[ i ][ 3 ]), 'listeners');
                 return followers.splice(i, 1);
@@ -993,6 +1001,9 @@ class Scope extends EventEmitter {
      * @param reason
      */
     retainStores( stores = [], reason ) {
+        //stores.forEach(
+        //    id => ( ( !this.stores[ id ] || !this.stores[ id ].retain ) && console.warn(id, reason) )
+        //)
         stores.forEach(
             id => ( this.stores[ id ] && this.stores[ id ].retain && this.stores[ id ].retain(reason) )
         )

@@ -785,12 +785,12 @@ class Store extends EventEmitter {
         //console.warn("dispose", reason, this.__retains);
         if ( reason ) {
             if ( !this.__retains[ reason ] )
-                throw new Error("Dispose more than retaining : " + reason);
+                throw new Error("RS : Dispose more than retaining on store '" + this.name + "' : " + reason);
             
             this.__retains[ reason ]--;
         }
         if ( this.__retains.all == 0 )
-            throw new Error("Dispose more than retaining !");
+            throw new Error("RS : Dispose more than retaining on store " + this.name );
         
         this.__retains.all--;
         

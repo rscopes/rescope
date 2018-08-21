@@ -39,6 +39,7 @@ else {
     
     $global.___rescope = RS;
     Scope.Store        = Store;
+    //RS.console         = console;
     RS.Scope           = Scope;
     RS.Context         = Scope;
     RS.Store           = Store;

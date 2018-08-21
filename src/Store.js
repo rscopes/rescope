@@ -629,8 +629,8 @@ class Store extends EventEmitter {
                 ( key ) => {//todo
                     if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[ key ]) )
                         this.state[ key ] = snap.data;
-                    else
-                        console.warn('not found : ', key, snap && snap.refs[ key ])
+                    //else
+                    //    console.warn('not found : ', key, snap && snap.refs[ key ])
                 }
             )
             

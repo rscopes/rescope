@@ -330,17 +330,4 @@ ReScope catch errors using :
  - process.on('uncaughtException',...) in node environnement
  - window.addEventListener('error',...) in browser environement
 
-### Why ?
-
-First, depending the js engine, this cause performances issues.
-
-And, anyway, it is said that "using these events leave the process state incoherent";<br>
-I don't know for the v8 part, but in most cases in the rescope context; <br>
-loosing the execution stack starting from the apply fn will not hurt the whole rescope store coherence,<br>
-this only mean that the failing store will keep its previous state-data pair.  <br>
-
-Rescope will resume its propagation stack as usual; so the failling stores can simply update theirs state knowing theirs last sources data are invalid.
-
-That said, we are free to use try & catch in the apply fns.
-
 

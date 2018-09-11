@@ -93,7 +93,7 @@ The examples and bootstrap will come gradually [here](https://github.com/CaipiLa
 
 - Optimize
 - Many more tests
-- Allow dependencies thats are not defined yet
+- Allow store dependencies thats are not defined yet
 - Cosmetics rewrites & more comments
 - Better Serialize/restore or choose a lib
 - Possibly some semantic/normalisation updates

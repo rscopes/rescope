@@ -9,7 +9,7 @@
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
-<p align="center"><a href="https://github.com/CaipiLabs/rescope/tree/master">
+<p align="center"><a href="https://travis-ci.org/CaipiLabs/rescope">
 <img src="https://travis-ci.org/CaipiLabs/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>

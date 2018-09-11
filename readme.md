@@ -9,7 +9,7 @@
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
-<p align="center"><a href="https://github.com/CaipiLabs/rescope/tree/master">
+<p align="center"><a href="https://travis-ci.org/CaipiLabs/rescope">
 <img src="https://travis-ci.org/CaipiLabs/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>
@@ -93,7 +93,7 @@ The examples and bootstrap will come gradually [here](https://github.com/CaipiLa
 
 - Optimize
 - Many more tests
-- Allow dependencies thats are not defined yet
+- Allow store dependencies thats are not defined yet
 - Cosmetics rewrites & more comments
 - Better Serialize/restore or choose a lib
 - Possibly some semantic/normalisation updates

@@ -2,63 +2,18 @@
 
 _ this is a draft  wip doc _
 
-## Some theoretical stuffs
-
 ### Stores Workflow
 
-- A Store have it's state updated ( action has pushed state update or a source store had its data updated )
+- A Store have it's state updated ( action has pushed state mutation or a source store had its data updated )
 - If this state have the required & followed value
 - The apply function push new data in an async or sync way
 - The store is stabilized and (if there is new data) propagated
 - listening stores have theirs state updated and we go to step 1 until the whole scope is stable
 
-### About state uptates & theirs propagation
-
-The more a store have sources, the more it state update will be applied first<br>
-This is required to :
-- Keep leafs stores sync & coherent with their sources
-- Apply merged state updates to root stores
-- Keep the global app state coherent
-
-This mean whatever the number of stores & the complexity of the deps,<br>
-updating a store state will update its synchrone child stores immediately.
-
-### Stores initial state / data
-
-A store initialized with data will be stable synchronously when instantiated. <br>
-If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
-
-### Stores initial state & data
-
-Serialization & restoration are managed by the Scopes objects.<br>
-Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :<br>
-
-- Using initial state & data :
-```jsx
-class MyStore extends Store {
-        static state = {};// initial state (soft cloned)
-        static data = {};// initial data (soft cloned)
-
-        state = {
-        // instance initial state (merged over cfg & static definitions)
-        }
-        data = {}// precedence over cfg.data
-};
-
-let MyStoreInstance = new MyStore(
-        BaseScope,
-        {
-            state : {}, // merged over the static state
-            data  : {}// precedence over static data
-        }
-)
-
-```
-
 ### Stability (the Store:apply function)
 
 When state updates occurs, a store state stop being coherent with its results data.<br>
-In the ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
+In ReScope stores, the role of the "apply" function is to make the store data predictable basing on its state.
 
 This can be done in 2 way :
  - In a synchronized way, by returning a new data hashmap from the "apply" fn
@@ -109,6 +64,49 @@ This can be done in 2 way :
         return data;
     }
 /*...*/
+
+```
+
+### About state uptates & theirs propagation
+
+The more a store have sources, the more it state update will be applied first<br>
+This is required to :
+- Keep leafs stores sync & coherent with their sources
+- Apply merged state updates to root stores
+- Keep the global app state coherent
+
+This mean whatever the number of stores & the complexity of the deps,<br>
+updating a store state will update its synchrone child stores immediately.
+
+### Stores initial state / data
+
+A store initialized with data will be stable synchronously when instantiated. <br>
+If it only have a state but no data, the apply function will be called by the constructor synchronously. <br>
+
+### Stores initial state & data
+
+Serialization & restoration are managed by the Scopes objects.<br>
+Stores only have to maintain the state-data coherence, but can have initial state and data from different sources :<br>
+
+- Using initial state & data :
+```jsx
+class MyStore extends Store {
+        static state = {};// initial state (soft cloned)
+        static data = {};// initial data (soft cloned)
+
+        state = {
+        // instance initial state (merged over cfg & static definitions)
+        }
+        data = {}// precedence over cfg.data
+};
+
+let MyStoreInstance = new MyStore(
+        BaseScope,
+        {
+            state : {}, // merged over the static state
+            data  : {}// precedence over static data
+        }
+)
 
 ```
 

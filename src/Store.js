@@ -553,7 +553,8 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let refs =
+		let sId  = cfg.scopeAlias || this.scopeObj._id,
+		    refs =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {//todo
 				    let name,
@@ -583,7 +584,7 @@ class Store extends EventEmitter {
 		
 		keyWalknSet(
 			output,
-			(this.scopeObj._id + '/' + this.name),
+			(sId + '/' + this.name),
 			{
 				state: this.state &&
 					(

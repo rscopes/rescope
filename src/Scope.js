@@ -113,9 +113,13 @@ class Scope extends EventEmitter {
 	 */
 	constructor( storesMap, { parent, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
 		super();
-		var _ = {}, keyIndex;
+		var _ = {
+			keyPID: (parent && parent._id || shortid.generate()),
+			key,
+			incrementId
+		}, keyIndex;
 		
-		id = id || key && ((parent && parent._id || shortid.generate()) + '>' + key);
+		id = id || key && (_.keyPID + '>' + key);
 		
 		_.isLocalId = !id;
 		
@@ -129,12 +133,13 @@ class Scope extends EventEmitter {
 		
 		id = id || ("_____" + shortid.generate());
 		
-		if ( openScopes[id] && !incrementId ) {
+		
+		if ( openScopes[id] && !incrementId ) {// overwrite existing scope
 			this._id = id;
 			openScopes[id].register(storesMap);
 			return openScopes[id]
 		}
-		else if ( openScopes[id] && incrementId ) {
+		else if ( openScopes[id] && incrementId ) {// generate key id
 			let i = -1;
 			while ( openScopes[id + '[' + (++i) + ']'] ) ;
 			id = id + '[' + i + ']';
@@ -754,38 +759,60 @@ class Scope extends EventEmitter {
 	 * @returns {{}}
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let ctx                                                                 = this._._scope,
-		    { alias, withChilds = true, withParents, withMixed = true, norefs } = cfg;
+		let ctx                                  = this._._scope,
+		    { baseId, key, keyPID, incrementId } = this._,
+		    {
+			    alias,
+			    withChilds  = true,
+			    withParents,
+			    withMixed   = true,
+			    norefs,
+			    parentAlias = keyPID,
+			    aliases     = {}
+		    }                                    = cfg,
+		    sid                                  = key ? parentAlias + '>' + key : alias || this._id;
 		
-		if ( keyWalknGet(output, this._id) )
-			return output;
+		delete cfg.alias;
+		
+		//alias = alias || baseId;
+		
+		if ( keyWalknGet(output, sid) ) {
+			if ( !incrementId )// done
+				return output;
+			else if ( incrementId ) {// generate key id
+				let i = -1;
+				while ( keyWalknGet(output, sid + '[' + (++i) + ']') ) ;
+				sid = sid + '[' + i + ']';
+			}
+		}
 		
 		//@todo : better serialize method
-		keyWalknSet(output, this._id, {});
+		keyWalknSet(output, sid, {});
 		
 		Object.keys(ctx).forEach(
 			id => {
 				if ( id == "$parent" || is.fn(ctx[id]) )
 					return;
 				
-				ctx[id].serialize(cfg, output);
+				ctx[id].serialize({ ...cfg, scopeAlias: sid }, output);
 			}
 		)
 		
-		withParents && this.parent && this.parent.serialize({
-			                                                    withChild  : false,
-			                                                    withParents: true,
-			                                                    withMixed,
-			                                                    norefs
-		                                                    }, output);
+		//withParents && this.parent && this.parent.serialize({
+		//	                                                    withChild  : false,
+		//	                                                    withParents: true,
+		//	                                                    withMixed,
+		//	                                                    norefs
+		//                                                    }, output);
 		
 		withChilds && this._.childScopes.forEach(
 			ctx => {
 				!ctx._.isLocalId && ctx.serialize({
 					                                  withChild  : true,
 					                                  withParents: false,
+					                                  parentAlias: sid,
 					                                  withMixed,
-					                                  norefs
+					                                  norefs,
 				                                  }, output);
 			}
 		);
@@ -805,8 +832,8 @@ class Scope extends EventEmitter {
 			output = Object.keys(output)
 			               .reduce(
 				               ( h, k ) => (
-					               h[k.startsWith(alias)
-					                 ? alias + k.substr(alias.length)
+					               h[k === this._id
+					                 ? alias
 					                 : k] = output[k],
 						               h
 				               ),
@@ -822,18 +849,19 @@ class Scope extends EventEmitter {
 	 * @param force
 	 */
 	restore( snapshot, cfg = {}, force = is.bool(cfg) && cfg ) {
-		let ctx  = this._._scope, snap;
+		let ctx = this._._scope, snap;
+		
 		snapshot = snapshot
-			&& keyWalknGet(snapshot, this._id)
+			&& keyWalknGet(snapshot, cfg.alias || this._id)
 			|| this.takeSnapshotByKey(this._id);
 		
 		if ( !snapshot )
 			return;
 		
-		this._.snapshot = snapshot;
+		this._.snapshot = { ...snapshot };
 		
-		snap = snapshot['/'];
-		
+		snap          = snapshot['/'];
+		snapshot['/'] = { ...snap };
 		snap && Object.keys(snap).forEach(
 			name => {
 				if ( name == "$parent" ) return;
@@ -860,7 +888,6 @@ class Scope extends EventEmitter {
 				!ctx._.isLocalId && ctx.restore(undefined, force);
 			}
 		);
-		
 	}
 	
 	getSnapshotByKey( key, local ) {

@@ -851,9 +851,18 @@ class Scope extends EventEmitter {
 	restore( snapshot, cfg = {}, force = is.bool(cfg) && cfg ) {
 		let ctx = this._._scope, snap;
 		
+		if ( snapshot && cfg && cfg.alias && cfg.alias != this._id ) {
+			snap = {
+				...snapshot,
+				[this._id]: snapshot[cfg.alias]
+			}
+			delete snap[cfg.alias];
+			snapshot = snap;
+		}
 		snapshot = snapshot
-			&& keyWalknGet(snapshot, cfg.alias || this._id)
+			&& keyWalknGet(snapshot, this._id)
 			|| this.takeSnapshotByKey(this._id);
+		
 		
 		if ( !snapshot )
 			return;

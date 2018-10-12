@@ -553,7 +553,7 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId  = cfg.scopeAlias || this.scopeObj._id,
+		let sId  = cfg.parentAlias || this.scopeObj._id,
 		    refs =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {//todo

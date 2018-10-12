@@ -111,12 +111,13 @@ class Scope extends EventEmitter {
 	 *  }
 	 * @returns {Scope}
 	 */
-	constructor( storesMap, { parent, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
+	constructor( storesMap, { parent, upperScope, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
 		super();
 		var _ = {
-			keyPID: (parent && parent._id || shortid.generate()),
+			keyPID: (upperScope && upperScope._id || parent && parent._id || shortid.generate()),
 			key,
-			incrementId
+			incrementId,
+			baseId: id
 		}, keyIndex;
 		
 		id = id || key && (_.keyPID + '>' + key);
@@ -270,7 +271,9 @@ class Scope extends EventEmitter {
 			}
 			else if ( is.rsScopeClass(store) ) {
 				store = this._._scope[ref.storeId] = new store({ $parent: this }, {
-					id: this._id + '/' + ref.storeId,
+					key        : ref.storeId,
+					incrementId: true,
+					upperScope : this
 					//autoDestroy: true
 					//parent: this
 				});
@@ -763,14 +766,16 @@ class Scope extends EventEmitter {
 		    { baseId, key, keyPID, incrementId } = this._,
 		    {
 			    alias,
-			    withChilds  = true,
+			    withChilds = true,
 			    withParents,
-			    withMixed   = true,
+			    withMixed  = true,
 			    norefs,
-			    parentAlias = keyPID,
-			    aliases     = {}
+			    parentAlias,
+			    aliases    = {}
 		    }                                    = cfg,
-		    sid                                  = key ? parentAlias + '>' + key : alias || this._id;
+		    sid                                  = key
+		                                           ? (parentAlias || keyPID) + '>' + key
+		                                           : alias || parentAlias && (parentAlias + '/' + baseId) || this._id;
 		
 		delete cfg.alias;
 		
@@ -794,7 +799,7 @@ class Scope extends EventEmitter {
 				if ( id == "$parent" || is.fn(ctx[id]) )
 					return;
 				
-				ctx[id].serialize({ ...cfg, scopeAlias: sid }, output);
+				ctx[id].serialize({ ...cfg, parentAlias: sid }, output);
 			}
 		)
 		

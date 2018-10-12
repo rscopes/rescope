@@ -30,167 +30,167 @@ var webpack = require("webpack")
 
 
 var production    = process.argv.indexOf("--production") > -1
-                    || process.argv.indexOf("-p") > -1;
+	|| process.argv.indexOf("-p") > -1;
 var nodeExternals = require('webpack-node-externals');
 module.exports    = [
-    {
-        entry    : {
-            "ReScope": "./src/index.js",
-        },
-        devtool  : production ? "source-map" : 'inline-source-map',
-        output   : {
-            path         : __dirname,
-            filename     : production ? "../../dist/[name].min.js" : "../../dist/[name].js",
-            publicPath   : "/",
-            libraryTarget: 'commonjs2'
-        },
-        target   : 'node', // in order to ignore built-in modules like path, fs, etc.
-        externals: [ nodeExternals(), './index', 'rscopes', 'rscopes' ],
-        resolve  : {
-            extensions: [
-                "",
-                ".js",
-                ".json",
-            ],
-        },
-        
-        module : {
-            loaders: [
-                {
-                    test   : /\.js$/,
-                    exclude: /node_modules/,
-                    loader : 'babel-loader',
-                    query  : {
-                        
-                        cacheDirectory: true, //important for performance
-                        presets       : [
-                            'babel-preset-react',
-                            'babel-preset-es2015',
-                            'babel-preset-stage-0'
-                        
-                        ].map(require.resolve),
-                        plugins       : [
-                            "babel-plugin-syntax-dynamic-import",
-                            "babel-plugin-add-module-exports",
-                            'babel-plugin-transform-decorators-legacy'
-                        ].map(require.resolve)
-                    }
-                },
-                {
-                    test   : /\.json$/,
-                    loaders: [
-                        "json",
-                    ],
-                },
-                {
-                    test   : /\.(html|txt)$/,
-                    loaders: [
-                        "file-loader?name=[path][name].[ext]&context=./src",
-                    ],
-                },
-            ],
-        },
-        plugins: (
-            [
-                new webpack.BannerPlugin(fs.readFileSync("./etc/wp/LICENCE.HEAD.MD").toString()),
-                
-                new webpack.DefinePlugin({
-                                             __PROD__: production
-                                         }),
-                production ? new webpack.optimize.UglifyJsPlugin(
-                    {
-                        compress: {
-                            screw_ie8   : true, // React doesn't support IE8
-                            warnings    : false,
-                            drop_console: true
-                        },
-                        mangle  : {
-                            screw_ie8: true
-                        },
-                        output  : {
-                            comments : false,
-                            screw_ie8: true
-                        }
-                    }) : p => false,
-            
-            ]
-        ),
-    },
-    {
-        entry  : {
-            "ReScope": "./src/index.js",
-        },
-        devtool: production ? "source-map" : 'inline-source-map',
-        output : {
-            path         : __dirname,
-            filename     : production ? "../../dist/[name].browser.min.js" : "../../dist/[name].browser.js",
-            publicPath   : "/",
-            libraryTarget: 'var'
-        },
-        
-        resolve: {
-            extensions: [
-                "",
-                ".js",
-                ".json",
-            ],
-        },
-        
-        module : {
-            loaders: [
-                {
-                    test   : /\.js$/,
-                    exclude: /node_modules/,
-                    loader : 'babel-loader',
-                    query  : {
-                        
-                        presets: [
-                            'babel-preset-react',
-                            'babel-preset-es2015',
-                            'babel-preset-stage-0'
-                        ].map(require.resolve),
-                        plugins: [
-                            "babel-plugin-add-module-exports",
-                        ].map(require.resolve)
-                    }
-                },
-                {
-                    test   : /\.json$/,
-                    loaders: [
-                        "json",
-                    ],
-                },
-                {
-                    test   : /\.(html|txt)$/,
-                    loaders: [
-                        "file-loader?name=[path][name].[ext]&context=./src",
-                    ],
-                },
-            ],
-        },
-        plugins: (
-            [
-                new webpack.DefinePlugin({
-                                             __PROD__: production
-                                         }),
-                production ? new webpack.optimize.UglifyJsPlugin(
-                    {
-                        compress: {
-                            screw_ie8   : true, // React doesn't support IE8
-                            warnings    : false,
-                            drop_console: true
-                        },
-                        mangle  : {
-                            screw_ie8: true
-                        },
-                        output  : {
-                            comments : false,
-                            screw_ie8: true
-                        }
-                    }) : p => false,
-            
-            ]
-        ),
-        
-    }
+	{
+		entry    : {
+			"ReScope": "./src/index.js",
+		},
+		devtool  : production ? "source-map" : 'inline-source-map',
+		output   : {
+			path         : __dirname,
+			filename     : production ? "../../dist/[name].min.js" : "../../dist/[name].js",
+			publicPath   : "/",
+			libraryTarget: 'commonjs2'
+		},
+		target   : 'node', // in order to ignore built-in modules like path, fs, etc.
+		externals: [nodeExternals(), './index', 'rscopes', 'rscopes'],
+		resolve  : {
+			extensions: [
+				"",
+				".js",
+				".json",
+			],
+		},
+		
+		module : {
+			loaders: [
+				{
+					test   : /\.js$/,
+					exclude: /node_modules/,
+					loader : 'babel-loader',
+					query  : {
+						
+						cacheDirectory: true, //important for performance
+						presets       : [
+							'babel-preset-react',
+							'babel-preset-es2015',
+							'babel-preset-stage-0'
+						
+						].map(require.resolve),
+						plugins       : [
+							"babel-plugin-syntax-dynamic-import",
+							"babel-plugin-add-module-exports",
+							'babel-plugin-transform-decorators-legacy'
+						].map(require.resolve)
+					}
+				},
+				{
+					test   : /\.json$/,
+					loaders: [
+						"json",
+					],
+				},
+				{
+					test   : /\.(html|txt)$/,
+					loaders: [
+						"file-loader?name=[path][name].[ext]&context=./src",
+					],
+				},
+			],
+		},
+		plugins: (
+			[
+				new webpack.BannerPlugin(fs.readFileSync("./etc/wp/LICENCE.HEAD.MD").toString()),
+				
+				new webpack.DefinePlugin({
+					                         __PROD__: production
+				                         }),
+				production ? new webpack.optimize.UglifyJsPlugin(
+					{
+						compress: {
+							screw_ie8   : true, // React doesn't support IE8
+							warnings    : false,
+							drop_console: true
+						},
+						mangle  : {
+							screw_ie8: true
+						},
+						output  : {
+							comments : false,
+							screw_ie8: true
+						}
+					}) : p => false,
+			
+			]
+		),
+	},
+	{
+		entry  : {
+			"ReScope": "./src/index.js",
+		},
+		devtool: production ? "source-map" : 'inline-source-map',
+		output : {
+			path         : __dirname,
+			filename     : production ? "../../dist/[name].browser.min.js" : "../../dist/[name].browser.js",
+			publicPath   : "/",
+			libraryTarget: 'var'
+		},
+		
+		resolve: {
+			extensions: [
+				"",
+				".js",
+				".json",
+			],
+		},
+		
+		module : {
+			loaders: [
+				{
+					test   : /\.js$/,
+					exclude: /node_modules/,
+					loader : 'babel-loader',
+					query  : {
+						
+						presets: [
+							'babel-preset-react',
+							'babel-preset-es2015',
+							'babel-preset-stage-0'
+						].map(require.resolve),
+						plugins: [
+							"babel-plugin-add-module-exports",
+						].map(require.resolve)
+					}
+				},
+				{
+					test   : /\.json$/,
+					loaders: [
+						"json",
+					],
+				},
+				{
+					test   : /\.(html|txt)$/,
+					loaders: [
+						"file-loader?name=[path][name].[ext]&context=./src",
+					],
+				},
+			],
+		},
+		plugins: (
+			[
+				new webpack.DefinePlugin({
+					                         __PROD__: production
+				                         }),
+				production ? new webpack.optimize.UglifyJsPlugin(
+					{
+						compress: {
+							screw_ie8   : true, // React doesn't support IE8
+							warnings    : false,
+							drop_console: true
+						},
+						mangle  : {
+							screw_ie8: true
+						},
+						output  : {
+							comments : false,
+							screw_ie8: true
+						}
+					}) : p => false,
+			
+			]
+		),
+		
+	}
 ]

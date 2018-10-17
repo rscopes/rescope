@@ -553,7 +553,7 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId  = cfg.scopeAlias || this.scopeObj._id,
+		let sId  = cfg.parentAlias || this.scopeObj._id,
 		    refs =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {//todo
@@ -575,7 +575,7 @@ class Store extends EventEmitter {
 					    store = this.scopeObj.stores[_key[1]];
 					    alias = _key[3] || path && path.match(/([^\.]*)$/)[0] || _key[1];
 				    }
-				    if ( store && !store.scopeObj._.isLocalId )
+				    if ( store && is.rsStore(store) && !store.scopeObj._.isLocalId )
 					    map[alias] = store.scopeObj._id + '/' + name;
 				
 				    return map;
@@ -900,7 +900,7 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 				console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (cStore.name || cStore) + ' !!', store, _key, scope.stores, i);
 				return false;
 			}
-			if ( is.rsScope(store.prototype) ) scope._mount(name);
+			if ( is.rsScopeClass(store) ) scope._mount(name);
 			if ( is.rsScope(store) ) {
 				store = scope._mount(key);
 			}

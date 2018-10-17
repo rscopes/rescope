@@ -111,12 +111,13 @@ class Scope extends EventEmitter {
 	 *  }
 	 * @returns {Scope}
 	 */
-	constructor( storesMap, { parent, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
+	constructor( storesMap, { parent, upperScope, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
 		super();
 		var _ = {
-			keyPID: (parent && parent._id || shortid.generate()),
+			keyPID: (upperScope && upperScope._id || parent && parent._id || shortid.generate()),
 			key,
-			incrementId
+			incrementId,
+			baseId: id
 		}, keyIndex;
 		
 		id = id || key && (_.keyPID + '>' + key);
@@ -270,7 +271,9 @@ class Scope extends EventEmitter {
 			}
 			else if ( is.rsScopeClass(store) ) {
 				store = this._._scope[ref.storeId] = new store({ $parent: this }, {
-					id: this._id + '/' + ref.storeId,
+					key        : ref.storeId,
+					incrementId: true,
+					upperScope : this
 					//autoDestroy: true
 					//parent: this
 				});
@@ -763,18 +766,28 @@ class Scope extends EventEmitter {
 		    { baseId, key, keyPID, incrementId } = this._,
 		    {
 			    alias,
-			    withChilds  = true,
-			    withParents,
-			    withMixed   = true,
-			    norefs,
-			    parentAlias = keyPID,
-			    aliases     = {}
+			    parentAlias,
 		    }                                    = cfg,
-		    sid                                  = key ? parentAlias + '>' + key : alias || this._id;
+		    sid                                  = key
+		                                           ? (parentAlias || keyPID) + '>' + key
+		                                           : alias || parentAlias && (parentAlias + '/' + baseId) || this._id;
 		
-		delete cfg.alias;
 		
 		//alias = alias || baseId;
+		return this.serialize_ex(cfg, output, sid, alias, ["$parent"])
+	}
+	
+	serialize_ex( cfg = {}, output = {}, sid, alias, exclude ) {
+		let ctx                                  = this._._scope,
+		    { baseId, key, keyPID, incrementId } = this._,
+		    {
+			    withChilds = true,
+			    withParents,
+			    withMixed  = true,
+			    norefs,
+			    parentAlias,
+			    aliases    = {}
+		    }                                    = cfg;
 		
 		if ( keyWalknGet(output, sid) ) {
 			if ( !incrementId )// done
@@ -785,16 +798,15 @@ class Scope extends EventEmitter {
 				sid = sid + '[' + i + ']';
 			}
 		}
-		
 		//@todo : better serialize method
 		keyWalknSet(output, sid, {});
 		
 		Object.keys(ctx).forEach(
 			id => {
-				if ( id == "$parent" || is.fn(ctx[id]) )
+				if ( exclude.includes(id) || is.rsStoreClass(ctx[id]) || is.rsScopeClass(ctx[id]) )
 					return;
 				
-				ctx[id].serialize({ ...cfg, scopeAlias: sid }, output);
+				ctx[id].serialize({ ...cfg, parentAlias: sid }, output);
 			}
 		)
 		

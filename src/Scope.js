@@ -692,6 +692,7 @@ class Scope extends EventEmitter {
 	/**
 	 * Get or update output basing storesRevMap's revisions.
 	 * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
+	 * @todo: optim / use protos
 	 * @param storesRevMap
 	 * @param output
 	 * @param updated
@@ -730,6 +731,9 @@ class Scope extends EventEmitter {
 						output[id] = this.data[id];
 					}
 					
+				}
+				else if ( !output.hasOwnProperty(id) ) {// avoid empty or not initialized store results to be replaced by inherited with same name
+					output[id] = undefined;
 				}
 			}
 		);

@@ -705,10 +705,11 @@ class Scope extends EventEmitter {
 		Object.keys(ctx).forEach(
 			id => {
 				if ( id == "$parent" ) return;
-				if ( !output.hasOwnProperty(id) && !is.fn(ctx[id])
+				if ( !output.hasOwnProperty(id)
+					&& !is.fn(ctx[id])
 					&& (!storesRevMap
 						|| (storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined)
-						|| !(!storesRevMap.hasOwnProperty(id) || ctx[id]._rev <= storesRevMap[id].rev))
+						|| (storesRevMap.hasOwnProperty(id) && ctx[id]._rev > storesRevMap[id].rev))
 				) {
 					
 					updated    = true;
@@ -726,14 +727,14 @@ class Scope extends EventEmitter {
 							}
 						)
 					}
+					else if ( !output.hasOwnProperty(id) ) {// avoid empty or not initialized store results to be replaced by inherited with same name
+						output[id] = undefined;
+					}
 					else {
 						//console.warn("update ", id, this.data[id]);
 						output[id] = this.data[id];
 					}
 					
-				}
-				else if ( !output.hasOwnProperty(id) ) {// avoid empty or not initialized store results to be replaced by inherited with same name
-					output[id] = undefined;
 				}
 			}
 		);

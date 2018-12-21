@@ -699,48 +699,46 @@ class Scope extends EventEmitter {
 	 * @returns {*|{}}
 	 */
 	getUpdates( storesRevMap, output, updated ) {
-		let ctx = this._._scope;
 		
-		output = output || {};
-		Object.keys(ctx).forEach(
+		output       = output || {};
+		storesRevMap = storesRevMap || this._getRevMap();
+		Object.keys(storesRevMap).forEach(
 			id => {
-				if ( id == "$parent" ) return;
-				if ( !output.hasOwnProperty(id)
-					&& !is.fn(ctx[id])
-					&& (!storesRevMap
-						|| (storesRevMap.hasOwnProperty(id) && storesRevMap[id] === undefined)
-						|| (storesRevMap.hasOwnProperty(id) && ctx[id]._rev > storesRevMap[id].rev))
-				) {
-					
+				let store        = this.stores[id];
+				storesRevMap[id] = storesRevMap[id] || { rev: 0, refs: [] };
+				
+				if ( store && is.fn(store) ) {
 					updated    = true;
-					output[id] = this.data[id];
-					
-					if ( storesRevMap && storesRevMap.hasOwnProperty(id) ) {
-						storesRevMap[id]     = storesRevMap[id] || { rev: 0, refs: [] };
-						storesRevMap[id].rev = ctx[id]._rev;
-						storesRevMap[id].refs.forEach(
-							ref => {
-								//console.warn("update ref ", ref.ref,
-								// this.retrieve(ref.path));
-								output[ref.alias] = this.retrieve(ref.path)
-								
-							}
-						)
-					}
-					else if ( !output.hasOwnProperty(id) ) {// avoid empty or not initialized store results to be replaced by inherited with same name
-						output[id] = undefined;
-					}
-					else {
-						//console.warn("update ", id, this.data[id]);
-						output[id] = this.data[id];
-					}
-					
+					output[id] = undefined;
+				}
+				else if ( store && store._rev > storesRevMap[id].rev ) {
+					storesRevMap[id].rev = store._rev;
+					output[id]           = store.data;
+					updated              = true;
 				}
 			}
-		);
-		updated = this._._mixed.reduceRight(( updated, ctx ) => (ctx.getUpdates(storesRevMap, output, updated) || updated), updated);
-		updated = this.parent && this.parent.getUpdates(storesRevMap, output, updated) || updated;
+		)
 		return updated && output;
+	}
+	
+	/**
+	 * Recursively get all stores revs
+	 * @param childs
+	 * @returns {Array}
+	 * @private
+	 */
+	_getRevMap( storesRevMap = {} ) {
+		let ctx = this._._scope;
+		Object.keys(ctx).forEach(
+			id => {
+				if ( id == "$parent" || storesRevMap[id] ) return;
+				storesRevMap[id] = { rev: ctx[id]._rev, refs: [] };
+				
+			});
+		this._._mixed.reduceRight(
+			( storesRevMap, ctx ) => (ctx._getRevMap(storesRevMap)), storesRevMap);
+		this.parent && this.parent._getRevMap(storesRevMap);
+		return storesRevMap;
 	}
 	
 	/**
@@ -1142,6 +1140,7 @@ class Scope extends EventEmitter {
 			this._.followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs, 3: remaps } ) => {
 				let data = this.getUpdates(lastRevs);
 				if ( !data ) return;
+				//console.log(data, lastRevs)
 				if ( typeof obj != "function" ) {
 					//console.log("setState ",obj, Object.keys(data))
 					if ( as ) obj.setState({ [as]: data });

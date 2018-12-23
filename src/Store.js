@@ -37,8 +37,8 @@ class Store extends EventEmitter {
 	//static use                  = [];// overridable list of source stores
 	static follow;// overridable list of store that will allow push if updated
 	static require;
-	static staticScope          = new Scope({}, { id: "static" });
-	static state                = undefined;// default state
+	static staticScope   = new Scope({}, { id: "static" });
+	static state         = undefined;// default state
 	/**
 	 * if retain goes to 0 :
 	 * false to not destroy,
@@ -46,7 +46,7 @@ class Store extends EventEmitter {
 	 * Ms to autodestroy after tm ms if no retain has been called
 	 * @type {boolean|Int}
 	 */
-	       static persistenceTm = false;
+	static persistenceTm = false;
 	
 	/**
 	 * Constructor, will build a rescope store
@@ -565,11 +565,11 @@ class Store extends EventEmitter {
 					    store = key.store;
 				    }
 				    else if ( is.fn(key) ) {
-					    name = alias = key.name || key.defaultName;
+					    name  = alias = key.name || key.defaultName;
 					    store = key;
 				    }
 				    else {
-					    _key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+					    _key  = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
 					    name  = _key[1];
 					    path  = _key[2] && _key[2].substr(1);
 					    store = this.scopeObj.stores[_key[1]];
@@ -883,11 +883,11 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 				store = key.store;
 			}
 			else if ( is.fn(key) ) {
-				name = alias = key.name || key.defaultName;
+				name  = alias = key.name || key.defaultName;
 				store = key;
 			}
 			else {
-				_key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+				_key  = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
 				name  = _key[1];
 				path  = _key[2] && _key[2].substr(1);
 				store = scope.stores[_key[1]];
@@ -938,11 +938,11 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 					store = key.store;
 				}
 				else if ( is.fn(key) ) {
-					name = alias = key.name || key.defaultName;
+					name  = alias = key.name || key.defaultName;
 					store = scope.stores[name];
 				}
 				else {
-					key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+					key   = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
 					name  = key[1];
 					path  = key[2] && key[2].substr(1);
 					store = scope.stores[key[1]];

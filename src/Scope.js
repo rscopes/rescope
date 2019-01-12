@@ -1271,17 +1271,17 @@ class Scope extends EventEmitter {
 				this._.destroyTM && clearTimeout(this._.destroyTM);
 				this._.destroyTM = setTimeout(
 					e => {
-						//this.then(s => {
-						!this.__retains.all && !this.dead && this.destroy()
-						//});
+						this.then(s => {
+							!this.__retains.all && !this.dead && this.destroy()
+						});
 					},
 					this._.persistenceTm
 				);
 			}
 			else {
-				//this.then(s =>
-				(!this.__retains.all && !this.dead && this.destroy())
-				//);
+				this.then(s =>
+					          (!this.__retains.all && !this.dead && this.destroy())
+				);
 			}
 		}
 	}

@@ -553,30 +553,32 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId       = cfg.parentAlias || this.scopeObj._id,
-		    refs      =
+		let sId         = cfg.parentAlias || this.scopeObj._id,
+		    refsCount   = 0,
+		    refs        =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {
 				    let ref   = this.$scope.parseRef(key),
 				        store = this.$stores[ref.storeId];
 				    if ( store && is.rsStore(store) && !store.scopeObj._.isLocalId )
-					    map[ref.alias] = ref.path;
+					    refsCount++, map[ref.alias] = ref.path;
 				
 				    return map;
 			    }, {}
 			    ),
-		    stateKeys = Object.keys(this.data),
-		    stateRefs = stateKeys.map(k => this.data[k]),
-		    inRefs    =
-			    !cfg.norefs && Object.keys(this.data).reduce(
+		    stateKeys   = Object.keys(this.data),
+		    stateRefs   = stateKeys.map(k => this.data[k]),
+		    inRefsCount = 0,
+		    inRefs      =
+			    !cfg.norefs && (Object.keys(this.data).reduce(
 			    ( map, key ) => {
 				    let ref = stateRefs.indexOf(this.data[key])
 				    if ( ref != -1 )
-					    map[key] = stateKeys[ref];
+					    inRefsCount++, map[key] = stateKeys[ref];
 				    return map;
 			    }, {}
-			    ),
-		    snap      = {
+			    )),
+		    snap        = {
 			    state: this.state &&
 				    (
 					    cfg.norefs
@@ -598,8 +600,11 @@ class Store extends EventEmitter {
 			
 		    };
 		
-		refs && (snap.refs = refs);
-		inRefs && (snap.inRefs = inRefs);
+		refs && refsCount && (snap.refs = refs);
+		inRefs && inRefsCount && (
+			snap.inRefs = stateKeys.length === inRefsCount
+			              ? true
+			              : inRefs);
 		
 		
 		keyWalknSet(
@@ -633,14 +638,19 @@ class Store extends EventEmitter {
 				}
 			)
 			
-			this.data = snapshot.data;
-			snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(
-				( key ) => {//todo
-					this.data[key] = this.state[snapshot.inRefs[key]];
-					//else
-					//    console.warn('not found : ', key, snap && snap.refs[ key ])
-				}
-			)
+			
+			if ( snapshot.inRefs === true )
+				this.data = this.state;
+			else {
+				this.data = snapshot.data;
+				snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(
+					( key ) => {//todo
+						this.data[key] = this.state[snapshot.inRefs[key]];
+						//else
+						//    console.warn('not found : ', key, snap && snap.refs[ key ])
+					}
+				)
+			}
 			
 			
 		}

@@ -60,20 +60,24 @@ class Scope extends EventEmitter {
 	 * @returns {{storeId, path, alias: *, ref: *}}
 	 */
 	static stateMapToRefList( sm, state = {}, _refs = [], actions = {}, path = "" ) {
+		let applier;
 		Object.keys(sm).forEach(
 			key => {
 				let cpath = path ? path + '.' + key : key;
+				
 				sm[key] instanceof Scope.scopeRef
 				? _refs.push(sm[key].path + ':' + cpath)
 				: (sm[key] && sm[key] instanceof Function)
-				  ? actions[key] = sm[key]
+				  ? key == "$apply"
+				    ? applier = sm[key]
+				    : actions[key] = sm[key]
 				  : (sm[key] && sm[key].prototype instanceof Scope.Store)
 				    ? _refs.push(sm[key].as(cpath))
 				    : state[cpath] = sm[key]
 				//: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 			}
 		)
-		return _refs;
+		return applier;
 	}
 	
 	static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy

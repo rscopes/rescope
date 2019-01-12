@@ -1041,9 +1041,12 @@ class Scope extends EventEmitter {
 	 * @param key {string} optional key where to map the public state
 	 */
 	then( cb ) {
-		if ( this._stable )
-			return cb(this.data);
-		this.once('stable', e => cb(this.data));
+		if ( this._.unStableChilds )
+			return this.once('stableTree', e => this.then(cb));
+		if ( !this._stable )
+			return this.once('stable', e => this.then(cb));
+		
+		return cb(this.data);
 	}
 	
 	/**

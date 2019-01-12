@@ -986,7 +986,7 @@ class Scope extends EventEmitter {
 	 * @returns {{storeId, path, alias: *, ref: *}}
 	 */
 	parseRef( _ref ) {
-		if ( typeof _ref !== 'string' ) {
+		if ( typeof _ref !== 'string' ) {// @todo : rm this
 			this.register({ [_ref.name]: _ref.store });
 			_ref = _ref.name;
 		}

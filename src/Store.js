@@ -556,27 +556,11 @@ class Store extends EventEmitter {
 		let sId       = cfg.parentAlias || this.scopeObj._id,
 		    refs      =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
-			    ( map, key ) => {//todo
-				    let name,
-				        alias, path, _key,
-				        store;
-				    if ( key.store && key.name ) {
-					    alias = name = key.name;
-					    store = key.store;
-				    }
-				    else if ( is.fn(key) ) {
-					    name  = alias = key.name || key.defaultName;
-					    store = key;
-				    }
-				    else {
-					    _key  = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
-					    name  = _key[1];
-					    path  = _key[2] && _key[2].substr(1);
-					    store = this.scopeObj.stores[_key[1]];
-					    alias = _key[3] || path && path.match(/([^\.]*)$/)[0] || _key[1];
-				    }
+			    ( map, key ) => {
+				    let ref   = this.$scope.parseRef(key),
+				        store = this.$stores[ref.storeId];
 				    if ( store && is.rsStore(store) && !store.scopeObj._.isLocalId )
-					    map[alias] = store.scopeObj._id + '/' + name;
+					    map[ref.alias] = ref.path;
 				
 				    return map;
 			    }, {}
@@ -585,7 +569,7 @@ class Store extends EventEmitter {
 		    stateRefs = stateKeys.map(k => this.data[k]),
 		    inRefs    =
 			    !cfg.norefs && Object.keys(this.data).reduce(
-			    ( map, key ) => {//todo
+			    ( map, key ) => {
 				    let ref = stateRefs.indexOf(this.data[key])
 				    if ( ref != -1 )
 					    map[key] = stateKeys[ref];
@@ -645,10 +629,7 @@ class Store extends EventEmitter {
 			this.state = { ...snapshot.state };
 			snapshot.refs && Object.keys(snapshot.refs).forEach(
 				( key ) => {//todo
-					if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[key]) )
-						this.state[key] = snap.data;
-					//else
-					//    console.warn('not found : ', key, snap && snap.refs[ key ])
+					this.state[key] = this.$scope.retrieve(snapshot.refs[key]);
 				}
 			)
 			

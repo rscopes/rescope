@@ -60,20 +60,24 @@ class Scope extends EventEmitter {
 	 * @returns {{storeId, path, alias: *, ref: *}}
 	 */
 	static stateMapToRefList( sm, state = {}, _refs = [], actions = {}, path = "" ) {
+		let applier;
 		Object.keys(sm).forEach(
 			key => {
 				let cpath = path ? path + '.' + key : key;
+				
 				sm[key] instanceof Scope.scopeRef
 				? _refs.push(sm[key].path + ':' + cpath)
 				: (sm[key] && sm[key] instanceof Function)
-				  ? actions[key] = sm[key]
+				  ? key == "$apply"
+				    ? applier = sm[key]
+				    : actions[key] = sm[key]
 				  : (sm[key] && sm[key].prototype instanceof Scope.Store)
 				    ? _refs.push(sm[key].as(cpath))
 				    : state[cpath] = sm[key]
 				//: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 			}
 		)
-		return _refs;
+		return applier;
 	}
 	
 	static persistenceTm = 1;// if > 0, will wait 'persistenceTm' ms before destroy
@@ -982,7 +986,7 @@ class Scope extends EventEmitter {
 	 * @returns {{storeId, path, alias: *, ref: *}}
 	 */
 	parseRef( _ref ) {
-		if ( typeof _ref !== 'string' ) {
+		if ( typeof _ref !== 'string' ) {// @todo : rm this
 			this.register({ [_ref.name]: _ref.store });
 			_ref = _ref.name;
 		}
@@ -1037,9 +1041,19 @@ class Scope extends EventEmitter {
 	 * @param key {string} optional key where to map the public state
 	 */
 	then( cb ) {
-		if ( this._stable )
-			return cb(this.data);
-		this.once('stable', e => cb(this.data));
+		if ( !this._stable )
+			return this.once('stable', e => this.then(cb));
+		
+		return cb(this.data);
+	}
+	
+	onceStableTree( cb ) {
+		if ( this._.unStableChilds )
+			return this.once('stableTree', e => this.onceStableTree(cb));
+		if ( !this._stable )
+			return this.once('stable', e => this.onceStableTree(cb));
+		
+		return cb(this.data);
 	}
 	
 	/**
@@ -1162,6 +1176,14 @@ class Scope extends EventEmitter {
 	 */
 	isStable() {
 		return this._stable;
+	}
+	
+	/**
+	 * is stable
+	 * @returns bool
+	 */
+	isStableTree() {
+		return this._stable && !this._.unStableChilds;
 	}
 	
 	_addChild( ctx ) {

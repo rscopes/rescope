@@ -37,8 +37,8 @@ class Store extends EventEmitter {
 	//static use                  = [];// overridable list of source stores
 	static follow;// overridable list of store that will allow push if updated
 	static require;
-	static staticScope          = new Scope({}, { id: "static" });
-	static state                = undefined;// default state
+	static staticScope   = new Scope({}, { id: "static" });
+	static state         = undefined;// default state
 	/**
 	 * if retain goes to 0 :
 	 * false to not destroy,
@@ -46,7 +46,7 @@ class Store extends EventEmitter {
 	 * Ms to autodestroy after tm ms if no retain has been called
 	 * @type {boolean|Int}
 	 */
-	       static persistenceTm = false;
+	static persistenceTm = false;
 	
 	/**
 	 * Constructor, will build a rescope store
@@ -553,58 +553,64 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId  = cfg.parentAlias || this.scopeObj._id,
-		    refs =
+		let sId         = cfg.parentAlias || this.scopeObj._id,
+		    refsCount   = 0,
+		    refs        =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
-			    ( map, key ) => {//todo
-				    let name,
-				        alias, path, _key,
-				        store;
-				    if ( key.store && key.name ) {
-					    alias = name = key.name;
-					    store = key.store;
-				    }
-				    else if ( is.fn(key) ) {
-					    name = alias = key.name || key.defaultName;
-					    store = key;
-				    }
-				    else {
-					    _key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
-					    name  = _key[1];
-					    path  = _key[2] && _key[2].substr(1);
-					    store = this.scopeObj.stores[_key[1]];
-					    alias = _key[3] || path && path.match(/([^\.]*)$/)[0] || _key[1];
-				    }
+			    ( map, key ) => {
+				    let ref   = this.$scope.parseRef(key),
+				        store = this.$stores[ref.storeId];
 				    if ( store && is.rsStore(store) && !store.scopeObj._.isLocalId )
-					    map[alias] = store.scopeObj._id + '/' + name;
+					    refsCount++, map[ref.alias] = ref.path;
 				
 				    return map;
 			    }, {}
-			    ) || {};
+			    ),
+		    stateKeys   = Object.keys(this.data),
+		    stateRefs   = stateKeys.map(k => this.data[k]),
+		    inRefsCount = 0,
+		    inRefs      =
+			    !cfg.norefs && (Object.keys(this.data).reduce(
+			    ( map, key ) => {
+				    let ref = stateRefs.indexOf(this.data[key])
+				    if ( ref != -1 )
+					    inRefsCount++, map[key] = stateKeys[ref];
+				    return map;
+			    }, {}
+			    )),
+		    snap        = {
+			    state: this.state &&
+				    (
+					    cfg.norefs
+					    ? { ...this.state }
+					    : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
+				    ),
+			    data : (
+					    this.data &&
+					    this.data.__proto__ === objProto ?
+					    Object.keys(this.data)
+					          .reduce(
+						          ( h, k ) => (!inRefs[k] && (h[k] = this.data[k]), h), {})
+					                                     :
+					    (is.bool(this.data)
+						    || is.number(this.data)
+						    || is.string(this.data)) && this.data
+				    )
+				    || undefined
+			
+		    };
+		
+		refs && refsCount && (snap.refs = refs);
+		inRefs && inRefsCount && (
+			snap.inRefs = stateKeys.length === inRefsCount
+			              ? true
+			              : inRefs);
+		
 		
 		keyWalknSet(
 			output,
 			(sId + '/' + this.name),
-			{
-				state: this.state &&
-					(
-						cfg.norefs
-						? { ...this.state }
-						: Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
-					),
-				data : (
-						this.data &&
-						this.data.__proto__ === objProto ?
-						this.data :
-						(is.bool(this.data)
-							|| is.number(this.data)
-							|| is.string(this.data)) && this.data
-					)
-					|| undefined
-				
-				,
-				refs
-			}
+			snap
 		);
 		return output;
 	}
@@ -626,16 +632,26 @@ class Store extends EventEmitter {
 				this.then(() => restore(snapshot))
 			let snap;
 			this.state = { ...snapshot.state };
-			Object.keys(snapshot.refs).forEach(
+			snapshot.refs && Object.keys(snapshot.refs).forEach(
 				( key ) => {//todo
-					if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[key]) )
-						this.state[key] = snap.data;
-					//else
-					//    console.warn('not found : ', key, snap && snap.refs[ key ])
+					this.state[key] = this.$scope.retrieve(snapshot.refs[key]);
 				}
 			)
 			
-			this.data = snapshot.data;
+			
+			if ( snapshot.inRefs === true )
+				this.data = this.state;
+			else {
+				this.data = snapshot.data;
+				snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(
+					( key ) => {//todo
+						this.data[key] = this.state[snapshot.inRefs[key]];
+						//else
+						//    console.warn('not found : ', key, snap && snap.refs[ key ])
+					}
+				)
+			}
+			
 			
 		}
 	}
@@ -883,11 +899,11 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 				store = key.store;
 			}
 			else if ( is.fn(key) ) {
-				name = alias = key.name || key.defaultName;
+				name  = alias = key.name || key.defaultName;
 				store = key;
 			}
 			else {
-				_key  = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+				_key  = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
 				name  = _key[1];
 				path  = _key[2] && _key[2].substr(1);
 				store = scope.stores[_key[1]];
@@ -938,11 +954,11 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 					store = key.store;
 				}
 				else if ( is.fn(key) ) {
-					name = alias = key.name || key.defaultName;
+					name  = alias = key.name || key.defaultName;
 					store = scope.stores[name];
 				}
 				else {
-					key   = key.match(/([\w_]+)((?:\.[\w_]+)*)(?:\:([\w_]+))?/);
+					key   = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
 					name  = key[1];
 					path  = key[2] && key[2].substr(1);
 					store = scope.stores[key[1]];

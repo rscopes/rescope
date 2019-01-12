@@ -553,8 +553,8 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId  = cfg.parentAlias || this.scopeObj._id,
-		    refs =
+		let sId       = cfg.parentAlias || this.scopeObj._id,
+		    refs      =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {//todo
 				    let name,
@@ -580,31 +580,48 @@ class Store extends EventEmitter {
 				
 				    return map;
 			    }, {}
-			    ) || {};
+			    ),
+		    stateKeys = Object.keys(this.data),
+		    stateRefs = stateKeys.map(k => this.data[k]),
+		    inRefs    =
+			    !cfg.norefs && Object.keys(this.data).reduce(
+			    ( map, key ) => {//todo
+				    let ref = stateRefs.indexOf(this.data[key])
+				    if ( ref != -1 )
+					    map[key] = stateKeys[ref];
+				    return map;
+			    }, {}
+			    ),
+		    snap      = {
+			    state: this.state &&
+				    (
+					    cfg.norefs
+					    ? { ...this.state }
+					    : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
+				    ),
+			    data : (
+					    this.data &&
+					    this.data.__proto__ === objProto ?
+					    Object.keys(this.data)
+					          .reduce(
+						          ( h, k ) => (!inRefs[k] && (h[k] = this.data[k]), h), {})
+					                                     :
+					    (is.bool(this.data)
+						    || is.number(this.data)
+						    || is.string(this.data)) && this.data
+				    )
+				    || undefined
+			
+		    };
+		
+		refs && (snap.refs = refs);
+		inRefs && (snap.inRefs = inRefs);
+		
 		
 		keyWalknSet(
 			output,
 			(sId + '/' + this.name),
-			{
-				state: this.state &&
-					(
-						cfg.norefs
-						? { ...this.state }
-						: Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
-					),
-				data : (
-						this.data &&
-						this.data.__proto__ === objProto ?
-						this.data :
-						(is.bool(this.data)
-							|| is.number(this.data)
-							|| is.string(this.data)) && this.data
-					)
-					|| undefined
-				
-				,
-				refs
-			}
+			snap
 		);
 		return output;
 	}
@@ -626,7 +643,7 @@ class Store extends EventEmitter {
 				this.then(() => restore(snapshot))
 			let snap;
 			this.state = { ...snapshot.state };
-			Object.keys(snapshot.refs).forEach(
+			snapshot.refs && Object.keys(snapshot.refs).forEach(
 				( key ) => {//todo
 					if ( snap = this.$scope.getSnapshotByKey(snapshot.refs[key]) )
 						this.state[key] = snap.data;
@@ -636,6 +653,14 @@ class Store extends EventEmitter {
 			)
 			
 			this.data = snapshot.data;
+			snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(
+				( key ) => {//todo
+					this.data[key] = this.state[snapshot.inRefs[key]];
+					//else
+					//    console.warn('not found : ', key, snap && snap.refs[ key ])
+				}
+			)
+			
 			
 		}
 	}

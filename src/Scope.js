@@ -1049,9 +1049,9 @@ class Scope extends EventEmitter {
 	
 	onceStableTree( cb ) {
 		if ( this._.unStableChilds )
-			return this.once('stableTree', e => this.then(cb));
+			return this.once('stableTree', e => this.onceStableTree(cb));
 		if ( !this._stable )
-			return this.once('stable', e => this.then(cb));
+			return this.once('stable', e => this.onceStableTree(cb));
 		
 		return cb(this.data);
 	}

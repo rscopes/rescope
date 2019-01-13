@@ -1320,9 +1320,9 @@ class Scope extends EventEmitter {
 			this._._parentList = null;
 		}
 		this.dead = true;
+		delete openScopes[this._id];
 		this.emit("destroy", this);
 		
-		delete openScopes[this._id];
 		
 		
 	}

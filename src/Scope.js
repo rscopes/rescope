@@ -718,15 +718,10 @@ class Scope extends EventEmitter {
 				}
 				else if ( store && store._rev > storesRevMap[id].rev ) {
 					storesRevMap[id].rev = store._rev;
-					//output[id]           = store.data;
 					updated              = true;
-					
 					storesRevMap[ id ].refs.forEach(
 						ref => {
-							//console.warn("update ref ", ref.ref,
-							// this.retrieve(ref.path));
 							output[ ref.alias ] = this.retrieve(ref.path)
-							
 						}
 					)
 				}

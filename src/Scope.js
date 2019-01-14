@@ -679,7 +679,6 @@ class Scope extends EventEmitter {
 	 * @returns {*|{}}
 	 */
 	getRefsUpdates( refs, revMap, output ) {
-		
 		revMap = revMap || refs
 			.map(id => (is.string(id) ? id : id.name))
 			.map(id => (this.parseRef(id)))
@@ -693,7 +692,6 @@ class Scope extends EventEmitter {
 			}, {});
 		
 		return this.getUpdates(revMap, output)
-		
 	}
 	
 	/**
@@ -720,8 +718,12 @@ class Scope extends EventEmitter {
 				}
 				else if ( store && store._rev > storesRevMap[id].rev ) {
 					storesRevMap[id].rev = store._rev;
-					output[id]           = store.data;
 					updated              = true;
+					storesRevMap[ id ].refs.forEach(
+						ref => {
+							output[ ref.alias ] = this.retrieve(ref.path)
+						}
+					)
 				}
 			}
 		)

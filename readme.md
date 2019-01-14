@@ -29,14 +29,13 @@ ReScope is a flexible, effective and easy to use state management system inspire
 
 ## What's the point ?
 
-Managing big app with an unique store state is a never ending story; Either way at some point we need to split & sync multiple stores or use complex mechanics to split & inherit multiple contexts.<br/>
+The set of data transformations of one or more applications can be divided into reusable data components with reactive state and result data.
+Just like React Components, for data. <br/>
+Of course, that's quickly said, in an application, the data must deal with complex dependencies, different contexts, custom data bindings, and so on. <br/>
 
 This is where reScope comes in: <br/>
-It offers a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
+RS provide a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
 It manage theirs dependencies, theirs scopes, persistence, active instances & much more.
-
-RS allow reusable data components with reactive state and result data.
-Just like React Components. <br/>
 
 ## How ?
 
@@ -93,7 +92,6 @@ The examples and bootstrap will come gradually [here](https://github.com/CaipiLa
 - Many more tests
 - Allow store dependencies thats are not defined yet
 - Cosmetics rewrites & more comments
-- Better Serialize/restore or choose a lib
 - Possibly some semantic/normalisation updates
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)

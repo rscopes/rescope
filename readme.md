@@ -18,6 +18,10 @@
 
 </p>
 
+### Related packages
+
+React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
 
 ## ReScope What ?
 
@@ -25,14 +29,14 @@ ReScope is a flexible, effective and easy to use state management system inspire
 
 ## What's the point ?
 
-Applications transform structured data & events into user-friendly interfaces and controls. <br/>
-The set of data transformations of one or more applications can be divided into reusable data components with reactive state and result data.
-Just like React Components. <br/>
-Of course, that's quickly said, in an application, the data must deal with complex dependencies, different contexts, custom data bindings, and so on. <br/>
+Managing big app with an unique store state is a never ending story; Either way at some point we need to split & sync multiple stores or use complex mechanics to split & inherit multiple contexts.<br/>
 
 This is where reScope comes in: <br/>
-It offers a simple, flexible and familiar structure to organize and synchronize your data components. <br/>
-It manage theirs dependencies, theirs scopes, persitence, active instances & much more.
+It offers a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
+It manage theirs dependencies, theirs scopes, persistence, active instances & much more.
+
+RS allow reusable data components with reactive state and result data.
+Just like React Components. <br/>
 
 ## How ?
 
@@ -41,21 +45,22 @@ By using independent, specialized & serializable "Data Stores" in a Flux oriente
 ### Stores ?
 
 ReScope stores look like "React components for data".<br>
-Basically, they render determined data according theirs entry state & dependencies.
+Basically, they render determined data according theirs entry state, theirs dependencies, and theirs action.<br>
 
-Each Stores can manage part of, or the entire App state's determining values,<br>
+Actions generate mutations of one or multiple stores,<br>
+So each Stores can manage part of, or the entire App state's determining values,<br>
 maintain intermediate, possibly asynchronous resources,<br>
 and/or finals or ready-to-render data.
 
 ### Scopes ?
 
-To deal with complex architectures & data processing the Scopes allow :
+To deal with complex architectures like multi user or complex components systems, the Scopes allow :
 - normalized scopes for modules & views
 - to inherit & mix other Scopes,
 - automatic & chained destroy
 - ...
 
-## What else ?
+## Why & What else ?
 
 - React "high order components" factories decorators ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
 - Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
@@ -68,6 +73,7 @@ To deal with complex architectures & data processing the Scopes allow :
 - Lazy stores instantiation & active stores auto destroy
 - Another alternative to Redux & co
 - Library agnostic, rescope has no dependencies and will keep working with any states based system
+- Doesn't need anything, work without React, no immutable needed
 - etc..
 
 ## Doc ?
@@ -76,14 +82,6 @@ To deal with complex architectures & data processing the Scopes allow :
 
 About [Stores](doc/Store.md) <br>
 About [Scopes](doc/Scope.md)
-
-### Related packages
-
-The ReScope package has a limited perimeter, <br>
-other packages make it even easier to use:<br>
-
-React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
-ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
 
 ### Samples & bootstraps
 

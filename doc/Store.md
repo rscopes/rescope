@@ -76,7 +76,7 @@ This is required to :
 - Keep the global app state coherent
 
 This mean whatever the number of stores & the complexity of the deps,<br>
-updating a store state will update its synchrone child stores immediately.
+updating a store state will update its synchrone listening stores immediately.<br>
 
 ### Stores initial state / data
 

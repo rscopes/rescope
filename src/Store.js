@@ -566,8 +566,8 @@ class Store extends EventEmitter {
 				    return map;
 			    }, {}
 			    ),
-		    stateKeys   = Object.keys(this.data),
-		    stateRefs   = stateKeys.map(k => this.data[k]),
+		    stateKeys   = Object.keys(this.state),
+		    stateRefs   = stateKeys.map(k => this.state[k]),
 		    inRefsCount = 0,
 		    inRefs      =
 			    !cfg.norefs && (Object.keys(this.data).reduce(
@@ -588,9 +588,10 @@ class Store extends EventEmitter {
 			    data : (
 					    this.data &&
 					    this.data.__proto__ === objProto ?
-					    Object.keys(this.data)
-					          .reduce(
-						          ( h, k ) => (!inRefs[k] && (h[k] = this.data[k]), h), {})
+					    inRefs && Object.keys(this.data)
+					                    .reduce(
+						                    ( h, k ) => (!inRefs[k] && (h[k] = this.data[k]), h), {})
+						    || { ...this.data }
 					                                     :
 					    (is.bool(this.data)
 						    || is.number(this.data)

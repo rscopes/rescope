@@ -6,8 +6,7 @@ _ this is a draft  wip doc _
 
 The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.
 
-
-## Structuring Scopes
+## Structuring Scopes in pure JS
 
 ### Using inheriting
 

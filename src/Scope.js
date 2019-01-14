@@ -96,21 +96,20 @@ class Scope extends EventEmitter {
 	 * @param storesMap {Object} Object with the initial stores definition / instances
 	 * @param config {Object} Scope config
 	 * {
-	 *  parent {scope} @optional parent scope
+	 *     parent {scope} @optional parent scope
 	 *
-	 *  id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
-	 *     scope) key {string} @optional key of the scope ( if no id is set, the scope id
-	 *     will be (parent.id+'>'+key) incrementId {bool} @optional true to add a suffix
-	 *     id, if the provided key or id globally exist
+	 *     id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
+	 *     scope)
+	 *     key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'>'+key)
+	 *     incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
 	 *
-	 *  state {Object} @optional initial state by store alias
-	 *  data {Object} @optional initial data by store alias
+	 *     state {Object} @optional initial state by store alias
+	 *     data {Object} @optional initial data by store alias
 	 *
-	 *  rootEmitter {bool} @optional true to not being destabilized by parent
-	 *  boundedActions {array | regexp} @optional list or regexp of actions not
-	 *     propagated to the parent
-	 *
-	 *  persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
+	 *     rootEmitter {bool} @optional true to not being destabilized by parent
+	 *     boundedActions {array | regexp} @optional list or regexp of actions not propagated to the parent
+	 *     autoDestroy {true | false | 'inherit'}
+	 *     persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
 	 *     dispose reach 0 autoDestroy  {bool} will trigger retain & dispose after start
 	 *  }
 	 * @returns {Scope}
@@ -160,7 +159,11 @@ class Scope extends EventEmitter {
 		this.state   = {};
 		this.data    = {};
 		
-		this.parent       = parent;
+		this.parent = parent;
+		
+		if ( autoDestroy == 'inherit' )
+			autoDestroy = parent && parent._autoDestroy;
+		
 		this._            = _;
 		this._autoDestroy = autoDestroy;
 		
@@ -1050,8 +1053,8 @@ class Scope extends EventEmitter {
 	onceStableTree( cb ) {
 		if ( this._.unStableChilds )
 			return this.once('stableTree', e => this.onceStableTree(cb));
-		if ( !this._stable )
-			return this.once('stable', e => this.onceStableTree(cb));
+		//if ( !this._stable )
+		//	return this.once('stable', e => this.onceStableTree(cb));
 		
 		return cb(this.data);
 	}
@@ -1183,7 +1186,7 @@ class Scope extends EventEmitter {
 	 * @returns bool
 	 */
 	isStableTree() {
-		return this._stable && !this._.unStableChilds;
+		return !this._.unStableChilds;
 	}
 	
 	_addChild( ctx ) {
@@ -1271,17 +1274,17 @@ class Scope extends EventEmitter {
 				this._.destroyTM && clearTimeout(this._.destroyTM);
 				this._.destroyTM = setTimeout(
 					e => {
-						//this.then(s => {
-						!this.__retains.all && !this.dead && this.destroy()
-						//});
+						this.then(s => {
+							!this.__retains.all && !this.dead && this.destroy()
+						});
 					},
 					this._.persistenceTm
 				);
 			}
 			else {
-				//this.then(s =>
-				(!this.__retains.all && !this.dead && this.destroy())
-				//);
+				this.then(s =>
+					          (!this.__retains.all && !this.dead && this.destroy())
+				);
 			}
 		}
 	}
@@ -1292,6 +1295,12 @@ class Scope extends EventEmitter {
 	destroy() {
 		let ctx = this._._scope;
 		//console.warn("destroy", this._id);
+		this._getAllChilds().map(scope => scope.destroy())
+		for ( let key in ctx )
+			if ( !is.fn(ctx[key]) ) {
+				if ( key == "$parent" ) continue;
+				!ctx[key]._autoDestroy && ctx[key].dispose("scoped");
+			}
 		this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 		this._.propagTM && clearTimeout(this._.propagTM);
 		Object.keys(
@@ -1304,11 +1313,6 @@ class Scope extends EventEmitter {
 			this._._mixed.shift().dispose("mixedTo");
 		}
 		[...this._.followers].map(follower => this.unBind(...follower));
-		for ( let key in ctx )
-			if ( !is.fn(ctx[key]) ) {
-				if ( key == "$parent" ) continue;
-				!ctx[key]._autoDestroy && ctx[key].dispose("scoped");
-			}
 		if ( this._._parentList ) {
 			this.parent._rmChild(this);
 			this.parent.removeListener(this._._parentList);
@@ -1316,13 +1320,10 @@ class Scope extends EventEmitter {
 			this._._parentList = null;
 		}
 		this.dead = true;
+		delete openScopes[this._id];
 		this.emit("destroy", this);
 		
 		
-		//if ( !this._.isLocalId )
-		delete openScopes[this._id];
-		
-		//this._ = null;
 		
 	}
 }

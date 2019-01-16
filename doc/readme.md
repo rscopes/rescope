@@ -8,7 +8,7 @@ _ this is a draft  wip doc _
 
 ### Related packages
 
-React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
-ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
+React HOCs, decorators & tools : [react-rescope](https://github.com/rScopes/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rScopes/rescope-spells)<br>
 
-### Samples & bootstraps [here](https://github.com/CaipiLabs/rescope-samples)
+### Samples & bootstraps [here](https://github.com/rScopes/rescope-samples)

@@ -1,5 +1,5 @@
 
-<p align="center"><img  width="192" src ="https://github.com/CaipiLabs/rescope/raw/master/doc/assets/logo.svg?sanitize=true" /></p>
+<p align="center"><img  width="192" src ="https://github.com/rScopes/rescope/raw/master/doc/assets/logo.svg?sanitize=true" /></p>
 
 <p align="center" style="font-size:25px"><b>
 
@@ -9,8 +9,8 @@
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
-<p align="center"><a href="https://travis-ci.org/CaipiLabs/rescope">
-<img src="https://travis-ci.org/CaipiLabs/rescope.svg?branch=master" alt="Build Status" /></a>
+<p align="center"><a href="https://travis-ci.org/rScopes/rescope">
+<img src="https://travis-ci.org/rScopes/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>
 <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" />
@@ -20,8 +20,8 @@
 
 ### Related packages
 
-React HOCs, decorators & tools : [react-rescope](https://github.com/CaipiLabs/react-rescope)<br>
-ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/CaipiLabs/rescope-spells)<br>
+React HOCs, decorators & tools : [react-rescope](https://github.com/rScopes/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rScopes/rescope-spells)<br>
 
 ## ReScope What ?
 
@@ -61,7 +61,7 @@ To deal with complex architectures like multi user or complex components systems
 
 ## Why & What else ?
 
-- React "high order components" factories decorators ( [react-rescope](https://github.com/CaipiLabs/react-rescope) )
+- React "high order components" factories decorators ( [react-rescope](https://github.com/rScopes/react-rescope) )
 - Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
 - Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores,
 - Easy pairing of remote / webworker based stores
@@ -84,7 +84,7 @@ About [Scopes](doc/Scope.md)
 
 ### Samples & bootstraps
 
-The examples and bootstrap will come gradually [here](https://github.com/CaipiLabs/rescope-samples)
+The examples and bootstrap will come gradually [here](https://github.com/rScopes/rescope-samples)
 
 ## What's next ?
 

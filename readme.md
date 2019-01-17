@@ -37,6 +37,13 @@ This is where reScope comes in: <br/>
 RS provide a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
 It manage theirs dependencies, theirs scopes, persistence, active instances & much more.
 
+This way all the data components :
+
+- Can be easily tested
+- Only care about theirs specialized task
+- Only use 1 file for theirs initial state, actions & mutations
+- Can have different behaviors basing on theirs scope
+
 ## How ?
 
 By using independent, specialized & serializable "Data Stores" in a Flux oriented architecture.

@@ -719,9 +719,9 @@ class Scope extends EventEmitter {
 				else if ( store && store._rev > storesRevMap[id].rev ) {
 					storesRevMap[id].rev = store._rev;
 					updated              = true;
-					storesRevMap[ id ].refs.forEach(
+					storesRevMap[id].refs.forEach(
 						ref => {
-							output[ ref.alias ] = this.retrieve(ref.path)
+							output[ref.alias] = this.retrieve(ref.path)
 						}
 					)
 				}
@@ -1121,6 +1121,8 @@ class Scope extends EventEmitter {
 		
 		this.__locks.all--;
 		if ( !this.__locks.all ) {
+			if ( this._.stabilizerTM )
+				return;
 			this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
 			
 			this._.stabilizerTM = setTimeout(
@@ -1324,7 +1326,6 @@ class Scope extends EventEmitter {
 		this.dead = true;
 		delete openScopes[this._id];
 		this.emit("destroy", this);
-		
 		
 		
 	}

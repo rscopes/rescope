@@ -416,23 +416,26 @@ class Scope extends EventEmitter {
 		Object.keys(srcCtx)
 		      .forEach(
 			      id => {
+				      let hotReloading;
+				
 				      if ( !force && targetCtx._._scope[id] === srcCtx[id] ||
 					      targetCtx._._scope[id] && (targetCtx._._scope[id].constructor === srcCtx[id]) )
 					      return;
 				
 				      if ( !force && targetCtx._._scope[id] ) {
 					      if ( !external && !is.fn(targetCtx._._scope[id]) ) {
-						      console.info("Rescope Store : ", id, " already exist in this scope ! ( Hot switching the store )");
+						      console.info("Rescope Store : ", id, " already exist in this scope ! ( Hot switching the store ) !!!");
 						      let tmp                = targetCtx._._scope[id];
-						      targetCtx._._scope[id] = targetCtx._._scope[id].constructor;
-						      this._mount(id, null, tmp.state);
+						      targetCtx._._scope[id] = srcCtx[id];
+						      hotReloading           = tmp.state;
+						
 						      tmp.destroy();
 						      //targetCtx._._scope[ id ].__proto__ = tmp.__proto__;
 					      }
 					      if ( !external && is.fn(targetCtx._._scope[id]) )
 						      targetCtx._._scope[id] = srcCtx[id];
 					
-					      return;
+					      //return;
 				      }
 				      else if ( !force && !external )
 					      this._._scope[id] = srcCtx[id];
@@ -492,6 +495,9 @@ class Scope extends EventEmitter {
 						            }
 					            }
 				            )
+				
+				      if ( hotReloading )
+					      this._mount(id, null, hotReloading);
 			      }
 		      )
 	}

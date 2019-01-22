@@ -427,10 +427,8 @@ class Scope extends EventEmitter {
 						      console.info("Rescope Store : ", id, " already exist in this scope ! ( Hot switching the store ) !!!");
 						      let tmp                = targetCtx._._scope[id];
 						      targetCtx._._scope[id] = srcCtx[id];
-						      hotReloading           = tmp.state;
-						
+						      hotReloading           = tmp.nextState;
 						      tmp.destroy();
-						      //targetCtx._._scope[ id ].__proto__ = tmp.__proto__;
 					      }
 					      if ( !external && is.fn(targetCtx._._scope[id]) )
 						      targetCtx._._scope[id] = srcCtx[id];

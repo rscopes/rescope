@@ -20,7 +20,8 @@
 
 ### Related packages
 
-React HOCs, decorators & tools : [react-rescope](https://github.com/rScopes/react-rescope)<br>
+rScopes ( all rescope packages ) : [react-rescope](https://github.com/rScopes/rScopes)<br>
+React HOCs, decorators & tools   : [react-rescope](https://github.com/rScopes/react-rescope)<br>
 ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rScopes/rescope-spells)<br>
 
 ## ReScope What ?
@@ -35,13 +36,13 @@ Of course, that's quickly said, in an application, the data must deal with compl
 
 This is where reScope comes in: <br/>
 RS provide a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
-It manage theirs dependencies, theirs scopes, persistence, active instances & much more.
+It manage theirs dependencies, theirs scopes, sequencing, persistence, active instances & much more.
 
 This way all the data components :
 
-- Can be easily tested
-- Only care about theirs specialized task
 - Only use 1 file for theirs initial state, actions & mutations
+- Only care about theirs specialized task
+- Can be easily & independently tested
 - Can have different behaviors basing on theirs scope
 
 ## How ?

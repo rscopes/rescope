@@ -20,7 +20,7 @@
 
 ### Related packages
 
-rScopes ( all rescope packages ) : [react-rescope](https://github.com/rScopes/rScopes)<br>
+rScopes ( all rescope packages ) : [rScopes](https://github.com/rScopes/rScopes)<br>
 React HOCs, decorators & tools   : [react-rescope](https://github.com/rScopes/react-rescope)<br>
 ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rScopes/rescope-spells)<br>
 

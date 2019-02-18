@@ -304,22 +304,6 @@ class Store extends EventEmitter {
 	}
 	
 	/**
-	 * @depreciated
-	 * @param data
-	 * @param state
-	 * @param changes
-	 * @returns {*}
-	 */
-	refine( data, state, changes ) {
-		state = state || this.state;
-		
-		if ( !data || data.__proto__ !== objProto || state.__proto__ !== objProto )
-			return state;
-		else
-			return { ...data, ...state }
-	}
-	
-	/**
 	 * Debounce this store propagation ( & reducing )
 	 * @param cb
 	 */

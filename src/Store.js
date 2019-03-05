@@ -122,9 +122,10 @@ class Store extends EventEmitter {
 					let ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
 					if ( ref[1] ) {
 						let ref2 = ref[2].split('.');
-						this._require.push(ref[3] || ref2[ref2.length - 1]);
+						this._require.push(ref2[0]);
+						return key.substr(1);
 					}
-					return ref[2];
+					return key;
 				}
 			)];
 		}

@@ -725,6 +725,7 @@ class Scope extends EventEmitter {
 					updated              = true;
 					storesRevMap[id].refs.forEach(
 						ref => {
+							
 							output[ref.alias] = this.retrieve(ref.path)
 						}
 					)

@@ -122,7 +122,7 @@ class Store extends EventEmitter {
 					let ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
 					if ( ref[1] ) {
 						let ref2 = ref[2].split('.');
-						this._require.push(ref2[0]);
+						this._require.push(ref[3] || ref2[ref2.length - 1]);// require check value of the aliased imported value
 						return key.substr(1);
 					}
 					return key;

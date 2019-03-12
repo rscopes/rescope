@@ -123,7 +123,7 @@ class Store extends EventEmitter {
 					if ( ref[1] ) {
 						let ref2 = ref[2].split('.');
 						this._require.push(ref[3] || ref2[ref2.length - 1]);// require check value of the aliased
-						                                                    // imported value
+					                                                        // imported value
 						return key.substr(1);
 					}
 					return key;
@@ -555,6 +555,7 @@ class Store extends EventEmitter {
 		    stateKeys   = Object.keys(this.state),
 		    stateRefs   = stateKeys.map(k => this.state[k]),
 		    inRefsCount = 0,
+		    dataRefs    = cfg.dataRefs || {},
 		    inRefs      =
 			    !cfg.norefs && (Object.keys(this.data).reduce(
 			    ( map, key ) => {
@@ -565,18 +566,28 @@ class Store extends EventEmitter {
 			    }, {}
 			    )),
 		    snap        = {
-			    state: this.state &&
+			    dataRefs: cfg.dataRefs,
+			    state   : this.state &&
 				    (
 					    cfg.norefs
 					    ? { ...this.state }
 					    : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
 				    ),
-			    data : (
+			    data    : (
 					    this.data &&
 					    this.data.__proto__ === objProto ?
-					    inRefs && Object.keys(this.data)
-					                    .reduce(
-						                    ( h, k ) => (!inRefs[k] && (h[k] = this.data[k]), h), {})
+					    Object
+						    .keys(this.data)
+						    .reduce(
+							    ( h, k ) => {
+								    if ( !inRefs[k] && !dataRefs[k] ) {
+									    h[k] = this.data[k];
+									    inRefsCount++;
+								    }
+								    return h
+							    },
+							    {}
+						    )
 						    || { ...this.data }
 					                                     :
 					    (is.bool(this.data)
@@ -635,6 +646,11 @@ class Store extends EventEmitter {
 						this.data[key] = this.state[snapshot.inRefs[key]];
 						//else
 						//    console.warn('not found : ', key, snap && snap.refs[ key ])
+					}
+				)
+				snapshot.dataRefs && Object.keys(snapshot.dataRefs).forEach(
+					( key ) => {//todo
+						this.data[key] = this.$scope.retrieve(snapshot.dataRefs);
 					}
 				)
 			}

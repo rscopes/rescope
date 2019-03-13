@@ -588,7 +588,6 @@ class Store extends EventEmitter {
 							    },
 							    {}
 						    )
-						    || { ...this.data }
 					                                     :
 					    (is.bool(this.data)
 						    || is.number(this.data)
@@ -627,8 +626,8 @@ class Store extends EventEmitter {
 		
 		if ( snapshot ) {
 			if ( !this.isStable() && !immediate )
-				this.then(() => restore(snapshot))
-			let snap;
+				this.then(() => restore(snapshot));
+			
 			this.state = { ...snapshot.state };
 			snapshot.refs && Object.keys(snapshot.refs).forEach(
 				( key ) => {//todo

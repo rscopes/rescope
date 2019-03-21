@@ -552,12 +552,13 @@ class Store extends EventEmitter {
 				    return map;
 			    }, {}
 			    ),
-		    stateKeys   = Object.keys(this.state),
-		    stateRefs   = stateKeys.map(k => this.state[k]),
+		    state       = this.state || {},
+		    stateKeys   = Object.keys(state) || [],
+		    stateRefs   = stateKeys.map(k => state[k]),
 		    inRefsCount = 0,
 		    dataRefs    = cfg.dataRefs || {},
 		    inRefs      =
-			    !cfg.norefs && (Object.keys(this.data).reduce(
+			    !cfg.norefs && this.data && (Object.keys(this.data).reduce(
 			    ( map, key ) => {
 				    let ref = stateRefs.indexOf(this.data[key])
 				    if ( ref != -1 )
@@ -566,12 +567,13 @@ class Store extends EventEmitter {
 			    }, {}
 			    )),
 		    snap        = {
+			    unStable: !this._stable,
 			    dataRefs: cfg.dataRefs,
-			    state   : this.state &&
+			    state   : state &&
 				    (
 					    cfg.norefs
-					    ? { ...this.state }
-					    : Object.keys(this.state).reduce(( h, k ) => (!refs[k] && (h[k] = this.state[k]), h), {})
+					    ? { ...state }
+					    : Object.keys(state).reduce(( h, k ) => (!refs[k] && (h[k] = state[k]), h), {})
 				    ),
 			    data    : (
 					    this.data &&

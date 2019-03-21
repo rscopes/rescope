@@ -243,6 +243,10 @@ class Store extends EventEmitter {
 		return true;
 	}
 	
+	shouldSerialize() {
+		return true;
+	}
+	
 	hasDataChange( nDatas ) {
 		var _static = this.constructor, r,
 		    cDatas  = this.data;
@@ -539,71 +543,84 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	serialize( cfg = {}, output = {} ) {
-		let sId         = cfg.parentAlias || this.scopeObj._id,
+		
+		let sId        = cfg.parentAlias || this.scopeObj._id,
 		    refsCount   = 0,
-		    refs        =
+		    refs       =
 			    !cfg.norefs && is.array(this._use) && this._use.reduce(
 			    ( map, key ) => {
 				    let ref   = this.$scope.parseRef(key),
 				        store = this.$stores[ref.storeId];
-				    if ( store && is.rsStore(store) && !store.scopeObj._.isLocalId )
+				    if ( store && Store.isStore(store) && !store.scopeObj._.isLocalId )
 					    refsCount++, map[ref.alias] = ref.path;
 				
 				    return map;
 			    }, {}
 			    ),
-		    state       = this.state || {},
-		    stateKeys   = Object.keys(state) || [],
-		    stateRefs   = stateKeys.map(k => state[k]),
-		    inRefsCount = 0,
-		    dataRefs    = cfg.dataRefs || {},
-		    inRefs      =
-			    !cfg.norefs && this.data && (Object.keys(this.data).reduce(
-			    ( map, key ) => {
-				    let ref = stateRefs.indexOf(this.data[key])
-				    if ( ref != -1 )
-					    inRefsCount++, map[key] = stateKeys[ref];
-				    return map;
-			    }, {}
-			    )),
-		    snap        = {
-			    unStable: !this._stable,
-			    dataRefs: cfg.dataRefs,
-			    state   : state &&
-				    (
-					    cfg.norefs
-					    ? { ...state }
-					    : Object.keys(state).reduce(( h, k ) => (!refs[k] && (h[k] = state[k]), h), {})
-				    ),
-			    data    : (
-					    this.data &&
-					    this.data.__proto__ === objProto ?
-					    Object
-						    .keys(this.data)
-						    .reduce(
-							    ( h, k ) => {
-								    if ( !inRefs[k] && !dataRefs[k] ) {
-									    h[k] = this.data[k];
-									    inRefsCount++;
-								    }
-								    return h
-							    },
-							    {}
-						    )
-					                                     :
-					    (is.bool(this.data)
-						    || is.number(this.data)
-						    || is.string(this.data)) && this.data
-				    )
-				    || undefined
-			
-		    };
+		    state      = this.state || {},
+		    persistent = this.shouldSerialize();
+		
+		if ( !persistent ) {
+			keyWalknSet(
+				output,
+				(sId + '/' + this.name),
+				{
+					dataRefs: cfg.dataRefs,
+					refs
+				}
+			);
+			return output;
+		}
+		
+		let
+			stateKeys   = Object.keys(state) || [],
+			stateRefs   = stateKeys.map(k => state[k]),
+			inRefsCount = 0,
+			dataRefs    = cfg.dataRefs || {},
+			inRefs      =
+				!cfg.norefs && this.data && (Object.keys(this.data).reduce(
+				( map, key ) => {
+					let ref = stateRefs.indexOf(this.data[key])
+					if ( ref != -1 )
+						inRefsCount++, map[key] = stateKeys[ref];
+					return map;
+				}, {}
+				)),
+			snap        = {
+				dataRefs: cfg.dataRefs,
+				state   : state &&
+					(
+						cfg.norefs
+						? { ...state }
+						: Object.keys(state).reduce(( h, k ) => (!refs[k] && (h[k] = state[k]), h), {})
+					),
+				data    : (
+						this.data &&
+						this.data.__proto__ === objProto ?
+						Object
+							.keys(this.data)
+							.reduce(
+								( h, k ) => {
+									if ( !inRefs[k] && !dataRefs[k] ) {
+										h[k] = this.data[k];
+										inRefsCount++;
+									}
+									return h
+								},
+								{}
+							)
+						                                 :
+						(is.bool(this.data)
+							|| is.number(this.data)
+							|| is.string(this.data)) && this.data
+					)
+					|| undefined
+				
+			};
 		
 		refs && refsCount && (snap.refs = refs);
 		inRefs && inRefsCount && (
-			snap.inRefs = stateKeys.length === inRefsCount
-			              ? true
-			              : inRefs);
+			snap.inRefs = inRefs);
 		
 		
 		keyWalknSet(
@@ -627,6 +644,7 @@ class Store extends EventEmitter {
 			return;
 		
 		if ( snapshot ) {
+			
 			if ( !this.isStable() && !immediate )
 				this.then(() => restore(snapshot));
 			
@@ -638,8 +656,9 @@ class Store extends EventEmitter {
 			)
 			
 			
-			if ( snapshot.inRefs === true )
-				this.data = this.state;
+			if ( snapshot.inRefs === true ) {
+				this.data = { ...this.state };
+			}
 			else {
 				this.data = snapshot.data;
 				snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(
@@ -649,12 +668,13 @@ class Store extends EventEmitter {
 						//    console.warn('not found : ', key, snap && snap.refs[ key ])
 					}
 				)
-				snapshot.dataRefs && Object.keys(snapshot.dataRefs).forEach(
-					( key ) => {//todo
-						this.data[key] = this.$scope.retrieve(snapshot.dataRefs);
-					}
-				)
 			}
+			snapshot.dataRefs && Object.keys(snapshot.dataRefs).forEach(
+				( key ) => {//todo
+					this.$scope.restoreRefPath(snapshot.dataRefs[key]);
+					this.data[key] = this.$scope.retrieve(snapshot.dataRefs[key]);
+				}
+			)
 			
 			
 		}
@@ -920,8 +940,8 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 				console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (cStore.name || cStore) + ' !!', store, _key, scope.stores, i);
 				return false;
 			}
-			if ( is.rsScopeClass(store) ) scope._mount(name);
-			if ( is.rsScope(store) ) {
+			if ( Scope.isScopeClass(store) ) scope._mount(name);
+			if ( Scope.isScope(store) ) {
 				store = scope._mount(key);
 			}
 			else if ( targetRevs[name] ) return false;// ignore dbl uses for now
@@ -978,10 +998,10 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 };
 
 
-is.rsStore      = function ( obj ) {
+Store.isStore      = Scope.isStore = function ( obj ) {
 	return obj instanceof Store
 }
-is.rsStoreClass = function ( obj ) {
+Store.isStoreClass = Scope.isStoreClass = function ( obj ) {
 	return Store.isPrototypeOf(obj) || obj === Store
 }
 

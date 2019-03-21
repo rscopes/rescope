@@ -267,7 +267,7 @@ class Scope extends EventEmitter {
 		}
 		else {
 			let store = this._._scope[ref.storeId], taskQueue = [];
-			if ( is.rsStoreClass(store) ) {
+			if ( Scope.isStoreClass(store) ) {
 				this._._scope[ref.storeId] = new store(this, {
 					//snapshot,
 					name: ref.storeId,
@@ -276,7 +276,7 @@ class Scope extends EventEmitter {
 				}, taskQueue);
 				while ( taskQueue.length ) taskQueue.shift()();
 			}
-			else if ( is.rsScopeClass(store) ) {
+			else if ( Scope.isScopeClass(store) ) {
 				store = this._._scope[ref.storeId] = new store({ $parent: this }, {
 					key        : ref.storeId,
 					incrementId: true,
@@ -290,7 +290,7 @@ class Scope extends EventEmitter {
 					this._._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data)
 				//else return this._._scope[ ref.storeId ];
 			}
-			if ( is.rsStore(store) ) {
+			if ( Scope.isStore(store) ) {
 				if ( state !== undefined && data === undefined )
 					store.setState(state);
 				else if ( state !== undefined )
@@ -308,7 +308,7 @@ class Scope extends EventEmitter {
 	
 	_watchStore( id, state, data ) {
 		if ( !this._._listening[id] && !is.fn(this._._scope[id]) ) {
-			//if ( is.rsStore(this._._scope[ id ]) ) {
+			//if ( Scope.isStore(this._._scope[ id ]) ) {
 			!this._._scope[id]._autoDestroy && this._._scope[id].retain("scoped");
 			!this._._scope[id].isStable() && this.wait(id);
 			this._._scope[id].on(
@@ -473,12 +473,12 @@ class Scope extends EventEmitter {
 				                          ? srcCtx[id].constructor.actions
 				                          : srcCtx[id].actions,
 				          activeActions = targetCtx._.actions.prototype;
-				      if ( is.rsScope(this._._scope[id].prototype) )
+				      if ( Scope.isScope(this._._scope[id].prototype) )
 					      this._mount(id);
-				      if ( is.rsScope(this._._scope[id]) ) {
+				      if ( Scope.isScope(this._._scope[id]) ) {
 					      activeActions[id] = this._._scope[id].actions;
 				      }
-				      if ( !is.rsStore(this._._scope[id]) && !is.rsStoreClass(this._._scope[id]) )
+				      if ( !Scope.isStore(this._._scope[id]) && !Scope.isStoreClass(this._._scope[id]) )
 					      return;
 				
 				      actions &&
@@ -623,10 +623,46 @@ class Scope extends EventEmitter {
 	 */
 	retrieve( path = "" ) {
 		path = is.string(path) ? path.split('.') : path;
+		
+		
 		return path &&
 			this.stores[path[0]] &&
 			this.stores[path[0]].retrieve &&
 			this.stores[path[0]].retrieve(path.slice(1));
+	}
+	
+	/**
+	 * Get current data value from json path
+	 * @param path
+	 * @returns {string|*}
+	 */
+	restoreRefPath( path = "" ) {
+		path = is.string(path) ? path.split('.') : path;
+		
+		let obj, i = 0, cScope = this;
+		
+		while ( i < path.length ) {
+			obj = cScope.stores[path[i]];
+			if ( Scope.isScopeClass(obj)
+				||
+				Scope.isStoreClass(obj) ) {
+				cScope.mount(path[0]);
+				obj = cScope.stores[path[i]];
+			}
+			
+			if ( Scope.isScope(obj) ) {
+				cScope = obj;
+				i++;
+			}
+			else if ( Scope.isStore(obj) ) {
+				obj.restore();
+				break;
+			}
+			else {
+				break;
+			}
+		}
+		
 	}
 	
 	/**
@@ -820,7 +856,7 @@ class Scope extends EventEmitter {
 		
 		Object.keys(ctx).forEach(
 			id => {
-				if ( exclude.includes(id) || is.rsStoreClass(ctx[id]) || is.rsScopeClass(ctx[id]) )
+				if ( exclude.includes(id) || Scope.isStoreClass(ctx[id]) || Scope.isScopeClass(ctx[id]) )
 					return;
 				
 				ctx[id].serialize({ ...cfg, parentAlias: sid }, output);
@@ -1337,11 +1373,11 @@ class Scope extends EventEmitter {
 }
 
 
-is.rsScope = function ( obj ) {
+Scope.isScope = function ( obj ) {
 	return obj instanceof Scope
 }
 
-is.rsScopeClass = function ( obj ) {
+Scope.isScopeClass = function ( obj ) {
 	return Scope.isPrototypeOf(obj) || obj === Scope
 }
 export default Scope;

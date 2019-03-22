@@ -669,12 +669,15 @@ class Store extends EventEmitter {
 					}
 				)
 			}
-			snapshot.dataRefs && Object.keys(snapshot.dataRefs).forEach(
-				( key ) => {//todo
-					this.$scope.restoreRefPath(snapshot.dataRefs[key]);
-					this.data[key] = this.$scope.retrieve(snapshot.dataRefs[key]);
-				}
-			)
+			if ( snapshot.dataRefs ) {
+				this.data = this.data || {};
+				Object.keys(snapshot.dataRefs).forEach(
+					( key ) => {//todo
+						this.$scope.restoreRefPath(snapshot.dataRefs[key]);
+						this.data[key] = this.$scope.retrieve(snapshot.dataRefs[key]);
+					}
+				)
+			}
 			
 			
 		}

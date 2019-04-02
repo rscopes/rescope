@@ -5,7 +5,7 @@
   "repository": "https://github.com/n8tz/rescope.git",
   "main": "./etc/npm/index.js",
   "license": "MIT",
-  "author": "Nathan Braun <caipilabs@gmail.com>",
+  "author": "Nathan Braun <n8tz.js@gmail.com>",
   "wpInherit": {
     "default": {
       "rootFolder": "src",

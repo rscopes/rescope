@@ -14,7 +14,7 @@
 
 import is                                             from "is";
 import shortid                                        from "shortid";
-import EventEmitter                                   from "EventEmitter";
+import EventEmitter                                   from "./utils/Emitter";
 import {walknSet, walknGet, keyWalknSet, keyWalknGet} from './utils/utils';
 
 const __proto__push     = ( target, id, parent ) => {

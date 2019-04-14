@@ -1,37 +1,24 @@
 /*
- * Copyright (c)  2018 Wise Wild Web .
+ * The MIT License (MIT)
+ * Copyright (c) 2019. Wise Wild Web
  *
- *  MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  *
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- *
- * @author : Nathanael Braun
- * @contact : caipilabs@gmail.com
+ *  @author : Nathanael Braun
+ *  @contact : n8tz.js@gmail.com
  */
 
-var is                           = require('./utils/is'),
-    Scope                        = require('./Scope'),
-    { keyWalknSet, keyWalknGet } = require('./utils/utils'),
-    EventEmitter                 = require('./utils/Emitter'),
-    TaskSequencer                = require('./utils/TaskSequencer'),
-    shortid                      = require('shortid'),
-    objProto                     = Object.getPrototypeOf({});
+const is                           = require('./utils/is'),
+      Scope                        = require('./Scope'),
+      { keyWalknSet, keyWalknGet } = require('./utils/utils'),
+      EventEmitter                 = require('./utils/Emitter'),
+      TaskSequencer                = require('./utils/TaskSequencer'),
+      shortid                      = require('shortid'),
+      objProto                     = Object.getPrototypeOf({});
 
 class Store extends EventEmitter {
 	//static use                  = [];// overridable list of source stores
@@ -61,7 +48,7 @@ class Store extends EventEmitter {
 	 */
 	constructor() {
 		super();
-		var argz         = [...arguments],
+		let argz         = [...arguments],
 		    _static      = this.constructor,
 		    scope        = argz[0] instanceof Scope
 		                   ? argz.shift()
@@ -76,8 +63,7 @@ class Store extends EventEmitter {
 		    name         = cfg.name || _static.name,
 		    watchs       = cfg.use || [],
 		    apply        = cfg.apply || null,
-		    initialState = _static.state || _static.initialState || _static.defaultState,
-		    applied;
+		    initialState = _static.state || _static.initialState || _static.defaultState;
 		
 		this._uid = cfg._uid || shortid.generate();
 		
@@ -89,6 +75,7 @@ class Store extends EventEmitter {
 		this._autoDestroy   = !!this._persistenceTm;
 		this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
 		this._cfg           = cfg;
+		
 		if ( cfg && cfg.on ) {
 			this.on(cfg.on);
 		}
@@ -116,6 +103,7 @@ class Store extends EventEmitter {
 		this._require = [];
 		this._sources = [name];
 		
+		// register source stores
 		if ( is.array(_static.use) ) {
 			this._use = [...watchs, ...(_static.use || []).map(
 				key => {
@@ -153,6 +141,7 @@ class Store extends EventEmitter {
 		this._followers = [];
 		this._changesSW = initialState || {};
 		this.state      = initialState && {};
+		
 		if ( apply )
 			this.apply = apply;
 		
@@ -243,6 +232,11 @@ class Store extends EventEmitter {
 		return true;
 	}
 	
+	/**
+	 * Overridable method to choose if this store should be serialized,
+	 * If not it will be applied normally when restoring
+	 * @returns {boolean}
+	 */
 	shouldSerialize() {
 		return true;
 	}
@@ -393,7 +387,6 @@ class Store extends EventEmitter {
 	 * Call the apply fn using the current accumulated state update then, push the
 	 * resulting data if stable
 	 * @param force
-	 * @returns {boolean}
 	 */
 	pushState( force ) {
 		
@@ -893,6 +886,7 @@ Store.as = function ( name ) {
 }
 
 /**
+ * @todo
  * Map all named stores in {keys} to the {object}'s state
  * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
  * @static
@@ -901,9 +895,9 @@ Store.as = function ( name ) {
  *     store.as('anotherKey')]
  */
 Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
-	var targetRevs     = cStore._revs || {};
-	var targetScope    = cStore.stores || (cStore.stores = {});
-	var initialOutputs = {};
+	let targetRevs     = cStore._revs || {};
+	let targetScope    = cStore.stores || (cStore.stores = {});
+	let initialOutputs = {};
 	keys               = is.array(keys) ? [...keys] : [keys];
 	
 	
@@ -938,7 +932,7 @@ Store.map = function ( cStore, keys, scope, origin, setInitial = false ) {
 			}
 			if ( !store ) {
 				let i = [];
-				for ( var o in scope.stores )
+				for ( let o in scope.stores )
 					i.push(o)
 				console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (cStore.name || cStore) + ' !!', store, _key, scope.stores, i);
 				return false;

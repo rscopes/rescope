@@ -437,8 +437,8 @@ class Store extends EventEmitter {
 				) || pState.hasOwnProperty(k)
 				&& (
 					pState[k] !== this.state[k]
-					||
-					(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+					//||
+					//(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
 				) ) {
 				change        = true;
 				this._revs[k] = pState[k] && pState[k]._rev || true;

@@ -23,7 +23,6 @@ export default class Emitter {
 		
 		this._events[evt] = this._events[evt] || [];
 		this._events[evt].push(cb);
-		
 	}
 	
 	un( evt, cb ) {
@@ -31,7 +30,7 @@ export default class Emitter {
 			return Object.keys(evt).forEach(k => this.un(k, evt[k]));
 		
 		if ( !this._events[evt] ) return;
-		var i = this._events[evt].indexOf(cb);
+		let i = this._events[evt].indexOf(cb);
 		this._events[evt].splice(i, 1);
 	}
 	
@@ -39,7 +38,7 @@ export default class Emitter {
 		if ( !this._events[evt] ) return;
 		let lists = [...this._events[evt]];
 		
-		for ( var i = 0; i < lists.length; i++ )
+		for ( let i = 0; i < lists.length; i++ )
 			lists[i](...argz)
 	}
 	

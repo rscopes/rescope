@@ -15,8 +15,7 @@
 import is from "is";
 
 /**
- * Minimal push sequencer, apply stores specific task in the right order (root stores
- * first)
+ * Minimal push sequencer, apply stores specific task in the right order
  */
 let taskQueue      = [],
     curWeight      = 0,

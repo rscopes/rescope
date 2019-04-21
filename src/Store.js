@@ -12,7 +12,7 @@
  *  @contact : n8tz.js@gmail.com
  */
 
-const is                           = require('./utils/is'),
+const is                           = require('is'),
       Scope                        = require('./Scope'),
       { keyWalknSet, keyWalknGet } = require('./utils/utils'),
       EventEmitter                 = require('./utils/Emitter'),
@@ -242,7 +242,7 @@ class Store extends EventEmitter {
 	}
 	
 	hasDataChange( nDatas ) {
-		var _static = this.constructor, r,
+		let _static = this.constructor, r,
 		    cDatas  = this.data;
 		r           = !cDatas && nDatas || cDatas !== nDatas;
 		!r && cDatas && Object.keys(cDatas).forEach(
@@ -266,7 +266,7 @@ class Store extends EventEmitter {
 	 * Overridable method to know if a state change should be applied
 	 */
 	shouldApply( state = this.state ) {
-		var _static = this.constructor;
+		let _static = this.constructor;
 		
 		return (
 			!!this.isComplete(state)
@@ -294,9 +294,6 @@ class Store extends EventEmitter {
 	apply( data, state, changes ) {
 		state = state || this.state;
 		
-		if ( this.refine )
-			return this.refine(...arguments);
-		
 		if ( !data || data.__proto__ !== objProto || state.__proto__ !== objProto )
 			return state;
 		else
@@ -319,6 +316,13 @@ class Store extends EventEmitter {
 		this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
 	}
 	
+	/**
+	 * Walk n get
+	 * @param path
+	 * @param i
+	 * @param obj
+	 * @returns {*|{}}
+	 */
 	retrieve( path, i = 0, obj = this.data ) {
 		path = is.string(path) ? path.split('.') : path;
 		return !obj || !path || !path.length
@@ -338,21 +342,6 @@ class Store extends EventEmitter {
 			let ns = actions[action].call(this, ...argz);
 			ns && this.setState(ns);
 		}
-	}
-	
-	/**
-	 * Pull stores in the private state
-	 * @param stores  {Array} (passed to Store::map) Ex : ["session",
-	 *     "otherNamedStore:key", otherStore.as("otherKey")]
-	 */
-	pull( stores, doWait, origin ) {
-		let initialOutputs = this.scopeObj.map(this, stores);
-		if ( doWait ) {
-			this.wait();
-			stores.forEach(( s ) => this.scope[s] && this.wait(this.scope[s]));
-			this.release();
-		}
-		return initialOutputs;
 	}
 	
 	/**
@@ -393,7 +382,7 @@ class Store extends EventEmitter {
 		if ( !force && !this._changesSW && this.data )
 			return;
 		
-		var nextState = this._nextState || { ...this.state, ...(this._changesSW || {}) },
+		let nextState = this._nextState || { ...this.state, ...(this._changesSW || {}) },
 		    nextData  = this.apply(this.data, nextState, this._changesSW);
 		
 		this._stabilizer = null;
@@ -427,9 +416,9 @@ class Store extends EventEmitter {
 	 * @param cb
 	 */
 	setState( pState, cb, sync ) {
-		var i       = 0, change,
+		let i       = 0, change,
 		    changes = this._changesSW = this._changesSW || {};
-		for ( var k in pState )
+		for ( let k in pState )
 			if ( !this.state
 				|| changes.hasOwnProperty(k)// todo
 				&& (
@@ -469,12 +458,12 @@ class Store extends EventEmitter {
 	 * @param cb
 	 */
 	setStateSync( pState ) {
-		var i       = 0, change,
+		let i       = 0, change,
 		    changes = this._changesSW = this._changesSW || {};
-		for ( var k in pState )
+		for ( let k in pState )
 			if ( !this.state || pState.hasOwnProperty(k)
 				&& (
-					pState[k] != this.state[k]
+					pState[k] !== this.state[k]
 					||
 					(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
 				) ) {
@@ -512,7 +501,6 @@ class Store extends EventEmitter {
 	 * @returns bool
 	 */
 	isComplete( state = this.state ) {
-		var _static = this.constructor;
 		return (
 			!this._require
 			|| !this._require.length
@@ -677,20 +665,6 @@ class Store extends EventEmitter {
 	}
 	
 	/**
-	 * Un bind this store off the given component-key
-	 * @param obj
-	 * @param key
-	 * @returns {Array.<*>}
-	 */
-	unBind( obj, key, path ) {
-		var followers = this._followers,
-		    i         = followers && followers.length;
-		while ( followers && i-- )
-			if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
-				return followers.splice(i, 1);
-	}
-	
-	/**
 	 * Bind this store changes to the given component-key
 	 * @param obj {React.Component|Store|function)
 	 * @param key {string} optional key where to map the public state
@@ -708,6 +682,21 @@ class Store extends EventEmitter {
 			}
 		}
 	}
+	
+	/**
+	 * Un bind this store off the given component-key
+	 * @param obj
+	 * @param key
+	 * @returns {Array.<*>}
+	 */
+	unBind( obj, key, path ) {
+		let followers = this._followers,
+		    i         = followers && followers.length;
+		while ( followers && i-- )
+			if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
+				return followers.splice(i, 1);
+	}
+	
 	
 	/**
 	 * once('stable', cb)
@@ -755,7 +744,7 @@ class Store extends EventEmitter {
 	 * @returns {*}
 	 */
 	release( reason, cb ) {
-		var _static = this.constructor, me = this;
+		let _static = this.constructor, me = this;
 		let i       = 0, wasStable = this._stable;
 		
 		if ( is.fn(reason) ) {

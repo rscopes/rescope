@@ -96,9 +96,9 @@ The examples and bootstrap will come gradually [here](https://github.com/rScopes
 
 ## What's next ?
 
-- Optimize
+- Optimize / flatenize js
 - Many more tests
-- Allow store dependencies thats are not defined yet
+- Allow, not defined yet, store dependencies 
 - Cosmetics rewrites & more comments
 - Possibly some semantic/normalisation updates
 

@@ -14,9 +14,8 @@
 
 let $global = (typeof window !== 'undefined') ? window : global;
 
-import Scope                                    from "./Scope";
-import Store                                    from "./Store";
-import {addScopableType, reScope, scopeToState} from "./utils/scopable";
+import Scope from "./Scope";
+import Store from "./Store";
 
 const RS = $global.___rescope || {};
 
@@ -29,12 +28,7 @@ else {
 	Scope.Store        = Store;
 	//RS.console         = console;
 	RS.Scope           = Scope;
-	RS.Context         = Scope;
 	RS.Store           = Store;
-	RS.reScope         = reScope;
-	RS.scopeToState    = scopeToState;
-	RS.reScopeState    = scopeToState;
-	RS.addScopableType = addScopableType;
 	RS.scopeRef        =
 		function scopeRef( map, key ) {
 			map[key] = new Scope.scopeRef(map[key]);

@@ -461,12 +461,17 @@ class Scope extends EventEmitter {
 	 * @param targetCtx
 	 */
 	mixin( targetCtx ) {
-		let parent = this.parent, lists, _ = this._;
+		let parent = this.parent,
+		    lists,
+		    _      = this._;
 		
-		_._mixed.push(targetCtx)
+		_._mixed.push(targetCtx);
+		
 		targetCtx.retain("mixedTo");
+		
 		if ( !targetCtx._stable )
 			this.wait(targetCtx._id);
+		
 		_._mixedList.push(lists = {
 			'stable'  : s => this.release(targetCtx._id),
 			'unstable': s => this.wait(targetCtx._id),

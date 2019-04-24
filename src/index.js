@@ -26,7 +26,6 @@ else {
 	
 	$global.___rescope = RS;
 	Scope.Store        = Store;
-	//RS.console         = console;
 	RS.Scope           = Scope;
 	RS.Store           = Store;
 	RS.scopeRef        =

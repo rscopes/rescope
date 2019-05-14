@@ -430,7 +430,7 @@ class Store extends EventEmitter {
 					//(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
 				) ) {
 				change        = true;
-				this._revs[k] = pState[k] && pState[k]._rev || true;
+				//this._revs[k] = pState[k] && pState[k]._rev || true;
 				changes[k]    = pState[k];
 			}
 		
@@ -464,8 +464,8 @@ class Store extends EventEmitter {
 			if ( !this.state || pState.hasOwnProperty(k)
 				&& (
 					pState[k] !== this.state[k]
-					||
-					(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+					//||
+					//(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
 				) ) {
 				change        = true;
 				this._revs[k] = pState[k] && pState[k]._rev || true;

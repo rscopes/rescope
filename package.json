@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "4.3.11",
+  "version": "4.3.12",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/n8tz/rescope.git",
   "main": "./etc/npm/index.js",

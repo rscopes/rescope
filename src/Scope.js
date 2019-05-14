@@ -891,7 +891,7 @@ class Scope extends EventEmitter {
 			output = Object.keys(output)
 			               .reduce(
 				               ( h, k ) => (
-					               h[k === _id
+					               h[k === this._id
 					                 ? alias
 					                 : k] = output[k],
 						               h

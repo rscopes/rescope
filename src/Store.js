@@ -162,7 +162,7 @@ class Store extends EventEmitter {
 	 * @returns {{}|*}
 	 */
 	get nextState() {
-		return this._changesSW && { ...this.state, ...this._changesSW } || this.state;
+		return this._nextState || this.state;
 	}
 	
 	_afterConstructor() {
@@ -186,17 +186,17 @@ class Store extends EventEmitter {
 			
 			if ( this.data === undefined ) {
 				if ( initialState || this._use.length ) {// sync apply
-					this._changesSW = {
+					this._nextState = this._changesSW = {
 						...this._changesSW,
 						...(initialState || {}),
 						...this.$scope.map(this, this._use)
 					};
 					this.state      = {};
-					if ( this.shouldApply(this._changesSW) && this.data === undefined ) {
-						this.data       = this.apply(this.data, this._changesSW, this._changesSW);
+					if ( this.shouldApply(this._nextState) && this.data === undefined ) {
+						this.data       = this.apply(this.data, this._nextState, this._changesSW);
 						applied         = true;
 						this.state      = this._changesSW;
-						this._changesSW = {};
+						this._nextState = this._changesSW = null;
 					}
 				}
 			}
@@ -206,8 +206,8 @@ class Store extends EventEmitter {
 					...this._changesSW,
 					...(initialState || {}),
 					...this.$scope.map(this, this._use)
-				}
-				this._changesSW = {};
+				};
+				this._nextState = this._changesSW = null;
 			}
 		}
 		if ( (this.data !== undefined || applied) && !this.__locks.all ) {
@@ -292,12 +292,7 @@ class Store extends EventEmitter {
 	 * @returns {*}
 	 */
 	apply( data, state, changes ) {
-		state = state || this.state;
-		
-		if ( !data || data.__proto__ !== objProto || state.__proto__ !== objProto )
-			return state;
-		else
-			return { ...data, ...state }
+		return state;
 	}
 	
 	/**
@@ -375,21 +370,25 @@ class Store extends EventEmitter {
 	/**
 	 * Call the apply fn using the current accumulated state update then, push the
 	 * resulting data if stable
-	 * @param force
+	 * @param forcedState
 	 */
-	pushState( force ) {
-		
-		if ( !force && !this._changesSW && this.data )
+	pushState( forcedState ) {
+		if ( !forcedState && !this._changesSW && this.data )
 			return;
 		
-		let nextState = this._nextState || { ...this.state, ...(this._changesSW || {}) },
-		    nextData  = this.apply(this.data, nextState, this._changesSW);
+		let nextState = forcedState || this._nextState || this.state,
+		    nextData;
+		Object.keys(nextState).forEach(
+			key => (nextState[key] === undefined && (delete nextState[key]))
+		);
+		nextData = this.apply(this.data, nextState, this._changesSW);
 		
 		this._stabilizer = null;
 		this.state       = nextState;
+		this._nextState  = null;
 		this._changesSW  = null;
 		
-		if ( !force &&
+		if ( !forcedState &&
 			(
 				!this.hasDataChange(nextData)
 			)
@@ -406,7 +405,6 @@ class Store extends EventEmitter {
 		this.data = nextData;
 		this.wait();
 		this.release();
-		
 	}
 	
 	/**
@@ -416,26 +414,24 @@ class Store extends EventEmitter {
 	 * @param cb
 	 */
 	setState( pState, cb, sync ) {
-		let i       = 0, change,
-		    changes = this._changesSW = this._changesSW || {};
-		for ( let k in pState )
+		let change,
+		    changes   = this._changesSW = this._changesSW || {},
+		    nextState = this._nextState = this._nextState || { ...this.state },
+		    key;
+		for ( key in pState )
 			if ( !this.state
-				|| changes.hasOwnProperty(k)// todo
+				|| changes.hasOwnProperty(key)// todo
 				&& (
-					pState[k] !== changes[k]
-				) || pState.hasOwnProperty(k)
+					pState[key] !== changes[key]
+				) || pState.hasOwnProperty(key)
 				&& (
-					pState[k] !== this.state[k]
-					//||
-					//(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+					pState[key] !== this.state[key]
 				) ) {
-				change        = true;
-				//this._revs[k] = pState[k] && pState[k]._rev || true;
-				changes[k]    = pState[k];
+				change         = true;
+				nextState[key] = changes[key] = pState[key];
 			}
 		
-		this._nextState = { ...this.state, ...changes };
-		if ( !this.shouldApply(this._nextState) ) {
+		if ( !this.shouldApply(nextState) ) {
 			return;
 		}
 		
@@ -696,7 +692,6 @@ class Store extends EventEmitter {
 			if ( followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path )
 				return followers.splice(i, 1);
 	}
-	
 	
 	/**
 	 * once('stable', cb)

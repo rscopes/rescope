@@ -283,6 +283,10 @@ class Scope extends EventEmitter {
 				if ( data !== undefined )
 					store.push(data);
 			}
+			if ( Scope.isScope(store) ) {
+				if ( state !== undefined )
+					store.setState(state);
+			}
 			this._watchStore(ref.storeId);
 		}
 		
@@ -334,7 +338,7 @@ class Scope extends EventEmitter {
 		Object.keys(srcCtx)
 		      .forEach(
 			      id => {
-				      let hotReloading;
+				      let hotReloading, actions, activeActions;
 				
 				      // same store def : ignore
 				      if ( !force && targetCtx._._scope[id] === srcCtx[id] ||
@@ -371,57 +375,61 @@ class Scope extends EventEmitter {
 					      }
 				      );
 				
+				      activeActions = targetCtx._.actions.prototype;
 				      // not mapping hierarchic scopes
-				      if ( id === "$parent" ) return;
-				
-				      // map state & data
-				      Object.defineProperty(
-					      targetCtx._.state.prototype,
-					      id,
-					      {
-						      enumerable  : true,
-						      configurable: true,
-						      get         : () => (_._scope[id] && _._scope[id].state),
-						      set         : ( v ) => (this._mount(id, undefined, v))
+				      if ( id !== "$parent" ) {
+					      // map state & data
+					      Object.defineProperty(
+						      targetCtx._.state.prototype,
+						      id,
+						      {
+							      enumerable  : true,
+							      configurable: true,
+							      get         : () => (_._scope[id] && _._scope[id].state),
+							      set         : ( v ) => (this._mount(id, undefined, v))
+						      }
+					      );
+					      Object.defineProperty(
+						      targetCtx._.data.prototype,
+						      id,
+						      {
+							      enumerable  : true,
+							      configurable: true,
+							      get         : () => (_._scope[id] && _._scope[id].data),
+							      set         : ( v ) => (this._mount(id, undefined, undefined, v))
+						      }
+					      );
+					      // action mapping
+					      actions = srcCtx[id] instanceof Scope.Store
+					                ? srcCtx[id].constructor.actions
+					                : srcCtx[id].actions;
+					      if ( Scope.isScopeClass(_._scope[id]) )
+						      this._mount(id);
+					
+					
+					      if ( Scope.isScope(_._scope[id]) ) {// map hierarchic scopes
+						      activeActions[id] = _._scope[id].actions;
 					      }
-				      );
-				      Object.defineProperty(
-					      targetCtx._.data.prototype,
-					      id,
-					      {
-						      enumerable  : true,
-						      configurable: true,
-						      get         : () => (_._scope[id] && _._scope[id].data),
-						      set         : ( v ) => (this._mount(id, undefined, undefined, v))
-					      }
-				      );
-				
-				
-				      // action mapping
-				      let actions       = srcCtx[id] instanceof Scope.Store
-				                          ? srcCtx[id].constructor.actions
-				                          : srcCtx[id].actions,
-				          activeActions = targetCtx._.actions.prototype;
-				      if ( Scope.isScope(_._scope[id].prototype) )
-					      this._mount(id);
-				      if ( Scope.isScope(_._scope[id]) ) {
-					      activeActions[id] = _._scope[id].actions;
-				      }
-				      if ( !Scope.isStore(_._scope[id]) && !Scope.isStoreClass(_._scope[id]) )
-					      return;
-				
-				      actions &&
-				      Object.keys(actions)
-				            .forEach(
-					            ( act ) => {
-						            if ( activeActions.hasOwnProperty(act) )
-							            activeActions[act].__targetStores++;
-						            else {
-							            activeActions[act]                = this.dispatch.bind(this, act);
-							            activeActions[act].__targetStores = 1;
+					      else if ( !Scope.isStore(_._scope[id]) && !Scope.isStoreClass(_._scope[id]) )
+						      return;
+					
+					      actions &&
+					      Object.keys(actions)
+					            .forEach(
+						            ( act ) => {
+							            if ( activeActions.hasOwnProperty(act) )
+								            activeActions[act].__targetStores++;
+							            else {
+								            activeActions[act]                = this.dispatch.bind(this, act);
+								            activeActions[act].__targetStores = 1;
+							            }
 						            }
-					            }
-				            );
+					            );
+				      }
+				      else {
+					      activeActions[id] = srcCtx[id].actions;
+				      }
+				
 				
 				      // remount the store if it was hot reloaded
 				      if ( hotReloading )

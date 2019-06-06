@@ -403,9 +403,9 @@ class Scope extends EventEmitter {
 					      actions = srcCtx[id] instanceof Scope.Store
 					                ? srcCtx[id].constructor.actions
 					                : srcCtx[id].actions;
+					      
 					      if ( Scope.isScopeClass(_._scope[id]) )
 						      this._mount(id);
-					
 					
 					      if ( Scope.isScope(_._scope[id]) ) {// map hierarchic scopes
 						      activeActions[id] = _._scope[id].actions;

@@ -67,40 +67,14 @@ To deal with complex architectures like multi user or complex components systems
 - automatic & chained destroy
 - ...
 
-## Why & What else ?
-
-- React "high order components" factories decorators ( [react-rescope](https://github.com/rScopes/react-rescope) )
-- Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
-- Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores,
-- Easy pairing of remote / webworker based stores
-- Easy remapping & aliasing of dependencies data,
-- Easy, partial or complete serialization / restoration
-- Inheritable ES6 class
-- Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
-- Lazy stores instantiation & active stores auto destroy
-- Another alternative to Redux & co
-- Library agnostic, rescope has no dependencies and will keep working with any states based system
-- Doesn't need anything, work without React, no immutable needed
-- etc..
-
-## Doc ?
-
-[Work in progress doc](doc/readme.md)
-
-About [Stores](doc/Store.md) <br>
-About [Scopes](doc/Scope.md)
-
 ### Samples & bootstraps
 
 The examples and bootstrap will come gradually [here](https://github.com/rScopes/rescope-samples)
 
 ## What's next ?
 
-- Optimize / flatenize js
+- Should be rewrote completely basing on redux
 - Many more tests
-- Allow, not defined yet, store dependencies 
-- Cosmetics rewrites & more comments
-- Possibly some semantic/normalisation updates
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
 <span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>

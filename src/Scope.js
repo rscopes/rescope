@@ -290,6 +290,8 @@ class Scope extends EventEmitter {
 			if ( Scope.isScope(store) ) {
 				if ( state !== undefined )
 					store.setState(state);
+				if ( ref.path.length > 1 )
+					store._mount(ref.path.slice(1).join('.'))
 			}
 			this._watchStore(ref.storeId);
 		}

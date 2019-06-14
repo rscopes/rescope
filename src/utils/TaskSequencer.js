@@ -27,62 +27,62 @@ let taskQueue      = [],
     task,
     isRunning,
     errorCatcher   = {
-        lastError: null,
-        dispatch : function ( error ) {
-            errorCatcher.disable();
-            if ( task && task[ 0 ].handleError ) {
-                task[ 0 ].handleError(error, task);
-            }
-            else if ( task )
-                console.error("ReScope : An apply task has failed !!", task[ 1 ], " on ", task[ 0 ].name || task[ 0 ].constructor.name)
-        
-            isRunning = false;
-            task      = null;
-            runNow();
-        },
-        enable   : ( typeof window !== 'undefined' )
-                   ? () => {
-                window.addEventListener('error', errorCatcher.dispatch)
-            } : () => {
-                process.on('uncaughtException', errorCatcher.dispatch);
-            },
-        disable  : ( typeof window !== 'undefined' )
-                   ? () => {
-                window.removeEventListener('error', errorCatcher.dispatch)
-            } : () => {
-                process.removeListener('uncaughtException', errorCatcher.dispatch);
-            }
+	    lastError: null,
+	    dispatch : function ( error ) {
+		    errorCatcher.disable();
+		    if ( task && task[0].handleError ) {
+			    task[0].handleError(error, task);
+		    }
+		    else if ( task )
+			    console.error("ReScope : An apply task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name)
+		
+		    isRunning = false;
+		    task      = null;
+		    runNow();
+	    },
+	    enable   : (typeof window !== 'undefined')
+	               ? () => {
+			    window.addEventListener('error', errorCatcher.dispatch)
+		    } : () => {
+			    process.on('uncaughtException', errorCatcher.dispatch);
+		    },
+	    disable  : (typeof window !== 'undefined')
+	               ? () => {
+			    window.removeEventListener('error', errorCatcher.dispatch)
+		    } : () => {
+			    process.removeListener('uncaughtException', errorCatcher.dispatch);
+		    }
     }
 ;
 
 function runNow() {
-    if ( !isRunning ) {
-        run();
-    }
+	if ( !isRunning ) {
+		run();
+	}
 }
 
 function run() {
-    let from  = Date.now();
-    isRunning = true;
-    errorCatcher.enable();
-    while ( taskCount ) {
-        
-        // try for the current weight
-        while ( !( taskQueue[ curWeight ] && taskQueue[ curWeight ].length ) )
-            curWeight++;
-        
-        taskCount--;
-        task = taskQueue[ curWeight ].shift();
-        //console.log("Task : ", task[1], " on ", task[0].name);
-        task[ 0 ][ task[ 1 ] ].apply(task[ 0 ], task[ 2 ]);
-    }
-    task = undefined;
-    errorCatcher.disable();
-    
-    isRunning = false;
-    if ( taskCount ) {
-        setTimeout(runNow);
-    }
+	let from  = Date.now();
+	isRunning = true;
+	errorCatcher.enable();
+	while ( taskCount ) {
+		
+		// try for the current weight
+		while ( !(taskQueue[curWeight] && taskQueue[curWeight].length) )
+			curWeight++;
+		
+		taskCount--;
+		task = taskQueue[curWeight].shift();
+		//console.log("Task : ", task[1], " on ", task[0].name);
+		!task[0].dead && task[0][task[1]](task[2]);
+	}
+	task = undefined;
+	errorCatcher.disable();
+	
+	isRunning = false;
+	if ( taskCount ) {
+		setTimeout(runNow);
+	}
 }
 
 //
@@ -101,29 +101,29 @@ function run() {
 //};
 
 export default {
-    pushTask( obj, fn, argz ) {
-        /**
-         * The more a store have sources, the more it should be processed first
-         * So leafs stores stay sync, and root stores receive merged state updates;
-         * global state stay coherent
-         *
-         * This mean whatever the number of stores & the complexity of the deps,
-         * updating a store state will update its synchrone child stores immediately
-         *
-         *
-         * @type {*|number}
-         */
-        let weight = obj._sources && obj._sources.length || 1,
-            stack  = taskQueue[ weight ] =
-                taskQueue[ weight ] || [];
-        
-        maxWeight = Math.max(maxWeight, weight);
-        curWeight = Math.min(curWeight, weight);
-        taskCount++;
-        
-        //console.log("Push Task : ", fn, " on ", obj.name, weight);
-        stack.push([ obj, fn, argz ]);
-        setTimeout(runNow, 0);
-        return stack.length;
-    }
+	pushTask( obj, fn, argz ) {
+		/**
+		 * The more a store have sources, the more it should be processed first
+		 * So leafs stores stay sync, and root stores receive merged state updates;
+		 * global state stay coherent
+		 *
+		 * This mean whatever the number of stores & the complexity of the deps,
+		 * updating a store state will update its synchrone child stores immediately
+		 *
+		 *
+		 * @type {*|number}
+		 */
+		let weight = obj._sources && obj._sources.length || 1,
+		    stack  = taskQueue[weight] =
+			    taskQueue[weight] || [];
+		
+		maxWeight = Math.max(maxWeight, weight);
+		curWeight = Math.min(curWeight, weight);
+		taskCount++;
+		
+		//console.log("Push Task : ", fn, " on ", obj.name, weight);
+		stack.push([obj, fn, argz]);
+		setTimeout(runNow, 0);
+		return stack.length;
+	}
 };

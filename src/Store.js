@@ -339,6 +339,8 @@ class Store extends EventEmitter {
 		let { actions } = this.constructor;
 		if ( actions && actions[action] ) {
 			let ns = actions[action].call(this, ...argz);
+			if ( is.function(ns) )
+				ns = ns(this.nextState);
 			ns && this.setState(ns);
 		}
 	}

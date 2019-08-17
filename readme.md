@@ -9,8 +9,8 @@
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
-<p align="center"><a href="https://travis-ci.org/n8tz/rescope">
-<img src="https://travis-ci.org/n8tz/rescope.svg?branch=master" alt="Build Status" /></a>
+<p align="center"><a href="https://travis-ci.org/rscopes/rescope">
+<img src="https://travis-ci.org/rscopes/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>
 <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" />
@@ -20,9 +20,9 @@
 
 ### Related packages
 
-rScopes ( all rescope packages ) : [rScopes](https://github.com/n8tz/rScopes)<br>
-React HOCs, decorators & tools   : [react-rescope](https://github.com/n8tz/react-rescope)<br>
-ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/n8tz/rescope-spells)<br>
+react-scopes ( all rescope packages ) : [react-scopes](https://github.com/rscopes/react-scopes)<br>
+React HOCs, decorators & tools   : [react-rescope](https://github.com/rscopes/react-rescope)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rscopes/rescope-spells)<br>
 
 ## ReScope What ?
 
@@ -67,14 +67,12 @@ To deal with complex architectures like multi user or complex components systems
 - automatic & chained destroy
 - ...
 
-### Samples & bootstraps
-
-The examples and bootstrap will come gradually [here](https://github.com/rScopes/rescope-samples)
+### Samples & bootstraps [here](https://github.com/rScopes/rescope-samples)
 
 ## Todo ?
 
 - Many more tests
-- Should be rewrote completely using only pure fn & refs
+- Maybe it should be rewrited completely using faster method now it work perfectly
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
 <span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>

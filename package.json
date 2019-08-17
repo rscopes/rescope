@@ -2,7 +2,7 @@
   "name": "rescope",
   "version": "4.4.51",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
-  "repository": "https://github.com/n8tz/rescope.git",
+  "repository": "https://github.com/rscopes/rescope.git",
   "main": "./etc/npm/index.js",
   "license": "MIT",
   "author": "Nathan Braun <n8tz.js@gmail.com>",

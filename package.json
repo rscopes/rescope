@@ -1,6 +1,6 @@
 {
   "name": "rescope",
-  "version": "4.4.5",
+  "version": "4.4.51",
   "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/n8tz/rescope.git",
   "main": "./etc/npm/index.js",
@@ -26,7 +26,6 @@
     "babel-preset-react": "^6.3.13",
     "babel-preset-stage-0": "^6.5.0",
     "babel-preset-stage-1": "^6.5.0",
-    "eslint": "^3.14.1",
     "events": "^1.1.1",
     "file-loader": "^0.9.0",
     "mocha": "^3.5.1",

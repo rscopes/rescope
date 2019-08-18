@@ -24,11 +24,33 @@
  *   @contact : n8tz.js@gmail.com
  */
 
-'use strict';
-
-if ( process.env.NODE_ENV === 'production' ) {
-	module.exports = require('../../dist/ReScope.min.js');
-}
-else {
-	module.exports = require('../../dist/ReScope.js');
+module.exports = {
+	"default": {
+		"rootFolder": "src",
+		"basedOn"   : "Comp",
+		"vars"      : {
+			"rootAlias"   : "reScope",
+			"externals"   : true,
+			"production"  : true,
+			"webpackPatch": {
+				"devtool": "source-map"
+			}
+		},
+		"extend"    : [
+			"wi-layer-react-express"
+		]
+	},
+	"staging": {
+		"rootFolder": "src",
+		"basedOn"   : "Comp",
+		"vars"      : {
+			"rootAlias"   : "reScope",
+			"externals"   : true,
+			"production"  : false,
+			"webpackPatch": {}
+		},
+		"extend"    : [
+			"wi-layer-react-express"
+		]
+	},
 }

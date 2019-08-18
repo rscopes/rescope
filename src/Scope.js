@@ -1207,14 +1207,13 @@ class Scope extends EventEmitter {
 			this._.followers.forEach(( { 0: obj, 1: key, 2: as, 3: lastRevs, 3: remaps } ) => {
 				let data = this.getUpdates(lastRevs);
 				if ( !data ) return;
-				//console.log(data, lastRevs)
 				if ( typeof obj != "function" ) {
 					//console.log("setState ",obj, Object.keys(data))
 					if ( as ) obj.setState({ [as]: data });
 					else obj.setState(data);
 				}
 				else {
-					obj(data, lastRevs && [...lastRevs] || "no revs");
+					obj(data, lastRevs && {...lastRevs} || "no revs");
 				}
 				// lastRevs &&
 				// key.forEach(id => (lastRevs[id] = this.stores[id] &&

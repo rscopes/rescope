@@ -24,8 +24,6 @@
  *   @contact : n8tz.js@gmail.com
  */
 
-import is from "is";
-
 /**
  * Minimal push sequencer, apply stores specific task in the right order
  */
@@ -42,6 +40,7 @@ let taskQueue      = [],
 	    lastError: null,
 	    dispatch : function ( error ) {
 		    errorCatcher.disable();
+		
 		    if ( task && task[0].handleError ) {
 			    task[0].handleError(error, task);
 		    }
@@ -86,7 +85,11 @@ function run() {
 		taskCount--;
 		task = taskQueue[curWeight].shift();
 		//console.log("Task : ", task[1], " on ", task[0].name);
-		!task[0].dead && task[0][task[1]](task[2]);
+		try {
+			!task[0].dead && task[0][task[1]](task[2]);
+		} catch ( e ) {
+			return errorCatcher.dispatch(e);
+		}
 	}
 	task = undefined;
 	errorCatcher.disable();

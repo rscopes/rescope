@@ -25,10 +25,10 @@
  */
 
 const is                           = require('is'),
-      Scope                        = require('./Scope'),
+      Scope                        = require('./Scope').default,
       { keyWalknSet, keyWalknGet } = require('./utils/utils'),
-      EventEmitter                 = require('./utils/Emitter'),
-      TaskSequencer                = require('./utils/TaskSequencer'),
+      EventEmitter                 = require('./utils/Emitter').default,
+      TaskSequencer                = require('./utils/TaskSequencer').default,
       shortid                      = require('shortid'),
       objProto                     = Object.getPrototypeOf({});
 

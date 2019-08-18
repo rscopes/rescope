@@ -24,27 +24,25 @@
  *   @contact : n8tz.js@gmail.com
  */
 
-let $global = (typeof window !== 'undefined') ? window : global;
-
-import Scope from "./Scope";
-import Store from "./Store";
+let $global = (typeof window !== 'undefined') ? window : global,
+    Scope   = require('./Scope').default,
+    Store   = require('./Store').default;
 
 const RS = $global.___rescope || {};
 
+function scopeRef( map, key ) {
+	map[key] = new Scope.scopeRef(map[key]);
+	return map;
+};
 if ( $global.___rescope ) {
 	console.warn("ReScope is defined multiple times !! \nCheck you're packaging")
+	Scope    = RS.Scope;
+	Store    = RS.Store;
+	scopeRef = RS.scopeRef;
 }
 else {
-	
 	$global.___rescope = RS;
 	Scope.Store        = Store;
-	RS.Scope           = Scope;
-	RS.Store           = Store;
-	RS.scopeRef        =
-		function scopeRef( map, key ) {
-			map[key] = new Scope.scopeRef(map[key]);
-			return map;
-		};
-	
 }
-export default RS;
+export {Scope, Store, scopeRef};
+export default { Scope, Store, scopeRef };

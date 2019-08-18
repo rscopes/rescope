@@ -7,9 +7,8 @@
   "license": "MIT",
   "author": "Nathan Braun <n8tz.js@gmail.com>",
   "scripts": {
-    "build": "wpi",
-    "dev": "wpi-dev-server :samples --hot",
-    "runBrowser": "start http://localhost:8080",
+    "build": "wi",
+    "dev": "wi :staging -w",
     "test": "mocha --require @babel/register ./etc/test/*.test.js -b"
   },
   "dependencies": {

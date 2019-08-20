@@ -315,10 +315,9 @@ class Store extends EventEmitter {
 		cb && this.once('stable', cb);
 		this._stable && this.emit('unstable', this.state, this.data);
 		
-		this._stable = false;
-		
 		if ( this._stabilizer )
 			return;
+		this._stable = false;
 		
 		this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
 	}
@@ -387,6 +386,7 @@ class Store extends EventEmitter {
 	 * @param forcedState
 	 */
 	pushState( forcedState ) {
+		this._stabilizer = null;
 		if ( !forcedState && !this._changesSW && this.data )
 			return;
 		
@@ -397,10 +397,9 @@ class Store extends EventEmitter {
 		);
 		nextData = this.apply(this.data, nextState, this._changesSW);
 		
-		this._stabilizer = null;
-		this.state       = nextState;
-		this._nextState  = null;
-		this._changesSW  = null;
+		this.state      = nextState;
+		this._nextState = null;
+		this._changesSW = null;
 		
 		if ( !forcedState &&
 			(

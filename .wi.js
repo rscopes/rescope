@@ -47,7 +47,9 @@ module.exports = {
 			"rootAlias"   : "reScope",
 			"externals"   : true,
 			"production"  : false,
-			"webpackPatch": {}
+			"webpackPatch": {
+				"devtool": "source-map"
+			}
 		},
 		"extend"    : [
 			"wi-layer-react-express"

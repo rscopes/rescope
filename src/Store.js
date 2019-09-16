@@ -313,10 +313,10 @@ class Store extends EventEmitter {
 	 */
 	stabilize( cb ) {
 		cb && this.once('stable', cb);
-		this._stable && this.emit('unstable', this.state, this.data);
 		
 		if ( this._stabilizer )
 			return;
+		this._stable && this.emit('unstable', this.state, this.data);
 		this._stable = false;
 		
 		this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
@@ -369,7 +369,7 @@ class Store extends EventEmitter {
 				let stable   = this._stable;
 				this._stable = true;
 				!stable && this.emit('stable', this.state, this.data);
-				this._stabilizer = null;
+				//this._stabilizer = null;
 			}
 			return false;
 		}
@@ -818,13 +818,15 @@ class Store extends EventEmitter {
 	dispose( reason ) {
 		//console.warn("dispose", reason, this.__retains);
 		if ( reason ) {
-			if ( !this.__retains[reason] )
+			if ( !this.__retains[reason] ) {
 				throw new Error("RS : Dispose more than retaining on store '" + this.name + "' : " + reason);
+			}
 			
 			this.__retains[reason]--;
 		}
-		if ( this.__retains.all == 0 )
+		if ( this.__retains.all == 0 ) {
 			throw new Error("RS : Dispose more than retaining on store " + this.name);
+		}
 		
 		this.__retains.all--;
 		
@@ -852,9 +854,11 @@ class Store extends EventEmitter {
 	destroy() {
 		//  console.log("destroy", this._uid);
 		
-		this.emit('destroy', this);
-		if ( this._stabilizer )
+		if ( this._stabilizer ) {
+			this._stabilizer = null;
 			clearTimeout(this._stabilizer);
+		}
+		this.emit('destroy', this);
 		
 		if ( this._followers.length )
 			this._followers.forEach(

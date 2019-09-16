@@ -1,7 +1,7 @@
 {
   "name": "rescope",
-  "version": "4.5.1",
-  "description": "Flexible state management system based on flux architecture, stores data components & inheritable scopes",
+  "version": "4.5.2",
+  "description": "Intuitive & scalable state management system based on flux architecture, stores data components & inheritable scopes",
   "repository": "https://github.com/rscopes/rescope.git",
   "main": "./dist/reScope.js",
   "license": "MIT",

@@ -355,10 +355,9 @@ class Scope extends EventEmitter {
 				      if ( !force && targetCtx._._scope[id] ) {
 					
 					      if ( !external && !is.fn(targetCtx._._scope[id]) ) {// mounted store
-						      //console.info("Rescope Store : ", id, " already exist in this scope ! ( Hot switching the store ) !!!");
 						      targetCtx._._scope[id].__proto__ = srcCtx[id].prototype;
-						      targetCtx._._scope[id]._storeHasBeenHotSwitched
-						      && targetCtx._._scope[id]._storeHasBeenHotSwitched(srcCtx[id]);
+						      targetCtx._._scope[id].__onHotReloaded
+						      && targetCtx._._scope[id].__onHotReloaded(srcCtx[id]);
 					      }
 					      else if ( !external && is.fn(targetCtx._._scope[id]) )
 						      targetCtx._._scope[id] = srcCtx[id];

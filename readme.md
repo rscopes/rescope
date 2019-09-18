@@ -71,7 +71,7 @@ To deal with complex architectures like multi user or complex components systems
 ## Todo ?
 
 - Many more tests
-- Maybe it should be rewrited completely using faster method now it work perfectly
+- Should be rewritten completely using a more functional approach ( but as react context seems taking similar path & rs is made probono it will not )
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
 <span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>

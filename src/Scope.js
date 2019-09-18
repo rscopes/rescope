@@ -53,15 +53,17 @@ class Scope extends EventEmitter {
 			key => {
 				let cpath = path ? path + '.' + key : key;
 				
-				sm[key] instanceof Scope.scopeRef
-				? _refs.push(sm[key].path + ':' + cpath)
-				: (sm[key] && sm[key] instanceof Function)
-				  ? key == "$apply"
-				    ? applier = sm[key]
-				    : actions[key] = sm[key]
-				  : (sm[key] && sm[key].prototype instanceof Scope.Store)
-				    ? _refs.push(sm[key].as(cpath))
-				    : state[cpath] = sm[key]
+				sm[key] instanceof Scope.scopeRef ?
+				_refs.push(sm[key].path + ':' + cpath) :
+				(sm[key] && sm[key] instanceof Function) ?
+				key === "$apply" ?
+				applier = sm[key] :
+				actions[key] = sm[key] :
+				(sm[key] && sm[key].prototype instanceof Scope.Store) ?
+				_refs.push(sm[key].as(cpath)) :
+					//key === "$actions" ?
+					//Object.assign(actions, sm[key]) :
+				state[cpath] = sm[key]
 				//: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
 			}
 		)
@@ -340,7 +342,7 @@ class Scope extends EventEmitter {
 	 * @param data
 	 */
 	relink( srcCtx, targetCtx = this, external, force ) {
-		let _ = this._;
+		let _ = this._, me = this;
 		Object.keys(srcCtx)
 		      .forEach(
 			      id => {
@@ -411,23 +413,17 @@ class Scope extends EventEmitter {
 						      this._mount(id);
 					
 					      if ( Scope.isScope(_._scope[id]) ) {// map hierarchic scopes
+						      if ( activeActions[id] )
+							      console.warn("RS : Sub scope actions is mapped over an existing function !", id);
+						
 						      activeActions[id] = _._scope[id].actions;
 					      }
 					      else if ( !Scope.isStore(_._scope[id]) && !Scope.isStoreClass(_._scope[id]) )
 						      return;
 					
+					
 					      actions &&
-					      Object.keys(actions)
-					            .forEach(
-						            ( act ) => {
-							            if ( activeActions.hasOwnProperty(act) )
-								            activeActions[act].__targetStores++;
-							            else {
-								            activeActions[act]                = this.dispatch.bind(this, act);
-								            activeActions[act].__targetStores = 1;
-							            }
-						            }
-					            );
+					      this._mapActions(actions, activeActions, id)
 				      }
 				      else {
 					      activeActions[id] = srcCtx[id].actions;
@@ -439,6 +435,38 @@ class Scope extends EventEmitter {
 					      this._mount(id, null, hotReloading);
 			      }
 		      )
+	}
+	
+	/**
+	 * Map & bounds actions from stores
+	 * todo : unmap actions
+	 * @param actions
+	 * @param target
+	 * @param storeId
+	 * @private
+	 */
+	_mapActions( actions, target, storeId ) {
+		for ( let act in actions ) {
+			if ( actions.hasOwnProperty(act) ) {
+				if ( is.object(actions[act]) ) {// hirarchised actions
+					
+					if ( target[act] && !is.object(target[act]) )
+						console.warn("RS : Actions namespace is mapped over an existing function !", storeId, act);
+					
+					target[act] = target[act] || { __targetStores: 0 };
+					this._mapActions(actions[act], target[act]);
+					target[act].__targetStores++;
+				}
+				else if ( target.hasOwnProperty(act) )
+					target[act].__targetStores++;
+				else {
+					if ( is.object(target[act]) )
+						console.warn("RS : Action is mapped over existing namespace  !", storeId, act);
+					target[act]                = this.dispatch.bind(this, act);
+					target[act].__targetStores = 1;
+				}
+			}
+		}
 	}
 	
 	/**
@@ -1050,7 +1078,7 @@ class Scope extends EventEmitter {
 	
 	/**
 	 * Dispatch an action to the top parent & mixed scopes, in all stores
-	 *
+	 * todo
 	 * @param action
 	 * @param data
 	 * @returns {Scope}
@@ -1061,14 +1089,11 @@ class Scope extends EventEmitter {
 			return;
 		}
 		let bActs = this._._boundedActions;
-		Object.keys(this._._scope)
-		      .forEach(
-			      id => {
-				      if ( id == "$parent" ) return;
-				      if ( !is.fn(this._._scope[id]) )
-					      this._._scope[id].trigger(action, ...argz);
-			      }
-		      );
+		for ( let storeId in this._._scope ) {
+			if ( storeId === "$parent" ) continue;
+			if ( !is.fn(this._._scope[storeId]) )
+				this._._scope[storeId].trigger(action, ...argz);
+		}
 		
 		if ( bActs && bActs.test(action) )
 			return this;

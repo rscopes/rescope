@@ -313,6 +313,10 @@ class Scope extends EventEmitter {
 		Object.keys(storesMap).forEach(
 			id => {
 				if ( id == "$parent" ) return;
+				
+				if ( !Scope.isScopable(storesMap[id]) )
+					return console.warn("RS: ", this._id, ", can't register not scopable object :", id);
+				
 				if ( storesMap[id].singleton || (is.fn(storesMap[id]) && (state[id] || data[id])) ) {
 					this._mount(id, undefined, state[id], data[id])
 				}
@@ -1396,6 +1400,13 @@ class Scope extends EventEmitter {
 	}
 }
 
+
+Scope.isScopable = function ( obj ) {
+	return Scope.isScope(obj)
+		|| Scope.isScopeClass(obj)
+		|| Scope.isStore(obj)
+		|| Scope.isStoreClass(obj);
+};
 
 Scope.isScope = function ( obj ) {
 	return obj instanceof Scope

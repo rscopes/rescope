@@ -312,7 +312,7 @@ class Scope extends EventEmitter {
 		this.relink(storesMap, this, false, false);
 		Object.keys(storesMap).forEach(
 			id => {
-				if ( id == "$parent" ) return;
+				if ( id === "$parent" ) return;
 				
 				if ( !Scope.isScopable(storesMap[id]) )
 					return console.warn("RS: ", this._id, ", can't register not scopable object :", id);

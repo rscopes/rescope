@@ -45,7 +45,7 @@ let taskQueue      = [],
 			    task[0].handleError(error, task);
 		    }
 		    else if ( task )
-			    console.error("ReScope : An apply task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name)
+			    console.error("ReScope : An apply task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name, '\n', error)
 		
 		    isRunning = false;
 		    task      = null;

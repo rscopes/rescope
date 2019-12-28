@@ -24,55 +24,35 @@
  *   @contact : n8tz.js@gmail.com
  */
 
-import is from 'is';
-
-export default class Emitter {
-	_events = {};
-	
-	on( evt, cb ) {
-		if ( !is.string(evt) && evt )
-			return Object.keys(evt).forEach(k => this.on(k, evt[k]));
-		
-		this._events[evt] = this._events[evt] || [];
-		this._events[evt].push(cb);
-	}
-	
-	un( evt, cb ) {
-		if ( !is.string(evt) && evt )
-			return Object.keys(evt).forEach(k => this.un(k, evt[k]));
-		
-		if ( !this._events[evt] ) return;
-		let i = this._events[evt].indexOf(cb);
-		this._events[evt].splice(i, 1);
-	}
-	
-	emit( evt, ...argz ) {
-		if ( !this._events[evt] ) return;
-		let lists = [...this._events[evt]];
-		
-		for ( let i = 0; i < lists.length; i++ )
-			lists[i](...argz)
-	}
-	
-	addListener() {
-		this.on(...arguments);
-	}
-	
-	removeListener() {
-		this.un(...arguments);
-	}
-	
-	removeAllListeners() {
-		this._events = {};
-	}
-	
-	once( evt, cb ) {
-		let fn;
-		this.on(evt, fn = ( ...argz ) => {
-			this.un(evt, fn);
-			cb(...argz)
-		});
-	}
-	
-	
+module.exports = {
+	"default": {
+		"rootFolder": "src",
+		"basedOn"   : "Comp",
+		"vars"      : {
+			"rootAlias"   : "reScope",
+			"externals"   : true,
+			"production"  : true,
+			"webpackPatch": {
+				"devtool": "source-map"
+			}
+		},
+		"extend"    : [
+			"wi-layer-react-express"
+		]
+	},
+	"staging": {
+		"rootFolder": "src",
+		"basedOn"   : "Comp",
+		"vars"      : {
+			"rootAlias"   : "reScope",
+			"externals"   : true,
+			"production"  : false,
+			"webpackPatch": {
+				"devtool": "source-map"
+			}
+		},
+		"extend"    : [
+			"wi-layer-react-express"
+		]
+	},
 }

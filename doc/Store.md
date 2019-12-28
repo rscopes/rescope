@@ -322,10 +322,16 @@ export default class testErrorCatch extends Rescope.Store {
 ```
 
 
-## About error catching
+## How to catch hot reload/switch of stores 
 
-ReScope catch errors using :
- - process.on('uncaughtException',...) in node environnement
- - window.addEventListener('error',...) in browser environement
+* called after switching the store prototype
 
+```jsx
+export default class testErrorCatch extends Rescope.Store {
+
+   __onHotReloaded(newStoreClass) {
+       this.push({ failNow: false, catched: true })
+   }
+}
+```
 

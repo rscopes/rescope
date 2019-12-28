@@ -1,2 +1,3741 @@
-module.exports=function(t){var e={};function s(i){if(e[i])return e[i].exports;var n=e[i]={i:i,l:!1,exports:{}};return t[i].call(n.exports,n,n.exports,s),n.l=!0,n.exports}return s.m=t,s.c=e,s.d=function(t,e,i){s.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:i})},s.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},s.t=function(t,e){if(1&e&&(t=s(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var i=Object.create(null);if(s.r(i),Object.defineProperty(i,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var n in t)s.d(i,n,function(e){return t[e]}.bind(null,n));return i},s.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return s.d(e,"a",e),e},s.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},s.p="/",s(s.s=14)}([function(t,e){t.exports=require("is")},function(t,e){t.exports=require("@babel/runtime/helpers/toConsumableArray")},function(t,e,s){"use strict";s.r(e),s.d(e,"walknSet",(function(){return a})),s.d(e,"walknGet",(function(){return o})),s.d(e,"keyWalknSet",(function(){return h})),s.d(e,"keyWalknGet",(function(){return u}));var i=s(1),n=s.n(i),r=s(0);function a(t,e,s,i){return r.string(e)&&(e=e.split(".")),!!e.length&&(1==e.length?t[e[0]]=i?[].concat(n()(t[e[0]]||[]),[s]):s:a(t[e[0]]=t[e[0]]||{},e.slice(1),s,i))}function o(t,e,s){return r.string(e)&&(e=e.split(".")),e.length?t[e[0]]&&o(t[e[0]],e.slice(1)):t}function h(t,e,s,i){return r.string(e)&&(e=e.split(/(\>|\/)/gi).filter((function(t){return">"!==t&&t}))),a(t,e,s)}function u(t,e,s){return r.string(e)&&(e=e.split(/(\>|\/)/gi).filter((function(t){return">"!==t&&t}))),e.length?t[e[0]]&&o(t[e[0]],e.slice(1)):t}},function(t,e){t.exports=require("@babel/runtime/helpers/defineProperty")},function(t,e){t.exports=require("@babel/runtime/helpers/assertThisInitialized")},function(t,e){t.exports=require("@babel/runtime/helpers/getPrototypeOf")},function(t,e){t.exports=require("@babel/runtime/helpers/createClass")},function(t,e){t.exports=require("@babel/runtime/helpers/classCallCheck")},function(t,e){t.exports=require("@babel/runtime/helpers/possibleConstructorReturn")},function(t,e){t.exports=require("@babel/runtime/helpers/get")},function(t,e){t.exports=require("@babel/runtime/helpers/inherits")},function(t,e){t.exports=require("shortid")},function(t,e,s){"use strict";s.r(e),s.d(e,"default",(function(){return l}));var i=s(1),n=s.n(i),r=s(7),a=s.n(r),o=s(6),h=s.n(o),u=s(0),c=s.n(u),l=function(){function t(){a()(this,t),this._events={}}return h()(t,[{key:"on",value:function(t,e){var s=this;if(!c.a.string(t)&&t)return Object.keys(t).forEach((function(e){return s.on(e,t[e])}));this._events[t]=this._events[t]||[],this._events[t].push(e)}},{key:"un",value:function(t,e){var s=this;if(!c.a.string(t)&&t)return Object.keys(t).forEach((function(e){return s.un(e,t[e])}));if(this._events[t]){var i=this._events[t].indexOf(e);this._events[t].splice(i,1)}}},{key:"emit",value:function(t){if(this._events[t]){for(var e=n()(this._events[t]),s=arguments.length,i=new Array(s>1?s-1:0),r=1;r<s;r++)i[r-1]=arguments[r];for(var a=0;a<e.length;a++)e[a].apply(e,i)}}},{key:"addListener",value:function(){this.on.apply(this,arguments)}},{key:"removeListener",value:function(){this.un.apply(this,arguments)}},{key:"removeAllListeners",value:function(){this._events={}}},{key:"once",value:function(t,e){var s,i=this;this.on(t,s=function(){i.un(t,s),e.apply(void 0,arguments)})}}]),t}()},function(t,e,s){"use strict";s.r(e);var i=s(1),n=s.n(i),r=s(3),a=s.n(r),o=s(7),h=s.n(o),u=s(8),c=s.n(u),l=s(5),p=s.n(l),f=s(4),_=s.n(f),d=s(6),v=s.n(d),y=s(10),b=s.n(y),g=s(0),m=s.n(g),k=s(11),S=s.n(k),w=s(12),O=s(2);function j(t,e){var s=Object.keys(t);if(Object.getOwnPropertySymbols){var i=Object.getOwnPropertySymbols(t);e&&(i=i.filter((function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable}))),s.push.apply(s,i)}return s}function T(t){for(var e=1;e<arguments.length;e++){var s=null!=arguments[e]?arguments[e]:{};e%2?j(Object(s),!0).forEach((function(e){a()(t,e,s[e])})):Object.getOwnPropertyDescriptors?Object.defineProperties(t,Object.getOwnPropertyDescriptors(s)):j(Object(s)).forEach((function(e){Object.defineProperty(t,e,Object.getOwnPropertyDescriptor(s,e))}))}return t}var x=function(t,e,s){var i=function(){};i.prototype=s?new s._[e]:t[e]||{},t[e]=new i,t._[e]=i},C={},E=function(t){function e(t){var s,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=i.parent,r=i.upperScope,a=i.key,o=i.keyMap,u=void 0===o?n&&n.keyMap||{}:o,l=i.id,f=i.snapshot,d=i.state,v=i.data,y=i.incrementId,b=void 0===y?!!a:y,g=i.persistenceTm,k=i.autoDestroy,w=i.rootEmitter,O=i.boundedActions;h()(this,e),s=c()(this,p()(e).call(this));var j={keyPID:r&&r._id||n&&n._id||S.a.generate(),key:a,incrementId:b,baseId:l};if(l=l||a&&j.keyPID+">"+a,j.isLocalId=!l,u[l=l||"_____"+S.a.generate()]&&b){for(var T=-1;u[l+"["+ ++T+"]"];);l=l+"["+T+"]"}if(u[l]=!0,s.keyMap=u,C[l])return s._id=l,j.baseId&&C[l].register(t),c()(s,C[l]);if(C[l]=_()(s),s._id=l,s._rev=0,s._=j,s.actions={},s.stores={},s.state={},s.data={},s.parent=n,"inherit"==k&&(k=n&&n._autoDestroy),s._autoDestroy=k,j.persistenceTm=g||s.constructor.persistenceTm,n&&n.dead)throw new Error("Can't use a dead scope as parent !");return x(_()(s),"actions",n),x(_()(s),"stores",n),x(_()(s),"state",n),x(_()(s),"data",n),s.sources=[],j.childScopes=[],j.childScopesList=[],j.unStableChilds=0,j.seenChilds=0,j._listening={},j._scope={},j._mixed=[],j._mixedList=[],j.followers=[],s.__retains={all:0},s.__locks={all:1},j._boundedActions=m.a.array(O)?{test:O.includes.bind(O)}:O,n&&(n.retain("isMyParent"),w?n.on(j._parentList={update:function(t){return s._propag()}}):(!n._stable&&s.wait("waitingParent"),n.on(j._parentList={stable:function(t){return s.release("waitingParent")},unstable:function(t){return s.wait("waitingParent")},update:function(t){return s._propag()}}))),f&&s.restore(f),s.register(t,d,v),s.__locks.all--,s._stable=!s.__locks.all,n&&n._addChild(_()(s)),k&&setTimeout((function(t){s.retain("autoDestroy"),s.dispose("autoDestroy")})),s}return b()(e,t),v()(e,null,[{key:"stateMapToRefList",value:function(t){var s,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:[],r=arguments.length>3&&void 0!==arguments[3]?arguments[3]:{},a=arguments.length>4&&void 0!==arguments[4]?arguments[4]:"";return Object.keys(t).forEach((function(o){var h=a?a+"."+o:o;t[o]instanceof e.scopeRef?n.push(t[o].path+":"+h):t[o]&&t[o]instanceof Function?"$apply"===o?s=t[o]:r[o]=t[o]:t[o]&&t[o].prototype instanceof e.Store?n.push(t[o].as(h)):i[h]=t[o]})),s}},{key:"getScope",value:function(t){var s=m.a.array(t)?t.sort((function(t,e){return t.firstname<e.firstname?-1:t.firstname>e.firstname?1:0})).join("+"):t;return C[s]=C[s]||new e({},{id:s})}}]),v()(e,[{key:"mount",value:function(t,e,s,i){var n=this;return m.a.array(t)?t.forEach((function(t){return n._mount(t,e,s,i)})):this._mount.apply(this,arguments),this}},{key:"_mount",value:function(t,s,i,n){var r,a=this._;if(r=this.parseRef(t),"$parent"!=t){if(!a._scope[r.storeId]){var o;if(a._mixed.reduceRight((function(e,r){return e||r._mount(t,s,i,n)}),!1)||!this.parent)return;return(o=this.parent)._mount.apply(o,arguments)}var h=a._scope[r.storeId],u=[];if(e.isStoreClass(h))for(a._scope[r.storeId]=new h(this,{name:r.storeId,state:i,data:n},u);u.length;)u.shift()();else e.isScopeClass(h)&&(h=a._scope[r.storeId]=new h({$parent:this},{key:r.storeId,incrementId:!0,upperScope:this}),r.path.length>1&&a._scope[r.storeId].mount(r.path.slice(1).join("."),s,i,n));return e.isStore(h)&&(void 0!==i&&void 0===n?h.setState(i):void 0!==i&&(h.state=i),void 0!==n&&h.push(n)),e.isScope(h)&&(void 0!==i&&h.setState(i),r.path.length>1&&h._mount(r.path.slice(1).join("."))),this._watchStore(r.storeId),a._scope[r.storeId]}}},{key:"resetKeys",value:function(){for(var t in this.keyMap)this.keyMap.hasOwnProperty(t)&&delete this.keyMap[t]}},{key:"register",value:function(t){var s=this,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{};this.relink(t,this,!1,!1),Object.keys(t).forEach((function(r){if("$parent"!==r)return e.isScopable(t[r])?void(t[r].singleton||m.a.fn(t[r])&&(i[r]||n[r])?s._mount(r,void 0,i[r],n[r]):i[r]||n[r]?n[r]?(i[r]&&(s.stores[r].state=i[r]),s.stores[r].push(n[r])):i[r]&&s.stores[r].setState(i[r]):s._watchStore(r)):console.warn("RS: ",s._id,", can't register not scopable object :",r)}))}},{key:"relink",value:function(t){var s=this,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:this,n=arguments.length>2?arguments[2]:void 0,r=arguments.length>3?arguments[3]:void 0,a=this._;Object.keys(t).forEach((function(o){var h,u;if(!(!r&&i._._scope[o]===t[o]||i._._scope[o]&&i._._scope[o].constructor===t[o])){if(!r&&i._._scope[o]?n||m.a.fn(i._._scope[o])?!n&&m.a.fn(i._._scope[o])&&(i._._scope[o]=t[o]):(i._._scope[o].__proto__=t[o].prototype,i._._scope[o].__onHotReloaded&&i._._scope[o].__onHotReloaded(t[o])):r||n||(a._scope[o]=t[o]),Object.defineProperty(i._.stores.prototype,o,{enumerable:!0,configurable:!0,get:function(){return a._scope[o]}}),u=i._.actions.prototype,"$parent"!==o){if(Object.defineProperty(i._.state.prototype,o,{enumerable:!0,configurable:!0,get:function(){return a._scope[o]&&a._scope[o].state},set:function(t){return s._mount(o,void 0,t)}}),Object.defineProperty(i._.data.prototype,o,{enumerable:!0,configurable:!0,get:function(){return a._scope[o]&&a._scope[o].data},set:function(t){return s._mount(o,void 0,void 0,t)}}),h=t[o]instanceof e.Store?t[o].constructor.actions:t[o].actions,e.isScopeClass(a._scope[o])&&s._mount(o),e.isScope(a._scope[o]))u[o]&&console.warn("RS : Sub scope actions is mapped over an existing function !",o),u[o]=a._scope[o].actions;else if(!e.isStore(a._scope[o])&&!e.isStoreClass(a._scope[o]))return;h&&s._mapActions(h,u,o)}else u[o]=t[o].actions;void 0}}))}},{key:"_mapActions",value:function(t,e,s){for(var i in t)t.hasOwnProperty(i)&&(m.a.object(t[i])?(e[i]&&!m.a.object(e[i])&&console.warn("RS : Actions namespace is mapped over an existing function !",s,i),e[i]=e[i]||{__targetStores:0},this._mapActions(t[i],e[i]),e[i].__targetStores++):e.hasOwnProperty(i)?e[i].__targetStores++:(m.a.object(e[i])&&console.warn("RS : Action is mapped over existing namespace  !",s,i),e[i]=this.dispatch.bind(this,i),e[i].__targetStores=1))}},{key:"_watchStore",value:function(t){var e=this,s=this._;return s._listening[t]||m.a.fn(s._scope[t])||(!s._scope[t]._autoDestroy&&s._scope[t].retain("scoped"),!s._scope[t].isStable()&&this.wait(t),s._scope[t].on(s._listening[t]={destroy:function(e){delete s._listening[t],s._scope[t]=s._scope[t].constructor},update:function(t){return e.propag()},stable:function(s){return e.release(t)},unstable:function(s){return e.wait(t)}})),!0}},{key:"mixin",value:function(t){var e,s=this,i=this.parent,n=this._;n._mixed.push(t),t.retain("mixedTo"),t._stable||this.wait(t._id),n._mixedList.push(e={stable:function(e){return s.release(t._id)},unstable:function(e){return s.wait(t._id)},update:function(t){return s._propag()}}),t.on(e),x(this,"actions",i),x(this,"stores",i),x(this,"state",i),x(this,"data",i),this.relink(n._scope,this,!1,!0),n._mixed.forEach((function(t){x(s,"actions"),x(s,"stores"),x(s,"state"),x(s,"data"),s.stores.__origin="mixed "+t._id,t.relink(t._._scope,s,!0,!0)}))}},{key:"bind",value:function(t,e,s){var i,n,r,o=this,h=!(arguments.length>3&&void 0!==arguments[3])||arguments[3],u=arguments.length>4&&void 0!==arguments[4]?arguments[4]:{};if(e&&!m.a.array(e)&&(e=[e]),!1!==s&&!0!==s||(h=s,s=null),r=e.map((function(t){return m.a.string(t)?t:t.name})).map((function(t){return o.parseRef(t)})),this._.followers.push([t,e,s||void 0,i=r.reduce((function(t,e){return t[e.storeId]=t[e.storeId]||{rev:0,refs:[]},t[e.storeId].refs.push(e),t}),u)]),this.mount(e),this.retainStores(Object.keys(i),"listeners"),h&&this._stable){if(!(n=this.getUpdates(i)))return this;"function"!=typeof t?s?t.setState(a()({},s,n)):t.setState(n):t(n)}return this}},{key:"unBind",value:function(t,e,s){for(var i=this._.followers,n=i&&i.length;i&&n--;)if(i[n][0]===t&&""+i[n][1]==""+e&&i[n][2]==s)return this.disposeStores(Object.keys(i[n][3]),"listeners"),i.splice(n,1)}},{key:"map",value:function(t,e){var s=this,i=!(arguments.length>2&&void 0!==arguments[2])||arguments[2],n=arguments.length>3?arguments[3]:void 0,r=this.constructor.Store,a=(e=m.a.array(e)?e:[e]).map(this.parseRef);if(this.mount(e),i&&t instanceof r)r.map(t,e,this,this,!1);else if(i){this.bind(t,e,void 0,!1);var o,h=t.isReactComponent?"componentWillUnmount":"destroy";t.hasOwnProperty(h)&&(o=t[h]),t[h]=function(){return delete t[h],o&&(t[h]=o),s.unBind(t,e),t[h]&&t[h].apply(t,arguments)}}return n&&this.getUpdates(n)||a.reduce((function(t,e){return Object(O.walknSet)(t,e.alias||e.path,s.retrieve(e.path)),t}),{})}},{key:"retrieve",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"";return(t=m.a.string(t)?t.split("."):t)&&this.stores[t[0]]&&this.stores[t[0]].retrieve&&this.stores[t[0]].retrieve(t.slice(1))}},{key:"restoreRefPath",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"";t=m.a.string(t)?t.split("."):t;for(var s,i=0,n=this;i<t.length;){if(s=n.stores[t[i]],(e.isScopeClass(s)||e.isStoreClass(s))&&(n.mount(t[0]),s=n.stores[t[i]]),!e.isScope(s)){if(e.isStore(s)){s.restore();break}break}n=s,i++}}},{key:"retrieveStore",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"";return(t=m.a.string(t)?t.split("."):t)&&t.length&&(1!=t.length&&this.stores[t[0]].retrieveStore?this.stores[t[0]].retrieveStore(t.slice(1)):1==t.length&&this.stores[t[0]])}},{key:"getStoresRevs",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},e=arguments.length>1?arguments[1]:void 0,s=this._._scope;return t||(t={}),Object.keys(s).forEach((function(e){"$parent"!=e&&(m.a.fn(s[e])?t.hasOwnProperty(e)||(t[e]=!1):t[e]=s[e]._rev)})),e||(this._._mixed.reduce((function(e,s){return s.getStoresRevs(t),t}),t),this.parent&&this.parent.getStoresRevs(t)),t}},{key:"_getRevMap",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},e=this._._scope;return Object.keys(e).forEach((function(s){"$parent"==s||t[s]||(t[s]={rev:e[s]._rev,refs:[]})})),this._._mixed.reduceRight((function(t,e){return e._getRevMap(t)}),t),this.parent&&this.parent._getRevMap(t),t}},{key:"getRefsUpdates",value:function(t,e,s){var i=this;return e=e||t.map((function(t){return m.a.string(t)?t:t.name})).map((function(t){return i.parseRef(t)})).reduce((function(t,e){return t[e.storeId]=t[e.storeId]||{rev:0,refs:[]},t[e.storeId].refs.push(e),t}),{}),this.getUpdates(e,s)}},{key:"getUpdates",value:function(t,e,s){var i=this;return e=e||{},t=t||this._getRevMap(),Object.keys(t).forEach((function(n){var r=i.stores[n];t[n]=t[n]||{rev:0,refs:[]},r&&m.a.fn(r)?(s=!0,e[n]=void 0):r&&r._rev>t[n].rev&&(t[n].rev=r._rev,s=!0,t[n].refs.forEach((function(t){e[t.alias]=i.retrieve(t.path)})))})),s&&e}},{key:"_getAllChilds",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[];return t.push.apply(t,n()(this._.childScopes)),this._.childScopes.forEach((function(e){e._getAllChilds(t)})),t}},{key:"serialize",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},s=(this._._scope,this._),i=s.baseId,n=s.key,r=s.keyPID,a=(s.incrementId,t.alias),o=t.parentAlias,h=n?(o||r)+">"+n:a||o&&o+"/"+i||this._id;return this.serialize_ex(t,e,h,a,["$parent"])}},{key:"serialize_ex",value:function(){var t=this,s=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=arguments.length>2?arguments[2]:void 0,r=arguments.length>3?arguments[3]:void 0,a=arguments.length>4?arguments[4]:void 0,o=this._,h=o._scope,u=o.incrementId,c=s.withChilds,l=void 0===c||c,p=s.withMixed,f=void 0===p||p,_=s.norefs;if(Object(O.keyWalknGet)(i,n)){if(!u)return i;if(u){for(var d=-1;Object(O.keyWalknGet)(i,n+"["+ ++d+"]"););n=n+"["+d+"]"}}return Object(O.keyWalknSet)(i,n,{}),Object.keys(h).forEach((function(t){a.includes(t)||e.isStoreClass(h[t])||e.isScopeClass(h[t])||h[t].serialize(T({},s,{parentAlias:n}),i)})),l&&o.childScopes.forEach((function(t){!t._.isLocalId&&t.serialize({withChild:!0,withParents:!1,parentAlias:n,withMixed:f,norefs:_},i)})),f&&o._mixed.forEach((function(t){!t._.isLocalId&&t.serialize({withChild:!1,withParents:!1,withMixed:f,norefs:_},i)})),r&&(i=Object.keys(i).reduce((function(e,s){return e[s===t._id?r:s]=i[s],e}),{})),i}},{key:"restore",value:function(t){var e,s=this,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:m.a.bool(i)&&i,r=this._._scope;t&&i&&i.alias&&i.alias!=this._id&&(delete(e=T({},t,a()({},this._id,t[i.alias])))[i.alias],t=e),(t=t&&Object(O.keyWalknGet)(t,this._id)||this.takeSnapshotByKey(this._id))&&(this._.snapshot=T({},t),e=t["/"],t["/"]=T({},e),e&&Object.keys(e).forEach((function(t){"$parent"!=t&&r[t]&&(n&&!m.a.fn(r[t])&&r[t].destroy(),s._mount(t))})),this._._mixed.forEach((function(t){!t._.isLocalId&&t.restore(void 0,n)})),this._.childScopes.forEach((function(t){!t._.isLocalId&&t.restore(void 0,n)})))}},{key:"getSnapshotByKey",value:function(t,e){return this._.snapshot&&t.startsWith(this._id)?Object(O.keyWalknGet)(this._.snapshot,t.substr(this._id.length)):!e&&this.parent&&this.parent.getSnapshotByKey(t)||this.stores.$parent&&this.stores.$parent.getSnapshotByKey(t)}},{key:"getSnapshotByKeyExt",value:function(t,e,s){if(t)return Object(O.keyWalknGet)(t,e)}},{key:"takeSnapshotByKey",value:function(t,e){if(this._.snapshot&&t.startsWith(this._id)){var s=Object(O.keyWalknGet)(this._.snapshot,t.substr(this._id.length));return s&&this.deleteSnapshotByKey(t,!0),s}return!e&&this.parent&&this.parent.takeSnapshotByKey(t)||this.stores.$parent&&this.stores.$parent.takeSnapshotByKey(t)}},{key:"deleteSnapshotByKey",value:function(t,e){if(this._.snapshot&&t.startsWith(this._id)){var s=Object(O.keyWalknGet)(this._.snapshot,t.substr(this._id.length).replace(/^(.*[\>|\/])[^\>|\/]+$/gi,"$1"));s&&delete s[t.replace(/^.*[\>|\/]([^\>|\/]+)$/gi,"$1")]}return!e&&this.parent&&this.parent.deleteSnapshotByKey(t)||this.stores.$parent&&this.stores.$parent.deleteSnapshotByKey(t)}},{key:"setState",value:function(t){var e=this;Object.keys(t).forEach((function(s){return e.state[s]=t[s]}))}},{key:"parseRef",value:function(t){"string"!=typeof t&&(this.register(a()({},t.name,t.store)),t=t.name);var e=t.split(":");return e[0]=e[0].split("."),{storeId:e[0][0],path:e[0],alias:e[1]||e[0][e[0].length-1],ref:t}}},{key:"dispatch",value:function(t){for(var e,s=arguments.length,i=new Array(s>1?s-1:0),n=1;n<s;n++)i[n-1]=arguments[n];if(!this.dead){var r=this._._boundedActions;for(var a in this._._scope){var o;"$parent"!==a&&(m.a.fn(this._._scope[a])||(o=this._._scope[a]).trigger.apply(o,[t].concat(i)))}return r&&r.test(t)?this:(this._._mixed.forEach((function(e){return e.dispatch.apply(e,[t].concat(i))})),this.parent&&(e=this.parent).dispatch.apply(e,[t].concat(i)),this)}console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...",(new Error).stack)}},{key:"trigger",value:function(){this.dispatch.apply(this,arguments)}},{key:"then",value:function(t){var e=this;return this._stable?t(this.data):this.once("stable",(function(s){return e.then(t)}))}},{key:"onceStableTree",value:function(t){var e=this;return this._.unStableChilds?this.once("stableTree",(function(s){return e.onceStableTree(t)})):t(this.data)}},{key:"retainStores",value:function(){var t=this,e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[],s=arguments.length>1?arguments[1]:void 0;e.forEach((function(e){return t.stores[e]&&t.stores[e].retain&&t.stores[e].retain(s)}))}},{key:"disposeStores",value:function(){var t=this,e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[],s=arguments.length>1?arguments[1]:void 0;e.forEach((function(e){return t.stores[e]&&t.stores[e].dispose&&t.stores[e].dispose(s)}))}},{key:"wait",value:function(t){this._stable&&!this.__locks.all&&this.emit("unstable",this),this._stable=!1,this.__locks.all++,t&&(this.__locks[t]=this.__locks[t]||0,this.__locks[t]++)}},{key:"release",value:function(t){var e=this;if(t&&(0==this.__locks[t]&&console.error("Release more than locking !",t),this.__locks[t]=this.__locks[t]||0,this.__locks[t]--),t||0!=this.__locks.all||console.error("Release more than locking !"),this.__locks.all--,!this.__locks.all){if(this._.stabilizerTM)return;this._.stabilizerTM&&clearTimeout(this._.stabilizerTM),this._.stabilizerTM=setTimeout((function(t){e._.stabilizerTM=null,e.__locks.all||(e._.propagTM&&clearTimeout(e._.propagTM),e._rev++,e._stable=!0,e.emit("stable",e),!e.dead&&e._propag())}))}}},{key:"propag",value:function(){var t=this;this._.propagTM&&clearTimeout(this._.propagTM),this._.propagTM=setTimeout((function(e){t._.propagTM=null,t._propag()}),2)}},{key:"_propag",value:function(){var t=this;this._.followers.length&&this._.followers.forEach((function(e){var s=e[0],i=(e[1],e[2]),n=e[3],r=(e[3],t.getUpdates(n));r&&("function"!=typeof s?i?s.setState(a()({},i,r)):s.setState(r):s(r,n&&T({},n)||"no revs"))})),this.emit("update",this.getUpdates())}},{key:"isStable",value:function(){return this._stable}},{key:"isStableTree",value:function(){return!this._.unStableChilds}},{key:"_addChild",value:function(t){var e=this;this._.childScopes.push(t),this._.seenChilds++;var s={stable:function(t){e._.unStableChilds--,e._.unStableChilds||e.emit("stableTree",e)},unstable:function(t){e._.unStableChilds++,1==e._.unStableChilds&&e.emit("unstableTree",e)},stableTree:function(t){e._.unStableChilds--,e._.unStableChilds||e.emit("stableTree",e)},unstableTree:function(t){e._.unStableChilds++,1==e._.unStableChilds&&e.emit("unstableTree",e)},destroy:function(t){t._.unStableChilds&&e._.unStableChilds--,t.isStable()||e._.unStableChilds--,e._.unStableChilds||e.emit("stableTree",e)}},i=this._.unStableChilds;!t.isStable()&&this._.unStableChilds++,t._.unStableChilds&&this._.unStableChilds++,this._.childScopesList.push(s),!i&&this._.unStableChilds&&this.emit("unstableTree",this),t.on(s)}},{key:"_rmChild",value:function(t){var e=this._.childScopes.indexOf(t),s=this._.unStableChilds;-1!=e&&(this._.childScopes.splice(e,1),!t.isStable()&&this._.unStableChilds--,t._.unStableChilds&&this._.unStableChilds--,t.un(this._.childScopesList.splice(e,1)[0]),s&&!this._.unStableChilds&&this.emit("stableTree"))}},{key:"retain",value:function(t){this.__retains.all++,t&&(this.__retains[t]=this.__retains[t]||0,this.__retains[t]++)}},{key:"dispose",value:function(t){var e=this;if(t){if(!this.__retains[t])throw new Error("Dispose more than retaining : "+t);this.__retains[t]--}if(!this.__retains.all)throw new Error("Dispose more than retaining !");this.__retains.all--,this.__retains.all||(this._.persistenceTm?(this._.destroyTM&&clearTimeout(this._.destroyTM),this._.destroyTM=setTimeout((function(t){e.then((function(t){!e.__retains.all&&!e.dead&&e.destroy()}))}),this._.persistenceTm)):this.then((function(t){return!e.__retains.all&&!e.dead&&e.destroy()})))}},{key:"destroy",value:function(){var t=this,e=this._._scope;for(var s in n()(this._.childScopes).map((function(t){return t.destroy()})),e)if(!m.a.fn(e[s])){if("$parent"==s)continue;!e[s]._autoDestroy&&e[s].dispose("scoped")}for(this._.stabilizerTM&&clearTimeout(this._.stabilizerTM),this._.propagTM&&clearTimeout(this._.propagTM),Object.keys(this._._listening).forEach((function(e){return"$parent"!==e&&t._._scope[e].removeListener(t._._listening[e])}));this._._mixedList.length;)this._._mixed[0].removeListener(this._._mixedList.shift()),this._._mixed.shift().dispose("mixedTo");n()(this._.followers).map((function(e){return t.unBind.apply(t,n()(e))})),this._._parentList&&(this.parent._rmChild(this),this.parent.removeListener(this._._parentList),this.parent.dispose("isMyParent"),this._._parentList=null),this.dead=!0,delete C[this._id],this.emit("destroy",this)}}]),e}(w.default);E.persistenceTm=1,E.Store=null,E.scopeRef=function(t){this.path=t},E.scopes=C,E.isScopable=function(t){return E.isScope(t)||E.isScopeClass(t)||E.isStore(t)||E.isStoreClass(t)},E.isScope=function(t){return t instanceof E},E.isScopeClass=function(t){return E.isPrototypeOf(t)||t===E},e.default=E},function(t,e,s){t.exports=s(15)},function(t,e,s){"use strict";s.r(e),function(t){s.d(e,"Scope",(function(){return n})),s.d(e,"Store",(function(){return r})),s.d(e,"scopeRef",(function(){return o}));var i="undefined"!=typeof window?window:t,n=s(13).default,r=s(17).default,a=i.___rescope||{};function o(t,e){return t[e]=new n.scopeRef(t[e]),t}i.___rescope?(console.warn("ReScope is defined multiple times !! \nCheck you're packaging"),n=a.Scope,r=a.Store,o=a.scopeRef):(i.___rescope=a,n.Store=r),e.default={Scope:n,Store:r,scopeRef:o}}.call(this,s(16))},function(t,e){var s;s=function(){return this}();try{s=s||new Function("return this")()}catch(t){"object"==typeof window&&(s=window)}t.exports=s},function(t,e,s){"use strict";s.r(e);var i=s(3),n=s.n(i),r=s(1),a=s.n(r),o=s(7),h=s.n(o),u=s(6),c=s.n(u),l=s(8),p=s.n(l),f=s(4),_=s.n(f),d=s(5),v=s.n(d),y=s(9),b=s.n(y),g=s(10),m=s.n(g);function k(t,e){var s=Object.keys(t);if(Object.getOwnPropertySymbols){var i=Object.getOwnPropertySymbols(t);e&&(i=i.filter((function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable}))),s.push.apply(s,i)}return s}function S(t){for(var e=1;e<arguments.length;e++){var s=null!=arguments[e]?arguments[e]:{};e%2?k(Object(s),!0).forEach((function(e){n()(t,e,s[e])})):Object.getOwnPropertyDescriptors?Object.defineProperties(t,Object.getOwnPropertyDescriptors(s)):k(Object(s)).forEach((function(e){Object.defineProperty(t,e,Object.getOwnPropertyDescriptor(s,e))}))}return t}var w=s(0),O=s(13).default,j=s(2),T=j.keyWalknSet,x=j.keyWalknGet,C=s(12).default,E=s(18).default,R=s(11),P=Object.getPrototypeOf({}),M=function(t){function e(){var t,s,i;h()(this,e),i=p()(this,v()(e).call(this));var n=Array.prototype.slice.call(arguments),r=i.constructor,o=n[0]instanceof O?n.shift():r.scope?O.getScope(r.scope):w.string(n[0])?O.getScope(n.shift()):r.staticScope,u=!n[0]||w.array(n[0])||w.string(n[0])?{}:n.shift(),c=w.array(n[0])?n.shift():null,l=u.name||r.name,f=u.use||[],d=u.apply||null,y=r.state||r.initialState||r.defaultState;return i._uid=u._uid||R.generate(),i.__retains={all:0},i.__locks={all:0},i._onStabilize=[],i._autoDestroy=!!i._persistenceTm,i._persistenceTm=u.persistenceTm||r.persistenceTm||(u.autoDestroy||r.autoDestroy)&&5,i._cfg=u,u&&u.on&&i.on(u.on),i.name=l,o.stores?(i.scopeObj=o,i.scope=o.stores):(i.scopeObj=new O(o),i.scope=o.stores),i.$scope=i.scopeObj,i.$stores=i.scopeObj.stores,i.$actions=i.scopeObj.actions,i.$dispatch=i.scopeObj.dispatch.bind(i.scopeObj),i._rev=i.constructor._rev||0,i._revs={},i.stores={},i._require=[],i._sources=[l],w.array(r.use)?i._use=[].concat(a()(f),a()((r.use||[]).map((function(t){var e=t.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);if(e[1]){var s=e[2].split(".");return i._require.push(e[3]||s[s.length-1]),t.substr(1)}return t})))):i._use=[].concat(a()(f),a()(r.use?Object.keys(r.use).map((function(t){var e=t.match(/^(\!?)(.*)$/);return e[1]&&i._require.push(r.use[t]),e[2]+(!0===r.use[t]?"":":"+r.use[t])})):[])),r.require&&(t=i._require).push.apply(t,a()(r.require)),u.require&&(s=i._require).push.apply(s,a()(u.require)),i._followers=[],i._changesSW=S({},y),y&&Object.keys(y).length&&(i._nextState=i._changesSW),i.state=y&&{},d&&(i.apply=d),c?c.push(i._afterConstructor.bind(_()(i))):setTimeout(i._afterConstructor.bind(_()(i))),i}return m()(e,t),c()(e,[{key:"_afterConstructor",value:function(){var t,e=this._cfg,s=this.constructor,i=(this.restore(void 0,!0),this.state),n=this.data;n?this.data=n:void 0!==s.data?this.data=S({},s.data):e.hasOwnProperty("data")&&(this.data=e.data),e.hasOwnProperty("state")&&void 0!==e.state&&(i=S({},i,{},e.state)),void 0===this.data?(i||this._use.length)&&(this._nextState=this._changesSW=S({},this._changesSW,{},i||{},{},this.$scope.map(this,this._use)),this.state={},this.shouldApply(this._nextState)&&void 0===this.data&&(this.data=this.apply(this.data,this._nextState,this._changesSW),t=!0,this.state=this._changesSW,this._nextState=this._changesSW=null)):(t=!0,this.state=S({},this._changesSW,{},i||{},{},this.$scope.map(this,this._use)),this._nextState=this._changesSW=null),void 0===this.data&&!t||this.__locks.all?(this._stable=!1,s.managed||this.state||this._use&&this._use.length||console.warn("ReScope store '",this.name,"' have no initial data, state or use. It can't stabilize...")):(this._stable=!0,this._rev++),!this._stable&&this.emit("unstable",this.state)}},{key:"shouldPropag",value:function(t){return!0}},{key:"shouldSerialize",value:function(){return!0}},{key:"hasDataChange",value:function(t){this.constructor;var e,s=this.data;return!(e=!s&&t||s!==t)&&s&&Object.keys(s).forEach((function(i){e=e||(t?s[i]!==t[i]:s&&s[i])})),!e&&t&&Object.keys(t).forEach((function(i){e=e||(t?s[i]!==t[i]:s&&s[i])})),e}},{key:"shouldApply",value:function(){var t=this,e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:this.state,s=this.constructor;return!!this.isComplete(e)&&(w.array(s.follow)?s.follow.reduce((function(t,s){return t||e&&e[s]}),!1):!s.follow||Object.keys(s.follow).reduce((function(i,n){return i||e&&w.fn(s.follow[n])&&s.follow[n].call(t,e[n])||s.follow[n]&&e[n]!==t.state[n]}),!1))}},{key:"apply",value:function(t,e,s){return e}},{key:"stabilize",value:function(t){t&&this.once("stable",t),this._stabilizer||(this._stable&&this.emit("unstable",this.state,this.data),this._stable=!1,this._stabilizer=E.pushTask(this,"pushState"))}},{key:"retrieve",value:function(t){var e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,s=arguments.length>2&&void 0!==arguments[2]?arguments[2]:this.data;return t=w.string(t)?t.split("."):t,s&&t&&t.length?t.length==e+1?s[t[e]]:this.retrieve(t,e+1,s[t[e]]):s}},{key:"dispatch",value:function(t){for(var e,s=arguments.length,i=new Array(s>1?s-1:0),n=1;n<s;n++)i[n-1]=arguments[n];(e=this.scopeObj).dispatch.apply(e,[t].concat(i))}},{key:"trigger",value:function(t){var e=this.constructor.actions;if(e&&e[t]){for(var s,i=arguments.length,n=new Array(i>1?i-1:0),r=1;r<i;r++)n[r-1]=arguments[r];var a=(s=e[t]).call.apply(s,[this].concat(n));w.function(a)&&(a=a(this.nextState)),a&&this.setState(a)}}},{key:"push",value:function(t,e,s){if(s=!0===e?s:e,!(e=!0===e)&&!this.hasDataChange(t)){if(s&&s(),!this.__locks.all){var i=this._stable;this._stable=!0,!i&&this.emit("stable",this.state,this.data)}return!1}this.data=t,this.wait(),this.release(s)}},{key:"pushState",value:function(t){if(this._stabilizer=null,t||this._changesSW||!this.data){var e,s=t||this._nextState||this.state;if(Object.keys(s).forEach((function(t){return void 0===s[t]&&delete s[t]})),e=this.apply(this.data,s,this._changesSW),this.state=s,this._nextState=null,this._changesSW=null,!t&&!this.hasDataChange(e)){if(!this.__locks.all){var i=this._stable;this._stable=!0,!i&&this.emit("stable",this.state,this.data),this._stabilizer=null}return!1}this.data=e,this.wait(),this.release()}}},{key:"setState",value:function(t,e,s){var i,n,r=this._changesSW=this._changesSW||{},a=this._nextState=this._nextState||S({},this.state);for(n in t)(!this.state||r.hasOwnProperty(n)&&t[n]!==r[n]||t.hasOwnProperty(n)&&t[n]!==this.state[n])&&(i=!0,a[n]=r[n]=t[n]);if(this.shouldApply(a))return s?(this.pushState(),e&&e()):i?this.stabilize(e):e&&e(),this}},{key:"setStateSync",value:function(t){var e=this._changesSW=this._changesSW||{};for(var s in t)(!this.state||t.hasOwnProperty(s)&&t[s]!==this.state[s])&&(!0,this._revs[s]=t[s]&&t[s]._rev||!0,e[s]=t[s]);return this.shouldApply(S({},this.state||{},{},e))&&this.pushState(),this.data}},{key:"as",value:function(t){return{store:this,name:t}}},{key:"on",value:function(t){var s=this;!w.string(t)&&t?Object.keys(t).forEach((function(i){return b()(v()(e.prototype),"on",s).call(s,i,t[i])})):b()(v()(e.prototype),"on",this).apply(this,arguments)}},{key:"removeListener",value:function(t){var s=this;!w.string(t)&&t?Object.keys(t).forEach((function(i){return b()(v()(e.prototype),"removeListener",s).call(s,i,t[i])})):b()(v()(e.prototype),"removeListener",this).apply(this,arguments)}},{key:"isComplete",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:this.state;return!this._require||!this._require.length||t&&this._require.reduce((function(e,s){return e&&t[s]}),!0)}},{key:"isStable",value:function(){return this._stable}},{key:"serialize",value:function(){var t=this,s=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=s.parentAlias||this.scopeObj._id,r=0,a=!s.norefs&&w.array(this._use)&&this._use.reduce((function(s,i){var n=t.$scope.parseRef(i),a=t.$stores[n.storeId];return a&&e.isStore(a)&&!a.scopeObj._.isLocalId&&(r++,s[n.alias]=n.path),s}),{}),o=this.state||{},h=this.shouldSerialize();if(!h)return T(i,n+"/"+this.name,{dataRefs:s.dataRefs,refs:a}),i;var u=Object.keys(o)||[],c=u.map((function(t){return o[t]})),l=0,p=s.dataRefs||{},f=!s.norefs&&this.data&&Object.keys(this.data).reduce((function(e,s){var i=c.indexOf(t.data[s]);return-1!=i&&(l++,e[s]=u[i]),e}),{}),_={dataRefs:s.dataRefs,state:o&&(s.norefs?S({},o):Object.keys(o).reduce((function(t,e){return!a[e]&&(t[e]=o[e]),t}),{})),data:(this.data&&this.data.__proto__===P?Object.keys(this.data).reduce((function(e,s){return f[s]||p[s]||(e[s]=t.data[s],l++),e}),{}):(w.bool(this.data)||w.number(this.data)||w.string(this.data))&&this.data)||void 0};return a&&r&&(_.refs=a),f&&l&&(_.inRefs=f),T(i,n+"/"+this.name,_),i}},{key:"restore",value:function(t,e){var s=this;(t=t&&x(t,this.scopeObj._id+"/"+this.name)||this.$scope.takeSnapshotByKey(this.scopeObj._id+"/"+this.name))&&t&&(this.isStable()||e||this.then((function(){return s.restore(t)})),this.state=S({},t.state),t.refs&&Object.keys(t.refs).forEach((function(e){s.$scope.restoreRefPath(t.refs[e]),s.state[e]=s.$scope.retrieve(t.refs[e])})),!0===t.inRefs?this.data=S({},this.state):(this.data=t.data,t.inRefs&&Object.keys(t.inRefs).forEach((function(e){s.data[e]=s.state[t.inRefs[e]]}))),t.dataRefs&&(this.data=this.data||{},Object.keys(t.dataRefs).forEach((function(e){s.$scope.restoreRefPath(t.dataRefs[e]),s.data[e]=s.$scope.retrieve(t.dataRefs[e])}))))}},{key:"bind",value:function(t,e){var s=!(arguments.length>2&&void 0!==arguments[2])||arguments[2],i=arguments.length>3?arguments[3]:void 0;if(this._followers.push([t,e,i]),s&&this.data&&this._stable){var r=i?this.retrieve(i):this.data;"function"!=typeof t?e?t.setState(n()({},e,r)):t.setState(r):t(r)}}},{key:"unBind",value:function(t,e,s){for(var i=this._followers,n=i&&i.length;i&&n--;)if(i[n][0]===t&&i[n][1]===e&&i[n][2]===s)return i.splice(n,1)}},{key:"then",value:function(t){var e=this;if(this._stable)return t(this.data);this.once("stable",(function(s){return t(e.data)}))}},{key:"wait",value:function(t){if("number"==typeof t)return this.__locks.all+=t;if(w.array(t))return t.map(this.wait.bind(this));this._stable&&this.emit("unstable",this.state,this.data),this._stable=!1,this.__locks.all++;var e=w.string(t)?t:null;return e&&(this.__locks[e]=this.__locks[e]||0,this.__locks[e]++),t&&w.fn(t.then)&&t.then(this.release.bind(this,null)),this}},{key:"release",value:function(t,e){this.constructor;var s=this,i=this._stable;if(w.fn(t)&&(e=t,t=null),t&&(0==this.__locks[t]&&console.error("Release more than locking !",t),this.__locks[t]=this.__locks[t]||0,this.__locks[t]--),t||0!=this.__locks.all||console.error("Release more than locking !"),!--this.__locks.all&&this.isComplete()){var r=this.shouldPropag(this.data);this._stable=!0,r&&this._rev++,r&&this._followers.length&&this._followers.forEach((function(t){var e=t[2]?s.retrieve(t[2]):s.data;"function"==typeof t[0]?t[0](e):t[0].setState(t[1]?n()({},t[1],e):e)})),!i&&this.emit("stable",this.data),r&&this.emit("update",this.data),e&&e()}else e&&this.then(e);return this}},{key:"propag",value:function(t){this.emit("update",t)}},{key:"retain",value:function(t){this.__retains.all++,t&&(this.__retains[t]=this.__retains[t]||0,this.__retains[t]++)}},{key:"dispose",value:function(t){var e=this;if(t){if(!this.__retains[t])throw new Error("RS : Dispose more than retaining on store '"+this.name+"' : "+t);this.__retains[t]--}if(0==this.__retains.all)throw new Error("RS : Dispose more than retaining on store "+this.name);this.__retains.all--,this.__retains.all||(this._persistenceTm?(this._destroyTM&&clearTimeout(this._destroyTM),this._destroyTM=setTimeout((function(t){e._destroyTM=null,!e.__retains.all&&!e.dead&&e.destroy()}),this._persistenceTm)):!this.__retains.all&&!this.dead&&this.destroy())}},{key:"destroy",value:function(){this._stabilizer&&(this._stabilizer=null,clearTimeout(this._stabilizer)),this.emit("destroy",this),this._followers.length&&this._followers.forEach((function(t){"function"!=typeof t[0]&&t[0].stores&&delete t[0].stores[t[1]]})),this._followers.length=0,this.constructor._rev=this.rev,this.dead=!0,this._revs=this.data=this.state=this.scope=null,this.removeAllListeners()}},{key:"nextState",get:function(){return this._nextState||this.state}}]),e}(C);M.follow=void 0,M.require=void 0,M.staticScope=new O({},{id:"static"}),M.state=void 0,M.persistenceTm=!1,M.as=function(t){return{store:this,name:t}},M.map=function(t,e,s,i){var n=arguments.length>4&&void 0!==arguments[4]&&arguments[4],r=t._revs||{},o=t.stores||(t.stores={}),h={};return e=w.array(e)?a()(e):[e],s=s||M.staticScope,e=e.filter((function(e){var u,c,l,p,f,_;if(!e)return console.error("Not a mappable store item '"+e+"' in "+i+" !!"),!1;if(e.store&&e.name?(l=c=e.name,f=e.store):w.fn(e)?(c=l=e.name||e.defaultName,f=e):(c=(_=e.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/))[1],p=_[2]&&_[2].substr(1),f=s.stores[_[1]],l=_[3]||p&&p.match(/([^\.]*)$/)[0]||_[1]),!f){var d=[];for(var v in s.stores)d.push(v);return console.error("Not a mappable store item '"+c+"/"+l+"' in "+(t.name||t)+" !!",f,_,s.stores,d),!1}if(O.isScopeClass(f)&&s._mount(c),O.isScope(f))f=s._mount(e);else if(r[c])return!1;return w.fn(f)?(s._mount(c),s.stores[c].bind(t,l,n,p)):f.bind(t,l,n,p),s.stores[c]._sources&&(u=t._sources).push.apply(u,a()(s.stores[c]._sources)),r[l]=r[l]||!0,!o[c]&&(o[c]=s.stores[c]),s.stores[c].hasOwnProperty("data")&&(h[c]=s.data[c]),!0})),t.once("destroy",(function(){e.map((function(e){var i,n,r,a;e.store&&e.name?(n=i=e.name,a=e.store):w.fn(e)?(i=n=e.name||e.defaultName,a=s.stores[i]):(i=(e=e.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/))[1],r=e[2]&&e[2].substr(1),a=s.stores[e[1]],n=e[3]||r&&r.match(/([^\.]*)$/)[0]||e[1]),a&&!w.fn(a)&&a.unBind(t,n,r)}))})),h},M.isStore=O.isStore=function(t){return t instanceof M},M.isStoreClass=O.isStoreClass=function(t){return M.isPrototypeOf(t)||t===M},e.default=M},function(t,e,s){"use strict";s.r(e),function(t){var s,i,n=[],r=0,a=0,o=0,h={lastError:null,dispatch:function(t){h.disable(),s&&s[0].handleError?s[0].handleError(t,s):s&&console.error("ReScope : An apply task has failed !!",s[1]," on ",s[0].name||s[0].constructor.name,"\n",t),i=!1,s=null,u()},enable:"undefined"!=typeof window?function(){window.addEventListener("error",h.dispatch)}:function(){t.on("uncaughtException",h.dispatch)},disable:"undefined"!=typeof window?function(){window.removeEventListener("error",h.dispatch)}:function(){t.removeListener("uncaughtException",h.dispatch)}};function u(){i||function(){Date.now();i=!0,h.enable();for(;o;){for(;!n[r]||!n[r].length;)r++;o--,s=n[r].shift();try{!s[0].dead&&s[0][s[1]](s[2])}catch(t){return h.dispatch(t)}}s=void 0,h.disable(),i=!1,o&&setTimeout(u)}()}e.default={pushTask:function(t,e,s){var i=t._sources&&t._sources.length||1,h=n[i]=n[i]||[];return a=Math.max(a,i),r=Math.min(r,i),o++,h.push([t,e,s]),setTimeout(u,0),h.length}}}.call(this,s(19))},function(t,e){var s,i,n=t.exports={};function r(){throw new Error("setTimeout has not been defined")}function a(){throw new Error("clearTimeout has not been defined")}function o(t){if(s===setTimeout)return setTimeout(t,0);if((s===r||!s)&&setTimeout)return s=setTimeout,setTimeout(t,0);try{return s(t,0)}catch(e){try{return s.call(null,t,0)}catch(e){return s.call(this,t,0)}}}!function(){try{s="function"==typeof setTimeout?setTimeout:r}catch(t){s=r}try{i="function"==typeof clearTimeout?clearTimeout:a}catch(t){i=a}}();var h,u=[],c=!1,l=-1;function p(){c&&h&&(c=!1,h.length?u=h.concat(u):l=-1,u.length&&f())}function f(){if(!c){var t=o(p);c=!0;for(var e=u.length;e;){for(h=u,u=[];++l<e;)h&&h[l].run();l=-1,e=u.length}h=null,c=!1,function(t){if(i===clearTimeout)return clearTimeout(t);if((i===a||!i)&&clearTimeout)return i=clearTimeout,clearTimeout(t);try{i(t)}catch(e){try{return i.call(null,t)}catch(e){return i.call(this,t)}}}(t)}}function _(t,e){this.fun=t,this.array=e}function d(){}n.nextTick=function(t){var e=new Array(arguments.length-1);if(arguments.length>1)for(var s=1;s<arguments.length;s++)e[s-1]=arguments[s];u.push(new _(t,e)),1!==u.length||c||o(f)},_.prototype.run=function(){this.fun.apply(null,this.array)},n.title="browser",n.browser=!0,n.env={},n.argv=[],n.version="",n.versions={},n.on=d,n.addListener=d,n.once=d,n.off=d,n.removeListener=d,n.removeAllListeners=d,n.emit=d,n.prependListener=d,n.prependOnceListener=d,n.listeners=function(t){return[]},n.binding=function(t){throw new Error("process.binding is not supported")},n.cwd=function(){return"/"},n.chdir=function(t){throw new Error("process.chdir is not supported")},n.umask=function(){return 0}}]);
+/*!
+ * MIT License
+ * 
+ * Copyright (c) 2018 Wise Wild Web
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+module.exports =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "/";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./node_modules/process/browser.js":
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/harmony-module.js":
+/*!*******************************************!*\
+  !*** (webpack)/buildin/harmony-module.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(originalModule) {
+	if (!originalModule.webpackPolyfill) {
+		var module = Object.create(originalModule);
+		// module.parent = undefined by default
+		if (!module.children) module.children = [];
+		Object.defineProperty(module, "loaded", {
+			enumerable: true,
+			get: function() {
+				return module.l;
+			}
+		});
+		Object.defineProperty(module, "id", {
+			enumerable: true,
+			get: function() {
+				return module.i;
+			}
+		});
+		Object.defineProperty(module, "exports", {
+			enumerable: true
+		});
+		module.webpackPolyfill = 1;
+	}
+	return module;
+};
+
+
+/***/ }),
+
+/***/ "./src/Scope.js":
+/*!**********************!*\
+  !*** ./src/Scope.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ "undefined?4d9b");
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "undefined?188d");
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "undefined?24b3");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @babel/runtime/helpers/possibleConstructorReturn */ "undefined?03c7");
+/* harmony import */ var _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @babel/runtime/helpers/getPrototypeOf */ "undefined?20a8");
+/* harmony import */ var _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @babel/runtime/helpers/assertThisInitialized */ "undefined?e4e5");
+/* harmony import */ var _babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "undefined?36a1");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @babel/runtime/helpers/inherits */ "undefined?74ba");
+/* harmony import */ var _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var is__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! is */ "undefined?63a5");
+/* harmony import */ var is__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(is__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var shortid__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! shortid */ "undefined?beec");
+/* harmony import */ var shortid__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(shortid__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _utils_Emitter__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./utils/Emitter */ "./src/utils/Emitter.js");
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./utils/utils */ "./src/utils/utils.js");
+
+
+
+
+
+
+
+
+
+(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *
+ * Copyright (C) 2019 Nathanael Braun
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+
+
+
+var __proto__push = function __proto__push(target, id, parent) {
+  var fn = function fn() {};
+
+  fn.prototype = parent ? new parent._[id]() : target[id] || {};
+  target[id] = new fn();
+  target._[id] = fn;
+},
+    allScopes = {};
+/**
+ * Base Scope object
+ */
+
+
+var Scope =
+/*#__PURE__*/
+function (_EventEmitter) {
+  _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_7___default()(Scope, _EventEmitter);
+
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_6___default()(Scope, null, [{
+    key: "stateMapToRefList",
+    // if > 0, will wait 'persistenceTm' ms before destroy when dispose reach 0
+    // all active scopes
+
+    /**
+     * get a parsed reference list from stateMap
+     * @param _ref
+     * @returns {{storeId, path, alias: *, ref: *}}
+     */
+    value: function stateMapToRefList(sm) {
+      var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var _refs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+      var actions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var path = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";
+      var applier;
+      Object.keys(sm).forEach(function (key) {
+        var cpath = path ? path + '.' + key : key;
+        sm[key] instanceof Scope.scopeRef ? _refs.push(sm[key].path + ':' + cpath) : sm[key] && sm[key] instanceof Function ? key === "$apply" ? applier = sm[key] : actions[key] = sm[key] : sm[key] && sm[key].prototype instanceof Scope.Store ? _refs.push(sm[key].as(cpath)) : //key === "$actions" ?
+        //Object.assign(actions, sm[key]) :
+        state[cpath] = sm[key]; //: this.stateMapToRefList(sm[key], _refs, path + '.' + key)
+      });
+      return applier;
+    }
+  }, {
+    key: "getScope",
+    value: function getScope(scopes) {
+      var skey = is__WEBPACK_IMPORTED_MODULE_8___default.a.array(scopes) ? scopes.sort(function (a, b) {
+        if (a.firstname < b.firstname) return -1;
+        if (a.firstname > b.firstname) return 1;
+        return 0;
+      }).join('+') : scopes;
+      return allScopes[skey] = allScopes[skey] || new Scope({}, {
+        id: skey
+      });
+    }
+  }]);
+
+  /**
+   * Init a ReScope scope
+   *
+   * @param storesMap {Object} Object with the initial stores definition / instances
+   * @param config {Object} Scope config
+   * {
+   *     parent {scope} @optional parent scope
+   *
+   *     id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
+   *     scope)
+   *     key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'>'+key)
+   *     incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
+   *
+   *     state {Object} @optional initial state by store alias
+   *     data {Object} @optional initial data by store alias
+   *
+   *     rootEmitter {bool} @optional true to not being destabilized by parent
+   *     boundedActions {array | regexp} @optional list or regexp of actions not propagated to the parent
+   *     autoDestroy {true | false | 'inherit'}
+   *     persistenceTm {number) if > 0, will wait 'persistenceTm' ms before destroy when
+   *     dispose reach 0 autoDestroy  {bool} will trigger retain & dispose after start
+   *  }
+   * @returns {Scope}
+   */
+  function Scope(storesMap) {
+    var _this;
+
+    var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        parent = _ref2.parent,
+        upperScope = _ref2.upperScope,
+        key = _ref2.key,
+        id = _ref2.id,
+        snapshot = _ref2.snapshot,
+        state = _ref2.state,
+        data = _ref2.data,
+        _ref2$incrementId = _ref2.incrementId,
+        incrementId = _ref2$incrementId === void 0 ? !!key : _ref2$incrementId,
+        persistenceTm = _ref2.persistenceTm,
+        autoDestroy = _ref2.autoDestroy,
+        rootEmitter = _ref2.rootEmitter,
+        boundedActions = _ref2.boundedActions;
+
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2___default()(this, Scope);
+
+    _this = _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3___default()(this, _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_4___default()(Scope).call(this));
+    var _ = {
+      keyPID: upperScope && upperScope._id || parent && parent._id || shortid__WEBPACK_IMPORTED_MODULE_9___default.a.generate(),
+      key: key,
+      incrementId: incrementId,
+      baseId: id
+    }; // generate / set this scope id
+
+    id = id || key && _.keyPID + '>' + key;
+    _.isLocalId = !id;
+    id = id || "_____" + shortid__WEBPACK_IMPORTED_MODULE_9___default.a.generate();
+
+    if (allScopes[id] && !incrementId) {
+      // overwrite existing scope
+      _this._id = id;
+      allScopes[id].register(storesMap);
+      return _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3___default()(_this, allScopes[id]);
+    } else if (allScopes[id] && incrementId) {
+      // generate key id
+      var i = -1;
+
+      while (allScopes[id + '[' + ++i + ']']) {
+        ;
+      }
+
+      id = id + '[' + i + ']';
+    } // register this scope in the static Scope.scopes
+
+
+    allScopes[id] = _babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this);
+    _this._id = id;
+    _this._rev = 0;
+    _this._ = _;
+    _this.actions = {};
+    _this.stores = {};
+    _this.state = {};
+    _this.data = {};
+    _this.parent = parent;
+    if (autoDestroy == 'inherit') autoDestroy = parent && parent._autoDestroy;
+    _this._autoDestroy = autoDestroy;
+    _.persistenceTm = persistenceTm || _this.constructor.persistenceTm;
+    if (parent && parent.dead) throw new Error("Can't use a dead scope as parent !");
+
+    __proto__push(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this), 'actions', parent);
+
+    __proto__push(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this), 'stores', parent);
+
+    __proto__push(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this), 'state', parent);
+
+    __proto__push(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this), 'data', parent);
+
+    _this.sources = [];
+    _.childScopes = [];
+    _.childScopesList = [];
+    _.unStableChilds = 0;
+    _.seenChilds = 0;
+    _._listening = {};
+    _._scope = {};
+    _._mixed = [];
+    _._mixedList = [];
+    _.followers = [];
+    _this.__retains = {
+      all: 0
+    };
+    _this.__locks = {
+      all: 1
+    }; // todo
+
+    _._boundedActions = is__WEBPACK_IMPORTED_MODULE_8___default.a.array(boundedActions) ? {
+      test: boundedActions.includes.bind(boundedActions)
+    } : boundedActions; // register to the parent scope
+
+    if (parent) {
+      parent.retain("isMyParent");
+
+      if (!rootEmitter) {
+        !parent._stable && _this.wait("waitingParent");
+        parent.on(_._parentList = {
+          'stable': function stable(s) {
+            return _this.release("waitingParent");
+          },
+          'unstable': function unstable(s) {
+            return _this.wait("waitingParent");
+          },
+          'update': function update(s) {
+            return _this._propag();
+          }
+        });
+      } else {
+        parent.on(_._parentList = {
+          'update': function update(s) {
+            return _this._propag();
+          }
+        });
+      } // this.register(parent.__scope, state, data);
+
+    } // register this scope stores
+
+
+    _this.register(storesMap, state, data);
+
+    _this.__locks.all--;
+    _this._stable = !_this.__locks.all;
+
+    if (parent) {
+      parent._addChild(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this));
+    } // restore snapshots
+
+
+    _this.restore(snapshot);
+
+    if (autoDestroy) setTimeout(function (tm) {
+      _this.retain("autoDestroy");
+
+      _this.dispose("autoDestroy");
+    });
+    return _this;
+  }
+  /**
+   *
+   * Mount the stores in storesList, in this scope or in its parents or mixed scopes
+   *
+   * @param storeIdList {string|storeRef} Store name, Array of Store names, or Rescope
+   *     store ref from Store::as or Store:as
+   * @param state
+   * @param data
+   * @returns {Scope}
+   */
+
+
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_6___default()(Scope, [{
+    key: "mount",
+    value: function mount(storeIdList, snapshot, state, data) {
+      var _this2 = this;
+
+      if (is__WEBPACK_IMPORTED_MODULE_8___default.a.array(storeIdList)) {
+        storeIdList.forEach(function (storeId) {
+          return _this2._mount(storeId, snapshot, state, data);
+        });
+      } else {
+        this._mount.apply(this, arguments);
+      }
+
+      return this;
+    }
+  }, {
+    key: "_mount",
+    value: function _mount(id, snapshot, state, data) {
+      var ref,
+          _ = this._;
+      ref = this.parseRef(id);
+      if (id == "$parent") return;
+
+      if (!_._scope[ref.storeId]) {
+        var _this$parent;
+
+        //ask mixed || parent
+        if (_._mixed.reduceRight(function (mounted, ctx) {
+          return mounted || ctx._mount(id, snapshot, state, data);
+        }, false) || !this.parent) return;
+        return (_this$parent = this.parent)._mount.apply(_this$parent, arguments);
+      } else {
+        var store = _._scope[ref.storeId],
+            taskQueue = [];
+
+        if (Scope.isStoreClass(store)) {
+          _._scope[ref.storeId] = new store(this, {
+            //snapshot,
+            name: ref.storeId,
+            state: state,
+            data: data
+          }, taskQueue);
+
+          while (taskQueue.length) {
+            taskQueue.shift()();
+          }
+        } else if (Scope.isScopeClass(store)) {
+          store = _._scope[ref.storeId] = new store({
+            $parent: this
+          }, {
+            key: ref.storeId,
+            incrementId: true,
+            upperScope: this //autoDestroy: true
+            //parent: this
+
+          }); //_._scope[ ref.storeId ].retain("scopedChildScope");
+          //_watchStore(ref.storeId);
+
+          if (ref.path.length > 1) _._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data); //else return _._scope[ ref.storeId ];
+        }
+
+        if (Scope.isStore(store)) {
+          if (state !== undefined && data === undefined) store.setState(state);else if (state !== undefined) store.state = state;
+          if (data !== undefined) store.push(data);
+        }
+
+        if (Scope.isScope(store)) {
+          if (state !== undefined) store.setState(state);
+          if (ref.path.length > 1) store._mount(ref.path.slice(1).join('.'));
+        }
+
+        this._watchStore(ref.storeId);
+      }
+
+      return _._scope[ref.storeId];
+    }
+    /**
+     * Register stores in storesMap & link them in the protos
+     * @param storesMap
+     * @param state
+     * @param data
+     */
+
+  }, {
+    key: "register",
+    value: function register(storesMap) {
+      var _this3 = this;
+
+      var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      this.relink(storesMap, this, false, false);
+      Object.keys(storesMap).forEach(function (id) {
+        if (id === "$parent") return;
+        if (!Scope.isScopable(storesMap[id])) return console.warn("RS: ", _this3._id, ", can't register not scopable object :", id);
+
+        if (storesMap[id].singleton || is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(storesMap[id]) && (state[id] || data[id])) {
+          _this3._mount(id, undefined, state[id], data[id]);
+        } else if (state[id] || data[id]) {
+          if (data[id]) {
+            if (state[id]) _this3.stores[id].state = state[id];
+
+            _this3.stores[id].push(data[id]);
+          } else if (state[id]) {
+            _this3.stores[id].setState(state[id]);
+          }
+        } else {
+          _this3._watchStore(id);
+        }
+      });
+    }
+    /**
+     * Map srcCtx store's on targetCtx headers proto's
+     * @param srcCtx
+     * @param targetCtx
+     * @param state
+     * @param data
+     */
+
+  }, {
+    key: "relink",
+    value: function relink(srcCtx) {
+      var _this4 = this;
+
+      var targetCtx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this;
+      var external = arguments.length > 2 ? arguments[2] : undefined;
+      var force = arguments.length > 3 ? arguments[3] : undefined;
+      var _ = this._,
+          me = this;
+      Object.keys(srcCtx).forEach(function (id) {
+        var hotReloading, actions, activeActions; // same store def : ignore
+
+        if (!force && targetCtx._._scope[id] === srcCtx[id] || targetCtx._._scope[id] && targetCtx._._scope[id].constructor === srcCtx[id]) return; // hot switch
+
+        if (!force && targetCtx._._scope[id]) {
+          if (!external && !is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(targetCtx._._scope[id])) {
+            // mounted store
+            targetCtx._._scope[id].__proto__ = srcCtx[id].prototype;
+            targetCtx._._scope[id].__onHotReloaded && targetCtx._._scope[id].__onHotReloaded(srcCtx[id]);
+          } else if (!external && is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(targetCtx._._scope[id])) targetCtx._._scope[id] = srcCtx[id];
+        } else if (!force && !external) _._scope[id] = srcCtx[id]; // map the store id
+
+
+        Object.defineProperty(targetCtx._.stores.prototype, id, {
+          enumerable: true,
+          configurable: true,
+          get: function get() {
+            return _._scope[id];
+          }
+        });
+        activeActions = targetCtx._.actions.prototype; // not mapping hierarchic scopes
+
+        if (id !== "$parent") {
+          // map state & data
+          Object.defineProperty(targetCtx._.state.prototype, id, {
+            enumerable: true,
+            configurable: true,
+            get: function get() {
+              return _._scope[id] && _._scope[id].state;
+            },
+            set: function set(v) {
+              return _this4._mount(id, undefined, v);
+            }
+          });
+          Object.defineProperty(targetCtx._.data.prototype, id, {
+            enumerable: true,
+            configurable: true,
+            get: function get() {
+              return _._scope[id] && _._scope[id].data;
+            },
+            set: function set(v) {
+              return _this4._mount(id, undefined, undefined, v);
+            }
+          }); // action mapping
+
+          actions = srcCtx[id] instanceof Scope.Store ? srcCtx[id].constructor.actions : srcCtx[id].actions;
+          if (Scope.isScopeClass(_._scope[id])) _this4._mount(id);
+
+          if (Scope.isScope(_._scope[id])) {
+            // map hierarchic scopes
+            if (activeActions[id]) console.warn("RS : Sub scope actions is mapped over an existing function !", id);
+            activeActions[id] = _._scope[id].actions;
+          } else if (!Scope.isStore(_._scope[id]) && !Scope.isStoreClass(_._scope[id])) return;
+
+          actions && _this4._mapActions(actions, activeActions, id);
+        } else {
+          activeActions[id] = srcCtx[id].actions;
+        } // remount the store if it was hot reloaded
+
+
+        if (hotReloading) _this4._mount(id, null, hotReloading);
+      });
+    }
+    /**
+     * Map & bounds actions from stores
+     * todo : unmap actions
+     * @param actions
+     * @param target
+     * @param storeId
+     * @private
+     */
+
+  }, {
+    key: "_mapActions",
+    value: function _mapActions(actions, target, storeId) {
+      for (var act in actions) {
+        if (actions.hasOwnProperty(act)) {
+          if (is__WEBPACK_IMPORTED_MODULE_8___default.a.object(actions[act])) {
+            // hirarchised actions
+            if (target[act] && !is__WEBPACK_IMPORTED_MODULE_8___default.a.object(target[act])) console.warn("RS : Actions namespace is mapped over an existing function !", storeId, act);
+            target[act] = target[act] || {
+              __targetStores: 0
+            };
+
+            this._mapActions(actions[act], target[act]);
+
+            target[act].__targetStores++;
+          } else if (target.hasOwnProperty(act)) target[act].__targetStores++;else {
+            if (is__WEBPACK_IMPORTED_MODULE_8___default.a.object(target[act])) console.warn("RS : Action is mapped over existing namespace  !", storeId, act);
+            target[act] = this.dispatch.bind(this, act);
+            target[act].__targetStores = 1;
+          }
+        }
+      }
+    }
+    /**
+     * Make this scope watching the local store 'id'
+     * @param id
+     * @returns {boolean}
+     * @private
+     */
+
+  }, {
+    key: "_watchStore",
+    value: function _watchStore(id) {
+      var _this5 = this;
+
+      var _ = this._;
+
+      if (!_._listening[id] && !is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(_._scope[id])) {
+        !_._scope[id]._autoDestroy && _._scope[id].retain("scoped");
+        !_._scope[id].isStable() && this.wait(id);
+
+        _._scope[id].on(_._listening[id] = {
+          'destroy': function destroy(s) {
+            delete _._listening[id];
+            _._scope[id] = _._scope[id].constructor;
+          },
+          'update': function update(s) {
+            return _this5.propag();
+          },
+          'stable': function stable(s) {
+            return _this5.release(id);
+          },
+          'unstable': function unstable(s) {
+            return _this5.wait(id);
+          }
+        });
+      }
+
+      return true;
+    }
+    /**
+     * Mix targetCtx on this scope
+     * Mixed scope parents are NOT mapped
+     * @param targetCtx
+     */
+
+  }, {
+    key: "mixin",
+    value: function mixin(targetCtx) {
+      var _this6 = this;
+
+      var parent = this.parent,
+          lists,
+          _ = this._;
+
+      _._mixed.push(targetCtx);
+
+      targetCtx.retain("mixedTo");
+      if (!targetCtx._stable) this.wait(targetCtx._id);
+
+      _._mixedList.push(lists = {
+        'stable': function stable(s) {
+          return _this6.release(targetCtx._id);
+        },
+        'unstable': function unstable(s) {
+          return _this6.wait(targetCtx._id);
+        },
+        'update': function update(s) {
+          return _this6._propag();
+        }
+      });
+
+      targetCtx.on(lists); // reset protos
+      // push new proto with parent
+
+      __proto__push(this, 'actions', parent);
+
+      __proto__push(this, 'stores', parent);
+
+      __proto__push(this, 'state', parent);
+
+      __proto__push(this, 'data', parent); // bind local accessors in the new proto
+
+
+      this.relink(_._scope, this, false, true);
+
+      _._mixed.forEach(function (ctx) {
+        // push protos
+        __proto__push(_this6, 'actions');
+
+        __proto__push(_this6, 'stores');
+
+        __proto__push(_this6, 'state');
+
+        __proto__push(_this6, 'data');
+
+        _this6.stores.__origin = "mixed " + ctx._id; // write mixed accessors
+
+        ctx.relink(ctx._._scope, _this6, true, true);
+      });
+    }
+    /**
+     * Bind stores from this scope, his parents or mixed scopes to obj
+     *
+     * @param target {React.Component|Store|function}
+     * @param key {string} stores keys to bind updates
+     * @param as
+     * @param setInitial {boolean} false to not propag initial value (default : true)
+     */
+
+  }, {
+    key: "bind",
+    value: function bind(target, key, as) {
+      var _this7 = this;
+
+      var setInitial = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+      var revMap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+      var lastRevs, data, refKeys;
+      if (key && !is__WEBPACK_IMPORTED_MODULE_8___default.a.array(key)) key = [key];
+
+      if (as === false || as === true) {
+        setInitial = as;
+        as = null;
+      }
+
+      refKeys = key.map(function (id) {
+        return is__WEBPACK_IMPORTED_MODULE_8___default.a.string(id) ? id : id.name;
+      }).map(function (id) {
+        return _this7.parseRef(id);
+      });
+
+      this._.followers.push([target, key, as || undefined, lastRevs = refKeys.reduce(function (revs, ref) {
+        revs[ref.storeId] = revs[ref.storeId] || {
+          rev: 0,
+          refs: []
+        };
+        revs[ref.storeId].refs.push(ref);
+        return revs;
+      }, revMap)]);
+
+      this.mount(key);
+      this.retainStores(Object.keys(lastRevs), 'listeners');
+
+      if (setInitial && this._stable) {
+        data = this.getUpdates(lastRevs);
+        if (!data) return this;
+
+        if (typeof target != "function") {
+          if (as) target.setState(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()({}, as, data));else target.setState(data);
+        } else {
+          target(data);
+        }
+      }
+
+      return this;
+    }
+    /**
+     * Un bind this scope off the given component-keys
+     * @param target
+     * @param key
+     * @returns {Array.<*>}
+     */
+
+  }, {
+    key: "unBind",
+    value: function unBind(target, key, as) {
+      var followers = this._.followers,
+          i = followers && followers.length;
+
+      while (followers && i--) {
+        if (followers[i][0] === target && '' + followers[i][1] == '' + key && followers[i][2] == as) {
+          this.disposeStores(Object.keys(followers[i][3]), 'listeners');
+          return followers.splice(i, 1);
+        }
+      }
+    }
+    /**
+     * Mount the stores in storeIdList from this scope, its parents and mixed scope
+     * Bind them to 'to'
+     * Hook 'to' so it will auto unbind on 'destroy' or 'componentWillUnmount'
+     * @param target
+     * @param storeIdList
+     * @param bind
+     * @returns {Object} Initial outputs of the stores in 'storesList'
+     */
+
+  }, {
+    key: "map",
+    value: function map(target, storeIdList) {
+      var _this8 = this;
+
+      var bind = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+      var revMap = arguments.length > 3 ? arguments[3] : undefined;
+      var Store = this.constructor.Store;
+      storeIdList = is__WEBPACK_IMPORTED_MODULE_8___default.a.array(storeIdList) ? storeIdList : [storeIdList];
+      var refList = storeIdList.map(this.parseRef);
+      this.mount(storeIdList);
+
+      if (bind && target instanceof Store) {
+        Store.map(target, storeIdList, this, this, false);
+      } else if (bind) {
+        this.bind(target, storeIdList, undefined, false);
+        var mixedCWUnmount,
+            unMountKey = target.isReactComponent ? "componentWillUnmount" : "destroy";
+
+        if (target.hasOwnProperty(unMountKey)) {
+          mixedCWUnmount = target[unMountKey];
+        }
+
+        target[unMountKey] = function () {
+          delete target[unMountKey];
+          if (mixedCWUnmount) target[unMountKey] = mixedCWUnmount;
+
+          _this8.unBind(target, storeIdList);
+
+          return target[unMountKey] && target[unMountKey].apply(target, arguments);
+        };
+      }
+
+      return revMap && this.getUpdates(revMap) || refList.reduce(function (data, ref) {
+        Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["walknSet"])(data, ref.alias || ref.path, _this8.retrieve(ref.path));
+        return data;
+      }, {});
+    }
+    /**
+     * Get current data value from json path
+     * @param path
+     * @returns {string|*}
+     */
+
+  }, {
+    key: "retrieve",
+    value: function retrieve() {
+      var path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+      path = is__WEBPACK_IMPORTED_MODULE_8___default.a.string(path) ? path.split('.') : path;
+      return path && this.stores[path[0]] && this.stores[path[0]].retrieve && this.stores[path[0]].retrieve(path.slice(1));
+    }
+    /**
+     * Restore all nodes in a jsonPath
+     * @param path
+     * @returns {string|*}
+     */
+
+  }, {
+    key: "restoreRefPath",
+    value: function restoreRefPath() {
+      var path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+      path = is__WEBPACK_IMPORTED_MODULE_8___default.a.string(path) ? path.split('.') : path;
+      var obj,
+          i = 0,
+          cScope = this;
+
+      while (i < path.length) {
+        obj = cScope.stores[path[i]];
+
+        if (Scope.isScopeClass(obj) || Scope.isStoreClass(obj)) {
+          cScope.mount(path[0]);
+          obj = cScope.stores[path[i]];
+        }
+
+        if (Scope.isScope(obj)) {
+          cScope = obj;
+          i++;
+        } else if (Scope.isStore(obj)) {
+          obj.restore();
+          break;
+        } else {
+          break;
+        }
+      }
+    }
+    /**
+     * Get target store from json path
+     * @param path
+     * @returns {string|*}
+     */
+
+  }, {
+    key: "retrieveStore",
+    value: function retrieveStore() {
+      var path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+      path = is__WEBPACK_IMPORTED_MODULE_8___default.a.string(path) ? path.split('.') : path;
+      return path && path.length && (path.length != 1 && this.stores[path[0]].retrieveStore ? this.stores[path[0]].retrieveStore(path.slice(1)) : path.length == 1 && this.stores[path[0]]);
+    }
+    /**
+     * Get or update stores revisions in 'storesRevMap'
+     * @param storesRevMap
+     * @param local
+     * @returns {{}}
+     */
+
+  }, {
+    key: "getStoresRevs",
+    value: function getStoresRevs() {
+      var storesRevMap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var local = arguments.length > 1 ? arguments[1] : undefined;
+      var ctx = this._._scope;
+
+      if (!storesRevMap) {
+        storesRevMap = {};
+      }
+
+      Object.keys(ctx).forEach(function (id) {
+        if (id == "$parent") return;
+
+        if (!is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(ctx[id])) {
+          storesRevMap[id] = ctx[id]._rev;
+        } else if (!storesRevMap.hasOwnProperty(id)) storesRevMap[id] = false;
+      });
+
+      if (!local) {
+        this._._mixed.reduce(function (updated, ctx) {
+          return ctx.getStoresRevs(storesRevMap), storesRevMap;
+        }, storesRevMap);
+
+        this.parent && this.parent.getStoresRevs(storesRevMap);
+      }
+
+      return storesRevMap;
+    }
+    /**
+     * Recursively get all stores revs
+     * @param childs
+     * @returns {Array}
+     * @private
+     */
+
+  }, {
+    key: "_getRevMap",
+    value: function _getRevMap() {
+      var storesRevMap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var ctx = this._._scope;
+      Object.keys(ctx).forEach(function (id) {
+        if (id == "$parent" || storesRevMap[id]) return;
+        storesRevMap[id] = {
+          rev: ctx[id]._rev,
+          refs: []
+        };
+      });
+
+      this._._mixed.reduceRight(function (storesRevMap, ctx) {
+        return ctx._getRevMap(storesRevMap);
+      }, storesRevMap);
+
+      this.parent && this.parent._getRevMap(storesRevMap);
+      return storesRevMap;
+    }
+    /**
+     * Get updated output basing storesRevMap's revisions.
+     * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
+     * @param storesRevMap
+     * @param output
+     * @param updated
+     * @returns {*|{}}
+     */
+
+  }, {
+    key: "getRefsUpdates",
+    value: function getRefsUpdates(refs, revMap, output) {
+      var _this9 = this;
+
+      revMap = revMap || refs.map(function (id) {
+        return is__WEBPACK_IMPORTED_MODULE_8___default.a.string(id) ? id : id.name;
+      }).map(function (id) {
+        return _this9.parseRef(id);
+      }).reduce(function (revs, ref) {
+        revs[ref.storeId] = revs[ref.storeId] || {
+          rev: 0,
+          refs: []
+        };
+        revs[ref.storeId].refs.push(ref);
+        return revs;
+      }, {});
+      return this.getUpdates(revMap, output);
+    }
+    /**
+     * Get or update output basing storesRevMap's revisions.
+     * If a store in 'storesRevMap' was updated; add it to 'output' & update storesRevMap
+     * @param storesRevMap
+     * @param output
+     * @param updated
+     * @returns {*|{}}
+     */
+
+  }, {
+    key: "getUpdates",
+    value: function getUpdates(storesRevMap, output, updated) {
+      var _this10 = this;
+
+      output = output || {};
+      storesRevMap = storesRevMap || this._getRevMap();
+      Object.keys(storesRevMap).forEach(function (id) {
+        var store = _this10.stores[id];
+        storesRevMap[id] = storesRevMap[id] || {
+          rev: 0,
+          refs: []
+        };
+
+        if (store && is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(store)) {
+          updated = true;
+          output[id] = undefined;
+        } else if (store && store._rev > storesRevMap[id].rev) {
+          storesRevMap[id].rev = store._rev;
+          updated = true;
+          storesRevMap[id].refs.forEach(function (ref) {
+            output[ref.alias] = _this10.retrieve(ref.path);
+          });
+        }
+      });
+      return updated && output;
+    }
+    /**
+     * Recursively get all child scopes
+     * @param childs
+     * @returns {Array}
+     * @private
+     */
+
+  }, {
+    key: "_getAllChilds",
+    value: function _getAllChilds() {
+      var childs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      childs.push.apply(childs, _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(this._.childScopes));
+
+      this._.childScopes.forEach(function (ctx) {
+        ctx._getAllChilds(childs);
+      });
+
+      return childs;
+    }
+    /**
+     * Serialize all active stores state & data in every childs & mixed scopes
+     *
+     * Scopes without key or id are ignored
+     * @param output
+     * @returns {{}}
+     */
+
+  }, {
+    key: "serialize",
+    value: function serialize() {
+      var cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var ctx = this._._scope,
+          _this$_ = this._,
+          baseId = _this$_.baseId,
+          key = _this$_.key,
+          keyPID = _this$_.keyPID,
+          incrementId = _this$_.incrementId,
+          alias = cfg.alias,
+          parentAlias = cfg.parentAlias,
+          sid = key ? (parentAlias || keyPID) + '>' + key : alias || parentAlias && parentAlias + '/' + baseId || this._id; //alias = alias || baseId;
+
+      return this.serialize_ex(cfg, output, sid, alias, ["$parent"]);
+    }
+  }, {
+    key: "serialize_ex",
+    value: function serialize_ex() {
+      var _this11 = this;
+
+      var cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var sid = arguments.length > 2 ? arguments[2] : undefined;
+      var alias = arguments.length > 3 ? arguments[3] : undefined;
+      var exclude = arguments.length > 4 ? arguments[4] : undefined;
+      var _ = this._,
+          ctx = _._scope,
+          incrementId = _.incrementId,
+          _cfg$withChilds = cfg.withChilds,
+          withChilds = _cfg$withChilds === void 0 ? true : _cfg$withChilds,
+          _cfg$withMixed = cfg.withMixed,
+          withMixed = _cfg$withMixed === void 0 ? true : _cfg$withMixed,
+          norefs = cfg.norefs;
+
+      if (Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(output, sid)) {
+        if (!incrementId) // done
+          return output;else if (incrementId) {
+          // generate key id
+          var i = -1;
+
+          while (Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(output, sid + '[' + ++i + ']')) {
+            ;
+          }
+
+          sid = sid + '[' + i + ']';
+        }
+      }
+
+      Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknSet"])(output, sid, {});
+      Object.keys(ctx).forEach(function (id) {
+        if (exclude.includes(id) || Scope.isStoreClass(ctx[id]) || Scope.isScopeClass(ctx[id])) return;
+        ctx[id].serialize(_objectSpread({}, cfg, {
+          parentAlias: sid
+        }), output);
+      });
+      withChilds && _.childScopes.forEach(function (ctx) {
+        !ctx._.isLocalId && ctx.serialize({
+          withChild: true,
+          withParents: false,
+          parentAlias: sid,
+          withMixed: withMixed,
+          norefs: norefs
+        }, output);
+      });
+      withMixed && _._mixed.forEach(function (ctx) {
+        !ctx._.isLocalId && ctx.serialize({
+          withChild: false,
+          withParents: false,
+          withMixed: withMixed,
+          norefs: norefs
+        }, output);
+      });
+
+      if (alias) {
+        output = Object.keys(output).reduce(function (h, k) {
+          return h[k === _this11._id ? alias : k] = output[k], h;
+        }, {});
+      }
+
+      return output;
+    }
+    /**
+     * Restore state & data from the serialize fn
+     * @param snapshot
+     * @param force
+     */
+
+  }, {
+    key: "restore",
+    value: function restore(snapshot) {
+      var _this12 = this;
+
+      var cfg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var force = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : is__WEBPACK_IMPORTED_MODULE_8___default.a.bool(cfg) && cfg;
+      var ctx = this._._scope,
+          snap;
+
+      if (snapshot && cfg && cfg.alias && cfg.alias != this._id) {
+        snap = _objectSpread({}, snapshot, _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()({}, this._id, snapshot[cfg.alias]));
+        delete snap[cfg.alias];
+        snapshot = snap;
+      }
+
+      snapshot = snapshot && Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(snapshot, this._id) || this.takeSnapshotByKey(this._id);
+      if (!snapshot) return;
+      this._.snapshot = _objectSpread({}, snapshot);
+      snap = snapshot['/'];
+      snapshot['/'] = _objectSpread({}, snap);
+      snap && Object.keys(snap).forEach(function (name) {
+        if (name == "$parent") return;
+
+        if (ctx[name]) {
+          if (force && !is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(ctx[name])) ctx[name].destroy();
+
+          _this12._mount(name); // quiet
+
+        }
+      });
+
+      this._._mixed.forEach(function (ctx) {
+        !ctx._.isLocalId && ctx.restore(undefined, force);
+      });
+
+      this._.childScopes.forEach(function (ctx) {
+        !ctx._.isLocalId && ctx.restore(undefined, force);
+      });
+    }
+  }, {
+    key: "getSnapshotByKey",
+    value: function getSnapshotByKey(key, local) {
+      // only have the local snap
+      if (this._.snapshot && key.startsWith(this._id)) {
+        var obj = Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(this._.snapshot, key.substr(this._id.length));
+        return obj;
+      } else return !local && this.parent && this.parent.getSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.getSnapshotByKey(key);
+    }
+  }, {
+    key: "getSnapshotByKeyExt",
+    value: function getSnapshotByKeyExt(snapshot, key, local) {
+      // only have the local snap
+      if (snapshot) {
+        var obj = Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(snapshot, key);
+        return obj;
+      }
+    }
+  }, {
+    key: "takeSnapshotByKey",
+    value: function takeSnapshotByKey(key, local) {
+      if (this._.snapshot && key.startsWith(this._id)) {
+        var obj = Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(this._.snapshot, key.substr(this._id.length));
+
+        if (obj) {
+          this.deleteSnapshotByKey(key, true);
+        }
+
+        return obj;
+      } else return !local && this.parent && this.parent.takeSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.takeSnapshotByKey(key);
+    }
+  }, {
+    key: "deleteSnapshotByKey",
+    value: function deleteSnapshotByKey(key, local) {
+      if (this._.snapshot && key.startsWith(this._id)) {
+        var obj = Object(_utils_utils__WEBPACK_IMPORTED_MODULE_11__["keyWalknGet"])(this._.snapshot, key.substr(this._id.length).replace(/^(.*[\>|\/])[^\>|\/]+$/ig, '$1'));
+        if (obj) delete obj[key.replace(/^.*[\>|\/]([^\>|\/]+)$/ig, '$1')];
+      }
+
+      return !local && this.parent && this.parent.deleteSnapshotByKey(key) || this.stores.$parent && this.stores.$parent.deleteSnapshotByKey(key);
+    }
+  }, {
+    key: "setState",
+    value: function setState(pState) {
+      var _this13 = this;
+
+      Object.keys(pState).forEach(function (k) {
+        return _this13.state[k] = pState[k];
+      });
+    }
+    /**
+     * get a parsed reference
+     * @param _ref
+     * @returns {{storeId, path, alias: *, ref: *}}
+     */
+
+  }, {
+    key: "parseRef",
+    value: function parseRef(_ref) {
+      if (typeof _ref !== 'string') {
+        // @todo : rm this
+        this.register(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()({}, _ref.name, _ref.store));
+        _ref = _ref.name;
+      }
+
+      var ref = _ref.split(':');
+
+      ref[0] = ref[0].split('.');
+      return {
+        storeId: ref[0][0],
+        path: ref[0],
+        alias: ref[1] || ref[0][ref[0].length - 1],
+        ref: _ref
+      };
+    }
+    /**
+     * Dispatch an action to the top parent & mixed scopes, in all stores
+     * todo
+     * @param action
+     * @param data
+     * @returns {Scope}
+     */
+
+  }, {
+    key: "dispatch",
+    value: function dispatch(action) {
+      var _this$parent2;
+
+      for (var _len = arguments.length, argz = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        argz[_key - 1] = arguments[_key];
+      }
+
+      if (this.dead) {
+        console.warn("Dispatch was called on a dead scope, check you're async functions in this stack...", new Error().stack);
+        return;
+      }
+
+      var bActs = this._._boundedActions;
+
+      for (var storeId in this._._scope) {
+        var _this$_$_scope$storeI;
+
+        if (storeId === "$parent") continue;
+        if (!is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(this._._scope[storeId])) (_this$_$_scope$storeI = this._._scope[storeId]).trigger.apply(_this$_$_scope$storeI, [action].concat(argz));
+      }
+
+      if (bActs && bActs.test(action)) return this;
+
+      this._._mixed.forEach(function (ctx) {
+        return ctx.dispatch.apply(ctx, [action].concat(argz));
+      });
+
+      this.parent && (_this$parent2 = this.parent).dispatch.apply(_this$parent2, [action].concat(argz));
+      return this;
+    }
+  }, {
+    key: "trigger",
+    value: function trigger() {
+      this.dispatch.apply(this, arguments);
+    }
+    /**
+     * once('stable', cb)
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+
+  }, {
+    key: "then",
+    value: function then(cb) {
+      var _this14 = this;
+
+      if (!this._stable) return this.once('stable', function (e) {
+        return _this14.then(cb);
+      });
+      return cb(this.data);
+    }
+  }, {
+    key: "onceStableTree",
+    value: function onceStableTree(cb) {
+      var _this15 = this;
+
+      if (this._.unStableChilds) return this.once('stableTree', function (e) {
+        return _this15.onceStableTree(cb);
+      });
+      return cb(this.data);
+    }
+    /**
+     * Call retain on the scoped stores basing the given list
+     *
+     * @param stores
+     * @param reason
+     */
+
+  }, {
+    key: "retainStores",
+    value: function retainStores() {
+      var _this16 = this;
+
+      var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var reason = arguments.length > 1 ? arguments[1] : undefined;
+      stores.forEach(function (id) {
+        return _this16.stores[id] && _this16.stores[id].retain && _this16.stores[id].retain(reason);
+      });
+    }
+    /**
+     * Call retain on the scoped stores
+     *
+     * @param stores
+     * @param reason
+     */
+
+  }, {
+    key: "disposeStores",
+    value: function disposeStores() {
+      var _this17 = this;
+
+      var stores = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var reason = arguments.length > 1 ? arguments[1] : undefined;
+      stores.forEach(function (id) {
+        return _this17.stores[id] && _this17.stores[id].dispose && _this17.stores[id].dispose(reason);
+      });
+    }
+    /**
+     * Keep the scope unstable until release is called
+     * @param reason
+     */
+
+  }, {
+    key: "wait",
+    value: function wait(reason) {
+      //console.log("wait", reason);
+      this._stable && !this.__locks.all && this.emit("unstable", this);
+      this._stable = false;
+      this.__locks.all++;
+
+      if (reason) {
+        this.__locks[reason] = this.__locks[reason] || 0;
+        this.__locks[reason]++;
+      }
+    }
+    /**
+     * Stabilize the scope if no more locks remain (wait fn)
+     * @param reason
+     */
+
+  }, {
+    key: "release",
+    value: function release(reason) {
+      var _this18 = this;
+
+      if (reason) {
+        if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
+        this.__locks[reason] = this.__locks[reason] || 0;
+        this.__locks[reason]--;
+      }
+
+      if (!reason && this.__locks.all == 0) console.error("Release more than locking !");
+      this.__locks.all--;
+
+      if (!this.__locks.all) {
+        if (this._.stabilizerTM) return;
+        this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
+        this._.stabilizerTM = setTimeout(function (e) {
+          _this18._.stabilizerTM = null;
+          if (_this18.__locks.all) return;
+          _this18._.propagTM && clearTimeout(_this18._.propagTM);
+          _this18._rev++;
+          _this18._stable = true;
+
+          _this18.emit("stable", _this18);
+
+          !_this18.dead && _this18._propag(); // stability can induce destroy
+        });
+      }
+    }
+    /**
+     * Propag stores updates basing theirs last updates
+     */
+
+  }, {
+    key: "propag",
+    value: function propag() {
+      var _this19 = this;
+
+      this._.propagTM && clearTimeout(this._.propagTM);
+      this._.propagTM = setTimeout(function (e) {
+        _this19._.propagTM = null;
+
+        _this19._propag();
+      }, 2);
+    }
+  }, {
+    key: "_propag",
+    value: function _propag() {
+      var _this20 = this;
+
+      if (this._.followers.length) this._.followers.forEach(function (_ref3) {
+        var obj = _ref3[0],
+            key = _ref3[1],
+            as = _ref3[2],
+            lastRevs = _ref3[3],
+            remaps = _ref3[3];
+
+        var data = _this20.getUpdates(lastRevs);
+
+        if (!data) return;
+
+        if (typeof obj != "function") {
+          //console.log("setState ",obj, Object.keys(data))
+          if (as) obj.setState(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()({}, as, data));else obj.setState(data);
+        } else {
+          obj(data, lastRevs && _objectSpread({}, lastRevs) || "no revs");
+        } // lastRevs &&
+        // key.forEach(id => (lastRevs[id] = this.stores[id] &&
+        // this.stores[id]._rev || 0));
+
+      });
+      this.emit("update", this.getUpdates());
+    }
+    /**
+     * is stable
+     * @returns bool
+     */
+
+  }, {
+    key: "isStable",
+    value: function isStable() {
+      return this._stable;
+    }
+    /**
+     * is stable tree
+     * @returns bool
+     */
+
+  }, {
+    key: "isStableTree",
+    value: function isStableTree() {
+      return !this._.unStableChilds;
+    }
+    /**
+     * Register children
+     * @param scope
+     * @private
+     */
+
+  }, {
+    key: "_addChild",
+    value: function _addChild(scope) {
+      var _this21 = this;
+
+      this._.childScopes.push(scope);
+
+      this._.seenChilds++;
+      var lists = {
+        'stable': function stable(s) {
+          _this21._.unStableChilds--;
+          if (!_this21._.unStableChilds) _this21.emit("stableTree", _this21);
+        },
+        'unstable': function unstable(s) {
+          _this21._.unStableChilds++;
+          if (1 == _this21._.unStableChilds) _this21.emit("unstableTree", _this21);
+        },
+        'stableTree': function stableTree(s) {
+          _this21._.unStableChilds--;
+          if (!_this21._.unStableChilds) _this21.emit("stableTree", _this21);
+        },
+        'unstableTree': function unstableTree(s) {
+          _this21._.unStableChilds++;
+          if (1 == _this21._.unStableChilds) _this21.emit("unstableTree", _this21);
+        },
+        'destroy': function destroy(ctx) {
+          if (ctx._.unStableChilds) _this21._.unStableChilds--;
+          if (!ctx.isStable()) _this21._.unStableChilds--;
+          if (!_this21._.unStableChilds) _this21.emit("stableTree", _this21);
+        }
+      },
+          wasStable = this._.unStableChilds;
+      !scope.isStable() && this._.unStableChilds++;
+      scope._.unStableChilds && this._.unStableChilds++;
+
+      this._.childScopesList.push(lists);
+
+      if (!wasStable && this._.unStableChilds) this.emit("unstableTree", this);
+      scope.on(lists);
+    }
+  }, {
+    key: "_rmChild",
+    value: function _rmChild(ctx) {
+      var i = this._.childScopes.indexOf(ctx),
+          wasStable = this._.unStableChilds;
+
+      if (i != -1) {
+        this._.childScopes.splice(i, 1);
+
+        !ctx.isStable() && this._.unStableChilds--;
+        ctx._.unStableChilds && this._.unStableChilds--;
+        ctx.un(this._.childScopesList.splice(i, 1)[0]);
+        if (wasStable && !this._.unStableChilds) this.emit("stableTree");
+      }
+    }
+  }, {
+    key: "retain",
+    value: function retain(reason) {
+      this.__retains.all++; //console.log("retain", this._id, reason);
+
+      if (reason) {
+        this.__retains[reason] = this.__retains[reason] || 0;
+        this.__retains[reason]++;
+      }
+    }
+  }, {
+    key: "dispose",
+    value: function dispose(reason) {
+      var _this22 = this;
+
+      //console.log("dispose", this._id, reason);
+      if (reason) {
+        if (!this.__retains[reason]) throw new Error("Dispose more than retaining : " + reason);
+        this.__retains[reason]--;
+      }
+
+      if (!this.__retains.all) throw new Error("Dispose more than retaining !");
+      this.__retains.all--;
+
+      if (!this.__retains.all) {
+        //console.log("dispose do destroy ", this._id, this._persistenceTm);
+        if (this._.persistenceTm) {
+          this._.destroyTM && clearTimeout(this._.destroyTM);
+          this._.destroyTM = setTimeout(function (e) {
+            _this22.then(function (s) {
+              !_this22.__retains.all && !_this22.dead && _this22.destroy();
+            });
+          }, this._.persistenceTm);
+        } else {
+          this.then(function (s) {
+            return !_this22.__retains.all && !_this22.dead && _this22.destroy();
+          });
+        }
+      }
+    }
+    /**
+     * order destroy of local stores
+     */
+
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      var _this23 = this;
+
+      var ctx = this._._scope;
+
+      _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(this._.childScopes).map(function (scope) {
+        return scope.destroy();
+      });
+
+      for (var key in ctx) {
+        if (!is__WEBPACK_IMPORTED_MODULE_8___default.a.fn(ctx[key])) {
+          if (key == "$parent") continue;
+          !ctx[key]._autoDestroy && ctx[key].dispose("scoped");
+        }
+      }
+
+      this._.stabilizerTM && clearTimeout(this._.stabilizerTM);
+      this._.propagTM && clearTimeout(this._.propagTM);
+      Object.keys(this._._listening).forEach(function (id) {
+        return id !== "$parent" && _this23._._scope[id].removeListener(_this23._._listening[id]);
+      });
+
+      while (this._._mixedList.length) {
+        this._._mixed[0].removeListener(this._._mixedList.shift());
+
+        this._._mixed.shift().dispose("mixedTo");
+      }
+
+      _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(this._.followers).map(function (follower) {
+        return _this23.unBind.apply(_this23, _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(follower));
+      });
+
+      if (this._._parentList) {
+        this.parent._rmChild(this);
+
+        this.parent.removeListener(this._._parentList);
+        this.parent.dispose("isMyParent");
+        this._._parentList = null;
+      }
+
+      this.dead = true;
+      delete allScopes[this._id];
+      this.emit("destroy", this);
+    }
+  }, {
+    key: "__reactstandin__regenerateByEval",
+    // @ts-ignore
+    value: function __reactstandin__regenerateByEval(key, code) {
+      // @ts-ignore
+      this[key] = eval(code);
+    }
+  }]);
+
+  return Scope;
+}(_utils_Emitter__WEBPACK_IMPORTED_MODULE_10__["default"]);
+
+Scope.persistenceTm = 1;
+Scope.Store = null;
+
+Scope.scopeRef = function scopeRef(path) {
+  this.path = path;
+};
+
+Scope.scopes = allScopes;
+
+Scope.isScopable = function (obj) {
+  return Scope.isScope(obj) || Scope.isScopeClass(obj) || Scope.isStore(obj) || Scope.isStoreClass(obj);
+};
+
+Scope.isScope = function (obj) {
+  return obj instanceof Scope;
+};
+
+Scope.isScopeClass = function (obj) {
+  return Scope.isPrototypeOf(obj) || obj === Scope;
+};
+
+var _default = Scope;
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(__proto__push, "__proto__push", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Scope.js");
+  reactHotLoader.register(allScopes, "allScopes", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Scope.js");
+  reactHotLoader.register(Scope, "Scope", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Scope.js");
+  reactHotLoader.register(_default, "default", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Scope.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/Store.js":
+/*!**********************!*\
+  !*** ./src/Store.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "undefined?188d");
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ "undefined?4d9b");
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "undefined?24b3");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "undefined?36a1");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @babel/runtime/helpers/possibleConstructorReturn */ "undefined?03c7");
+/* harmony import */ var _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @babel/runtime/helpers/assertThisInitialized */ "undefined?e4e5");
+/* harmony import */ var _babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @babel/runtime/helpers/getPrototypeOf */ "undefined?20a8");
+/* harmony import */ var _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @babel/runtime/helpers/get */ "undefined?56eb");
+/* harmony import */ var _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @babel/runtime/helpers/inherits */ "undefined?74ba");
+/* harmony import */ var _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_8__);
+
+
+
+
+
+
+
+
+
+
+(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *   The MIT License (MIT)
+ *   Copyright (c) 2019. Wise Wild Web
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ *
+ *   @author : Nathanael Braun
+ *   @contact : n8tz.js@gmail.com
+ */
+var is = __webpack_require__(/*! is */ "undefined?63a5"),
+    Scope = __webpack_require__(/*! ./Scope */ "./src/Scope.js")["default"],
+    _require = __webpack_require__(/*! ./utils/utils */ "./src/utils/utils.js"),
+    keyWalknSet = _require.keyWalknSet,
+    keyWalknGet = _require.keyWalknGet,
+    EventEmitter = __webpack_require__(/*! ./utils/Emitter */ "./src/utils/Emitter.js")["default"],
+    TaskSequencer = __webpack_require__(/*! ./utils/TaskSequencer */ "./src/utils/TaskSequencer.js")["default"],
+    shortid = __webpack_require__(/*! shortid */ "undefined?beec"),
+    objProto = Object.getPrototypeOf({});
+
+var Store =
+/*#__PURE__*/
+function (_EventEmitter) {
+  _babel_runtime_helpers_inherits__WEBPACK_IMPORTED_MODULE_8___default()(Store, _EventEmitter);
+
+  //static use                  = [];// overridable list of source stores
+  // overridable list of store that will allow push if updated
+  // default state
+
+  /**
+   * if retain goes to 0 :
+   * false to not destroy,
+   * 0 to sync auto destroy
+   * Ms to autodestroy after tm ms if no retain has been called
+   * @type {boolean|Int}
+   */
+
+  /**
+   * Constructor, will build a rescope store
+   *
+   * (scope, {require,use,apply,state, data})
+   * (scope)
+   *
+   * @param scope {object} scope where to find the other stores (default : static
+   *     staticScope )
+   * @param keys {Array} (passed to Store::map) Ex : ["session", "otherNamedStore:key",
+   *     otherStore.as("otherKey")]
+   */
+  function Store() {
+    var _this$_require, _this$_require2;
+
+    var _this;
+
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_2___default()(this, Store);
+
+    _this = _babel_runtime_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_4___default()(this, _babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default()(Store).call(this));
+    var argz = Array.prototype.slice.call(arguments),
+        _static = _this.constructor,
+        scope = argz[0] instanceof Scope ? argz.shift() : _static.scope ? Scope.getScope(_static.scope) : is.string(argz[0]) ? Scope.getScope(argz.shift()) : _static.staticScope,
+        cfg = argz[0] && !is.array(argz[0]) && !is.string(argz[0]) ? argz.shift() : {},
+        taskQueue = is.array(argz[0]) ? argz.shift() : null,
+        name = cfg.name || _static.name,
+        watchs = cfg.use || [],
+        apply = cfg.apply || null,
+        initialState = _static.state || _static.initialState || _static.defaultState;
+    _this._uid = cfg._uid || shortid.generate();
+    _this.__retains = {
+      all: 0
+    };
+    _this.__locks = {
+      all: 0
+    };
+    _this._onStabilize = []; // autoDestroyTm
+
+    _this._autoDestroy = !!_this._persistenceTm;
+    _this._persistenceTm = cfg.persistenceTm || _static.persistenceTm || (cfg.autoDestroy || _static.autoDestroy) && 5;
+    _this._cfg = cfg;
+
+    if (cfg && cfg.on) {
+      _this.on(cfg.on);
+    }
+
+    _this.name = name;
+
+    if (scope.stores) {
+      _this.scopeObj = scope;
+      _this.scope = scope.stores;
+    } else {
+      _this.scopeObj = new Scope(scope);
+      _this.scope = scope.stores;
+    } // standardized scope access
+
+
+    _this.$scope = _this.scopeObj;
+    _this.$stores = _this.scopeObj.stores;
+    _this.$actions = _this.scopeObj.actions;
+    _this.$dispatch = _this.scopeObj.dispatch.bind(_this.scopeObj);
+    _this._rev = _this.constructor._rev || 0;
+    _this._revs = {};
+    _this.stores = {};
+    _this._require = [];
+    _this._sources = [name]; // register source stores
+
+    if (is.array(_static.use)) {
+      _this._use = [].concat(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(watchs), _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()((_static.use || []).map(function (key) {
+        var ref = key.match(/^(\!?)([^\:]*)(?:\:(.*))?$/);
+
+        if (ref[1]) {
+          var ref2 = ref[2].split('.');
+
+          _this._require.push(ref[3] || ref2[ref2.length - 1]); // require check value of the aliased
+          // imported value
+
+
+          return key.substr(1);
+        }
+
+        return key;
+      })));
+    } else {
+      _this._use = [].concat(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(watchs), _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(_static.use ? Object.keys(_static.use).map(function (key) {
+        var ref = key.match(/^(\!?)(.*)$/);
+        ref[1] && _this._require.push(_static.use[key]);
+        return ref[2] + (_static.use[key] === true ? '' : ':' + _static.use[key]);
+      }) : []));
+    }
+
+    if (_static.require) (_this$_require = _this._require).push.apply(_this$_require, _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(_static.require));
+    if (cfg.require) (_this$_require2 = _this._require).push.apply(_this$_require2, _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(cfg.require));
+    _this._followers = [];
+    _this._changesSW = initialState || {};
+    _this.state = initialState && {};
+    if (apply) _this.apply = apply;
+    /**
+     * Initial state isn't fully initialized ( childs constructors can set it )
+     * Scope based instance have taskQueue to delay init synchronously, if not
+     * present we use setTimeout
+     */
+
+    if (taskQueue) {
+      taskQueue.push(_this._afterConstructor.bind(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this)));
+    } else setTimeout(_this._afterConstructor.bind(_babel_runtime_helpers_assertThisInitialized__WEBPACK_IMPORTED_MODULE_5___default()(_this)));
+
+    return _this;
+  }
+  /**
+   * Get the incoming state ( for immediate state relative actions )
+   * @returns {{}|*}
+   */
+
+
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_3___default()(Store, [{
+    key: "_afterConstructor",
+    value: function _afterConstructor() {
+      var cfg = this._cfg,
+          _static = this.constructor,
+          snapshot = this.restore(undefined, true),
+          initialState = this.state,
+          initialData = this.data,
+          applied;
+      {
+        if (initialData) this.data = initialData;else if (_static.data !== undefined) this.data = _objectSpread({}, _static.data);else if (cfg.hasOwnProperty("data")) this.data = cfg.data;
+        if (cfg.hasOwnProperty("state") && cfg.state !== undefined) initialState = _objectSpread({}, initialState, {}, cfg.state);
+
+        if (this.data === undefined) {
+          if (initialState || this._use.length) {
+            // sync apply
+            this._nextState = this._changesSW = _objectSpread({}, this._changesSW, {}, initialState || {}, {}, this.$scope.map(this, this._use));
+            this.state = {};
+
+            if (this.shouldApply(this._nextState) && this.data === undefined) {
+              this.data = this.apply(this.data, this._nextState, this._changesSW);
+              applied = true;
+              this.state = this._changesSW;
+              this._nextState = this._changesSW = null;
+            }
+          }
+        } else {
+          applied = true;
+          this.state = _objectSpread({}, this._changesSW, {}, initialState || {}, {}, this.$scope.map(this, this._use));
+          this._nextState = this._changesSW = null;
+        }
+      }
+
+      if ((this.data !== undefined || applied) && !this.__locks.all) {
+        this._stable = true;
+        this._rev++;
+      } else {
+        this._stable = false;
+
+        if (!_static.managed && !this.state && (!this._use || !this._use.length)) {
+          console.warn("ReScope store '", this.name, "' have no initial data, state or use. It can't stabilize...");
+        }
+      }
+
+      !this._stable && this.emit('unstable', this.state);
+    }
+    /**
+     * Overridable method to know if a data change should be propag to the listening
+     * stores & components
+     */
+
+  }, {
+    key: "shouldPropag",
+    value: function shouldPropag(nDatas) {
+      return true;
+    }
+    /**
+     * Overridable method to choose if this store should be serialized,
+     * If not it will be applied normally when restoring
+     * @returns {boolean}
+     */
+
+  }, {
+    key: "shouldSerialize",
+    value: function shouldSerialize() {
+      return true;
+    }
+  }, {
+    key: "hasDataChange",
+    value: function hasDataChange(nDatas) {
+      var _static = this.constructor,
+          r,
+          cDatas = this.data;
+      r = !cDatas && nDatas || cDatas !== nDatas;
+      !r && cDatas && Object.keys(cDatas).forEach(function (key) {
+        r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
+      });
+      !r && nDatas && Object.keys(nDatas).forEach(function (key) {
+        r = r || (nDatas ? cDatas[key] !== nDatas[key] : cDatas && cDatas[key]);
+      });
+      return r;
+    }
+    /**
+     * Overridable method to know if a state change should be applied
+     */
+
+  }, {
+    key: "shouldApply",
+    value: function shouldApply() {
+      var _this2 = this;
+
+      var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
+      var _static = this.constructor;
+      return !!this.isComplete(state) && (is.array(_static.follow) ? _static.follow.reduce(function (r, i) {
+        return r || state && state[i];
+      }, false) : _static.follow ? Object.keys(_static.follow).reduce(function (r, i) {
+        return r || state && is.fn(_static.follow[i]) && _static.follow[i].call(_this2, state[i]) || _static.follow[i] && state[i] !== _this2.state[i];
+      }, false) : true);
+    }
+    /**
+     * Overridable applier / remapper
+     * If state or lastPublicState are simple hash maps apply will return {...data,
+     * ...state} if not it will return the last private state
+     * @param data
+     * @param state
+     * @returns {*}
+     */
+
+  }, {
+    key: "apply",
+    value: function apply(data, state, changes) {
+      return state;
+    }
+    /**
+     * Debounce this store propagation ( & reducing )
+     * @param cb
+     */
+
+  }, {
+    key: "stabilize",
+    value: function stabilize(cb) {
+      cb && this.once('stable', cb);
+      if (this._stabilizer) return;
+      this._stable && this.emit('unstable', this.state, this.data);
+      this._stable = false;
+      this._stabilizer = TaskSequencer.pushTask(this, 'pushState');
+    }
+    /**
+     * Walk n get
+     * @param path
+     * @param i
+     * @param obj
+     * @returns {*|{}}
+     */
+
+  }, {
+    key: "retrieve",
+    value: function retrieve(path) {
+      var i = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      var obj = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.data;
+      path = is.string(path) ? path.split('.') : path;
+      return !obj || !path || !path.length ? obj : path.length == i + 1 ? obj[path[i]] : this.retrieve(path, i + 1, obj[path[i]]);
+    }
+  }, {
+    key: "dispatch",
+    value: function dispatch(action) {
+      var _this$scopeObj;
+
+      for (var _len = arguments.length, argz = new Array(_len > 1 ? _len - 1 : 0), _key2 = 1; _key2 < _len; _key2++) {
+        argz[_key2 - 1] = arguments[_key2];
+      }
+
+      (_this$scopeObj = this.scopeObj).dispatch.apply(_this$scopeObj, [action].concat(argz));
+    }
+  }, {
+    key: "trigger",
+    value: function trigger(action) {
+      var actions = this.constructor.actions;
+
+      if (actions && actions[action]) {
+        var _actions$action;
+
+        for (var _len2 = arguments.length, argz = new Array(_len2 > 1 ? _len2 - 1 : 0), _key3 = 1; _key3 < _len2; _key3++) {
+          argz[_key3 - 1] = arguments[_key3];
+        }
+
+        var ns = (_actions$action = actions[action]).call.apply(_actions$action, [this].concat(argz));
+
+        if (is["function"](ns)) ns = ns(this.nextState);
+        ns && this.setState(ns);
+      }
+    }
+    /**
+     * Set & Push the result data to followers if stable
+     * @param cb
+     */
+
+  }, {
+    key: "push",
+    value: function push(data, force, cb) {
+      cb = force === true ? cb : force;
+      force = force === true;
+
+      if (!force && !this.hasDataChange(data)) {
+        cb && cb();
+
+        if (!this.__locks.all) {
+          var stable = this._stable;
+          this._stable = true;
+          !stable && this.emit('stable', this.state, this.data); //this._stabilizer = null;
+        }
+
+        return false;
+      }
+
+      this.data = data;
+      this.wait();
+      this.release(cb);
+    }
+    /**
+     * Call the apply fn using the current accumulated state update then, push the
+     * resulting data if stable
+     * @param forcedState
+     */
+
+  }, {
+    key: "pushState",
+    value: function pushState(forcedState) {
+      this._stabilizer = null;
+      if (!forcedState && !this._changesSW && this.data) return;
+      var nextState = forcedState || this._nextState || this.state,
+          nextData;
+      Object.keys(nextState).forEach(function (key) {
+        return nextState[key] === undefined && delete nextState[key];
+      });
+      nextData = this.apply(this.data, nextState, this._changesSW);
+      this.state = nextState;
+      this._nextState = null;
+      this._changesSW = null;
+
+      if (!forcedState && !this.hasDataChange(nextData)) {
+        if (!this.__locks.all) {
+          var stable = this._stable;
+          this._stable = true;
+          !stable && this.emit('stable', this.state, this.data);
+          this._stabilizer = null;
+        }
+
+        return false;
+      }
+
+      this.data = nextData;
+      this.wait();
+      this.release();
+    }
+    /**
+     * Add 'pState' to the current accumulated state updates
+     * & wait source stores stabilization before pushing these state updates
+     * @param pState
+     * @param cb
+     */
+
+  }, {
+    key: "setState",
+    value: function setState(pState, cb, sync) {
+      var change,
+          changes = this._changesSW = this._changesSW || {},
+          nextState = this._nextState = this._nextState || _objectSpread({}, this.state),
+          key;
+
+      for (key in pState) {
+        if (!this.state || changes.hasOwnProperty(key) // todo
+        && pState[key] !== changes[key] || pState.hasOwnProperty(key) && pState[key] !== this.state[key]) {
+          change = true;
+          nextState[key] = changes[key] = pState[key];
+        }
+      }
+
+      if (!this.shouldApply(nextState)) {
+        return;
+      }
+
+      if (sync) {
+        this.pushState();
+        cb && cb();
+      } else {
+        if (change) {
+          this.stabilize(cb);
+        } else cb && cb();
+      }
+
+      return this;
+    }
+    /**
+     * Update the current state & push it
+     * @param pState
+     * @param cb
+     */
+
+  }, {
+    key: "setStateSync",
+    value: function setStateSync(pState) {
+      var i = 0,
+          change,
+          changes = this._changesSW = this._changesSW || {};
+
+      for (var k in pState) {
+        if (!this.state || pState.hasOwnProperty(k) && pState[k] !== this.state[k] //||
+        //(this.state[k] && pState[k] && (pState[k]._rev != this._revs[k]))// rev/hash update
+        ) {
+          change = true;
+          this._revs[k] = pState[k] && pState[k]._rev || true;
+          changes[k] = pState[k];
+        }
+      }
+
+      this.shouldApply(_objectSpread({}, this.state || {}, {}, changes)) && this.pushState();
+      return this.data;
+    }
+    /**
+     * get a store-key pair for Store::map
+     * @param {string} name
+     * @returns {{store: Store, name: *}}
+     */
+
+  }, {
+    key: "as",
+    value: function as(name) {
+      return {
+        store: this,
+        name: name
+      };
+    }
+  }, {
+    key: "on",
+    value: function on(lists) {
+      var _this3 = this;
+
+      if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
+        return _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7___default()(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default()(Store.prototype), "on", _this3).call(_this3, k, lists[k]);
+      });else _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7___default()(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default()(Store.prototype), "on", this).apply(this, arguments);
+    }
+  }, {
+    key: "removeListener",
+    value: function removeListener(lists) {
+      var _this4 = this;
+
+      if (!is.string(lists) && lists) Object.keys(lists).forEach(function (k) {
+        return _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7___default()(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default()(Store.prototype), "removeListener", _this4).call(_this4, k, lists[k]);
+      });else _babel_runtime_helpers_get__WEBPACK_IMPORTED_MODULE_7___default()(_babel_runtime_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_6___default()(Store.prototype), "removeListener", this).apply(this, arguments);
+    }
+    /**
+     * is complete (all requiered keys are here)
+     * @returns bool
+     */
+
+  }, {
+    key: "isComplete",
+    value: function isComplete() {
+      var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
+      return !this._require || !this._require.length || state && this._require.reduce(function (r, key) {
+        return r && state[key];
+      }, true);
+    }
+    /**
+     * is stable
+     * @returns bool
+     */
+
+  }, {
+    key: "isStable",
+    value: function isStable() {
+      return this._stable;
+    }
+    /**
+     * Serialize state & data with sources refs
+     * @returns bool
+     */
+
+  }, {
+    key: "serialize",
+    value: function serialize() {
+      var _this5 = this;
+
+      var cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var output = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var sId = cfg.parentAlias || this.scopeObj._id,
+          refsCount = 0,
+          refs = !cfg.norefs && is.array(this._use) && this._use.reduce(function (map, key) {
+        var ref = _this5.$scope.parseRef(key),
+            store = _this5.$stores[ref.storeId];
+
+        if (store && Store.isStore(store) && !store.scopeObj._.isLocalId) refsCount++, map[ref.alias] = ref.path;
+        return map;
+      }, {}),
+          state = this.state || {},
+          persistent = this.shouldSerialize();
+
+      if (!persistent) {
+        keyWalknSet(output, sId + '/' + this.name, {
+          dataRefs: cfg.dataRefs,
+          refs: refs
+        });
+        return output;
+      }
+
+      var stateKeys = Object.keys(state) || [],
+          stateRefs = stateKeys.map(function (k) {
+        return state[k];
+      }),
+          inRefsCount = 0,
+          dataRefs = cfg.dataRefs || {},
+          inRefs = !cfg.norefs && this.data && Object.keys(this.data).reduce(function (map, key) {
+        var ref = stateRefs.indexOf(_this5.data[key]);
+        if (ref != -1) inRefsCount++, map[key] = stateKeys[ref];
+        return map;
+      }, {}),
+          snap = {
+        dataRefs: cfg.dataRefs,
+        state: state && (cfg.norefs ? _objectSpread({}, state) : Object.keys(state).reduce(function (h, k) {
+          return !refs[k] && (h[k] = state[k]), h;
+        }, {})),
+        data: (this.data && this.data.__proto__ === objProto ? Object.keys(this.data).reduce(function (h, k) {
+          if (!inRefs[k] && !dataRefs[k]) {
+            h[k] = _this5.data[k];
+            inRefsCount++;
+          }
+
+          return h;
+        }, {}) : (is.bool(this.data) || is.number(this.data) || is.string(this.data)) && this.data) || undefined
+      };
+      refs && refsCount && (snap.refs = refs);
+      inRefs && inRefsCount && (snap.inRefs = inRefs);
+      keyWalknSet(output, sId + '/' + this.name, snap);
+      return output;
+    }
+    /**
+     * restore state & data
+     * @returns bool
+     */
+
+  }, {
+    key: "restore",
+    value: function restore(snapshot, immediate) {
+      var _this6 = this;
+
+      snapshot = snapshot && keyWalknGet(snapshot, this.scopeObj._id + '/' + this.name) || this.$scope.takeSnapshotByKey(this.scopeObj._id + '/' + this.name);
+      if (!snapshot) return;
+
+      if (snapshot) {
+        if (!this.isStable() && !immediate) this.then(function () {
+          return _this6.restore(snapshot);
+        });
+        this.state = _objectSpread({}, snapshot.state);
+        snapshot.refs && Object.keys(snapshot.refs).forEach(function (key) {
+          //todo
+          _this6.state[key] = _this6.$scope.retrieve(snapshot.refs[key]);
+        });
+
+        if (snapshot.inRefs === true) {
+          this.data = _objectSpread({}, this.state);
+        } else {
+          this.data = snapshot.data;
+          snapshot.inRefs && Object.keys(snapshot.inRefs).forEach(function (key) {
+            //todo
+            _this6.data[key] = _this6.state[snapshot.inRefs[key]]; //else
+            //    console.warn('not found : ', key, snap && snap.refs[ key ])
+          });
+        }
+
+        if (snapshot.dataRefs) {
+          this.data = this.data || {};
+          Object.keys(snapshot.dataRefs).forEach(function (key) {
+            //todo
+            _this6.$scope.restoreRefPath(snapshot.dataRefs[key]);
+
+            _this6.data[key] = _this6.$scope.retrieve(snapshot.dataRefs[key]);
+          });
+        }
+      }
+    }
+    /**
+     * Bind this store changes to the given component-key
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+
+  }, {
+    key: "bind",
+    value: function bind(obj, key) {
+      var setInitial = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+      var path = arguments.length > 3 ? arguments[3] : undefined;
+
+      this._followers.push([obj, key, path]);
+
+      if (setInitial && this.data && this._stable) {
+        var data = path ? this.retrieve(path) : this.data;
+
+        if (typeof obj != "function") {
+          if (key) obj.setState(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()({}, key, data));else obj.setState(data);
+        } else {
+          obj(data);
+        }
+      }
+    }
+    /**
+     * Un bind this store off the given component-key
+     * @param obj
+     * @param key
+     * @returns {Array.<*>}
+     */
+
+  }, {
+    key: "unBind",
+    value: function unBind(obj, key, path) {
+      var followers = this._followers,
+          i = followers && followers.length;
+
+      while (followers && i--) {
+        if (followers[i][0] === obj && followers[i][1] === key && followers[i][2] === path) return followers.splice(i, 1);
+      }
+    }
+    /**
+     * once('stable', cb)
+     * @param obj {React.Component|Store|function)
+     * @param key {string} optional key where to map the public state
+     */
+
+  }, {
+    key: "then",
+    value: function then(cb) {
+      var _this7 = this;
+
+      if (this._stable) return cb(this.data);
+      this.once('stable', function (e) {
+        return cb(_this7.data);
+      });
+    }
+    /**
+     * Add a lock so the store will not propag it data untill release() is call
+     * @param previous {Store|number|Array} @optional wf to wait, releases to wait or
+     *     array of stuff to wait
+     * @returns {this}
+     */
+
+  }, {
+    key: "wait",
+    value: function wait(previous) {
+      if (typeof previous == "number") return this.__locks.all += previous;
+      if (is.array(previous)) return previous.map(this.wait.bind(this));
+      this._stable && this.emit('unstable', this.state, this.data);
+      this._stable = false;
+      this.__locks.all++;
+      var reason = is.string(previous) ? previous : null;
+
+      if (reason) {
+        this.__locks[reason] = this.__locks[reason] || 0;
+        this.__locks[reason]++;
+      }
+
+      if (previous && is.fn(previous.then)) {
+        previous.then(this.release.bind(this, null));
+      }
+
+      return this;
+    }
+    /**
+     * Decrease locks for this store, if it reach 0 ,
+     * it will be propagated to the followers,
+     * then, all stuff passed to "then" call back will be exec / released
+     * @param desync
+     * @returns {*}
+     */
+
+  }, {
+    key: "release",
+    value: function release(reason, cb) {
+      var _static = this.constructor,
+          me = this;
+      var i = 0,
+          wasStable = this._stable;
+
+      if (is.fn(reason)) {
+        cb = reason;
+        reason = null;
+      }
+
+      if (reason) {
+        if (this.__locks[reason] == 0) console.error("Release more than locking !", reason);
+        this.__locks[reason] = this.__locks[reason] || 0;
+        this.__locks[reason]--;
+      }
+
+      if (!reason && this.__locks.all == 0) console.error("Release more than locking !");
+
+      if (! --this.__locks.all && this.isComplete()) {
+        var propag = this.shouldPropag(this.data);
+        this._stable = true;
+        propag && this._rev++; //
+
+        if (propag && this._followers.length) this._followers.forEach(function propag(follower) {
+          var data = follower[2] ? me.retrieve(follower[2]) : me.data; //if ( !data ) return;
+
+          if (typeof follower[0] == "function") {
+            follower[0](data);
+          } else {
+            //cb && i++;
+            follower[0].setState(follower[1] ? _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()({}, follower[1], data) : data //,
+            //cb && (
+            //    () => (!(--i) && cb())
+            //)
+            );
+          }
+        }); //else
+
+        !wasStable && this.emit('stable', this.data);
+        propag && this.emit('update', this.data);
+        cb && cb();
+      } else cb && this.then(cb);
+
+      return this;
+    }
+  }, {
+    key: "propag",
+    value: function propag(data) {
+      this.emit('update', data);
+    }
+  }, {
+    key: "retain",
+    value: function retain(reason) {
+      this.__retains.all++;
+
+      if (reason) {
+        this.__retains[reason] = this.__retains[reason] || 0;
+        this.__retains[reason]++;
+      }
+    }
+  }, {
+    key: "dispose",
+    value: function dispose(reason) {
+      var _this8 = this;
+
+      //console.warn("dispose", reason, this.__retains);
+      if (reason) {
+        if (!this.__retains[reason]) {
+          throw new Error("RS : Dispose more than retaining on store '" + this.name + "' : " + reason);
+        }
+
+        this.__retains[reason]--;
+      }
+
+      if (this.__retains.all == 0) {
+        throw new Error("RS : Dispose more than retaining on store " + this.name);
+      }
+
+      this.__retains.all--;
+
+      if (!this.__retains.all) {
+        if (this._persistenceTm) {
+          this._destroyTM && clearTimeout(this._destroyTM);
+          this._destroyTM = setTimeout(function (e) {
+            _this8._destroyTM = null; //this.then(s => {
+
+            !_this8.__retains.all && !_this8.dead && _this8.destroy(); //});
+          }, this._persistenceTm);
+        } else {
+          //this.then(s =>
+          !this.__retains.all && !this.dead && this.destroy(); //);
+        }
+      }
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      //  console.log("destroy", this._uid);
+      if (this._stabilizer) {
+        this._stabilizer = null;
+        clearTimeout(this._stabilizer);
+      }
+
+      this.emit('destroy', this);
+      if (this._followers.length) this._followers.forEach(function (follower) {
+        if (typeof follower[0] !== "function") {
+          if (follower[0].stores) delete follower[0].stores[follower[1]];
+        }
+      });
+      this._followers.length = 0;
+      this.constructor._rev = this.rev;
+      this.dead = true;
+      this._revs = this.data = this.state = this.scope = null;
+      this.removeAllListeners();
+    }
+  }, {
+    key: "__reactstandin__regenerateByEval",
+    // @ts-ignore
+    value: function __reactstandin__regenerateByEval(key, code) {
+      // @ts-ignore
+      this[key] = eval(code);
+    }
+  }, {
+    key: "nextState",
+    get: function get() {
+      return this._nextState || this.state;
+    }
+  }]);
+
+  return Store;
+}(EventEmitter);
+/**
+ * get a static aliased reference of a store
+ * @param {string} name
+ * @returns {{store: Store, name: *}}
+ */
+
+
+Store.follow = void 0;
+Store.require = void 0;
+Store.staticScope = new Scope({}, {
+  id: "static"
+});
+Store.state = undefined;
+Store.persistenceTm = false;
+
+Store.as = function (name) {
+  return {
+    store: this,
+    name: name
+  };
+};
+/**
+ * @todo
+ * Map all named stores in {keys} to the {object}'s state
+ * Hook componentWillUnmount (for react comp) or destroy to unBind them automatically
+ * @static
+ * @param object {Object} target state aware object (React.Component|Store|...)
+ * @param keys {Array} Ex : ["session", "otherStaticNamedStore:key",
+ *     store.as('anotherKey')]
+ */
+
+
+Store.map = function (cStore, keys, scope, origin) {
+  var setInitial = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+  var targetRevs = cStore._revs || {};
+  var targetScope = cStore.stores || (cStore.stores = {});
+  var initialOutputs = {};
+  keys = is.array(keys) ? _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(keys) : [keys];
+  scope = scope || Store.staticScope;
+  keys = keys.filter( // @todo : use query refs
+  // (store)(\.store)*(\[(\*|(props)\w+)+)\])?(\:alias)
+  function (key) {
+    var _cStore$_sources;
+
+    if (!key) {
+      console.error("Not a mappable store item '" + key + "' in " + origin + ' !!');
+      return false;
+    }
+
+    var name, alias, path, store, _key;
+
+    if (key.store && key.name) {
+      alias = name = key.name;
+      store = key.store;
+    } else if (is.fn(key)) {
+      name = alias = key.name || key.defaultName;
+      store = key;
+    } else {
+      _key = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
+      name = _key[1];
+      path = _key[2] && _key[2].substr(1);
+      store = scope.stores[_key[1]];
+      alias = _key[3] || path && path.match(/([^\.]*)$/)[0] || _key[1];
+    }
+
+    if (!store) {
+      var i = [];
+
+      for (var o in scope.stores) {
+        i.push(o);
+      }
+
+      console.error("Not a mappable store item '" + name + "/" + alias + "' in " + (cStore.name || cStore) + ' !!', store, _key, scope.stores, i);
+      return false;
+    }
+
+    if (Scope.isScopeClass(store)) scope._mount(name);
+
+    if (Scope.isScope(store)) {
+      store = scope._mount(key);
+    } else if (targetRevs[name]) return false; // ignore dbl uses for now
+
+
+    if (is.fn(store)) {
+      scope._mount(name);
+
+      scope.stores[name].bind(cStore, alias, setInitial, path);
+    } else {
+      store.bind(cStore, alias, setInitial, path);
+    } // give initial store weight basing sources
+
+
+    scope.stores[name]._sources && (_cStore$_sources = cStore._sources).push.apply(_cStore$_sources, _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1___default()(scope.stores[name]._sources));
+    targetRevs[alias] = targetRevs[alias] || true;
+    !targetScope[name] && (targetScope[name] = scope.stores[name]);
+    if (scope.stores[name].hasOwnProperty('data')) initialOutputs[name] = scope.data[name];
+    return true;
+  }); // ... @todo
+
+  cStore.once('destroy', function () {
+    keys.map(function (key) {
+      var name, alias, path, store;
+
+      if (key.store && key.name) {
+        alias = name = key.name;
+        store = key.store;
+      } else if (is.fn(key)) {
+        name = alias = key.name || key.defaultName;
+        store = scope.stores[name];
+      } else {
+        key = key.match(/([^\.\:]+)((?:\.[^\.\:]+)*)(?:\:([^\.\:]+))?/);
+        name = key[1];
+        path = key[2] && key[2].substr(1);
+        store = scope.stores[key[1]];
+        alias = key[3] || path && path.match(/([^\.]*)$/)[0] || key[1];
+      }
+
+      store && !is.fn(store) && store.unBind(cStore, alias, path);
+    });
+  });
+  return initialOutputs;
+};
+
+Store.isStore = Scope.isStore = function (obj) {
+  return obj instanceof Store;
+};
+
+Store.isStoreClass = Scope.isStoreClass = function (obj) {
+  return Store.isPrototypeOf(obj) || obj === Store;
+};
+
+var _default = Store;
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(Scope, "Scope", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+  reactHotLoader.register(EventEmitter, "EventEmitter", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+  reactHotLoader.register(TaskSequencer, "TaskSequencer", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+  reactHotLoader.register(objProto, "objProto", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+  reactHotLoader.register(Store, "Store", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+  reactHotLoader.register(_default, "default", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\Store.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! exports provided: Scope, Store, scopeRef, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module, global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Scope", function() { return Scope; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Store", function() { return Store; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scopeRef", function() { return scopeRef; });
+(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *   The MIT License (MIT)
+ *   Copyright (c) 2019. Wise Wild Web
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ *
+ *   @author : Nathanael Braun
+ *   @contact : n8tz.js@gmail.com
+ */
+var $global = typeof window !== 'undefined' ? window : global,
+    Scope = __webpack_require__(/*! ./Scope */ "./src/Scope.js")["default"],
+    Store = __webpack_require__(/*! ./Store */ "./src/Store.js")["default"];
+
+var RS = $global.___rescope || {};
+
+function scopeRef(map, key) {
+  map[key] = new Scope.scopeRef(map[key]);
+  return map;
+}
+
+;
+
+if ($global.___rescope) {
+  console.warn("ReScope is defined multiple times !! \nCheck you're packaging");
+  Scope = RS.Scope;
+  Store = RS.Store;
+  scopeRef = RS.scopeRef;
+} else {
+  $global.___rescope = RS;
+  Scope.Store = Store;
+}
+
+
+var _default = {
+  Scope: Scope,
+  Store: Store,
+  scopeRef: scopeRef
+};
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register($global, "$global", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+  reactHotLoader.register(Scope, "Scope", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+  reactHotLoader.register(Store, "Store", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+  reactHotLoader.register(RS, "RS", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+  reactHotLoader.register(scopeRef, "scopeRef", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+  reactHotLoader.register(_default, "default", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\index.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module), __webpack_require__(/*! ./../node_modules/webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/utils/Emitter.js":
+/*!******************************!*\
+  !*** ./src/utils/Emitter.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Emitter; });
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ "undefined?4d9b");
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "undefined?24b3");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "undefined?36a1");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var is__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! is */ "undefined?63a5");
+/* harmony import */ var is__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(is__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *   The MIT License (MIT)
+ *   Copyright (c) 2019. Wise Wild Web
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ *
+ *   @author : Nathanael Braun
+ *   @contact : n8tz.js@gmail.com
+ */
+
+
+var Emitter =
+/*#__PURE__*/
+function () {
+  function Emitter() {
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default()(this, Emitter);
+
+    this._events = {};
+  }
+
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default()(Emitter, [{
+    key: "on",
+    value: function on(evt, cb) {
+      var _this = this;
+
+      if (!is__WEBPACK_IMPORTED_MODULE_3___default.a.string(evt) && evt) return Object.keys(evt).forEach(function (k) {
+        return _this.on(k, evt[k]);
+      });
+      this._events[evt] = this._events[evt] || [];
+
+      this._events[evt].push(cb);
+    }
+  }, {
+    key: "un",
+    value: function un(evt, cb) {
+      var _this2 = this;
+
+      if (!is__WEBPACK_IMPORTED_MODULE_3___default.a.string(evt) && evt) return Object.keys(evt).forEach(function (k) {
+        return _this2.un(k, evt[k]);
+      });
+      if (!this._events[evt]) return;
+
+      var i = this._events[evt].indexOf(cb);
+
+      this._events[evt].splice(i, 1);
+    }
+  }, {
+    key: "emit",
+    value: function emit(evt) {
+      if (!this._events[evt]) return;
+
+      var lists = _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(this._events[evt]);
+
+      for (var _len = arguments.length, argz = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        argz[_key - 1] = arguments[_key];
+      }
+
+      for (var i = 0; i < lists.length; i++) {
+        lists[i].apply(lists, argz);
+      }
+    }
+  }, {
+    key: "addListener",
+    value: function addListener() {
+      this.on.apply(this, arguments);
+    }
+  }, {
+    key: "removeListener",
+    value: function removeListener() {
+      this.un.apply(this, arguments);
+    }
+  }, {
+    key: "removeAllListeners",
+    value: function removeAllListeners() {
+      this._events = {};
+    }
+  }, {
+    key: "once",
+    value: function once(evt, cb) {
+      var _this3 = this;
+
+      var _fn;
+
+      this.on(evt, _fn = function fn() {
+        _this3.un(evt, _fn);
+
+        cb.apply(void 0, arguments);
+      });
+    }
+  }, {
+    key: "__reactstandin__regenerateByEval",
+    // @ts-ignore
+    value: function __reactstandin__regenerateByEval(key, code) {
+      // @ts-ignore
+      this[key] = eval(code);
+    }
+  }]);
+
+  return Emitter;
+}();
+
+
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(Emitter, "Emitter", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\Emitter.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/utils/TaskSequencer.js":
+/*!************************************!*\
+  !*** ./src/utils/TaskSequencer.js ***!
+  \************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module, process) {(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *   The MIT License (MIT)
+ *   Copyright (c) 2019. Wise Wild Web
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ *
+ *   @author : Nathanael Braun
+ *   @contact : n8tz.js@gmail.com
+ */
+
+/**
+ * Minimal push sequencer, apply stores specific task in the right order
+ */
+var taskQueue = [],
+    curWeight = 0,
+    maxWeight = 0,
+    minWeight = 0,
+    taskCount = 0,
+    deSync = false,
+    deSyncMaxTasks = 10,
+    task,
+    isRunning,
+    errorCatcher = {
+  lastError: null,
+  dispatch: function dispatch(error) {
+    errorCatcher.disable();
+
+    if (task && task[0].handleError) {
+      task[0].handleError(error, task);
+    } else if (task) console.error("ReScope : An apply task has failed !!", task[1], " on ", task[0].name || task[0].constructor.name, '\n', error);
+
+    isRunning = false;
+    task = null;
+    runNow();
+  },
+  enable: typeof window !== 'undefined' ? function () {
+    window.addEventListener('error', errorCatcher.dispatch);
+  } : function () {
+    process.on('uncaughtException', errorCatcher.dispatch);
+  },
+  disable: typeof window !== 'undefined' ? function () {
+    window.removeEventListener('error', errorCatcher.dispatch);
+  } : function () {
+    process.removeListener('uncaughtException', errorCatcher.dispatch);
+  }
+};
+
+function runNow() {
+  if (!isRunning) {
+    run();
+  }
+}
+
+function run() {
+  var from = Date.now();
+  isRunning = true;
+  errorCatcher.enable();
+
+  while (taskCount) {
+    // try for the current weight
+    while (!(taskQueue[curWeight] && taskQueue[curWeight].length)) {
+      curWeight++;
+    }
+
+    taskCount--;
+    task = taskQueue[curWeight].shift(); //console.log("Task : ", task[1], " on ", task[0].name);
+
+    try {
+      !task[0].dead && task[0][task[1]](task[2]);
+    } catch (e) {
+      return errorCatcher.dispatch(e);
+    }
+  }
+
+  task = undefined;
+  errorCatcher.disable();
+  isRunning = false;
+
+  if (taskCount) {
+    setTimeout(runNow);
+  }
+} //
+//index.setTaskDeSync = ( nb ) => {
+//    if ( nb === false )
+//        return deSync = false;
+//    else if ( nb === true ) {
+//        deSync         = true;
+//        deSyncMaxTasks = 10;
+//    }
+//    else (is.int(nb))
+//    {
+//        deSync         = true;
+//        deSyncMaxTasks = nb;
+//    }
+//};
+
+
+var _default = {
+  pushTask: function pushTask(obj, fn, argz) {
+    /**
+     * The more a store have sources, the more it should be processed first
+     * So leafs stores stay sync, and root stores receive merged state updates;
+     * global state stay coherent
+     *
+     * This mean whatever the number of stores & the complexity of the deps,
+     * updating a store state will update its synchrone child stores immediately
+     *
+     *
+     * @type {*|number}
+     */
+    var weight = obj._sources && obj._sources.length || 1,
+        stack = taskQueue[weight] = taskQueue[weight] || [];
+    maxWeight = Math.max(maxWeight, weight);
+    curWeight = Math.min(curWeight, weight);
+    taskCount++; //console.log("Push Task : ", fn, " on ", obj.name, weight);
+
+    stack.push([obj, fn, argz]);
+    setTimeout(runNow, 0);
+    return stack.length;
+  }
+};
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(taskQueue, "taskQueue", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(curWeight, "curWeight", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(maxWeight, "maxWeight", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(minWeight, "minWeight", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(taskCount, "taskCount", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(deSync, "deSync", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(deSyncMaxTasks, "deSyncMaxTasks", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(task, "task", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(isRunning, "isRunning", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(errorCatcher, "errorCatcher", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(runNow, "runNow", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(run, "run", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+  reactHotLoader.register(_default, "default", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\TaskSequencer.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module), __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "./src/utils/utils.js":
+/*!****************************!*\
+  !*** ./src/utils/utils.js ***!
+  \****************************/
+/*! exports provided: walknSet, walknGet, keyWalknSet, keyWalknGet */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "walknSet", function() { return walknSet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "walknGet", function() { return walknGet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "keyWalknSet", function() { return keyWalknSet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "keyWalknGet", function() { return keyWalknGet; });
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ "undefined?4d9b");
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0__);
+
+
+(function () {
+  var enterModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.enterModule : undefined;
+  enterModule && enterModule(module);
+})();
+
+var __signature__ = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal["default"].signature : function (a) {
+  return a;
+};
+
+/*
+ *   The MIT License (MIT)
+ *   Copyright (c) 2019. Wise Wild Web
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ *
+ *   @author : Nathanael Braun
+ *   @contact : n8tz.js@gmail.com
+ */
+var is = __webpack_require__(/*! is */ "undefined?63a5");
+
+function walknSet(obj, path, value, stack) {
+  if (is.string(path)) path = path.split('.');
+  if (!path.length) return false;else if (path.length == 1) return obj[path[0]] = stack ? [].concat(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_0___default()(obj[path[0]] || []), [value]) : value;else return walknSet(obj[path[0]] = obj[path[0]] || {}, path.slice(1), value, stack);
+}
+function walknGet(obj, path, isKey) {
+  if (is.string(path)) path = path.split('.');
+  return path.length ? obj[path[0]] && walknGet(obj[path[0]], path.slice(1)) : obj;
+} //@todo
+
+function keyWalknSet(obj, path, value, stack) {
+  if (is.string(path)) path = path.split(/(\>|\/)/ig).filter(function (v) {
+    return v !== '>' && v;
+  });
+  return walknSet(obj, path, value);
+}
+function keyWalknGet(obj, path, isKey) {
+  if (is.string(path)) path = path.split(/(\>|\/)/ig).filter(function (v) {
+    return v !== '>' && v;
+  });
+  return path.length ? obj[path[0]] && walknGet(obj[path[0]], path.slice(1)) : obj;
+}
+;
+
+(function () {
+  var reactHotLoader = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.default : undefined;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(walknSet, "walknSet", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\utils.js");
+  reactHotLoader.register(walknGet, "walknGet", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\utils.js");
+  reactHotLoader.register(keyWalknSet, "keyWalknSet", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\utils.js");
+  reactHotLoader.register(keyWalknGet, "keyWalknGet", "G:\\n8tz\\libs\\rScopes\\rescope\\src\\utils\\utils.js");
+})();
+
+;
+
+(function () {
+  var leaveModule = typeof reactHotLoaderGlobal !== 'undefined' ? reactHotLoaderGlobal.leaveModule : undefined;
+  leaveModule && leaveModule(module);
+})();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ 0:
+/*!***************************!*\
+  !*** multi reScope/index ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! reScope/index */"./src/index.js");
+
+
+/***/ }),
+
+/***/ "undefined?03c7":
+/*!*******************************************************************!*\
+  !*** external "@babel/runtime/helpers/possibleConstructorReturn" ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/possibleConstructorReturn");
+
+/***/ }),
+
+/***/ "undefined?188d":
+/*!********************************************************!*\
+  !*** external "@babel/runtime/helpers/defineProperty" ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/defineProperty");
+
+/***/ }),
+
+/***/ "undefined?20a8":
+/*!********************************************************!*\
+  !*** external "@babel/runtime/helpers/getPrototypeOf" ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/getPrototypeOf");
+
+/***/ }),
+
+/***/ "undefined?24b3":
+/*!********************************************************!*\
+  !*** external "@babel/runtime/helpers/classCallCheck" ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/classCallCheck");
+
+/***/ }),
+
+/***/ "undefined?36a1":
+/*!*****************************************************!*\
+  !*** external "@babel/runtime/helpers/createClass" ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/createClass");
+
+/***/ }),
+
+/***/ "undefined?4d9b":
+/*!***********************************************************!*\
+  !*** external "@babel/runtime/helpers/toConsumableArray" ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/toConsumableArray");
+
+/***/ }),
+
+/***/ "undefined?56eb":
+/*!*********************************************!*\
+  !*** external "@babel/runtime/helpers/get" ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/get");
+
+/***/ }),
+
+/***/ "undefined?63a5":
+/*!*********************!*\
+  !*** external "is" ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("is");
+
+/***/ }),
+
+/***/ "undefined?74ba":
+/*!**************************************************!*\
+  !*** external "@babel/runtime/helpers/inherits" ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/inherits");
+
+/***/ }),
+
+/***/ "undefined?beec":
+/*!**************************!*\
+  !*** external "shortid" ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("shortid");
+
+/***/ }),
+
+/***/ "undefined?e4e5":
+/*!***************************************************************!*\
+  !*** external "@babel/runtime/helpers/assertThisInitialized" ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@babel/runtime/helpers/assertThisInitialized");
+
+/***/ })
+
+/******/ });
 //# sourceMappingURL=reScope.js.map

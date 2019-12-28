@@ -9,8 +9,8 @@
 <p align="center">Flexible State management system based on flux architecture, stores data components & inheritable scopes
 </p>
 
-<p align="center"><a href="https://travis-ci.org/rScopes/rescope">
-<img src="https://travis-ci.org/rScopes/rescope.svg?branch=master" alt="Build Status" /></a>
+<p align="center"><a href="https://travis-ci.org/rscopes/rescope">
+<img src="https://travis-ci.org/rscopes/rescope.svg?branch=master" alt="Build Status" /></a>
 <a href="https://www.npmjs.com/package/rescope">
 <img src="https://img.shields.io/npm/v/rescope.svg" alt="Build Status" /></a>
 <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" />
@@ -20,8 +20,8 @@
 
 ### Related packages
 
-React HOCs, decorators & tools : [react-rescope](https://github.com/rScopes/react-rescope)<br>
-ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rScopes/rescope-spells)<br>
+React HOCs, decorators & tools   : [react-scopes](https://github.com/rscopes/react-scopes)<br>
+ReScope HOCs, decorators & tools : [rescope-spells](https://github.com/rscopes/rescope-spells)<br>
 
 ## ReScope What ?
 
@@ -35,7 +35,14 @@ Of course, that's quickly said, in an application, the data must deal with compl
 
 This is where reScope comes in: <br/>
 RS provide a effective, flexible and familiar structure to organize and synchronize your data components. <br/>
-It manage theirs dependencies, theirs scopes, persistence, active instances & much more.
+It manage theirs dependencies, theirs scopes, sequencing, persistence, active instances & much more.
+
+This way all the data components :
+
+- Only use 1 file for theirs initial state, actions & mutations
+- Only care about theirs specialized task
+- Can be easily & independently tested
+- Can have different behaviors basing on theirs scope
 
 ## How ?
 
@@ -59,41 +66,12 @@ To deal with complex architectures like multi user or complex components systems
 - automatic & chained destroy
 - ...
 
-## Why & What else ?
+### Samples & bootstraps [here](https://github.com/rScopes/rescope-samples)
 
-- React "high order components" factories decorators ( [react-rescope](https://github.com/rScopes/react-rescope) )
-- Keep related stuff in the same store files (actions, mutations, helpers, states, etc...)
-- Remove up to 100% of the tpls components code and put them in clean, reusable & specialized stores,
-- Easy pairing of remote / webworker based stores
-- Easy remapping & aliasing of dependencies data,
-- Easy, partial or complete serialization / restoration
-- Inheritable ES6 class
-- Synchrone injection & init (React SSR) (as long as stores transformations stay sync)
-- Lazy stores instantiation & active stores auto destroy
-- Another alternative to Redux & co
-- Library agnostic, rescope has no dependencies and will keep working with any states based system
-- Doesn't need anything, work without React, no immutable needed
-- etc..
+## Todo ?
 
-## Doc ?
-
-[Work in progress doc](doc/readme.md)
-
-About [Stores](doc/Store.md) <br>
-About [Scopes](doc/Scope.md)
-
-### Samples & bootstraps
-
-The examples and bootstrap will come gradually [here](https://github.com/rScopes/rescope-samples)
-
-## What's next ?
-
-- Optimize
 - Many more tests
-- Allow store dependencies thats are not defined yet
-- Cosmetics rewrites & more comments
-- Possibly some semantic/normalisation updates
+- Should be rewritten completely using a more functional approach ( but as react context seems taking similar path & rs is made probono it will not )
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
-<span class="badge-paypal"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWKR3TWQ2U2AC" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
-
+<a href="https://www.buymeacoffee.com/6RMg8OQ" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>

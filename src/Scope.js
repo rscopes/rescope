@@ -1,9 +1,19 @@
 /*
- * Copyright (C) 2019 Nathanael Braun
- * All rights reserved
  *
- *   @author : Nathanael Braun
- *   @contact : n8tz.js@gmail.com
+ * Copyright (C) 2019 Nathanael Braun
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import is                                   from "is";
@@ -94,21 +104,7 @@ class Scope extends EventEmitter {
 	 *  }
 	 * @returns {Scope}
 	 */
-	constructor( storesMap, {
-		parent,
-		upperScope,
-		key,
-		keyMap = parent && parent.keyMap || {},
-		id,
-		snapshot,
-		state,
-		data,
-		incrementId = !!key,
-		persistenceTm,
-		autoDestroy,
-		rootEmitter,
-		boundedActions
-	} = {} ) {
+	constructor( storesMap, { parent, upperScope, key, id, snapshot, state, data, incrementId = !!key, persistenceTm, autoDestroy, rootEmitter, boundedActions } = {} ) {
 		super();
 		let _ = {
 			keyPID: (upperScope && upperScope._id || parent && parent._id || shortid.generate()),
@@ -124,21 +120,16 @@ class Scope extends EventEmitter {
 		_.isLocalId = !id;
 		
 		id = id || ("_____" + shortid.generate());
-		if ( keyMap[id] && incrementId ) {// generate key id
-			let i = -1;
-			while ( keyMap[id + '[' + (++i) + ']'] ) ;
-			id = id + '[' + i + ']';
-		}
-		keyMap[id]  = true;
-		this.keyMap = keyMap;
 		
-		if ( allScopes[id] ) {// réuse existing scope
+		if ( allScopes[id] && !incrementId ) {// overwrite existing scope
 			this._id = id;
-			if ( _.baseId ) {// specified id should merge over existing
-				allScopes[id].register(storesMap);
-			}
-			//console.log('recycle scope !!', id);
+			allScopes[id].register(storesMap);
 			return allScopes[id]
+		}
+		else if ( allScopes[id] && incrementId ) {// generate key id
+			let i = -1;
+			while ( allScopes[id + '[' + (++i) + ']'] ) ;
+			id = id + '[' + i + ']';
 		}
 		
 		// register this scope in the static Scope.scopes
@@ -208,8 +199,6 @@ class Scope extends EventEmitter {
 			// this.register(parent.__scope, state, data);
 		}
 		
-		// restore snapshots
-		snapshot && this.restore(snapshot);
 		// register this scope stores
 		this.register(storesMap, state, data);
 		this.__locks.all--;
@@ -218,6 +207,10 @@ class Scope extends EventEmitter {
 		if ( parent ) {
 			parent._addChild(this);
 		}
+		
+		
+		// restore snapshots
+		this.restore(snapshot);
 		
 		
 		if ( autoDestroy )
@@ -307,12 +300,6 @@ class Scope extends EventEmitter {
 		
 		
 		return _._scope[ref.storeId];
-	}
-	
-	resetKeys() {
-		for ( let key in this.keyMap )
-			if ( this.keyMap.hasOwnProperty(key) )
-				delete this.keyMap[key];
 	}
 	
 	/**
@@ -1020,16 +1007,12 @@ class Scope extends EventEmitter {
 			let obj = keyWalknGet(this._.snapshot, key.substr(this._id.length))
 			return obj;
 		}
-		else {
-			let ret = !local
-				&& this.parent
-				&& this.parent.getSnapshotByKey(key)
-				||
-				this.stores.$parent
-				&& this.stores.$parent.getSnapshotByKey(key);
-			
-			return ret;
-		}
+		else return !local
+			&& this.parent
+			&& this.parent.getSnapshotByKey(key)
+			||
+			this.stores.$parent
+			&& this.stores.$parent.getSnapshotByKey(key);
 		
 	}
 	
@@ -1050,15 +1033,12 @@ class Scope extends EventEmitter {
 			}
 			return obj;
 		}
-		else {
-			let ret = !local
-				&& this.parent
-				&& this.parent.takeSnapshotByKey(key)
-				||
-				this.stores.$parent
-				&& this.stores.$parent.takeSnapshotByKey(key);
-			return ret;
-		}
+		else return !local
+			&& this.parent
+			&& this.parent.takeSnapshotByKey(key)
+			||
+			this.stores.$parent
+			&& this.stores.$parent.takeSnapshotByKey(key);
 	}
 	
 	deleteSnapshotByKey( key, local ) {

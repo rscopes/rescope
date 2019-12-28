@@ -2,6 +2,10 @@
 
 _ this is a draft  wip doc _
 
+
+RS scopes share most of their interfaces with RS stores; <br/>
+They are like stores that would compose their state & data basing on the scopes and stores they contain.
+
 ## Stability
 
 The scopes stability depends of theirs stores stability; When a store goes unstable, its base scope & parents scopes does the same.

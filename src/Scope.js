@@ -71,17 +71,20 @@ class Scope extends EventEmitter {
 	
 	
 	/**
-	 * Init a ReScope scope
+	 * Init an RS scope
 	 *
 	 * @param storesMap {Object} Object with the initial stores definition / instances
 	 * @param config {Object} Scope config
 	 * {
 	 *     parent {scope} @optional parent scope
+	 *     upperScope {scope} @optional parent (hirarchicly) scope
 	 *
 	 *     id {string} @optional id ( if this id exist storesMap will be merge on the 'id'
 	 *     scope)
 	 *     key {string} @optional key of the scope ( if no id is set, the scope id will be (parent.id+'>'+key)
 	 *     incrementId {bool} @optional true to add a suffix id, if the provided key or id globally exist
+	 *
+	 *     keyMap {Object} @optional
 	 *
 	 *     state {Object} @optional initial state by store alias
 	 *     data {Object} @optional initial data by store alias
@@ -278,14 +281,9 @@ class Scope extends EventEmitter {
 					key        : ref.storeId,
 					incrementId: true,
 					upperScope : this
-					//autoDestroy: true
-					//parent: this
 				});
-				//_._scope[ ref.storeId ].retain("scopedChildScope");
-				//_watchStore(ref.storeId);
 				if ( ref.path.length > 1 )
 					_._scope[ref.storeId].mount(ref.path.slice(1).join('.'), snapshot, state, data)
-				//else return _._scope[ ref.storeId ];
 			}
 			if ( Scope.isStore(store) ) {
 				if ( state !== undefined && data === undefined )
@@ -781,7 +779,7 @@ class Scope extends EventEmitter {
 		let ctx = this._._scope;
 		Object.keys(ctx).forEach(
 			id => {
-				if ( id == "$parent" || storesRevMap[id] ) return;
+				if ( id === "$parent" || storesRevMap[id] ) return;
 				storesRevMap[id] = { rev: ctx[id]._rev, refs: [] };
 				
 			});
@@ -1229,6 +1227,7 @@ class Scope extends EventEmitter {
 	
 	/**
 	 * Propag stores updates basing theirs last updates
+	 * todo : data fps?
 	 */
 	propag() {
 		this._.propagTM && clearTimeout(this._.propagTM);

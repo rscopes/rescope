@@ -37,7 +37,7 @@ module.exports = {
 			}
 		},
 		"extend"    : [
-			"wi-layer-react-express"
+			"lpack-react"
 		]
 	},
 	"staging": {
@@ -52,7 +52,7 @@ module.exports = {
 			}
 		},
 		"extend"    : [
-			"wi-layer-react-express"
+			"lpack-react"
 		]
 	},
 }

@@ -71,7 +71,7 @@ To deal with complex architectures like multi user or complex components systems
 ## Todo ?
 
 - Many more tests
-- Should be rewritten completely using a more functional approach ( but as react context seems taking similar path & rs is made probono it will not )
+- RS use a similar states data processing structure than React Hooks & Contexts; Using React, well used hooks/memo are now better for most cases imo. 
 
 [![HitCount](http://hits.dwyl.io/caipilabs/Caipilabs/rescope.svg)](http://hits.dwyl.io/caipilabs/Caipilabs/rescope)
 <a href="https://www.buymeacoffee.com/6RMg8OQ" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
